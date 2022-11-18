@@ -1,0 +1,30 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# hydroLoom <img src="man/figures/logo.png" align="right" alt="" width="120" />
+
+![R-CMD-check](https://github.com/usgs-r/hydroloom/workflows/R-CMD-check/badge.svg) [![codecov](https://codecov.io/gh/usgs-r/hydroloom/branch/master/graph/badge.svg)](https://app.codecov.io/gh/usgs-r/hydroloom)
+
+## hydroloom: 
+
+
+
+```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
+
+```
+
+ [
+    ![CC0](https://i.creativecommons.org/p/zero/1.0/88x31.png)
+  ](https://creativecommons.org/publicdomain/zero/1.0/)
