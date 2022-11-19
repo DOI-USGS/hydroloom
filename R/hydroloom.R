@@ -27,9 +27,13 @@ hy <- function(x) {
   x
 }
 
+#' is hy?
+#' @param x object to test
+#' @export
+#'
 is.hy <- function(x) {
 
-  if(!inherits("hy")) {
+  if(!inherits(x, "hy")) {
     message("no hy class attribute")
     return(FALSE)
   }

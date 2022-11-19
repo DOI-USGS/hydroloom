@@ -4,13 +4,12 @@
 \alias{all_paths_dfs}
 \title{all paths depth first}
 \usage{
-all_paths_dfs(x, starts = NULL, direction = "down")
+all_paths_dfs(x, starts, direction = "down")
 }
 \arguments{
 \item{x}{hy data.frame containing network topology}
 
-\item{starts}{vector with ids from x to start at. If not supplied will start
-from headwaters.}
+\item{starts}{vector with ids from x to start at.}
 
 \item{direction}{character only "down" supported so far.}
 }
@@ -22,4 +21,7 @@ given a starting node, return all reachable paths
 x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 
 x <- add_toids(x, return_dendritic = FALSE)
+
+all_paths_dfs(x, 8893402)
+
 }

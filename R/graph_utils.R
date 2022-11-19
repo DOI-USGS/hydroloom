@@ -2,6 +2,7 @@
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that the row number and id are equal.
 #' @param x hy data.frame
+#' @importFrom dplyr rename left_join
 #' @export
 #' @examples
 #' x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
@@ -15,16 +16,20 @@ make_index_ids <- function(x) {
     out <- data.frame(id = unique(x$id),
                       indid = seq(1, length(unique(x$id))))
 
-    out <- left_join(select(x, "id"), out, by = "id")
+    out <- left_join(left_join(select(x, "id", "toid"),
+                               out, by = "id"),
+                     rename(out, toindid = "indid"),
+                     by = c("toid" = "id"))
 
-    out <- select(out, -"id")
+    out$toindid <- tidyr::replace_na(out$toindid, 0)
+
+    out <- select(out, -"id", -"toid")
 
   } else {
     out <- data.frame(indid = seq(1, nrow(x)))
 
+    out$toindid <- match(x$toid, x$id, nomatch = 0)
   }
-
-  out$toindid <- match(x$toid, x$id, nomatch = 0)
 
   out
 
