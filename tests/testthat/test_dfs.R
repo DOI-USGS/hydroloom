@@ -20,6 +20,18 @@ test_that("total div", {
   expect_equal(paths,
                list(list(`1` = c(2, 3, 5, 7, 9),
                          `2` = c(4, 6, 8, 10))))
+
+  paths <- all_paths_dfs(net, c(2, 5), direction = "down")
+
+  expect_equal(paths, list(list(`1` = c(2, 3, 5, 7, 9),
+                                `2` = c(4, 6, 8, 10)),
+                           list(`3` = 5)))
+
+  paths <- all_paths_dfs(net, c(2, 5), direction = "down", reset = TRUE)
+
+  expect_equal(paths, list(list(`1` = c(2, 3, 5, 7, 9),
+                                `2` = c(4, 6, 8, 10)),
+                           list(`3` = c(5, 7, 9))))
 })
 
 test_that("real data", {

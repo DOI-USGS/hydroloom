@@ -7,11 +7,13 @@ test_that("s3 class creation", {
 
   expect_s3_class(y, "hy")
 
-  x <- data.frame(comid = c(1,2), tocomid = c(2, NA), fromnode = c(1, 2), tonode = c(2, 3))
+  x <- dplyr::tibble(comid = c(1,2), tocomid = c(2, NA), fromnode = c(1, 2), tonode = c(2, 3))
 
   y <- hy(x)
 
   expect_true("orig_names" %in% names(attributes(y)))
+
+  expect_false(inherits(y, "tbl"))
 
   expect_equal(y$toid, c(2,0))
 
@@ -34,6 +36,8 @@ test_that("s3 class creation", {
   expect_s3_class(hy(x), "sf")
 
   expect_false(inherits(hy(x, clean = TRUE), "sf"))
+
+  expect_false(inherits(hy(x), "tbl"))
 })
 
 test_that("drop_geometry", {
@@ -90,6 +94,13 @@ test_that("add indid", {
 
   expect_true(all(y$toindid %in% c(y$indid, 0)))
 
+  y <- add_toids(x)
+
+  y <- make_index_ids(y, format = TRUE, complete = TRUE)
+
+  expect_equal(names(y), c("to", "lengths", "to_list"))
+
+  expect_equal(length(y$to_list$indid), length(unique(x$id)))
 })
 
 test_that("make fromid", {

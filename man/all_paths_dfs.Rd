@@ -4,7 +4,7 @@
 \alias{all_paths_dfs}
 \title{all paths depth first}
 \usage{
-all_paths_dfs(x, starts, direction = "down")
+all_paths_dfs(x, starts, direction = "down", reset = FALSE)
 }
 \arguments{
 \item{x}{hy data.frame containing network topology}
@@ -12,9 +12,16 @@ all_paths_dfs(x, starts, direction = "down")
 \item{starts}{vector with ids from x to start at.}
 
 \item{direction}{character only "down" supported so far.}
+
+\item{reset}{logical if TRUE, reset graph for each start such that later paths
+will have overlapping results.}
+}
+\value{
+list containing dfs result for each start.
 }
 \description{
-given a starting node, return all reachable paths
+given a starting node, return all reachable paths. Once visited,
+a node is marked as visited and will not take part in a future path.
 }
 \examples{
 

@@ -4,10 +4,22 @@
 \alias{make_index_ids}
 \title{make index ids}
 \usage{
-make_index_ids(x)
+make_index_ids(x, format = FALSE, complete = FALSE)
 }
 \arguments{
 \item{x}{hy data.frame}
+
+\item{format}{logical if TRUE, return will be a list containing an adjacency
+matrix and a lengths vector indicating the number of connections from each node.}
+
+\item{complete}{logical if TRUE return will also include a data.frame with an
+\code{indid} column and a \code{toindid} list column. Has no affect if \code{format} is FALSE.}
+}
+\value{
+data.frame containing \code{indid} and \code{toindid} columns suitable for use
+in fast graph traversal. If x is non-dendritic (\code{indid}:\code{toindid} is 1:many),
+an adjacency matrix transformation is necessary to get \code{indid} to correspond
+to rows. Set \code{matrix=TRUE} to perform the transformation automatically.
 }
 \description{
 makes index ids for the provided hy object. These can be used

@@ -1,8 +1,12 @@
 #' all paths depth first
-#' @description given a starting node, return all reachable paths
+#' @description given a starting node, return all reachable paths. Once visited,
+#' a node is marked as visited and will not take part in a future path.
 #' @param x hy data.frame containing network topology
 #' @param starts vector with ids from x to start at.
 #' @param direction character only "down" supported so far.
+#' @param reset logical if TRUE, reset graph for each start such that later paths
+#' will have overlapping results.
+#' @return list containing dfs result for each start.
 #' @export
 #' @examples
 #'
@@ -12,7 +16,7 @@
 #'
 #' all_paths_dfs(x, 8893402)
 #'
-all_paths_dfs <- function(x, starts, direction = "down") {
+all_paths_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
   if(direction != "down") {
     stop("up not supported yet.")
@@ -23,11 +27,11 @@ all_paths_dfs <- function(x, starts, direction = "down") {
 
   if(!all(starts %in% x$id)) stop("all starts must be in x")
 
-  g <- make_index_ids(x)
+  g <- make_index_ids(x, format = TRUE, complete = TRUE)
 
-  starts <- unique(g$indid[which(x$id %in% starts)])
+  starts <- unique(g$to_list$indid[which(unique(x$id) %in% starts)])
 
-  g <- hydroloom:::format_nonden_toid(g)
+  if(reset) save_to <- g$to
 
   # Some vectors to track results
   set <- to_visit <- path <- rep(0, nrow(x))
@@ -87,6 +91,8 @@ all_paths_dfs <- function(x, starts, direction = "down") {
 
     out_list[[set_id]] <- split(unique(x[,1])[set[1:(n - 1)]], path[1:(n-1)])
     set_id <- set_id + 1
+
+    if(reset) g$to <- save_to
   }
 
 out_list

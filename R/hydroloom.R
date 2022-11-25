@@ -56,10 +56,17 @@ hy <- function(x, clean = FALSE) {
     x <- drop_geometry(x)
 
     x <- select(x, all_of(names(x)[names(x) %in% good_names]))
+
   }
 
   if("toid" %in% names(x)) {
     x$toid <- tidyr::replace_na(x$toid, 0)
+  }
+
+  if(inherits(x, "sf")) {
+    x <- sf::st_sf(as.data.frame(x))
+  } else {
+    x <- as.data.frame(x)
   }
 
   class(x) <- c("hy", class(x))
