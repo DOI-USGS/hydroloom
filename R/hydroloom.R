@@ -97,11 +97,3 @@ is.hy <- function(x) {
 
   TRUE
 }
-
-drop_geometry <- function(x) {
-  if("sf" %in% class(x)) {
-    sf::st_drop_geometry(x)
-  } else {
-    x
-  }
-}

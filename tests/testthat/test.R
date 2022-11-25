@@ -40,21 +40,6 @@ test_that("s3 class creation", {
   expect_false(inherits(hy(x), "tbl"))
 })
 
-test_that("drop_geometry", {
-
-  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-
-  expect_true("sf" %in% class(x))
-
-  x <- hydroloom:::drop_geometry(x)
-
-  expect_true(!"sf" %in% class(x))
-
-  x <- hydroloom:::drop_geometry(x)
-
-  expect_true(!"sf" %in% class(x))
-  })
-
 test_that("make toid", {
   x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 
