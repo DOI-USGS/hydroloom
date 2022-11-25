@@ -83,6 +83,10 @@ format_nonden_toid <- function(g, return_list = FALSE) {
   # Convert list to matrix with NA fill
   to_m <- as.matrix(sapply(g$toindid, '[', seq(max_to)))
 
+  if(max_to == 1) {
+    to_m <- matrix(to_m, nrow = 1)
+  }
+
   # NAs should be length 0
   to_l[is.na(to_m[1, ])] <- 0
 

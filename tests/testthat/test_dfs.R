@@ -7,6 +7,8 @@ test_that("super basic", {
   expect_equal(paths,
                list(list(`1` = c(2, 3, 5, 7, 8, 9),
                          `2` = c(4, 6, 8))))
+
+  expect_error(all_paths_dfs(net, 2, direction = "up"))
 })
 
 test_that("total div", {
@@ -42,4 +44,17 @@ test_that("real data", {
   paths <- all_paths_dfs(g, starts = 8891152)
 
   expect_equal(length(paths[[1]]), 47)
+
+  expect_error(all_paths_dfs(g, 12345))
+
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+  g <- hy(x)
+
+  g <- add_toids(g, return_dendritic = TRUE)
+
+  g <- dplyr::select(sf::st_drop_geometry(g), id, toid)
+
+  paths <- all_paths_dfs(g, 8893402, direction = "down")
+
+  expect_equal(length(paths[[1]][[1]]), 21)
 })

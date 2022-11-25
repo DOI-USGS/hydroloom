@@ -4,17 +4,19 @@
 \alias{hy}
 \title{create an hy fabric object}
 \usage{
-hy(x)
+hy(x, clean = FALSE)
 }
 \arguments{
 \item{x}{data.frame with compatible attribute names from nhdplus}
+}
+\value{
+hy object with attributes compatible with the hydroloom package.
 }
 \description{
 converts a compatible dataset into a fabric s3 class
 }
 \examples{
 library(nhdplusTools)
-source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
-nhd <- hr_data$NHDFlowline
-hy(nhd)
+x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+hy(x)
 }

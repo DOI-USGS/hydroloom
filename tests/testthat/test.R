@@ -11,6 +11,8 @@ test_that("s3 class creation", {
 
   y <- hy(x)
 
+  expect_true("orig_names" %in% names(attributes(y)))
+
   expect_equal(y$toid, c(2,0))
 
   expect_true(is.hy(y))
@@ -20,6 +22,18 @@ test_that("s3 class creation", {
   y$toid[1] <- NA
 
   expect_false(is.hy(y))
+
+  y <- hy(x)
+
+  attr(y, "orig_names") <- NULL
+
+  expect_false(is.hy(y))
+
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  expect_s3_class(hy(x), "sf")
+
+  expect_false(inherits(hy(x, clean = TRUE), "sf"))
 })
 
 test_that("drop_geometry", {

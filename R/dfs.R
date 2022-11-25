@@ -19,6 +19,10 @@ all_paths_dfs <- function(x, starts, direction = "down") {
     # will need get_fromids fomr nhdplusTools
   }
 
+  x <- hy(x, clean = TRUE)
+
+  if(!all(starts %in% x$id)) stop("all starts must be in x")
+
   g <- make_index_ids(x)
 
   starts <- unique(g$indid[which(x$id %in% starts)])
