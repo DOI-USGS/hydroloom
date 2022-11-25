@@ -18,10 +18,10 @@ same name.
 }
 \examples{
 
-source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
-(one <- dplyr::select(sample_flines))
-(two <- sf::st_transform(one, 5070))
+one <- dplyr::select(x)
+two <- sf::st_transform(one, 5070)
 
 attr(one, "sf_column") <- "geotest"
 names(one)[names(one) == "geom"] <- "geotest"

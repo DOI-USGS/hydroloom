@@ -32,7 +32,6 @@ assign("good_names", good_names, envir = hydroloom_env)
 #' @importFrom nhdplusTools align_nhdplus_names
 #' @export
 #' @examples
-#' library(nhdplusTools)
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #' hy(x)
 

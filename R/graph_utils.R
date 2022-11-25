@@ -120,6 +120,7 @@ format_nonden_toid <- function(g, return_list = FALSE) {
 #' @return hy object with toid attribute
 #' @importFrom dplyr left_join select filter bind_rows
 #' @importFrom tidyr replace_na
+#' @importFrom sf st_sf
 #' @export
 #' @examples
 #' x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
@@ -169,9 +170,16 @@ add_toids <- function(x, return_dendritic = TRUE) {
 
   x <- bind_rows(x, disconnected)
 
+  sf_t <- inherits(x, "sf")
+
   as.data.frame(
-  x[ , c("id", "toid",
-         names(x)[!names(x) %in% c("id", "toid")])]
+    x <- x[ , c("id", "toid",
+                names(x)[!names(x) %in% c("id", "toid")])]
   )
+
+  if(sf_t)
+    x <- st_sf(x)
+
+  x
 
 }

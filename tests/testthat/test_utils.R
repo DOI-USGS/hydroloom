@@ -40,3 +40,80 @@ test_that("rname geometry", {
   expect_equal(attr(g, "sf_column"), "geometry")
 
 })
+
+test_that("get_node", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  start <- get_node(x, "start")
+  end <- get_node(x, "end")
+
+  # plot(sf::st_zm(x$geom[1]))
+  # plot(sf::st_geometry(start)[1], add = TRUE)
+  # plot(sf::st_geometry(end)[1], add = TRUE)
+  # dput(sf::st_coordinates(sf::st_geometry(start)[1]))
+  # dput(sf::st_coordinates(sf::st_geometry(end)[1]))
+
+  expect_equal(sf::st_coordinates(sf::st_geometry(start)[1]),
+               structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
+                 "1", c("X", "Y"))), ignore_attr = TRUE)
+
+  expect_equal(sf::st_coordinates(sf::st_geometry(end)[1]),
+               structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
+                 "1", c("X", "Y"))), ignore_attr = TRUE)
+
+  x <- suppressWarnings(sf::st_cast(x, "LINESTRING"))
+
+  start <- get_node(x, "start")
+  end <- get_node(x, "end")
+
+  expect_equal(sf::st_coordinates(sf::st_geometry(start)[1]),
+               structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
+                 "1", c("X", "Y"))), ignore_attr = TRUE)
+
+  expect_equal(sf::st_coordinates(sf::st_geometry(end)[1]),
+               structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
+                 "1", c("X", "Y"))), ignore_attr = TRUE)
+})
+
+test_that("fix_flowdir", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  x <- add_toids(hy(x))
+
+  # Look at the end node of the 10th line.
+  n1 <- get_node(x[10, ], position = "end")
+
+  # Break the geometry by reversing it.
+  sf::st_geometry(x)[10] <- sf::st_reverse(sf::st_geometry(x)[10])
+
+  # Note that the end node is different now.
+  n2 <- get_node(x[10, ], position = "end")
+
+  # Pass the broken geometry to fix_flowdir with the network for toCOMID
+  sf::st_geometry(x)[10] <- fix_flowdir(x$id[10], x)
+
+  # Note that the geometry is now in the right order.
+  n3 <- get_node(x[10, ], position = "end")
+
+  expect_equal(n1, n3)
+
+  n1 <- get_node(x[1, ], position = "end")
+  sf::st_geometry(x)[1] <- sf::st_reverse(sf::st_geometry(x)[1])
+  sf::st_geometry(x)[1] <- fix_flowdir(x$id[1], x)
+  expect_equal(n1, get_node(x[1, ], position = "end"))
+
+  x$toid[707] <- 0
+  n1 <- get_node(x[707, ], position = "end")
+  sf::st_geometry(x)[707] <- sf::st_reverse(sf::st_geometry(x)[707])
+  sf::st_geometry(x)[707] <- fix_flowdir(x$id[707], x)
+  expect_equal(n1, get_node(x[707, ], position = "end"))
+
+  fn_list <- list(flowline = x[707, ],
+                  network = x[x$toid == x$id[707],],
+                  check_end = "start")
+
+  sf::st_geometry(x)[707] <- sf::st_reverse(sf::st_geometry(x)[707])
+  sf::st_geometry(x)[707] <- fix_flowdir(x$id[707], fn_list = fn_list)
+  expect_equal(n1, get_node(x[707, ], position = "end"))
+})
+
