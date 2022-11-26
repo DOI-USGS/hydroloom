@@ -1,12 +1,22 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# hydroLoom <img src="man/figures/logo.png" align="right" alt="" width="120" />
-
-![R-CMD-check](https://github.com/usgs-r/hydroloom/workflows/R-CMD-check/badge.svg)
-[![codecov](https://codecov.io/gh/usgs-r/hydroloom/branch/master/graph/badge.svg)](https://app.codecov.io/gh/usgs-r/hydroloom)
+# hydroloom <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
 ## hydroloom:
+
+`hydroloom` is a collection of general hydrologic geospatial fabric
+creation tools.
+
+It was created from generic components of
+[nhdplusTools](https://doi.org/10.5066/P97AS8JD):
+
+          Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
+          Accessing and Working with the NHDPlus,
+          https://doi.org/10.5066/P97AS8JD
+
+Development of hydroloom is underway and rapid change should be
+expected.
 
 # Disclaimer
 
