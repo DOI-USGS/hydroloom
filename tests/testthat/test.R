@@ -38,54 +38,12 @@ test_that("s3 class creation", {
   expect_false(inherits(hy(x, clean = TRUE), "sf"))
 
   expect_false(inherits(hy(x), "tbl"))
-})
 
-test_that("make toid", {
-  x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
+  expect_error(x <- hy_reverse(x))
 
-  y <- add_toids(x, FALSE)
+  x <- sf::st_sf(as.data.frame(x))
 
-  expect_true(nrow(y) > nrow(x))
-
-  expect_true(!any(is.na(y$toid)))
-
-  y <- add_toids(x, TRUE)
-
-  expect_true(nrow(y) == nrow(x))
-
-  expect_true(!any(is.na(y$toid)))
-
-  names(y)[names(y) == "divergence"] <- "div"
-
-  expect_error(add_toids(y))
-})
-
-test_that("add indid", {
-  x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
-
-  y <- add_toids(x)
-
-  y <- make_index_ids(y)
-
-  expect_equal(y$indid, 1:nrow(y))
-
-  expect_true(all(y$toindid %in% c(y$indid, 0)))
-
-  y <- add_toids(x, return_dendritic = FALSE)
-
-  y <- make_index_ids(y)
-
-  expect_true(all(y$indid %in% 1:nrow(y)))
-
-  expect_true(all(y$toindid %in% c(y$indid, 0)))
-
-  y <- add_toids(x)
-
-  y <- make_index_ids(y, format = TRUE, complete = TRUE)
-
-  expect_equal(names(y), c("to", "lengths", "to_list"))
-
-  expect_equal(length(y$to_list$indid), length(unique(x$id)))
+  expect_equal(x, hy_reverse(hy(x)))
 })
 
 test_that("make fromid", {

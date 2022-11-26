@@ -9,6 +9,9 @@ is.hy(x)
 \arguments{
 \item{x}{object to test}
 }
+\value{
+logical TRUE if valid
+}
 \description{
-is hy?
+test if object is a valid according to the hy s3 class
 }

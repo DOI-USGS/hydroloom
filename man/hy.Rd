@@ -17,5 +17,6 @@ converts a compatible dataset into a fabric s3 class
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-hy(x)
+x <- hy(x)
+
 }
