@@ -1,0 +1,39 @@
+[
+  {
+    "name": "hydroloom",
+    "organization": "U.S. Geological Survey",
+    "description": "Utilities to Weave Hydrologic Fabrics",
+    "version": "v1.0.0",
+    "status": "Development",
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/water/hydroloom/-/raw/v1.0.0/LICENSE.md"
+        }
+      ]
+    },
+    "homepageURL": "https://code.usgs.gov/water/hydroloom/",
+    "downloadURL": "https://code.usgs.gov/water/hydroloom/-/archive/v1.0.0/hydroloom-v1.0.0.zip",
+    "disclaimerURL": "https://code.usgs.gov/water/hydroloom/-/raw/v1.0.0/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/water/hydroloom.git",
+    "vcs": "git",
+    "laborHours": 20,
+    "tags": [
+      "R",
+      "USGS",
+      "hydrofabric"
+    ],
+    "languages": [
+      "R"
+    ],
+    "contact": {
+      "name": "David Blodgett",
+      "email": "dblodgett@usgs.gov"
+    },
+    "date": {
+      "metadataLastUpdated": "2022-11-29"
+    }
+  }
+]
