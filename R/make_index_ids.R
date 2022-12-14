@@ -63,10 +63,10 @@ make_index_ids.hy <- function(x, format = FALSE, complete = FALSE) {
 }
 
 check_graph <- function(x) {
-  x <- left_join(x, x,
+  x <- left_join(x, drop_geometry(x),
                  by = c("toid" = "id"))
 
-  if(any(x$id == x$toid.y)) {
+  if(any(x$id == x$toid.y, na.rm = TRUE)) {
     stop("found one or more pairs of features that reference eachother.")
   }
 

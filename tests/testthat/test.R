@@ -65,6 +65,18 @@ test_that("make fromid", {
   # manually verified
   expect_equal(y$froms[,10], c(12, 558, NA))
   expect_equal(as.numeric(y$lengths[10]), 2)
+
+  test_data <- data.frame(indid = c(1, 2, 3, 4, 6, 7, 8, 9),
+                          toindid = c(2, 3, 4, 0, 7, 8, 9, 4))
+
+  expect_equal(ncol(hydroloom:::make_fromids(test_data)$froms),
+               nrow(test_data))
+
+  test_data <- data.frame(indid = c(1, 2, 3, 4),
+                          toindid = c(2, 3, 4, 0))
+
+  expect_equal(ncol(hydroloom:::make_fromids(test_data)$froms),
+               nrow(test_data))
 })
 
 

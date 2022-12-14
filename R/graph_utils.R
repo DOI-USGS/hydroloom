@@ -23,7 +23,8 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   max_from <- max(froms_l)
 
   # Convert list to matrix with NA fill
-  froms_m <- as.matrix(sapply(froms$fromindid, '[', seq(max_from)))
+  froms_m <- matrix(sapply(froms$fromindid, '[', seq(max_from)),
+                    nrow = max_from, ncol = nrow(froms))
 
   # NAs should be length 0
   froms_l[is.na(froms_m[1, ])] <- 0
