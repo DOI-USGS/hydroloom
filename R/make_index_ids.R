@@ -33,6 +33,8 @@ make_index_ids.data.frame <- function(x, format = FALSE, complete = FALSE) {
 #' @export
 make_index_ids.hy <- function(x, format = FALSE, complete = FALSE) {
 
+  check_graph(x)
+
   if(any(duplicated(x$id))) {
     out <- data.frame(id = unique(x$id),
                       indid = seq(1, length(unique(x$id))))
@@ -58,4 +60,15 @@ make_index_ids.hy <- function(x, format = FALSE, complete = FALSE) {
     out
   }
 
+}
+
+check_graph <- function(x) {
+  x <- left_join(x, x,
+                 by = c("toid" = "id"))
+
+  if(any(x$id == x$toid.y)) {
+    stop("found one or more pairs of features that reference eachother.")
+  }
+
+  return(invisible())
 }

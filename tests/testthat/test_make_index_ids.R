@@ -33,4 +33,9 @@ test_that("add indid", {
   expect_equal(names(y), c("to", "lengths", "to_list"))
 
   expect_equal(length(y$to_list$indid), length(unique(x$id)))
+
+  test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
+                          toid = c(2, 3, 4, 9, 7, 8, 9, 4))
+
+  expect_error(hydroloom:::make_index_ids(test_data))
 })
