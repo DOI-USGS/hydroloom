@@ -1,21 +1,93 @@
-# NHDPlus Attributes
+# hydroloom Attributes
 id <- "id"
 toid <- "toid"
 tonode <- "tonode"
 fromnode <- "fromnode"
 divergence <- "divergence"
+wbid <- "wbid"
+total_da_sqkm <- "tot_da_sqkm"
+da_sqkm <- "da_sqkm"
+length_km <- "length_km"
+pathlength_km <- "pathlength_km"
+total_length_km <- "total_length_km"
+topo_sort <- "topo_sort"
+up_topo_sort <- "up_topo_sort"
+dn_topo_sort <- "dn_topo_sort"
+dn_minor_topo_sort <- "dn_minor_topo_sort"
+terminal_topo_sort <- "terminal_topo_sort"
+terminal_flag <- "terminal_flag"
+start_flag = "start_flag"
+levelpath <- "levelpath"
+up_levelpath <- "up_levelpath"
+dn_levelpath <- "dn_levelpath"
+stream_level <- "stream_level"
+dn_stream_level <- "dn_stream_level"
+stream_order <- "stream_order"
+dendritic_stream_order <- "dendritic_stream_order"
+feature_type <- "feature_type"
+feature_type_code <- "feature_type_code"
+vector_proc_unit <- "vector_proc_unit"
+raster_proc_unit <- "raster_proc_unit"
+reachcode <- "reachcode"
+reach_measure <- "reach_measure"
+from_measure <- "from_measure"
+to_measure <- "to_measure"
 
-good_names <- c(id, toid, fromnode, tonode, divergence)
+good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
+                total_da_sqkm, da_sqkm, length_km, pathlength_km, total_length_km,
+                topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
+                terminal_topo_sort, terminal_flag, start_flag,
+                levelpath, up_levelpath, dn_levelpath,
+                stream_level, dn_stream_level, stream_order, dendritic_stream_order,
+                feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
+                reachcode, reach_measure, from_measure, to_measure)
 
 # input names that should be changed to replacement names
 attributes <- c(
   comid = id,
   nhdplusid = id,
+  featureid = id,
   toid = toid,
   tocomid = toid,
-  featureid = id,
   tonode = tonode,
-  fromnode = fromnode)
+  fromnode = fromnode,
+  divergence = divergence,
+  wbareacomi = wbid,
+
+  totdasqkm = total_da_sqkm,
+  areasqkm = da_sqkm,
+  lengthkm = length_km,
+  pathlength = pathlength_km,
+  arbolatesu = total_length_km,
+
+  hydroseq = topo_sort,
+  uphydroseq = up_topo_sort,
+  dnhydroseq = dn_topo_sort,
+  dnminorhyd = dn_minor_topo_sort,
+
+  terminalpa = terminal_topo_sort,
+  terminalfl = terminal_flag,
+  startflag = start_flag,
+
+  levelpathi = levelpath,
+  levelpathid = levelpath,
+  uplevelpat = up_levelpath,
+  dnlevelpat = dn_levelpath,
+
+  streamleve = stream_level,
+  dnlevel = dn_stream_level,
+  streamrde = stream_order,
+  streamcalc = dendritic_stream_order,
+
+  ftype = feature_type,
+  fcode = feature_type_code,
+  vpuid = vector_proc_unit,
+  rpuid = raster_proc_unit,
+
+  reachcode = reachcode,
+  reach_meas = reach_measure,
+  frommeas = from_measure,
+  tomeas = to_measure)
 
 hydroloom_env <- new.env()
 
@@ -28,13 +100,17 @@ assign("good_names", good_names, envir = hydroloom_env)
 #' @param x data.frame with compatible attribute names from nhdplus
 #' @return hy object with attributes compatible with the hydroloom package.
 #' @importFrom dplyr select rename
-#' @importFrom tidyselect any_of all_of
-#' @importFrom nhdplusTools align_nhdplus_names
+#' @importFrom dplyr any_of all_of
 #' @importFrom sf st_geometry st_sf
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-#' x <- hy(x)
+#'
+#' hy(x)
+#'
+#' hy(x, clean = TRUE)[1:10,]
+#'
+#' attr(hy(x), "orig_names")
 #'
 hy <- function(x, clean = FALSE) {
 
@@ -48,16 +124,7 @@ hy <- function(x, clean = FALSE) {
     x <- drop_geometry(x)
   }
 
-  x <- align_nhdplus_names(x)
-
-  names(x) <- tolower(names(x))
-
-  replace_names <- get("attributes", envir = hydroloom_env)
-  good_names <- get("good_names", envir = hydroloom_env)
-
-  replace_names <- replace_names[names(replace_names) %in% names(x)]
-
-  x <- rename(x, any_of(stats::setNames(names(replace_names), unname(replace_names))))
+  x <- align_names(x)
 
   keep_names <- orig_names
 
@@ -77,7 +144,7 @@ hy <- function(x, clean = FALSE) {
   }
 
   if("toid" %in% names(x)) {
-    x$toid <- tidyr::replace_na(x$toid, 0)
+    x$toid[is.na(x$toid)] <- 0
   }
 
   # strip tbl

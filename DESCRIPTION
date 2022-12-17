@@ -8,6 +8,7 @@ Authors@R:
            email = "dblodgett@usgs.gov",
            comment = c(ORCID = "0000-0001-9489-1710"))
 Description: A collection of utilities that support creation of network attributes for hydrologic networks.
+Imports: dplyr, sf, tidyr
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

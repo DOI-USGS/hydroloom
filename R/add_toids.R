@@ -7,7 +7,6 @@
 #' a "divergence" flag where 1 is main and 2 is secondary.
 #' @return hy object with toid attribute
 #' @importFrom dplyr left_join select filter bind_rows
-#' @importFrom tidyr replace_na
 #' @importFrom sf st_sf
 #' @name add_toids
 #' @export
@@ -84,7 +83,7 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   x <- left_join(x, joiner_fun(x), by = c("id"))
 
-  x$toid <- replace_na(x$toid, 0)
+  x$toid[is.na(x$toid)] <- 0
 
   x <- bind_rows(x, disconnected)
 

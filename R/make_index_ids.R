@@ -44,7 +44,7 @@ make_index_ids.hy <- function(x, format = FALSE, complete = FALSE) {
                      rename(out, toindid = "indid"),
                      by = c("toid" = "id"))
 
-    out$toindid <- tidyr::replace_na(out$toindid, 0)
+    out$toindid[is.na(out$toindid)] <- 0
 
     out <- select(out, -"id", -"toid")
 
