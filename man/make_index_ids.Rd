@@ -32,9 +32,16 @@ makes index ids for the provided hy object. These can be used
 for graph traversal algorithms such that the row number and id are equal.
 }
 \examples{
+
+x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+              toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
+
+make_index_ids(x)
+
 x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 
 x <- add_toids(x)
 
-index_ids <- make_index_ids(x)
+make_index_ids(x)
+
 }

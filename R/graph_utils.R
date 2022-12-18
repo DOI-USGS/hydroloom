@@ -1,3 +1,22 @@
+#' Make fromids
+#' @description given a set of index ids as retrieved from \link{make_index_ids}
+#' return an adjacency matrix with pointers to identifiers that flow to the
+#' row of the matrix in question.
+#' @param index_ids data.frame as returned by \link{make_index_ids}
+#' @param return_list logical if TRUE, the returned list will include a
+#' "froms_list" element containing all from ids in a list form.
+#' @return list containing a "froms" matrix, "lengths" vector,
+#' and optionally "froms_list" elements.
+#' @export
+#' @examples
+#'
+#' x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+#'               toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
+#'
+#' y <- make_index_ids(x)
+#'
+#' make_fromids(y)
+#'
 make_fromids <- function(index_ids, return_list = FALSE) {
 
   froms <- left_join(select(index_ids, "indid"),
@@ -19,7 +38,7 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   # froms <- froms[,list(froms = list(c(fromindid))), by = indid]
 
 
-  froms_l <- lengths(froms$fromindid)
+  froms_l <- lengths(froms$fromindid, use.names = FALSE)
   max_from <- max(froms_l)
 
   # Convert list to matrix with NA fill
