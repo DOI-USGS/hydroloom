@@ -107,7 +107,7 @@ required_atts_error <- function(context, required_atts) {
 }
 
 #' @importFrom dplyr filter select left_join all_of any_of bind_rows group_by
-#' @importFrom dplyr ungroup n rename row_number arrange desc
+#' @importFrom dplyr ungroup n rename row_number arrange desc distinct
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
 #' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
 
