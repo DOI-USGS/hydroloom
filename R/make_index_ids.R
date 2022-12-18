@@ -14,11 +14,18 @@
 #' @name make_index_ids
 #' @export
 #' @examples
+#'
+#' x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+#'               toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
+#'
+#' make_index_ids(x)
+#'
 #' x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 #'
 #' x <- add_toids(x)
 #'
-#' index_ids <- make_index_ids(x)
+#' make_index_ids(x)
+#'
 make_index_ids <- function(x, format = FALSE, complete = FALSE) {
   UseMethod("make_index_ids")
 }

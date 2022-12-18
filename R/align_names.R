@@ -1,7 +1,12 @@
-# TODO fix up ocumentation to describe how to custmize renaming.
 #' @title Align names to hydroloom convention
-#' @description this function aligns the attribute names
-#' with those used in hydroloom.
+#' @description this function aligns the attribute names in x
+#' with those used in hydroloom. See \link{hydroloom_names} for how
+#' to add more attribute name mappings if the attributes in your data
+#' are not supported.
+#'
+#' See \link{hydroloom_name_definitions} for definitions of the names
+#' used in hydroloom.
+#'
 #' @param x data.frame
 #' @return data.frame renamed to match hydroloom as possible.
 #' @export
@@ -14,13 +19,13 @@
 #'
 #' names(x)
 #'
-align_names <- function(x){
+align_names <- function(x) {
 
   orig_names <- names(x)
 
   names(x) <- tolower(names(x))
 
-  replace_names <- get("attributes", envir = hydroloom_env)
+  replace_names <- get("hydroloom_name_map", envir = hydroloom_env)
   good_names <- get("good_names", envir = hydroloom_env)
 
   replace_names <- replace_names[names(replace_names) %in% names(x)]
@@ -32,5 +37,54 @@ align_names <- function(x){
   names(x)[switch_back] <- orig_names[switch_back]
 
   return(x)
+
+}
+
+#' Hydroloom Name Definitions
+#' @description A names character vector containing definitons of all
+#' attributes used in the hydroloom package.
+#' @name hydroloom_name_definitions
+#' @export
+#' @examples
+#' cat(paste0(names(hydroloom_name_definitions), ", ",
+#'            hydroloom_name_definitions), sep = "\n")
+hydroloom_name_definitions
+
+#' @title hydroloom names
+#' @description Retrieve hydroloom name mapping from hydroloom
+#' environment. Hydroloom uses a specific set of attribute names within
+#' the package and includes mappings from names used in some data sources.
+#' This function will return those names and can be used to set additional
+#' name mappings.
+#'
+#' NOTE: these values will reset when R is restarted. Add desired settings
+#' to a project or user .Rprofile to make long term additions.
+#'
+#' @param x named character vector of additional names to add to the
+#' hydroloom environment. If not specified, no names will be added and
+#' the current value stored in the hydroloom environment will be returned.
+#' @param clear logical if TRUE, all names will be removed and replaced with
+#' x.
+#' @export
+hydroloom_names <- function(x = NULL, clear = FALSE) {
+
+  hl <- get("hydroloom_name_map", envir = hydroloom_env)
+
+  if(!is.null(x) & is.null(names(x))) stop("input must be named")
+
+  if(clear) {
+    hl <- c()
+    assign("hydroloom_name_map", hl, envir = hydroloom_env)
+  }
+
+  if(is.null(x)) {
+    return(hl)
+  }
+
+  hl <- c(hl, x)
+
+  assign("hydroloom_name_map", hl, envir = hydroloom_env)
+
+  return(hl)
 
 }

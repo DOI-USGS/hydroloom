@@ -13,8 +13,13 @@ align_names(x)
 data.frame renamed to match hydroloom as possible.
 }
 \description{
-this function aligns the attribute names
-with those used in hydroloom.
+this function aligns the attribute names in x
+with those used in hydroloom. See \link{hydroloom_names} for how
+to add more attribute name mappings if the attributes in your data
+are not supported.
+
+See \link{hydroloom_name_definitions} for definitions of the names
+used in hydroloom.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
