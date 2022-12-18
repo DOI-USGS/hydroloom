@@ -1,7 +1,7 @@
 #' make index ids
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that the row number and id are equal.
-#' @param x hy data.frame
+#' @param x data.frame compatible with \link{hydroloom_names}
 #' @param format logical if TRUE, return will be a list containing an adjacency
 #' matrix and a lengths vector indicating the number of connections from each node.
 #' @param complete logical if TRUE return will also include a data.frame with an
@@ -10,7 +10,6 @@
 #' in fast graph traversal. If x is non-dendritic (`indid`:`toindid` is 1:many),
 #' an adjacency matrix transformation is necessary to get `indid` to correspond
 #' to rows. Set `matrix=TRUE` to perform the transformation automatically.
-#' @importFrom dplyr rename left_join
 #' @name make_index_ids
 #' @export
 #' @examples
@@ -41,6 +40,8 @@ make_index_ids.data.frame <- function(x, format = FALSE, complete = FALSE) {
 make_index_ids.hy <- function(x, format = FALSE, complete = FALSE) {
 
   check_graph(x)
+
+  x <- distinct(x)
 
   if(any(duplicated(x$id))) {
     out <- data.frame(id = unique(x$id),

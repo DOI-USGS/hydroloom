@@ -4,7 +4,6 @@
 #' same name.
 #' @param sf1 sf data.frame
 #' @param sf2 sf data.frame
-#' @importFrom sf st_transform st_crs
 #' @export
 #' @examples
 #'
@@ -51,7 +50,6 @@ rename_geometry <- function(g, name){
 #' @description drops geometry if present, does nothing otherwise.
 #' @param x data.frame
 #' @return data.frame without geometry column
-#' @importFrom sf st_drop_geometry
 #' @export
 #' @examples
 #'
@@ -73,8 +71,6 @@ drop_geometry <- function(x) {
 #' @param position character either "start" or "end"
 #' @export
 #' @return sf data.frame containing requested nodes
-#' @importFrom sf st_crs st_coordinates st_as_sf
-#' @importFrom dplyr select group_by filter row_number n ungroup
 #' @examples
 #'
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -126,7 +122,6 @@ get_node <- function(x, position = "end") {
 #' This option allows pre-compilation of pairs of features which may be useful for very large
 #' numbers of flow direction checks.
 #' @return a geometry for the feature that has been reversed if needed.
-#' @importFrom sf st_reverse st_join st_geometry "st_geometry<-"
 #' @export
 #' @examples
 #'

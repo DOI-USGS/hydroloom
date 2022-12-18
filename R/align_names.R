@@ -41,7 +41,7 @@ align_names <- function(x) {
 }
 
 #' Hydroloom Name Definitions
-#' @description A names character vector containing definitons of all
+#' @description A names character vector containing definitions of all
 #' attributes used in the hydroloom package.
 #' @name hydroloom_name_definitions
 #' @export

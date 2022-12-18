@@ -101,13 +101,20 @@ assign("hydroloom_name_map", hydroloom_name_map, envir = hydroloom_env)
 
 assign("good_names", good_names, envir = hydroloom_env)
 
+required_atts_error <- function(context, required_atts) {
+  stop(paste(context, "requires", paste(required_atts, collapse = ", "),
+             "hydroloom attributes."))
+}
+
+#' @importFrom dplyr filter select left_join all_of any_of bind_rows group_by
+#' @importFrom dplyr ungroup n rename row_number arrange desc
+#' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
+#' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
+
 #' @title create an hy fabric object
 #' @description converts a compatible dataset into a fabric s3 class
 #' @param x data.frame with compatible attribute names from nhdplus
 #' @return hy object with attributes compatible with the hydroloom package.
-#' @importFrom dplyr select rename
-#' @importFrom dplyr any_of all_of
-#' @importFrom sf st_geometry st_sf
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -197,7 +204,6 @@ is.hy <- function(x) {
 #' @description renames hy object to original names and removes hy object
 #' attributes.
 #' @param x hy data.frame to be returned to original state
-#' @importFrom sf st_sf
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

@@ -6,8 +6,6 @@
 #' @param return_dendritic logical remove non dendritic paths if TRUE. Requires
 #' a "divergence" flag where 1 is main and 2 is secondary.
 #' @return hy object with toid attribute
-#' @importFrom dplyr left_join select filter bind_rows
-#' @importFrom sf st_sf
 #' @name add_toids
 #' @export
 #' @examples

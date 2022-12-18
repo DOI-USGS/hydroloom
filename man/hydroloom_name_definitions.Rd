@@ -4,7 +4,7 @@
 \alias{hydroloom_name_definitions}
 \title{Hydroloom Name Definitions}
 \description{
-A names character vector containing definitons of all
+A names character vector containing definitions of all
 attributes used in the hydroloom package.
 }
 \examples{
