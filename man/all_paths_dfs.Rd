@@ -7,7 +7,7 @@
 all_paths_dfs(x, starts, direction = "down", reset = FALSE)
 }
 \arguments{
-\item{x}{hy data.frame containing network topology}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{starts}{vector with ids from x to start at.}
 

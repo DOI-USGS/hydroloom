@@ -113,7 +113,9 @@ required_atts_error <- function(context, required_atts) {
 
 #' @title create an hy fabric object
 #' @description converts a compatible dataset into a fabric s3 class
-#' @param x data.frame with compatible attribute names from nhdplus
+#' @inheritParams navigate_hydro_network
+#' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
+#' will be removed.
 #' @return hy object with attributes compatible with the hydroloom package.
 #' @export
 #' @examples
@@ -203,7 +205,7 @@ is.hy <- function(x) {
 #' reverse hy to original names
 #' @description renames hy object to original names and removes hy object
 #' attributes.
-#' @param x hy data.frame to be returned to original state
+#' @inheritParams navigate_hydro_network
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

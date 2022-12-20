@@ -48,7 +48,7 @@ rename_geometry <- function(g, name){
 
 #' drop_geometry
 #' @description drops geometry if present, does nothing otherwise.
-#' @param x data.frame
+#' @param x data.frame that may contain a geometry column
 #' @return data.frame without geometry column
 #' @export
 #' @examples
@@ -67,7 +67,7 @@ drop_geometry <- function(x) {
 #' @title Get line Node
 #' @description Given one or more lines, returns a particular node from
 #' the line.
-#' @param x sf data.frame with one or more LINESTRING features
+#' @param x sf sf data.frame with one or more LINESTRING features
 #' @param position character either "start" or "end"
 #' @export
 #' @return sf data.frame containing requested nodes
@@ -114,7 +114,7 @@ get_node <- function(x, position = "end") {
 #' @description If flowlines aren't digitized in the expected direction,
 #' this will reorder the nodes so they are.
 #' @param id integer The id of the flowline to check
-#' @param network data.frame compatible with `hy` with the entire network to check from.
+#' @param network data.frame network compatible with \link{hydroloom_names}.
 #' @param fn_list list containing named elements `flowline`, `network`, and `check_end`,
 #' where `flowline` is the flowline to be checked and `network` the feature up or downstream
 #' of the flowline to be checked, and `check_end` is `"start"` or `"end"` depending if the

@@ -1,7 +1,7 @@
 #' make index ids
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that the row number and id are equal.
-#' @param x data.frame compatible with \link{hydroloom_names}
+#' @inheritParams navigate_hydro_network
 #' @param format logical if TRUE, return will be a list containing an adjacency
 #' matrix and a lengths vector indicating the number of connections from each node.
 #' @param complete logical if TRUE return will also include a data.frame with an

@@ -13,7 +13,7 @@ make_index_ids(x, format = FALSE, complete = FALSE)
 \method{make_index_ids}{hy}(x, format = FALSE, complete = FALSE)
 }
 \arguments{
-\item{x}{data.frame compatible with \link{hydroloom_names}}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{format}{logical if TRUE, return will be a list containing an adjacency
 matrix and a lengths vector indicating the number of connections from each node.}

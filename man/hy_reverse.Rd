@@ -7,7 +7,7 @@
 hy_reverse(x)
 }
 \arguments{
-\item{x}{hy data.frame to be returned to original state}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
 }
 \description{
 renames hy object to original names and removes hy object

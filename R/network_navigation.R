@@ -13,8 +13,8 @@ required_atts_navigate <- function(mode, distance) {
   required_atts[[mode]]
 }
 
-get_start_row <- function(network, id) {
-  start_row <- network[network$id == id, ]
+get_start_row <- function(x, id) {
+  start_row <- x[x$id == id, ]
 
   if(nrow(start_row) > 1) {
     stop("Found duplicate id for starting catchment. Duplicate rows in network?")
@@ -26,7 +26,7 @@ get_start_row <- function(network, id) {
 #' @title Navigate Hydro Network
 #' @description Navigates a network of connected catchments using NHDPlus style
 #' network attributes.
-#' @param network data.frame compatible with \link{hydroloom_names}.
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param start character or numeric to match identifier attribute. The
 #' starting catchment is included.
 #' @param mode character chosen from c(UM, DM, UT, or DD).
@@ -73,14 +73,14 @@ get_start_row <- function(network, id) {
 #'
 #' plot_fun(x, start, ut)
 #'
-navigate_hydro_network <- function(network, start, mode, distance = NULL) {
+navigate_hydro_network <- function(x, start, mode, distance = NULL) {
   if(missing(mode) | !mode %in% c('UM', 'DM', 'UT', 'DD')) {
     stop("must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
   }
 
   required_atts <- required_atts_navigate(mode, distance)
 
-  if(missing(network)) {
+  if(missing(x)) {
     required_atts_error(context = mode, required_atts = required_atts)
   }
 
@@ -90,17 +90,17 @@ navigate_hydro_network <- function(network, start, mode, distance = NULL) {
 
 #' @name navigate_hydro_network
 #' @export
-navigate_hydro_network.data.frame <- function(network, start, mode, distance = NULL) {
-  navigate_hydro_network(hy(network), start, mode, distance)
+navigate_hydro_network.data.frame <- function(x, start, mode, distance = NULL) {
+  navigate_hydro_network(hy(x), start, mode, distance)
 }
 
 #' @name navigate_hydro_network
 #' @export
-navigate_hydro_network.hy <- function(network, start, mode, distance = NULL) {
+navigate_hydro_network.hy <- function(x, start, mode, distance = NULL) {
 
   required_atts <- required_atts_navigate(mode, distance)
 
-  if(!all(required_atts %in% names(network))) required_atts_error(mode, required_atts)
+  if(!all(required_atts %in% names(x))) required_atts_error(mode, required_atts)
 
   fun <- switch (mode,
     "UT" = get_UT,
@@ -109,68 +109,68 @@ navigate_hydro_network.hy <- function(network, start, mode, distance = NULL) {
     "DD" = get_DD
   )
 
-  fun(select(drop_geometry(network), all_of(required_atts)),
+  fun(select(drop_geometry(x), all_of(required_atts)),
       start, distance)
 
 }
 
-get_UT <- function(network, id, distance) {
+get_UT <- function(x, id, distance) {
 
-  start_row <- get_start_row(network, id)
+  start_row <- get_start_row(x, id)
 
   if (!is.null(distance)) {
     if (distance < start_row$length_km) return(id)
   }
 
-  all <- private_get_UT(network, id)
+  all <- private_get_UT(x, id)
 
   if (!is.null(distance)) {
     stop_pathlength_km <- start_row$pathlength_km -
       start_row$length_km +
       distance
 
-    network <- filter(network, .data$id %in% all)
+    x <- filter(x, .data$id %in% all)
 
-    return(filter(network, .data$pathlength_km <= stop_pathlength_km)$id)
+    return(filter(x, .data$pathlength_km <= stop_pathlength_km)$id)
   } else {
     return(all)
   }
 }
 
-private_get_UT <- function(network, id) {
+private_get_UT <- function(x, id) {
 
   # expect multiples
-  main <- network[network$id %in% id, ]
+  main <- x[x$id %in% id, ]
 
   if (length(main$topo_sort) == 1) {
-    full_main <- filter(network,
+    full_main <- filter(x,
                         levelpath %in% main$levelpath &
                           topo_sort >= main$topo_sort)
 
-    trib_lpid <- filter(network, dn_topo_sort %in% full_main$topo_sort &
+    trib_lpid <- filter(x, dn_topo_sort %in% full_main$topo_sort &
                           !levelpath %in% main$levelpath  &
                           topo_sort >= main$topo_sort)$levelpath
   } else {
-    full_main <- filter(network, levelpath %in% main$levelpath)
+    full_main <- filter(x, levelpath %in% main$levelpath)
 
-    trib_lpid <- filter(network, dn_topo_sort %in% full_main$topo_sort &
+    trib_lpid <- filter(x, dn_topo_sort %in% full_main$topo_sort &
                           !levelpath %in% main$levelpath)$levelpath
   }
 
-  trib_id <- filter(network, levelpath %in% trib_lpid)$id
+  trib_id <- filter(x, levelpath %in% trib_lpid)$id
 
   if (length(trib_id) > 0) {
-    return(c(full_main$id, private_get_UT(network, trib_id)))
+    return(c(full_main$id, private_get_UT(x, trib_id)))
   } else {
     return(full_main$id)
   }
 }
 
-get_UM <- function(network, id, distance = NULL) {
+get_UM <- function(x, id, distance = NULL) {
 
-  main <- get_start_row(network, id)
+  main <- get_start_row(x, id)
 
-  main_us <- filter(network, .data$levelpath %in% main$levelpath &
+  main_us <- filter(x, .data$levelpath %in% main$levelpath &
                              .data$topo_sort >= main$topo_sort)
 
   if (!is.null(distance)) {
@@ -190,9 +190,9 @@ get_UM <- function(network, id, distance = NULL) {
   return(main_us$id)
 }
 
-get_DM <- function(network, id, distance = NULL) {
+get_DM <- function(x, id, distance = NULL) {
 
-  start_row <- get_start_row(network, id)
+  start_row <- get_start_row(x, id)
 
   if (!is.null(distance)) {
     if (distance < start_row$length_km){
@@ -200,13 +200,13 @@ get_DM <- function(network, id, distance = NULL) {
     }
   }
 
-  main_ds <- private_get_DM(network, id)
+  main_ds <- private_get_DM(x, id)
 
   if (!is.null(distance)) {
 
     stop_pathlength_km <- start_row$pathlength_km + start_row$length_km - distance
 
-    main_ds <- network |>
+    main_ds <- x |>
       filter(id %in% main_ds$id, (pathlength_km + length_km) >= stop_pathlength_km)
   }
 
@@ -214,12 +214,12 @@ get_DM <- function(network, id, distance = NULL) {
 }
 
 
-private_get_DM <- function(network, id) {
+private_get_DM <- function(x, id) {
 
-  main <- ds_main <- network[network$id %in% id, ]
+  main <- ds_main <- x[x$id %in% id, ]
 
   if (length(main$topo_sort) == 1) {
-    ds_main <- network |>
+    ds_main <- x |>
       filter(levelpath %in% main$levelpath &
                topo_sort <= main$topo_sort)
   }
@@ -230,18 +230,18 @@ private_get_DM <- function(network, id) {
 
   if (nrow(ds_hs) > 0) {
 
-    ds_lpid <- network |>
+    ds_lpid <- x |>
       filter(topo_sort == ds_hs$dn_topo_sort) |>
       select(levelpath)
 
     if (nrow(ds_lpid) > 0) {
-      ds_id <- network |>
+      ds_id <- x |>
         filter(levelpath == ds_lpid$levelpath & topo_sort <= ds_hs$dn_topo_sort) |>
         select(id)
 
       return(rbind(
         select(ds_main, id, topo_sort),
-        private_get_DM(network, id = ds_id$id)
+        private_get_DM(x, id = ds_id$id)
       ))
     }
   }
@@ -249,9 +249,9 @@ private_get_DM <- function(network, id) {
   return(select(ds_main, id, topo_sort))
 }
 
-get_DD <- function(network, id, distance = NULL) {
+get_DD <- function(x, id, distance = NULL) {
 
-  start_row <- get_start_row(network, id)
+  start_row <- get_start_row(x, id)
 
   stop_pathlength_km <- 0
 
@@ -262,23 +262,23 @@ get_DD <- function(network, id, distance = NULL) {
       start_row$length_km -
       distance
   }
-  all <- private_get_DD(network, id, stop_pathlength_km)
+  all <- private_get_DD(x, id, stop_pathlength_km)
 
   if (!is.null(distance)) {
-    network <- filter(network, id %in% unique(all))
+    x <- filter(x, id %in% unique(all))
 
-    return(filter(network, (pathlength_km + length_km) >= stop_pathlength_km)$id)
+    return(filter(x, (pathlength_km + length_km) >= stop_pathlength_km)$id)
   } else {
     return(unique(all))
   }
 }
 
-private_get_DD <- function(network, id, stop_pathlength_km = 0) {
+private_get_DD <- function(x, id, stop_pathlength_km = 0) {
 
-  main <- ds_main <- network[network$id %in% id, ]
+  main <- ds_main <- x[x$id %in% id, ]
 
   if (length(main$topo_sort) == 1) {
-    ds_main <- filter(network,
+    ds_main <- filter(x,
                       .data$levelpath %in% main$levelpath &
                         .data$topo_sort <= main$topo_sort)
   }
@@ -286,18 +286,18 @@ private_get_DD <- function(network, id, stop_pathlength_km = 0) {
   ds_hs <- c(filter(ds_main, !.data$dn_levelpath %in% main$levelpath)$dn_topo_sort,
              filter(ds_main, !.data$dn_minor_topo_sort == 0)$dn_minor_topo_sort)
 
-  ds_lpid <- filter(network, .data$topo_sort %in% ds_hs)$levelpath
+  ds_lpid <- filter(x, .data$topo_sort %in% ds_hs)$levelpath
 
   if (length(ds_lpid) > 0) {
     if (length(ds_hs) == 1) {
       # Same as DM
-      ds_id <- filter(network,
+      ds_id <- filter(x,
                       .data$levelpath %in% ds_lpid &
                         .data$topo_sort <= ds_hs)$id
     } else {
       # Works for divergent paths.
-      ds_hs <- filter(network, .data$topo_sort %in% ds_hs)
-      ds_id <- filter(network, .data$levelpath %in% ds_lpid) |>
+      ds_hs <- filter(x, .data$topo_sort %in% ds_hs)
+      ds_id <- filter(x, .data$levelpath %in% ds_lpid) |>
         left_join(select(ds_hs, levelpath, max_topo_sort = topo_sort),
                          by = "levelpath") |>
         filter(.data$topo_sort <= .data$max_topo_sort)
@@ -309,7 +309,7 @@ private_get_DD <- function(network, id, stop_pathlength_km = 0) {
     if ("pathlength_km" %in% names(ds_main) &
         all(ds_main$pathlength_km <= stop_pathlength_km)) return(ds_main$id)
 
-    c(ds_main$id, private_get_DD(network, ds_id, stop_pathlength_km))
+    c(ds_main$id, private_get_DD(x, ds_id, stop_pathlength_km))
   } else {
     return(ds_main$id)
   }

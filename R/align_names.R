@@ -7,7 +7,7 @@
 #' See \link{hydroloom_name_definitions} for definitions of the names
 #' used in hydroloom.
 #'
-#' @param x data.frame
+#' @inheritParams navigate_hydro_network
 #' @return data.frame renamed to match hydroloom as possible.
 #' @export
 #' @examples

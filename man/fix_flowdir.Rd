@@ -9,7 +9,7 @@ fix_flowdir(id, network = NULL, fn_list = NULL)
 \arguments{
 \item{id}{integer The id of the flowline to check}
 
-\item{network}{data.frame compatible with \code{hy} with the entire network to check from.}
+\item{network}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{fn_list}{list containing named elements \code{flowline}, \code{network}, and \code{check_end},
 where \code{flowline} is the flowline to be checked and \code{network} the feature up or downstream

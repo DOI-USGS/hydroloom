@@ -6,14 +6,14 @@
 \alias{navigate_hydro_network.hy}
 \title{Navigate Hydro Network}
 \usage{
-navigate_hydro_network(network, start, mode, distance = NULL)
+navigate_hydro_network(x, start, mode, distance = NULL)
 
-\method{navigate_hydro_network}{data.frame}(network, start, mode, distance = NULL)
+\method{navigate_hydro_network}{data.frame}(x, start, mode, distance = NULL)
 
-\method{navigate_hydro_network}{hy}(network, start, mode, distance = NULL)
+\method{navigate_hydro_network}{hy}(x, start, mode, distance = NULL)
 }
 \arguments{
-\item{network}{data.frame compatible with \link{hydroloom_names}.}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{start}{character or numeric to match identifier attribute. The
 starting catchment is included.}

@@ -13,7 +13,7 @@ add_toids(x, return_dendritic = TRUE)
 \method{add_toids}{hy}(x, return_dendritic = TRUE)
 }
 \arguments{
-\item{x}{hy object without a toid attribute}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{return_dendritic}{logical remove non dendritic paths if TRUE. Requires
 a "divergence" flag where 1 is main and 2 is secondary.}
@@ -22,8 +22,8 @@ a "divergence" flag where 1 is main and 2 is secondary.}
 hy object with toid attribute
 }
 \description{
-Given an hy object with fromnode and tonode attributes,
-will return a toid attribute that is the result of joining
+Given input with fromnode and tonode attributes,
+will return the input with a toid attribute that is the result of joining
 tonode and fromnode attributes.
 }
 \examples{

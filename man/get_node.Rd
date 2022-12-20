@@ -7,7 +7,7 @@
 get_node(x, position = "end")
 }
 \arguments{
-\item{x}{sf data.frame with one or more LINESTRING features}
+\item{x}{sf sf data.frame with one or more LINESTRING features}
 
 \item{position}{character either "start" or "end"}
 }

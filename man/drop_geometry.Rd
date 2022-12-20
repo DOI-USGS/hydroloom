@@ -7,7 +7,7 @@
 drop_geometry(x)
 }
 \arguments{
-\item{x}{data.frame}
+\item{x}{data.frame that may contain a geometry column}
 }
 \value{
 data.frame without geometry column

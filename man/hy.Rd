@@ -7,7 +7,10 @@
 hy(x, clean = FALSE)
 }
 \arguments{
-\item{x}{data.frame with compatible attribute names from nhdplus}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+
+\item{clean}{logical if TRUE, geometry and non-hydroloom compatible attributes
+will be removed.}
 }
 \value{
 hy object with attributes compatible with the hydroloom package.

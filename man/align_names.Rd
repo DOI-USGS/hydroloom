@@ -7,7 +7,7 @@
 align_names(x)
 }
 \arguments{
-\item{x}{data.frame}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
 }
 \value{
 data.frame renamed to match hydroloom as possible.

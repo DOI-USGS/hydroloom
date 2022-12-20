@@ -1,8 +1,8 @@
 #' add toids
-#' @description Given an hy object with fromnode and tonode attributes,
-#' will return a toid attribute that is the result of joining
+#' @description Given input with fromnode and tonode attributes,
+#' will return the input with a toid attribute that is the result of joining
 #' tonode and fromnode attributes.
-#' @param x hy object without a toid attribute
+#' @inheritParams navigate_hydro_network
 #' @param return_dendritic logical remove non dendritic paths if TRUE. Requires
 #' a "divergence" flag where 1 is main and 2 is secondary.
 #' @return hy object with toid attribute
