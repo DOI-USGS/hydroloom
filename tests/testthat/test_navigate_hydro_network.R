@@ -3,7 +3,10 @@
 # x <- sf::st_drop_geometry(sample_flines[, 1:40])
 #
 # x <- dplyr::select(x, COMID, LevelPathI, Hydroseq, Pathlength,
-#                    DnHydroseq, DnMinorHyd, DnLevelPat, LENGTHKM, TerminalFl)
+#                    DnHydroseq, DnMinorHyd, DnLevelPat, LENGTHKM, TerminalFl,
+#                    Divergence, FromNode, ToNode, AreaSqKM, TotDASqKM)
+#
+# saveRDS(x, "tests/testthat/data/network.rds")
 
 x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
 

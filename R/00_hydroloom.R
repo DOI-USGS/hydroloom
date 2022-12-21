@@ -16,6 +16,7 @@ dn_topo_sort <- "dn_topo_sort"
 dn_minor_topo_sort <- "dn_minor_topo_sort"
 terminal_topo_sort <- "terminal_topo_sort"
 terminal_flag <- "terminal_flag"
+terminal_id <- "terminal_id"
 start_flag <- "start_flag"
 levelpath <- "levelpath"
 up_levelpath <- "up_levelpath"
@@ -36,17 +37,23 @@ to_measure <- "to_measure"
 good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
                 total_da_sqkm, da_sqkm, length_km, pathlength_km, total_length_km,
                 topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
-                terminal_topo_sort, terminal_flag, start_flag,
+                terminal_topo_sort, terminal_flag, terminal_id, start_flag,
                 levelpath, up_levelpath, dn_levelpath,
                 stream_level, dn_stream_level, stream_order, dendritic_stream_order,
                 feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
                 reachcode, reach_measure, from_measure, to_measure)
 
-hnd <- setNames(rep("", length(good_names)), good_names)
+hnd <- as.list(rep("", length(good_names)))
+names(hnd) <- good_names
 
-hydroloom_name_definitions <- hnd
+hnd$id <- "shared network identifier for catchment divide and flowpath"
+hnd$toid <- "indicates to the downstream id. May or may not be dendritic"
+hnd$terminal_flag <- "1 for network terminous 0 for within network"
+hnd$terminal_id <- "id of terminal catchment for entire drainage basin"
 
-# TODO: type out definitions for all package attributes
+# TODO: Complete documentation of names
+
+hydroloom_name_definitions <- as.character(hnd)
 
 # input names that should be changed to replacement names
 hydroloom_name_map <- c(
@@ -103,11 +110,12 @@ assign("good_names", good_names, envir = hydroloom_env)
 
 required_atts_error <- function(context, required_atts) {
   stop(paste(context, "requires", paste(required_atts, collapse = ", "),
-             "hydroloom attributes."))
+             "hydroloom attributes."), call. = FALSE)
 }
 
 #' @importFrom dplyr filter select left_join all_of any_of bind_rows group_by
-#' @importFrom dplyr ungroup n rename row_number arrange desc distinct
+#' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate
+#' @importFrom dplyr everything
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
 #' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
 
@@ -227,8 +235,10 @@ hy_reverse <- function(x) {
 
   class(x) <- class(x)[!class(x) == "hy"]
 
-  if(inherits(x, "sf"))
+  if(inherits(x, "sf")) {
+    attr(x, "sf_column") <- names(orig_names)[orig_names == attr(x, "sf_column")]
     x <- st_sf(x)
+  }
 
   x
 

@@ -1,3 +1,11 @@
+get_hyg <- function(x, add, id = "comid") {
+  if(add && inherits(x, "sf")) {
+    select(x, all_of(id))
+  } else {
+    NULL
+  }
+}
+
 #' make spatial inputs compatible
 #' @description makes sf1 compatible with sf2 by projecting into
 #' the projection of 2 and ensuring that the geometry columns are the

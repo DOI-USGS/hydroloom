@@ -56,7 +56,7 @@ test_that("make fromid", {
   y <- hydroloom:::make_fromids(x)
 
   expect_equal(names(y), c("froms", "lengths"))
-  expect_is(y$froms, "matrix")
+  expect_true(is.matrix(y$froms))
 
   y <- hydroloom:::make_fromids(x, return_list = TRUE)
 
@@ -90,7 +90,7 @@ test_that("format toid", {
   y <- hydroloom:::format_nonden_toid(x)
 
   expect_equal(names(y), c("to", "lengths"))
-  expect_is(y$to, "matrix")
+  expect_true(is.matrix(y$to))
 
   y <- hydroloom:::format_nonden_toid(x, return_list = TRUE)
 

@@ -22,7 +22,9 @@ test_that("make toid", {
 
   expect_true(!any(is.na(y$toid)))
 
-  names(y)[names(y) == "divergence"] <- "div"
+  names(x)[names(x) == "divergence"] <- "div"
 
-  expect_error(add_toids(y))
+  expect_error(add_toids(x), "To remove non dendritic paths, a divergence attribute is required.")
+
+  expect_error(add_toids(y), "network already contains a toid attribute")
 })

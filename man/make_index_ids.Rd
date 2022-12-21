@@ -25,7 +25,7 @@ matrix and a lengths vector indicating the number of connections from each node.
 data.frame containing \code{indid} and \code{toindid} columns suitable for use
 in fast graph traversal. If x is non-dendritic (\code{indid}:\code{toindid} is 1:many),
 an adjacency matrix transformation is necessary to get \code{indid} to correspond
-to rows. Set \code{matrix=TRUE} to perform the transformation automatically.
+to rows. Set \code{format=TRUE} to perform the transformation automatically.
 }
 \description{
 makes index ids for the provided hy object. These can be used

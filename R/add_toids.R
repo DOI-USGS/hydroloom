@@ -44,6 +44,8 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
 
+  if("toid" %in% names(x)) stop("network already contains a toid attribute")
+
   joiner_fun <- function(x) {
     select(
       left_join(select(drop_geometry(x), "id", "tonode"),
@@ -77,13 +79,10 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   disconnected$toid <- rep(0, nrow(disconnected))
 
-  x <- filter(x, !d)
-
-  x <- left_join(x, joiner_fun(x), by = c("id"))
-
-  x$toid[is.na(x$toid)] <- 0
-
-  x <- bind_rows(x, disconnected)
+  x <- filter(x, !d) |>
+    left_join(joiner_fun(x), by = c("id")) |>
+    mutate(toid = ifelse(is.na(toid), 0, toid)) |>
+    bind_rows(disconnected)
 
   sf_t <- inherits(x, "sf")
 

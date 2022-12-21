@@ -9,7 +9,7 @@
 #' @return data.frame containing `indid` and `toindid` columns suitable for use
 #' in fast graph traversal. If x is non-dendritic (`indid`:`toindid` is 1:many),
 #' an adjacency matrix transformation is necessary to get `indid` to correspond
-#' to rows. Set `matrix=TRUE` to perform the transformation automatically.
+#' to rows. Set `format=TRUE` to perform the transformation automatically.
 #' @name make_index_ids
 #' @export
 #' @examples
