@@ -36,26 +36,17 @@ sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
 
   x <- hy(x)
 
-  hy_g <- get_hyg(x, add = TRUE, id = id)
-
-  x <- drop_geometry(x)
-
-  orig_names <- attr(x, "orig_names")
-
   x <- sort_network(x, split, outlets)
-
-  if(!is.null(hy_g)) {
-    x <- sf::st_sf(left_join(x, hy_g, by = id))
-  }
-
-  attr(x, "orig_names") <- orig_names
-  class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 
 }
 
 sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
+  hy_g <- get_hyg(x, add = TRUE, id = id)
+
+  x <- drop_geometry(x)
+
   # nrow to reuse
   n_row <- nrow(x)
 
@@ -65,7 +56,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   index_ids <- make_index_ids(x)
 
   if(!is.null(outlets)) {
-    starts <- which(x[, 1] %in% outlets)
+    starts <- which(pull(x[, 1]) %in% outlets)
   } else {
     # All the start nodes
     starts <- which(index_ids$toindid == 0)
@@ -132,12 +123,12 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
     }
 
     if(split) {
-      out_list[[set_id]] <- x[set[1:(n - 1)], 1]
+      out_list[[set_id]] <- pull(x[set[1:(n - 1)], 1])
       set_id <- set_id + 1
     }
   }
 
-  if(split) names(out_list) <- x[starts, 1]
+  if(split) names(out_list) <- pull(x[starts, 1])
 
   ### rewrites x into the correct order. ###
   if(o - 1 != nrow(x)) {
@@ -152,7 +143,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   if(split) {
 
     # this is only two columns
-    ids <- methods::as(names(out_list), class(x[1, 1]))
+    ids <- methods::as(names(out_list), class(pull(x[1, 1])))
 
     out_list <- data.frame(ids = ids) %>%
       mutate(set = out_list) %>%
@@ -164,6 +155,8 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
     x <- left_join(x, out_list, by = names(x)[1])
 
   }
+
+  x <- put_hyg(x, hy_g)
 
   return(x)
 }

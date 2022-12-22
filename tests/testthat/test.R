@@ -13,7 +13,7 @@ test_that("s3 class creation", {
 
   expect_true("orig_names" %in% names(attributes(y)))
 
-  expect_false(inherits(y, "tbl"))
+  expect_true(inherits(y, "tbl"))
 
   expect_equal(y$toid, c(2,0))
 
@@ -37,11 +37,11 @@ test_that("s3 class creation", {
 
   expect_false(inherits(hy(x, clean = TRUE), "sf"))
 
-  expect_false(inherits(hy(x), "tbl"))
+  expect_true(inherits(hy(x), "tbl"))
 
   expect_error(x <- hy_reverse(x))
 
-  x <- sf::st_sf(as.data.frame(x))
+  x <- sf::st_sf(dplyr::as_tibble(x))
 
   expect_equal(x, hy_reverse(hy(x)))
 })

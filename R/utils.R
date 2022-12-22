@@ -1,9 +1,22 @@
-get_hyg <- function(x, add, id = "comid") {
+get_hyg <- function(x, add, id = "id") {
   if(add && inherits(x, "sf")) {
     select(x, all_of(id))
   } else {
     NULL
   }
+}
+
+put_hyg <- function(x, hy_g) {
+  if(!is.null(hy_g)) {
+    orig_names <- attr(x, "orig_names")
+    x <- sf::st_sf(left_join(x, hy_g, by = id))
+    attr(x, "orig_names") <- orig_names
+
+    if(!inherits(x, "hy")) {
+      class(x) <- c("hy", class(x))
+    }
+  }
+  x
 }
 
 #' make spatial inputs compatible

@@ -1,3 +1,10 @@
+align_name_char <- function(x) {
+  if(x %in% names(hydroloom_name_map))
+    return(hydroloom_name_map[x])
+
+  x
+}
+
 #' @title Align names to hydroloom convention
 #' @description this function aligns the attribute names in x
 #' with those used in hydroloom. See \link{hydroloom_names} for how

@@ -28,8 +28,7 @@ accumulate_downstream.data.frame <- function(x, var) {
 
 accumulate_downstream.hy <- function(x, var) {
 
-  if(!all(required_atts_accumulate %in% names(x)))
-    required_atts_error("accumulation", required_atts_accumulate)
+  check_names(x, required_atts_accumulate, "accumulation")
 
   x <- drop_geometry(x)
 

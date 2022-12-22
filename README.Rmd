@@ -29,6 +29,9 @@ It was created from generic components of [nhdplusTools](https://doi.org/10.5066
 
 Development of hydroloom is underway and rapid change should be expected.
 
+# Design Notes:
+- Using tibble because dplyr verbs for data.frame was dropping the custom hy attributes.
+
 ```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
 
 ```

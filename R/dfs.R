@@ -89,7 +89,7 @@ all_paths_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
     }
 
-    out_list[[set_id]] <- split(unique(x[,1])[set[1:(n - 1)]], path[1:(n-1)])
+    out_list[[set_id]] <- split(unique(pull(x, 1))[set[1:(n - 1)]], path[1:(n-1)])
     set_id <- set_id + 1
 
     if(reset) g$to <- save_to

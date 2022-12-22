@@ -81,7 +81,7 @@ navigate_hydro_network <- function(x, start, mode, distance = NULL) {
   required_atts <- required_atts_navigate(mode, distance)
 
   if(missing(x)) {
-    required_atts_error(context = mode, required_atts = required_atts)
+    check_names(c(), required_atts, mode)
   }
 
   UseMethod("navigate_hydro_network")
@@ -100,7 +100,7 @@ navigate_hydro_network.hy <- function(x, start, mode, distance = NULL) {
 
   required_atts <- required_atts_navigate(mode, distance)
 
-  if(!all(required_atts %in% names(x))) required_atts_error(mode, required_atts)
+  check_names(x, required_atts, mode)
 
   fun <- switch (mode,
     "UT" = get_UT,
@@ -306,7 +306,7 @@ private_get_DD <- function(x, id, stop_pathlength_km = 0) {
 
     # This allows this algorithm to work for short distances
     # in a reasonable time in large systems.
-    if ("pathlength_km" %in% names(ds_main) &
+    if ("pathlength_km" %in% names(ds_main) &&
         all(ds_main$pathlength_km <= stop_pathlength_km)) return(ds_main$id)
 
     c(ds_main$id, private_get_DD(x, ds_id, stop_pathlength_km))

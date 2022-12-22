@@ -9,7 +9,7 @@ total_da_sqkm <- "tot_da_sqkm"
 da_sqkm <- "da_sqkm"
 length_km <- "length_km"
 pathlength_km <- "pathlength_km"
-total_length_km <- "total_length_km"
+arbolate_sum <- "arbolate_sum"
 topo_sort <- "topo_sort"
 up_topo_sort <- "up_topo_sort"
 dn_topo_sort <- "dn_topo_sort"
@@ -35,7 +35,7 @@ from_measure <- "from_measure"
 to_measure <- "to_measure"
 
 good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
-                total_da_sqkm, da_sqkm, length_km, pathlength_km, total_length_km,
+                total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
                 topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
                 terminal_topo_sort, terminal_flag, terminal_id, start_flag,
                 levelpath, up_levelpath, dn_levelpath,
@@ -48,6 +48,12 @@ names(hnd) <- good_names
 
 hnd$id <- "shared network identifier for catchment divide and flowpath"
 hnd$toid <- "indicates to the downstream id. May or may not be dendritic"
+hnd$topo_sort <- "Similar to hydrosequence in NHDPlus. Large topo_sort values
+                  are upstream of small topo_sort values. Note that there are
+                  many valid topological sort orders of a directed graph."
+hnd$levelpath <- "provides an identifier for the collection of flowpaths
+                  that make up a single mainstem flowpath of a drainage
+                  basin"
 hnd$terminal_flag <- "1 for network terminous 0 for within network"
 hnd$terminal_id <- "id of terminal catchment for entire drainage basin"
 
@@ -71,7 +77,7 @@ hydroloom_name_map <- c(
   areasqkm = da_sqkm,
   lengthkm = length_km,
   pathlength = pathlength_km,
-  arbolatesu = total_length_km,
+  arbolatesu = arbolate_sum,
 
   hydroseq = topo_sort,
   uphydroseq = up_topo_sort,
@@ -108,14 +114,15 @@ assign("hydroloom_name_map", hydroloom_name_map, envir = hydroloom_env)
 
 assign("good_names", good_names, envir = hydroloom_env)
 
-required_atts_error <- function(context, required_atts) {
-  stop(paste(context, "requires", paste(required_atts, collapse = ", "),
-             "hydroloom attributes."), call. = FALSE)
+check_names <- function(x, req_names, context) {
+  if(!all(req_names %in% names(x)))
+    stop(paste(context, "requires", paste(req_names, collapse = ", "),
+               "hydroloom attributes."), call. = FALSE)
 }
 
 #' @importFrom dplyr filter select left_join all_of any_of bind_rows group_by
 #' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate
-#' @importFrom dplyr everything
+#' @importFrom dplyr everything as_tibble pull
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
 #' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
 
@@ -172,9 +179,9 @@ hy <- function(x, clean = FALSE) {
 
   # strip tbl
   if(inherits(x, "sf")) {
-    x <- st_sf(as.data.frame(x))
+    x <- st_sf(as_tibble(x))
   } else {
-    x <- as.data.frame(x)
+    x <- as_tibble(x)
   }
 
   attr(x, "orig_names") <- stats::setNames(names(x), keep_names)
@@ -197,7 +204,7 @@ is.hy <- function(x) {
     return(FALSE)
   }
 
-  if("toid" %in% names(x) & any(is.na(x$toid))) {
+  if("toid" %in% names(x) && any(is.na(x$toid))) {
     message("some na toids")
     return(FALSE)
   }
