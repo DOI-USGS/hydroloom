@@ -38,6 +38,18 @@ align_names <- function(x) {
 
   replace_names <- replace_names[names(replace_names) %in% names(x)]
 
+  change_names <- replace_names[!names(replace_names) == unname(replace_names)]
+
+  change_names <- change_names[which(change_names %in% names(x))]
+
+  if(length(change_names) > 0) {
+    names(change_names) <- orig_names[which(tolower(orig_names) == names(change_names))]
+
+    stop(paste("Problem aligning names.", paste(names(change_names), collapse = ", "),
+               "conflicts with hydroloom name", paste(unname(change_names), collapse = ", "),
+               "can't proceed converting to hy object."))
+  }
+
   x <- rename(x, any_of(stats::setNames(names(replace_names), unname(replace_names))))
 
   switch_back <- !names(x) %in% good_names
