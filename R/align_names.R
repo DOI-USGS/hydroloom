@@ -1,6 +1,7 @@
 align_name_char <- function(x) {
-  if(x %in% names(hydroloom_name_map))
-    return(hydroloom_name_map[x])
+
+  if(tolower(x) %in% names(hydroloom_name_map))
+    return(hydroloom_name_map[[tolower(x)]])
 
   x
 }

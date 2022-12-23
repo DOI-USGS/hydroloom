@@ -19,6 +19,12 @@ put_hyg <- function(x, hy_g) {
   x
 }
 
+# can replace this with something better?
+replace_na <- function(x, y) {
+  x[is.na(x)] <- y
+  x
+}
+
 #' make spatial inputs compatible
 #' @description makes sf1 compatible with sf2 by projecting into
 #' the projection of 2 and ensuring that the geometry columns are the

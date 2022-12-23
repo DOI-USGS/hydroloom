@@ -81,7 +81,7 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   x <- filter(x, !d) |>
     left_join(joiner_fun(x), by = c("id")) |>
-    mutate(toid = ifelse(is.na(toid), 0, toid)) |>
+    mutate(toid = replace_na(toid, 0)) |>
     bind_rows(disconnected)
 
   sf_t <- inherits(x, "sf")

@@ -34,7 +34,7 @@ accumulate_downstream.hy <- function(x, var) {
 
   cat_order <- select(x, "id")
 
-  x[["toid"]] <- tidyr::replace_na(x[["toid"]], 0)
+  x[["toid"]] <- replace_na(x[["toid"]], 0)
 
   x <- sort_network(x)
 

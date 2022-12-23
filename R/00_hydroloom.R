@@ -122,9 +122,10 @@ check_names <- function(x, req_names, context) {
 
 #' @importFrom dplyr filter select left_join all_of any_of bind_rows group_by
 #' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate
-#' @importFrom dplyr everything as_tibble pull
+#' @importFrom dplyr everything as_tibble pull group_split tibble
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
 #' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
+#' @importFrom future.apply future_lapply future_sapply
 
 #' @title create an hy fabric object
 #' @description converts a compatible dataset into a fabric s3 class
@@ -174,7 +175,7 @@ hy <- function(x, clean = FALSE) {
   }
 
   if("toid" %in% names(x)) {
-    x$toid[is.na(x$toid)] <- 0
+    x$toid <- replace_na(x$toid, 0)
   }
 
   # strip tbl
