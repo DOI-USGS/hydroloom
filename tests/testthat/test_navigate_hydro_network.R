@@ -4,10 +4,11 @@
 #
 # x <- dplyr::select(x, COMID, LevelPathI, Hydroseq, Pathlength,
 #                    DnHydroseq, DnMinorHyd, DnLevelPat, LENGTHKM, TerminalFl,
-#                    Divergence, FromNode, ToNode, AreaSqKM, TotDASqKM)
+#                    Divergence, FromNode, ToNode, AreaSqKM, TotDASqKM, StreamOrde,
+#                    StreamCalc)
 #
 # saveRDS(x, "tests/testthat/data/network.rds")
-
+#
 x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
 
 test_that("get_DM works normal", {

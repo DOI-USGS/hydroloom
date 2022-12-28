@@ -78,7 +78,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
   }
 
   left_join(x,
-            bind_cols(id = net$id, tibble(order = order)),
+            bind_cols(id = net$id, tibble(stream_order = order)),
             by = "id")
 
 }
@@ -179,6 +179,6 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
     }
   }
 
-  left_join(x, tibble(levelpath = id, streamlevel = level), by = "levelpath")
+  left_join(x, tibble(levelpath = id, stream_level = level), by = "levelpath")
 
 }
