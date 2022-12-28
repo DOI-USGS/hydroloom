@@ -21,7 +21,7 @@ inland sink. If no coastal flag is included, all terminal paths are
 assumed to be coastal.}
 }
 \value{
-numeric stream order in same order as input
+data,frame containing added \code{stream_level} attribute
 }
 \description{
 Applies a topological sort and calculates stream level.

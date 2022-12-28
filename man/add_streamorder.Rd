@@ -15,7 +15,7 @@ add_streamorder(x, status = TRUE)
 \item{status}{boolean if status updates should be printed.}
 }
 \value{
-numeric stream order in same order as input
+ddata.frame containing added \code{stream_order} attribute.
 }
 \description{
 Adds a strahler stream order.

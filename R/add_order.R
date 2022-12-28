@@ -4,7 +4,7 @@
 #' maximum upstream order then the downstream flowpath is assigned the maximum
 #' upstream order plus one. Otherwise it is assigned the max upstream order.
 #' @inheritParams add_levelpaths
-#' @return numeric stream order in same order as input
+#' @return ddata.frame containing added `stream_order` attribute.
 #' @importFrom dplyr left_join select
 #' @export
 #' @name add_streamorder
@@ -98,7 +98,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 #' inland sink. If no coastal flag is included, all terminal paths are
 #' assumed to be coastal.
 #'
-#' @return numeric stream order in same order as input
+#' @return data,frame containing added `stream_level` attribute
 #' @export
 #' @name add_streamlevel
 #' @examples
