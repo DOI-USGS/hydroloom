@@ -1,7 +1,7 @@
 #' all paths depth first
 #' @description given a starting node, return all reachable paths. Once visited,
 #' a node is marked as visited and will not take part in a future path.
-#' @inheritParams navigate_hydro_network
+#' @inheritParams add_levelpaths
 #' @param starts vector with ids from x to start at.
 #' @param direction character only "down" supported so far.
 #' @param reset logical if TRUE, reset graph for each start such that later paths

@@ -122,14 +122,14 @@ check_names <- function(x, req_names, context) {
 
 #' @importFrom dplyr filter select left_join all_of any_of bind_rows group_by
 #' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate
-#' @importFrom dplyr everything as_tibble pull group_split tibble
+#' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
 #' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
 #' @importFrom future.apply future_lapply future_sapply
 
 #' @title create an hy fabric object
 #' @description converts a compatible dataset into a fabric s3 class
-#' @inheritParams navigate_hydro_network
+#' @inheritParams add_levelpaths
 #' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
 #' will be removed.
 #' @return hy object with attributes compatible with the hydroloom package.
@@ -221,7 +221,7 @@ is.hy <- function(x) {
 #' reverse hy to original names
 #' @description renames hy object to original names and removes hy object
 #' attributes.
-#' @inheritParams navigate_hydro_network
+#' @inheritParams add_levelpaths
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

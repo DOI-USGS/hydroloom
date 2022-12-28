@@ -2,7 +2,7 @@
 #' @description Given input with fromnode and tonode attributes,
 #' will return the input with a toid attribute that is the result of joining
 #' tonode and fromnode attributes.
-#' @inheritParams navigate_hydro_network
+#' @inheritParams add_levelpaths
 #' @param return_dendritic logical remove non dendritic paths if TRUE. Requires
 #' a "divergence" flag where 1 is main and 2 is secondary.
 #' @return hy object with toid attribute
@@ -40,28 +40,30 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
   hy_reverse(x)
 }
 
+.datatable.aware=TRUE
+#' @importFrom data.table data.table
 #' @name add_toids
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   if("toid" %in% names(x)) stop("network already contains a toid attribute")
 
-  joiner_fun <- function(x) {
-    select(
-      left_join(select(drop_geometry(x), "id", "tonode"),
-                select(drop_geometry(x), toid = "id", "fromnode"),
-                by = c("tonode" = "fromnode")), -"tonode")
-  }
+  # joiner_fun <- function(x) {
+  #   select(
+  #     left_join(select(drop_geometry(x), "id", "tonode"),
+  #               select(drop_geometry(x), toid = "id", "fromnode"),
+  #               by = c("tonode" = "fromnode")), -"tonode")
+  # }
 
   # slightly faster data.table
-  # joiner_fun <- function(x) {
-  #   as.data.frame(
-  #     data.table(toid = x$id,
-  #                node = x$fromnode)[data.table(id = x$id,
-  #                                              node = x$tonode),
-  #                                   on = 'node']
-  #   )[, c("id", "toid")]
-  # }
+  joiner_fun <- function(x) {
+    as.data.frame(
+      data.table(toid = x$id,
+                 node = x$fromnode)[data.table(id = x$id,
+                                               node = x$tonode),
+                                    on = 'node']
+    )[, c("id", "toid")]
+  }
 
   if(return_dendritic) {
     if(!"divergence" %in% names(x)) {

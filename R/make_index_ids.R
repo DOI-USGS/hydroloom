@@ -1,7 +1,7 @@
 #' make index ids
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that the row number and id are equal.
-#' @inheritParams navigate_hydro_network
+#' @inheritParams add_levelpaths
 #' @param format logical if TRUE, return will be a list containing an adjacency
 #' matrix and a lengths vector indicating the number of connections from each node.
 #' @param complete logical if TRUE return will also include a data.frame with an

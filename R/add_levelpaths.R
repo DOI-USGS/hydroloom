@@ -6,7 +6,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' will match the behavior of NHDPlus. Any numeric value can be
 #' included in this column and the largest value will be followed when
 #' no nameid is available.
-#' @inheritParams navigate_hydro_network
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param name_attribute character attribute to be used as name identifiers.
 #' @param weight_attribute character attribute to be used as weight.
 #' @param override_factor numeric multiplier to use to override `name_attribute`.
@@ -66,7 +66,7 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
 add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
                                  override_factor = NULL, status = FALSE) {
 
-  check_names(x, required_atts_add_levelpaths, "assign levelpaths")
+  check_names(x, required_atts_add_levelpaths, "add_levelpaths")
 
   needed_names <- c(required_atts_add_levelpaths,
                     name_attribute, weight_attribute)

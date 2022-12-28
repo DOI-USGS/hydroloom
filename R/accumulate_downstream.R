@@ -2,7 +2,7 @@ required_atts_accumulate <- c(id, toid)
 
 #' Accumulate Variable Downstream
 #' @description given a variable, accumulate according to network topology.
-#' @inheritParams navigate_hydro_network
+#' @inheritParams add_levelpaths
 #' @param var variable to accumulate.
 #' @name accumulate_downstream
 #' @export

@@ -7,7 +7,7 @@
 #' outlet is returned in sorted order.
 #'
 #' @export
-#' @inheritParams navigate_hydro_network
+#' @inheritParams add_levelpaths
 #' @param split logical if TRUE, the result will be split into
 #' independent networks identified by the id of their outlet. The
 #' outlet id of each independent network is added as a "terminalID"
