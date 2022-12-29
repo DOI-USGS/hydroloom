@@ -1,4 +1,4 @@
-#' Get Sorted Network
+#' Sort Network
 #' @description given a network with an id and and toid, returns a sorted
 #' and potentially split set of output.
 #'
@@ -12,7 +12,7 @@
 #' independent networks identified by the id of their outlet. The
 #' outlet id of each independent network is added as a "terminalID"
 #' attribute.
-#' @param outlets same as id in x; if specified only the network
+#' @param outlets same as id in x. if specified, only the network
 #' emanating from these outlets will be considered and returned.
 #' @return data.frame containing a topologically sorted version
 #' of the requested network and optionally a terminal id.
@@ -156,7 +156,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
     out_list <- data.frame(ids = ids) %>%
       mutate(set = out_list) %>%
-      tidyr::unnest_longer("set")
+      unnest("set")
 
     names(out_list) <- c(terminal_id, id)
 

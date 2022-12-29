@@ -3,7 +3,7 @@
 \name{sort_network}
 \alias{sort_network}
 \alias{sort_network.data.frame}
-\title{Get Sorted Network}
+\title{Sort Network}
 \usage{
 sort_network(x, split = FALSE, outlets = NULL)
 
@@ -17,7 +17,7 @@ independent networks identified by the id of their outlet. The
 outlet id of each independent network is added as a "terminalID"
 attribute.}
 
-\item{outlets}{same as id in x; if specified only the network
+\item{outlets}{same as id in x. if specified, only the network
 emanating from these outlets will be considered and returned.}
 }
 \value{

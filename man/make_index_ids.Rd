@@ -6,20 +6,26 @@
 \alias{make_index_ids.hy}
 \title{make index ids}
 \usage{
-make_index_ids(x)
+make_index_ids(x, long_form = FALSE)
 
-\method{make_index_ids}{data.frame}(x)
+\method{make_index_ids}{data.frame}(x, long_form = FALSE)
 
-\method{make_index_ids}{hy}(x)
+\method{make_index_ids}{hy}(x, long_form = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
+
+\item{long_form}{logical if TRUE, return will be a long-form version of the
+\code{to_list}. This form can be converted to the default list format with
+\link{format_index_ids}.}
 }
 \value{
-data.frame containing \code{indid} and \code{toindid} columns suitable for use
-in fast graph traversal. If x is non-dendritic (\code{indid}:\code{toindid} is 1:many),
-an adjacency matrix transformation is necessary to get \code{indid} to correspond
-to rows. Use \link{format_nonden_toid} for this case.
+list containing named elements: \code{to}: adjacency matrix \code{lengths}:
+vector indicating the number of connections from each node, and: \code{to_list}:
+a data.frame with an \code{indid} column and a \code{toindid} list column. If long_form
+= TRUE, return will be a long form data.frame with no list column as in \code{to_list}.
+NOTE: the long_form output should be used with caution as indid may not
+correspond to row number.
 }
 \description{
 makes index ids for the provided hy object. These can be used

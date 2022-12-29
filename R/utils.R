@@ -25,6 +25,22 @@ replace_na <- function(x, y) {
   x
 }
 
+#' simple unnest for a single list column
+#' @noRd
+unnest <- function(x, col) {
+
+  times <- lengths(x[[col]])
+  base_names <- names(x)[!names(x) == col]
+
+  out <- as.data.frame(cbind(sapply(base_names, function(n) rep(x[[n]], times = times))))
+
+  names(out) <- base_names
+
+  out[[col]] <- unlist(x[[col]])
+
+  out
+}
+
 #' make spatial inputs compatible
 #' @description makes sf1 compatible with sf2 by projecting into
 #' the projection of 2 and ensuring that the geometry columns are the
