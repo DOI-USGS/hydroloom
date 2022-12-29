@@ -27,7 +27,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
   if(!all(starts %in% x$id)) stop("all starts must be in x")
 
-  g <- make_index_ids(x, format = TRUE, complete = TRUE)
+  g <- make_index_ids(x)
 
   starts <- unique(g$to_list$indid[which(unique(x$id) %in% starts)])
 

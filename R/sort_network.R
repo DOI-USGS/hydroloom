@@ -56,10 +56,10 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   index_ids <- make_index_ids(x)
 
   if(!is.null(outlets)) {
-    starts <- which(pull(x[, 1]) %in% outlets)
+    starts <- which(unique(x$id) %in% outlets)
   } else {
     # All the start nodes
-    starts <- which(index_ids$toindid == 0)
+    starts <- which(unique(x$id) %in% x$id[x$toid == 0])
   }
 
   froms <- make_fromids(index_ids)

@@ -2,14 +2,10 @@
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that the row number and id are equal.
 #' @inheritParams add_levelpaths
-#' @param format logical if TRUE, return will be a list containing an adjacency
-#' matrix and a lengths vector indicating the number of connections from each node.
-#' @param complete logical if TRUE return will also include a data.frame with an
-#' `indid` column and a `toindid` list column. Has no affect if `format` is FALSE.
 #' @return data.frame containing `indid` and `toindid` columns suitable for use
 #' in fast graph traversal. If x is non-dendritic (`indid`:`toindid` is 1:many),
 #' an adjacency matrix transformation is necessary to get `indid` to correspond
-#' to rows. Set `format=TRUE` to perform the transformation automatically.
+#' to rows. Use \link{format_nonden_toid} for this case.
 #' @name make_index_ids
 #' @export
 #' @examples
@@ -21,23 +17,29 @@
 #'
 #' x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 #'
-#' x <- add_toids(x)
+#' x <- add_toids(x, return_dendritic = FALSE)
 #'
-#' make_index_ids(x)
+#' x <- make_index_ids(x)
 #'
-make_index_ids <- function(x, format = FALSE, complete = FALSE) {
+#' names(x)
+#' class(x$to)
+#' class(x$lengths)
+#' class(x$to_list)
+#' is.list(x$to_list$toindid)
+#'
+make_index_ids <- function(x) {
   UseMethod("make_index_ids")
 }
 
 #' @name make_index_ids
 #' @export
-make_index_ids.data.frame <- function(x, format = FALSE, complete = FALSE) {
-  make_index_ids(hy(x), format, complete)
+make_index_ids.data.frame <- function(x) {
+  make_index_ids(hy(x))
 }
 
 #' @name make_index_ids
 #' @export
-make_index_ids.hy <- function(x, format = FALSE, complete = FALSE) {
+make_index_ids.hy <- function(x) {
 
   check_graph(x)
 
@@ -62,11 +64,7 @@ make_index_ids.hy <- function(x, format = FALSE, complete = FALSE) {
     out$toindid <- match(x$toid, x$id, nomatch = 0)
   }
 
-  if(format) {
-    format_nonden_toid(out, return_list = complete)
-  } else {
-    out
-  }
+  format_nonden_toid(out, TRUE)
 
 }
 

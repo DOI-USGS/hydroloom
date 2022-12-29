@@ -7,6 +7,7 @@
 #' "froms_list" element containing all from ids in a list form.
 #' @return list containing a "froms" matrix, "lengths" vector,
 #' and optionally "froms_list" elements.
+#' @importFrom data.table as.data.table
 #' @export
 #' @examples
 #'
@@ -19,23 +20,25 @@
 #'
 make_fromids <- function(index_ids, return_list = FALSE) {
 
-  froms <- left_join(select(index_ids, "indid"),
-                     select(index_ids, indid = "toindid", fromindid = "indid"),
-                     by = "indid")
+  index_ids <- unnest(index_ids$to_list, "toindid")
 
-  froms <- data.frame(indid = unique(froms$indid),
-                      fromindid = I(split(froms$fromindid, froms$indid)))
+  # froms <- left_join(select(index_ids, "indid"),
+  #                    select(index_ids, indid = "toindid", fromindid = "indid"),
+  #                    by = "indid")
+  #
+  # froms <- data.frame(indid = unique(froms$indid),
+  #                     fromindid = I(split(froms$fromindid, froms$indid)))
 
   # slightly faster but requires data.table
-  # index_ids <- as.data.table(index_ids)
-  #
-  # froms <- merge(
-  #   index_ids[,list(indid)],
-  #   data.table::setnames(index_ids, c("toindid", "indid"), c("indid", "fromindid")),
-  #   by = "indid", all.x = TRUE
-  # )
-  #
-  # froms <- froms[,list(froms = list(c(fromindid))), by = indid]
+  index_ids <- as.data.table(index_ids)
+
+  froms <- merge(
+    index_ids[,list(indid)],
+    data.table::setnames(index_ids, c("toindid", "indid"), c("indid", "fromindid")),
+    by = "indid", all.x = TRUE
+  )
+
+  froms <- froms[,list(fromindid = list(c(fromindid))), by = indid]
 
 
   froms_l <- lengths(froms$fromindid, use.names = FALSE)
@@ -54,6 +57,38 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   return(list(froms = froms_m, lengths = froms_l))
 
 }
+
+#' simple unnest for a sinlge list column
+#' @noRd
+unnest <- function(x, col) {
+
+  times <- lengths(x[[col]])
+  base_names <- names(x)[!names(x) == col]
+
+  out <- as.data.frame(cbind(sapply(base_names, function(n) rep(x[[n]], times = times))))
+
+  names(out) <- base_names
+
+  out[[col]] <- unlist(x[[col]])
+
+  out
+}
+
+#' Format Nondendritic toid
+#' @param g data.frame with `inid` and `toindid` as returned by \link{make_index_ids}
+#' @param complete logical should the a data.frame with a list column be included
+#' in the return?
+#' @return list containing an adjacency matrix and a lengths vector indicating
+#' the number of connections from each node. If `complete` is `TRUE` return
+#' will also include a data.frame with an `indid` column and a `toindid` list
+#' column.
+#' @noRd
+#' @examples
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
+#' y <- add_toids(x) |>
+#'   make_index_ids() |>
+#'   format_nonden_toid()
 
 format_nonden_toid <- function(g, return_list = FALSE) {
 

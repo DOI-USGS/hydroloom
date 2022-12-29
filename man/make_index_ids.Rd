@@ -6,26 +6,20 @@
 \alias{make_index_ids.hy}
 \title{make index ids}
 \usage{
-make_index_ids(x, format = FALSE, complete = FALSE)
+make_index_ids(x)
 
-\method{make_index_ids}{data.frame}(x, format = FALSE, complete = FALSE)
+\method{make_index_ids}{data.frame}(x)
 
-\method{make_index_ids}{hy}(x, format = FALSE, complete = FALSE)
+\method{make_index_ids}{hy}(x)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
-
-\item{format}{logical if TRUE, return will be a list containing an adjacency
-matrix and a lengths vector indicating the number of connections from each node.}
-
-\item{complete}{logical if TRUE return will also include a data.frame with an
-\code{indid} column and a \code{toindid} list column. Has no affect if \code{format} is FALSE.}
 }
 \value{
 data.frame containing \code{indid} and \code{toindid} columns suitable for use
 in fast graph traversal. If x is non-dendritic (\code{indid}:\code{toindid} is 1:many),
 an adjacency matrix transformation is necessary to get \code{indid} to correspond
-to rows. Set \code{format=TRUE} to perform the transformation automatically.
+to rows. Use \link{format_nonden_toid} for this case.
 }
 \description{
 makes index ids for the provided hy object. These can be used
@@ -40,8 +34,14 @@ make_index_ids(x)
 
 x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 
-x <- add_toids(x)
+x <- add_toids(x, return_dendritic = FALSE)
 
-make_index_ids(x)
+x <- make_index_ids(x)
+
+names(x)
+class(x$to)
+class(x$lengths)
+class(x$to_list)
+is.list(x$to_list$toindid)
 
 }
