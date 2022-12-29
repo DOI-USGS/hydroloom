@@ -65,3 +65,20 @@ test_that("get_sorted", {
   expect_true(all(y$terminal_id == 2544457))
 
 })
+
+test_that("non-dendritic issues", {
+
+  x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
+
+  y <- add_toids(x, FALSE) |>
+    sort_network()
+
+  expect_true("data.frame" %in% class(y))
+
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  y <- add_toids(x, FALSE) |>
+    sort_network()
+
+  expect_true("data.frame" %in% class(y))
+})

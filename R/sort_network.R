@@ -100,14 +100,23 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
         n <- n + 1
       }
 
+      # loop over upstream catchments
       # does nothing if froms_l[node] == 0
 
       for(from in seq_len(froms$lengths[node])) {
-        if(node <= ncol(froms$froms) &&
-           !is.na(next_node <- froms$froms[from, node])) {
+
+        # grab the next upstream node
+        next_node <- froms$froms[from, node]
+
+        # check if we have a node to visit
+        # not needed? was in the if below node <= ncol(froms$froms) &&
+        if(!is.na(next_node)) {
           # Add the next node to visit to the tracking vector
           to_visit[v] <- next_node
           v <- v + 1
+
+          # mark it as visited so we don't come back
+          froms$froms[from, node] <- NA
         }}
 
       # go to the last element added in to_visit
