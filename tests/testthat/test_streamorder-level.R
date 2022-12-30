@@ -22,15 +22,17 @@ test_that("add streamorder", {
                x$StreamOrde)
 
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
-    add_toids(return_dendritic = TRUE)
-
-  # only works without diverted network
-  x <- dplyr::filter(x, StreamOrde == StreamCalc)
+    add_toids(return_dendritic = FALSE)
 
   y <- add_streamorder(x)
 
   expect_equal(y$stream_order,
                x$StreamOrde)
+
+  # this catchment is downstream of a fourth order secondary path.
+  # the first order primary path should dominate according to the
+  # nhdplus algorithm.
+  expect_equal(y$stream_order[y$COMID == 8893794], 1)
 
 })
 

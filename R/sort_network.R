@@ -35,7 +35,7 @@
 #' g$topo_sort <- nrow(g):1
 #'
 #' plot(g['topo_sort'])
-
+#'
 sort_network <- function(x, split = FALSE, outlets = NULL) {
   UseMethod("sort_network")
 }
@@ -62,19 +62,22 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   # index for fast traversal
   index_ids <- make_index_ids(x)
 
+  froms <- make_fromids(index_ids)
+
   if(!is.null(outlets)) {
     starts <- which(index_ids$to_list$id %in% outlets)
   } else {
     # All the start nodes
     starts <- which(index_ids$to_list$id %in% x$id[x$toid == 0])
   }
-
-  froms <- make_fromids(index_ids)
-
   # Some vectors to track results
   to_visit <- out <- rep(0, length(index_ids$to_list$id))
 
   visited <- rep(FALSE, length(index_ids$to_list$id))
+
+  # Use to track if a node is ready to be visited.
+  # will subtract from this and not visit the upstream until ready element = 1
+  ready <- index_ids$lengths
 
   if(split) {
     set <- out
@@ -121,17 +124,24 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
         # not needed? was in the if below node <= ncol(froms$froms) &&
         if(!is.na(next_node)) {
 
-          if(!visited[next_node]) {
+          if(ready[next_node] == 1) {
             # Add the next node to visit to the tracking vector
             to_visit[v] <- next_node
             # mark as visited
             visited[next_node] <- TRUE
 
             v <- v + 1
+          } else {
+            # we don't want to visit an upstream neighbor until all its
+            # downstream neighbors have been visited. Ready is initialized
+            # to the length of downstream neighbors and provides a check.
+            ready[next_node] <- ready[next_node] - 1
+            o <- o - 1
           }
 
           # mark it as visited so we don't come back
-          froms$froms[from, node] <- NA
+          # not needed?
+          # froms$froms[from, node] <- NA
         }}
 
       # go to the last element added in to_visit

@@ -55,3 +55,18 @@ test_that("add indid", {
                "found one or more pairs of features that reference eachother.")
 
 })
+
+test_that("format toid", {
+  x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
+
+  x <- add_toids(x, return_dendritic = FALSE)
+
+  x <- make_index_ids(x)
+
+  expect_equal(names(x), c("to", "lengths", "to_list"))
+  expect_true(is.matrix(x$to))
+
+  # manually verified
+  expect_equal(x$to[,8], c(7, 575, NA))
+  expect_equal(as.numeric(x$lengths[8]), 2)
+})

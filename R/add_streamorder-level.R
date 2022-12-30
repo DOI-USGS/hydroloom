@@ -2,20 +2,26 @@
 #' @description Adds a strahler stream order.
 #' Algorithm: If more than one upstream flowpath has an order equal to the
 #' maximum upstream order then the downstream flowpath is assigned the maximum
-#' upstream order plus one. Otherwise it is assigned the max upstream order.
+#' upstream order plus one. Otherwise it is assigned the maximum upstream order.
+#'
+#' To match the nhdplus algorithm, non-dendritic network connectivity and a
+#' `divergence` attribute must be included. All secondary paths will have the
+#' `stream_order` of upstream primary paths and a `stream_calc` value of 0.
+#' Secondary paths have no affect on the order of downstream paths.
+#'
 #' @inheritParams add_levelpaths
-#' @return ddata.frame containing added `stream_order` attribute.
-#' @importFrom dplyr left_join select
+#' @return data.frame containing added `stream_order` and `stream_calc` attribute.
 #' @export
 #' @name add_streamorder
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #'
-#' x <- add_toids(x)
+#' x <- add_toids(x, return_dendritic = FALSE)
 #'
 #' x <- add_streamorder(x)
 #'
-#' plot(sf::st_geometry(x), lwd = x$order, col = "blue")
+#' plot(sf::st_geometry(x), lwd = x$stream_order, col = "blue")
+#' plot(sf::st_geometry(x), lwd = x$stream_calc, col = "blue")
 #'
 add_streamorder <- function(x, status = TRUE) {
   UseMethod("add_streamorder")
@@ -33,9 +39,18 @@ add_streamorder.data.frame <- function(x, status = TRUE) {
 
 add_streamorder.hy <- function(x, status = TRUE) {
 
-  check_names(x, c(id, toid), "add_streamorder")
+  # if there's any non-dendritic network we need a divergence marker
+  if(length(unique(x$id)) < nrow(x)) {
+    required_atts <- c(id, toid, divergence)
+    error_context <- "add_streamorder with non-dendritic"
+  } else {
+    required_atts <- c(id, toid)
+    error_context <- "add_streamorder"
+  }
 
-  net <- select(drop_geometry(x), all_of(c(id, toid)))
+  check_names(x, required_atts, error_context)
+
+  net <- select(drop_geometry(x), all_of(required_atts))
 
   net$toid <- replace_na(net$toid, 0)
 
@@ -51,34 +66,76 @@ add_streamorder.hy <- function(x, status = TRUE) {
   froms <- make_fromids(index_ids)
 
   # will fill in order as we go in this
-  order <- rep(1, nrow(net))
+  order <- rep(1, length(froms$lengths))
+  calc <- rep(1, length(order))
 
-  for(i in seq_len(nrow(net))) {
+  if(divergence %in% names(x)) {
+    # get a divergence marker as logical
+    div <- left_join(tibble(id = index_ids$to_list$id),
+                     distinct(select(drop_geometry(x),
+                                     all_of(c(id, divergence)))),
+                     by = id)
+
+    # set divergences to stream calc 0 to be propagated through minor paths
+    calc[div$divergence == 2] <- 0
+
+  }
+
+  for(i in seq_len(length(froms$lengths))) {
+
+    l <- froms$lengths[i]
 
     # nothing to do if nothing upstream
-    if((l <- froms$lengths[i]) > 0) {
+    if(l > 0) {
 
       # these are the upstream orders
-      orders <- order[froms$froms[1:l,i]]
+      orders <- order[froms$froms[1:l, i]]
+      calcs <- calc[froms$froms[1:l, i]]
+
+      # need to know if all upstream catchments are on a minor path
+      # all used to reset calc to order downstream of a confluence with a minor path
+      all_calc_zero <- all(calcs == 0)
+      # any used to control whether to increment or not
+      any_calc_zero <- any(calcs == 0)
+      # calc was set to zero already so can just move on if it's set
+      cur_calc <- calc[i]
+
+      if(any_calc_zero & !all_calc_zero) {
+        orders <- orders[!calcs == 0]
+      }
 
       # Need the max upstream order for this work
-      m <- max(orders)
+      max_order <- max(orders)
 
-      # the core stream order algorithm.
+      # the core stream order algorithm:
       # if more than one upstream order is the same
       # as the max upstream order, increment by one.
       # otherwise use the max upstream order.
-      if(length(orders[orders == m]) > 1) {
-        order[i] <- m + 1
+      # do not increment if one or more calcs are 0
+      #
+      # if current catchment is set as calc 0, we won't mess with incoming order
+      if(cur_calc == 0) {
+        order[i] <- max_order
+      # If combining two of the same max order AND we are not below a minor path
+      } else if(length(orders[orders == max_order]) > 1 & !any_calc_zero) {
+        order[i] <- max_order + 1
+        calc[i] <- order[i]
+      # If we are not on a minor path
+      } else if(!all_calc_zero) {
+        order[i] <- max_order
+        calc[i] <- order[i]
+      # if we are on a minor path just pass downstream
       } else {
-        order[i] <- m
+        order[i] <- max_order
+        calc[i] <- 0
       }
 
     }
   }
 
   left_join(x,
-            bind_cols(id = net$id, tibble(stream_order = order)),
+            bind_cols(id = unique(net$id), tibble(stream_order = order,
+                                                  stream_calc = calc)),
             by = "id")
 
 }

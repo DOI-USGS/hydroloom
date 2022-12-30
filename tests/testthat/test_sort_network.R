@@ -87,5 +87,20 @@ test_that("non-dendritic issues", {
   # this is a case upstream of a divergence that was complicated.
   expect_true(z$topo_sort[which(z$COMID == 8893296)] > z$topo_sort[which(z$COMID == 8893378)])
 
+  y <- dplyr::filter(x, COMID %in% navigate_hydro_network(x, start = "8894172", mode = "UT"))
+
+  y <- add_toids(y, return_dendritic = FALSE)
+
+  z <- sort_network(y)
+
+  z <- dplyr::left_join(z,
+                        tibble(COMID = unique(z$COMID), topo_sort = length(unique(z$COMID)):1),
+                        by = "COMID")
+
+  # the two non dendritic paths should have a smaller topo sort than the one upstream of them.
+  expect_true(all(c(z$topo_sort[which(z$COMID == 8893472)],
+                    unique(z$topo_sort[which(z$COMID == 8893424)])) <
+                    z$topo_sort[which(z$COMID == 8893420)]))
+
   expect_equal(nrow(y), nrow(z))
 })

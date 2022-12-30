@@ -50,4 +50,5 @@ g <- sort_network(g)
 g$topo_sort <- nrow(g):1
 
 plot(g['topo_sort'])
+
 }
