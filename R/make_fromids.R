@@ -32,11 +32,11 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   # slightly faster but requires data.table
   index_ids <- as.data.table(index_ids)
 
-  froms <- merge(
+  froms <- unique(merge(
     index_ids[,list(indid)],
     data.table::setnames(index_ids, c("toindid", "indid"), c("indid", "fromindid")),
     by = "indid", all.x = TRUE
-  )
+  ))
 
   froms <- froms[,list(fromindid = list(c(fromindid))), by = indid]
 

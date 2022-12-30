@@ -1,0 +1,47 @@
+test_that("s3 class creation", {
+  x <- data.frame(comid = 1, fromnode = 2, tonode = 3)
+
+  y <- hy(x)
+
+  expect_equal(names(y), c("id", "fromnode", "tonode"))
+
+  expect_s3_class(y, "hy")
+
+  x <- dplyr::tibble(comid = c(1,2), tocomid = c(2, NA), fromnode = c(1, 2), tonode = c(2, 3))
+
+  y <- hy(x)
+
+  expect_true("orig_names" %in% names(attributes(y)))
+
+  expect_true(inherits(y, "tbl"))
+
+  expect_equal(y$toid, c(2,0))
+
+  expect_true(is.hy(y))
+
+  expect_false(is.hy(unclass(y)))
+
+  y$toid[1] <- NA
+
+  expect_false(is.hy(y))
+
+  y <- hy(x)
+
+  attr(y, "orig_names") <- NULL
+
+  expect_false(is.hy(y))
+
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  expect_s3_class(hy(x), "sf")
+
+  expect_false(inherits(hy(x, clean = TRUE), "sf"))
+
+  expect_true(inherits(hy(x), "tbl"))
+
+  expect_error(x <- hy_reverse(x))
+
+  x <- sf::st_sf(dplyr::as_tibble(x))
+
+  expect_equal(x, hy_reverse(hy(x)))
+})
