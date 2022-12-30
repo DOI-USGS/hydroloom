@@ -33,10 +33,21 @@ with tributaries navigation. The full network from each
 outlet is returned in sorted order.
 }
 \examples{
-g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-g <- add_toids(g)
+x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+g <- add_toids(x)
+
 head(g <- sort_network(g))
-g$topo_sort <- 1:nrow(g)
+
+g$topo_sort <- nrow(g):1
+
 plot(g['topo_sort'])
 
+g <- add_toids(x, return_dendritic = FALSE)
+
+g <- sort_network(g)
+
+g$topo_sort <- nrow(g):1
+
+plot(g['topo_sort'])
 }

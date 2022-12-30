@@ -7,7 +7,7 @@
 #' \link{format_index_ids}.
 #' @return list containing named elements: `to`: adjacency matrix `lengths`:
 #' vector indicating the number of connections from each node, and: `to_list`:
-#' a data.frame with an `indid` column and a `toindid` list column. If long_form
+#' a data.frame with an `id`, `indid` and a `toindid` list column. If long_form
 #' = TRUE, return will be a long form data.frame with no list column as in `to_list`.
 #' NOTE: the long_form output should be used with caution as indid may not
 #' correspond to row number.
@@ -61,10 +61,11 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 
     out$toindid <- replace_na(out$toindid, 0)
 
-    out <- select(out, -"id", -"toid")
+    out <- select(out, -"toid")
 
   } else {
-    out <- data.frame(indid = seq(1, nrow(x)))
+    out <- data.frame(id = x$id,
+                      indid = seq(1, nrow(x)))
 
     out$toindid <- match(x$toid, x$id, nomatch = 0)
   }
@@ -88,7 +89,7 @@ check_graph <- function(x) {
 }
 
 #' format index ids
-#' @param g data.frame with `inid` and `toindid` as returned by \link{make_index_ids}
+#' @param g data.frame with `id`, `inid` and `toindid` as returned by \link{make_index_ids}
 #' with `long_form`=TRUE.
 #' @param complete logical should the a data.frame with a list column be included
 #' in the return?
@@ -106,7 +107,8 @@ check_graph <- function(x) {
 #'
 format_index_ids <- function(g, return_list = FALSE) {
 
-  g <- data.frame(indid = unique(g$indid),
+  g <- data.frame(id = unique(g$id),
+                  indid = unique(g$indid),
                   toindid = I(split(g$toindid, g$indid)))
 
   to_l <- lengths(g$toindid)
@@ -126,6 +128,5 @@ format_index_ids <- function(g, return_list = FALSE) {
                               to_list = g))
 
   return(list(to = to_m, lengths = to_l))
-
 
 }

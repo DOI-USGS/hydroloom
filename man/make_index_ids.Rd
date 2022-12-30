@@ -22,7 +22,7 @@ make_index_ids(x, long_form = FALSE)
 \value{
 list containing named elements: \code{to}: adjacency matrix \code{lengths}:
 vector indicating the number of connections from each node, and: \code{to_list}:
-a data.frame with an \code{indid} column and a \code{toindid} list column. If long_form
+a data.frame with an \code{id}, \code{indid} and a \code{toindid} list column. If long_form
 = TRUE, return will be a long form data.frame with no list column as in \code{to_list}.
 NOTE: the long_form output should be used with caution as indid may not
 correspond to row number.

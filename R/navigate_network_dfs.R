@@ -29,7 +29,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
   g <- make_index_ids(x)
 
-  starts <- unique(g$to_list$indid[which(unique(x$id) %in% starts)])
+  starts <- unique(g$to_list$indid[which(g$to_list$id %in% starts)])
 
   if(reset) save_to <- g$to
 
@@ -89,7 +89,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
     }
 
-    out_list[[set_id]] <- split(unique(pull(x, 1))[set[1:(n - 1)]], path[1:(n-1)])
+    out_list[[set_id]] <- split(pull(g$to_list, "id")[set[1:(n - 1)]], path[1:(n-1)])
     set_id <- set_id + 1
 
     if(reset) g$to <- save_to

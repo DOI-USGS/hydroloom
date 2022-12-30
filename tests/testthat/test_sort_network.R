@@ -70,15 +70,22 @@ test_that("non-dendritic issues", {
 
   x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
 
-  y <- add_toids(x, FALSE) |>
-    sort_network()
+  y <- add_toids(x, FALSE)
 
-  expect_true("data.frame" %in% class(y))
+  z <- sort_network(y)
+
+  expect_equal(nrow(y), nrow(z))
 
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
-  y <- add_toids(x, FALSE) |>
-    sort_network()
+  y <- add_toids(x, FALSE)
 
-  expect_true("data.frame" %in% class(y))
+  z <- sort_network(y)
+
+  z$topo_sort <- nrow(z):1
+
+  # this is a case upstream of a divergence that was complicated.
+  expect_true(z$topo_sort[which(z$COMID == 8893296)] > z$topo_sort[which(z$COMID == 8893378)])
+
+  expect_equal(nrow(y), nrow(z))
 })

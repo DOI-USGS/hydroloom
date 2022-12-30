@@ -1,6 +1,9 @@
 get_hyg <- function(x, add, id = "id") {
   if(add && inherits(x, "sf")) {
-    select(x, all_of(id))
+    select(x, all_of(id)) |>
+      group_by(.data$id) |>
+      filter(row_number() == 1) |>
+      ungroup()
   } else {
     NULL
   }
@@ -32,9 +35,11 @@ unnest <- function(x, col) {
   times <- lengths(x[[col]])
   base_names <- names(x)[!names(x) == col]
 
-  out <- as.data.frame(cbind(sapply(base_names, function(n) rep(x[[n]], times = times))))
+  out <- lapply(base_names, function(n) rep(x[[n]], times = times))
 
   names(out) <- base_names
+
+  out <- dplyr::bind_cols(out)
 
   out[[col]] <- unlist(x[[col]])
 

@@ -18,12 +18,24 @@
 #' of the requested network and optionally a terminal id.
 #' @name sort_network
 #' @examples
-#' g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-#' g <- add_toids(g)
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
+#' g <- add_toids(x)
+#'
 #' head(g <- sort_network(g))
-#' g$topo_sort <- 1:nrow(g)
+#'
+#' g$topo_sort <- nrow(g):1
+#'
 #' plot(g['topo_sort'])
 #'
+#' g <- add_toids(x, return_dendritic = FALSE)
+#'
+#' g <- sort_network(g)
+#'
+#' g$topo_sort <- nrow(g):1
+#'
+#' plot(g['topo_sort'])
+
 sort_network <- function(x, split = FALSE, outlets = NULL) {
   UseMethod("sort_network")
 }
@@ -45,27 +57,24 @@ sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
 sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
-  x <- drop_geometry(x)
-
-  # nrow to reuse
-  n_row <- nrow(x)
-
-  x <- select(x, id, toid, everything())
+  x <- select(drop_geometry(x), id, toid, everything())
 
   # index for fast traversal
   index_ids <- make_index_ids(x)
 
   if(!is.null(outlets)) {
-    starts <- which(unique(x$id) %in% outlets)
+    starts <- which(index_ids$to_list$id %in% outlets)
   } else {
     # All the start nodes
-    starts <- which(unique(x$id) %in% x$id[x$toid == 0])
+    starts <- which(index_ids$to_list$id %in% x$id[x$toid == 0])
   }
 
   froms <- make_fromids(index_ids)
 
   # Some vectors to track results
-  to_visit <- out <- rep(0, n_row)
+  to_visit <- out <- rep(0, length(index_ids$to_list$id))
+
+  visited <- rep(FALSE, length(index_ids$to_list$id))
 
   if(split) {
     set <- out
@@ -111,9 +120,15 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
         # check if we have a node to visit
         # not needed? was in the if below node <= ncol(froms$froms) &&
         if(!is.na(next_node)) {
-          # Add the next node to visit to the tracking vector
-          to_visit[v] <- next_node
-          v <- v + 1
+
+          if(!visited[next_node]) {
+            # Add the next node to visit to the tracking vector
+            to_visit[v] <- next_node
+            # mark as visited
+            visited[next_node] <- TRUE
+
+            v <- v + 1
+          }
 
           # mark it as visited so we don't come back
           froms$froms[from, node] <- NA
@@ -125,7 +140,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
       trk <- trk + 1
 
-      if(trk > n_row * 2) {
+      if(trk > length(index_ids$to_list$id) * 2) {
         stop("runaway while loop, something wrong with the network?")
       }
 
@@ -140,14 +155,15 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   if(split) names(out_list) <- pull(x[starts, 1])
 
   ### rewrites x into the correct order. ###
-  if(o - 1 != nrow(x)) {
-    x <- x[which(out != 0), ]
-    out <- out[out != 0]
-  }
+  id_order <- unique(x$id)[which(out != 0)]
+  out <- out[out != 0]
 
-  if(split & o - 1 != nrow(x)) stop("Are two or more outlets within the same network?")
+  if(split & o - 1 != length(id_order)) stop("Are two or more outlets within the same network?")
 
-  x <- x[rev(order(out)), ]
+  x <- filter(x, .data$id %in% id_order) |>
+    left_join(tibble(id = id_order, sorter = out), by = "id") |>
+    arrange(desc(.data$sorter)) |>
+    select(-"sorter")
 
   if(split) {
 

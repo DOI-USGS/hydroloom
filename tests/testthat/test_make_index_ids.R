@@ -38,7 +38,7 @@ test_that("add indid", {
 
   z <- make_index_ids(z, long_form = TRUE)
 
-  expect_equal(names(z), c("indid", "toindid"))
+  expect_equal(names(z), c("id", "indid", "toindid"))
 
   zz <- format_index_ids(z)
 
