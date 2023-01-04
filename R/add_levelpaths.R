@@ -11,7 +11,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' @param weight_attribute character attribute to be used as weight.
 #' @param override_factor numeric multiplier to use to override `name_attribute`.
 #' @param status boolean if status updates should be printed.
-#' @return data.frame with id, outlet_id, topo_sort, and levelpath columns.
+#' @return data.frame with id, levelpath_outlet_id, topo_sort, and levelpath columns.
 #' See details for more info.
 #' @details
 #' The levelpath algorithm defines upstream mainstem paths through a network.
@@ -68,23 +68,22 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   check_names(x, required_atts_add_levelpaths, "add_levelpaths")
 
-  needed_names <- c(required_atts_add_levelpaths,
-                    name_attribute, weight_attribute)
-
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
   orig_names <- attr(x, "orig_names")
 
   x <- drop_geometry(x)
 
-  extra <- select(x, all_of(c(id, names(x)[!names(x) %in% needed_names])))
+  extra <- select(x, all_of(c(id, names(x)[!names(x) %in% required_atts_add_levelpaths])))
 
-  x <- select(x, all_of(needed_names))
+  x <- select(x, all_of(c(required_atts_add_levelpaths,
+                          "lp_name_attribute" = name_attribute,
+                          "lp_weight_attribute" = weight_attribute)))
 
   x$toid <- replace_na(x$toid, 0)
 
-  x[[name_attribute]] <- replace_na(x[[name_attribute]], " ") # NHDPlusHR uses NA for empty names.
-  x[[name_attribute]][x[[name_attribute]] == "-1"] <- " "
+  x[["lp_name_attribute"]] <- replace_na(x[["lp_name_attribute"]], " ") # NHDPlusHR uses NA for empty names.
+  x[["lp_name_attribute"]][x[["lp_name_attribute"]] == "-1"] <- " "
 
   x <- sort_network(x)
 
@@ -92,7 +91,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x$levelpath <- rep(0, nrow(x))
 
   x <- x |> # get downstream name id added
-    left_join(drop_geometry(select(x, all_of(c("id", ds_nameid = name_attribute)))),
+    left_join(drop_geometry(select(x, all_of(c("id", ds_nameid = "lp_name_attribute")))),
               by = c("toid" = "id")) |>
     # if it's na, we need it to be an empty string
     mutate(ds_nameid = ifelse(is.na(.data$ds_nameid),
@@ -103,12 +102,12 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   # reweight sets up ranked upstream paths
   x <- future_lapply(x, reweight, override_factor = override_factor,
-                     nat = name_attribute, wat = weight_attribute)
+                     nat = "lp_name_attribute", wat = "lp_weight_attribute")
 
   x <- x |>
     bind_rows() |>
     select(all_of(c("id", "toid", "topo_sort",
-                  "levelpath", weight_attribute, name_attribute)))
+                  "levelpath", "lp_weight_attribute", "lp_name_attribute")))
 
   attr(x, "orig_names") <- orig_names
   class(x) <- c("hy", class(x))
@@ -135,12 +134,12 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     tail_topo <- outlets$topo_sort
 
     pathids <- if(nrow(outlets) == 1) {
-      list(par_get_path(as.list(outlets), x, matcher, status, weight_attribute))
+      list(par_get_path(as.list(outlets), x, matcher, status, "lp_weight_attribute"))
     } else {
       future_lapply(split(outlets, seq_len(nrow(outlets))),
                     par_get_path,
                     x_in = x, matcher = matcher,
-                    status = status, wat = weight_attribute)
+                    status = status, wat = "lp_weight_attribute")
     }
 
     pathids <- bind_rows(pathids)
@@ -165,20 +164,14 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     }
   }
 
-  outlets <- x |>
-    group_by(.data$levelpath) |>
-    filter(.data$topo_sort == min(.data$topo_sort)) |>
-    ungroup() |>
-    select(outlet_id = "id", "levelpath")
-
-  x <- left_join(x, outlets, by = "levelpath")
+  x <- add_levelpath_outlet_ids(x)
 
   x <- put_hyg(x, hy_g)
 
-  x <- select(x, all_of(c("id", "toid", "outlet_id", "topo_sort", "levelpath",
-                        name_attribute, weight_attribute)), !all_of("done"))
+  x <- select(x, all_of(c("id", "toid", "levelpath_outlet_id", "topo_sort", "levelpath")),
+              !all_of(c("done", "lp_name_attribute", "lp_weight_attribute")))
 
-  x <- left_join(x, select(extra, -any_of(c("outlet_id", "topo_sort", "levelpath"))),
+  x <- left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
                  by = id)
 
   return(x)
@@ -192,6 +185,15 @@ par_get_path <- function(outlet, x_in, matcher, status, wat) {
   tibble(id = out,
          levelpath = rep(outlet[names(outlet) == "topo_sort"][[1]],
                          length(out)))
+}
+
+add_levelpath_outlet_ids <-  function(x) {
+  left_join(x, drop_geometry(x) |>
+              group_by(.data$levelpath) |>
+              filter(.data$topo_sort == min(.data$topo_sort)) |>
+              ungroup() |>
+              select(levelpath_outlet_id = "id", "levelpath"),
+            by = "levelpath")
 }
 
 #' get level path

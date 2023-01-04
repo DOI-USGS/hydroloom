@@ -9,11 +9,11 @@ test_that("add_levelpaths example", {
 
   lp1 <- add_levelpaths(test_flowline, "GNIS_ID", "ArbolateSu")
 
-  expect_equal(names(lp1)[1:6], c("COMID", "toid", "outlet_id", "Hydroseq", "LevelPathI", "GNIS_ID"))
+  expect_equal(names(lp1)[1:7], c("COMID", "toid", "levelpath_outlet_id", "Hydroseq", "LevelPathI", "geom", "GNIS_ID"))
 
   lp2 <- add_levelpaths(hy(test_flowline), "GNIS_ID", "arbolate_sum")
 
-  expect_equal(names(lp2)[1:6], c("id", "toid", "outlet_id", "topo_sort", "levelpath", "GNIS_ID"))
+  expect_equal(names(lp2)[1:7], c("id", "toid", "levelpath_outlet_id", "topo_sort", "levelpath", "geom", "GNIS_ID"))
 
 })
 
@@ -45,7 +45,7 @@ test_that("calculate level path", {
   for(lp in seq_along(nhdp_lp)) {
     nhdp <- dplyr::filter(x, LevelPathI == nhdp_lp[lp])
     outlet_comid <- dplyr::filter(nhdp, Hydroseq == min(Hydroseq))$COMID
-    nhdt <- dplyr::filter(y, outlet_id == outlet_comid)
+    nhdt <- dplyr::filter(y, levelpath_outlet_id == outlet_comid)
     expect(all(nhdp$COMID %in% nhdt$COMID), paste("Mismatch in", nhdp_lp[lp],
                                                "level path from NHDPlus."))
   }
@@ -97,14 +97,14 @@ test_that("from vignette works", {
                       "GNIS_NAME", "arbolate_sum", status = FALSE)
 
   expect_equal(names(lp),
-               c("COMID", "toid", "outlet_id", "topo_sort", "levelpath", "GNIS_NAME",
-                 "arbolate_sum", "geom"))
+               c("COMID", "toid", "levelpath_outlet_id", "topo_sort", "levelpath",
+                 "geom", "GNIS_NAME", "arbolate_sum"))
 
   expect_equal(length(unique(lp$levelpath)),
                length(unique(g$LevelPathI)))
 
   expect_equal(length(unique(lp$levelpath)),
-               length(unique(lp$outlet_id)))
+               length(unique(lp$levelpath_outlet_id)))
 
   # TODO:
   # plus <- add_plus_network_attributes(dplyr::select(fpath, comid, tocomid,

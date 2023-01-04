@@ -5,7 +5,7 @@ tonode <- "tonode"
 fromnode <- "fromnode"
 divergence <- "divergence"
 wbid <- "wbid"
-total_da_sqkm <- "tot_da_sqkm"
+total_da_sqkm <- "total_da_sqkm"
 da_sqkm <- "da_sqkm"
 length_km <- "length_km"
 pathlength_km <- "pathlength_km"
@@ -19,6 +19,7 @@ terminal_flag <- "terminal_flag"
 terminal_id <- "terminal_id"
 start_flag <- "start_flag"
 levelpath <- "levelpath"
+levelpath_outlet_id <- "levelpath_outlet_id"
 up_levelpath <- "up_levelpath"
 dn_levelpath <- "dn_levelpath"
 stream_level <- "stream_level"
@@ -56,6 +57,7 @@ hnd$levelpath <- "provides an identifier for the collection of flowpaths
                   basin"
 hnd$terminal_flag <- "1 for network terminous 0 for within network"
 hnd$terminal_id <- "id of terminal catchment for entire drainage basin"
+hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
 
 # TODO: Complete documentation of names
 
@@ -74,6 +76,7 @@ hydroloom_name_map <- c(
   wbareacomi = wbid,
 
   totdasqkm = total_da_sqkm,
+  totda = total_da_sqkm,
   areasqkm = da_sqkm,
   lengthkm = length_km,
   pathlength = pathlength_km,
@@ -90,6 +93,7 @@ hydroloom_name_map <- c(
 
   levelpathi = levelpath,
   levelpathid = levelpath,
+  outletID = levelpath_outlet_id,
   uplevelpat = up_levelpath,
   dnlevelpat = dn_levelpath,
 
@@ -170,6 +174,8 @@ hy <- function(x, clean = FALSE) {
 
   } else if(!is.null(g)) {
 
+    keep_names <- keep_names[c(which(keep_names != geom_name), which(keep_names == geom_name))]
+
     x <- st_sf(x, geom = g)
 
   }
@@ -178,14 +184,14 @@ hy <- function(x, clean = FALSE) {
     x$toid <- replace_na(x$toid, 0)
   }
 
+  attr(x, "orig_names") <- stats::setNames(names(x), keep_names)
+
   # strip tbl
   if(inherits(x, "sf")) {
     x <- st_sf(as_tibble(x))
   } else {
     x <- as_tibble(x)
   }
-
-  attr(x, "orig_names") <- stats::setNames(names(x), keep_names)
 
   class(x) <- c("hy", class(x))
 

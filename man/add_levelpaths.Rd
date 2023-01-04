@@ -42,7 +42,7 @@ add_levelpaths(
 \item{status}{boolean if status updates should be printed.}
 }
 \value{
-data.frame with id, outlet_id, topo_sort, and levelpath columns.
+data.frame with id, levelpath_outlet_id, topo_sort, and levelpath columns.
 See details for more info.
 }
 \description{
