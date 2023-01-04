@@ -49,6 +49,11 @@ names(hnd) <- good_names
 
 hnd$id <- "shared network identifier for catchment divide and flowpath"
 hnd$toid <- "indicates to the downstream id. May or may not be dendritic"
+hnd$fromnode <- "indicates the node representing the nexus upstream of a catchment"
+hnd$tonode <- "indicates the node represneting the nexus downstream of a catchment"
+hnd$divergence <- "indicates whether a catchment is not downstream of a diversion (0),
+                   the primary path downstream of a divergence (1),
+                   or a minor path downstream of a diversion (2)."
 hnd$topo_sort <- "Similar to hydrosequence in NHDPlus. Large topo_sort values
                   are upstream of small topo_sort values. Note that there are
                   many valid topological sort orders of a directed graph."
