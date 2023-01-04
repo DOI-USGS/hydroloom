@@ -66,6 +66,11 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
 add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
                                  override_factor = NULL, status = FALSE) {
 
+  if(!status) {
+    pbopts <- pboptions(type = "none")
+    on.exit(pboptions(pbopts), add = TRUE)
+  }
+
   check_names(x, required_atts_add_levelpaths, "add_levelpaths")
 
   hy_g <- get_hyg(x, add = TRUE, id = id)
@@ -101,8 +106,8 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     group_split()
 
   # reweight sets up ranked upstream paths
-  x <- future_lapply(x, reweight, override_factor = override_factor,
-                     nat = "lp_name_attribute", wat = "lp_weight_attribute")
+  x <- pblapply(x, reweight, override_factor = override_factor,
+                     nat = "lp_name_attribute", wat = "lp_weight_attribute", cl = "future")
 
   x <- x |>
     bind_rows() |>
@@ -120,9 +125,9 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   topo_sort <- x$topo_sort
 
-  matcher <- future_sapply(x$id, function(id, df) {
+  matcher <- pbsapply(x$id, function(id, df) {
     which(x$toid == id)
-  }, df = x)
+  }, df = x, cl = "future")
 
   names(matcher) <- x$id
 
@@ -136,10 +141,10 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     pathids <- if(nrow(outlets) == 1) {
       list(par_get_path(as.list(outlets), x, matcher, status, "lp_weight_attribute"))
     } else {
-      future_lapply(split(outlets, seq_len(nrow(outlets))),
+      pblapply(split(outlets, seq_len(nrow(outlets))),
                     par_get_path,
                     x_in = x, matcher = matcher,
-                    status = status, wat = "lp_weight_attribute")
+                    status = status, wat = "lp_weight_attribute", cl = "future")
     }
 
     pathids <- bind_rows(pathids)

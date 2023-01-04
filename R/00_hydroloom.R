@@ -35,6 +35,9 @@ reach_measure <- "reach_measure"
 from_measure <- "from_measure"
 to_measure <- "to_measure"
 
+indid <- "indid"
+toindid <- "toindid"
+
 good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
                 total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
                 topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
@@ -134,7 +137,7 @@ check_names <- function(x, req_names, context) {
 #' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
 #' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
-#' @importFrom future.apply future_lapply future_sapply
+#' @importFrom pbapply pblapply pbsapply pbapply pboptions
 
 #' @title create an hy fabric object
 #' @description converts a compatible dataset into a fabric s3 class
