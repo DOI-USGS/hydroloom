@@ -117,3 +117,12 @@ test_that("fix_flowdir", {
   expect_equal(n1, get_node(x[707, ], position = "end"))
 })
 
+test_that("rescale", {
+  expect_equal(rescale_measures(50, 50, 100), 0)
+  expect_equal(rescale_measures(49.95, 50, 100), 0)
+  expect_equal(rescale_measures(50, 0, 50), 100)
+  expect_equal(rescale_measures(50.01, 0, 50), 100)
+  expect_equal(rescale_measures(25, 0, 50), 50)
+  expect_error(rescale_measures(75, 0, 50), "measure must be between from and to")
+})
+

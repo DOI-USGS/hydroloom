@@ -30,10 +30,11 @@ feature_type <- "feature_type"
 feature_type_code <- "feature_type_code"
 vector_proc_unit <- "vector_proc_unit"
 raster_proc_unit <- "raster_proc_unit"
-reachcode <- "reachcode"
-reach_measure <- "reach_measure"
-from_measure <- "from_measure"
-to_measure <- "to_measure"
+id_measure <- "measure"
+aggregate_id <- "aggregate_id"
+aggregate_id_measure <- "reach_measure"
+aggregate_id_from_measure <- "from_measure"
+aggregate_id_to_measure <- "to_measure"
 
 indid <- "indid"
 toindid <- "toindid"
@@ -45,7 +46,8 @@ good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
                 levelpath, up_levelpath, dn_levelpath,
                 stream_level, dn_stream_level, stream_order, dendritic_stream_order,
                 feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
-                reachcode, reach_measure, from_measure, to_measure)
+                id_measure, aggregate_id, aggregate_id_measure,
+                aggregate_id_from_measure, aggregate_id_to_measure)
 
 hnd <- as.list(rep("", length(good_names)))
 names(hnd) <- good_names
@@ -115,10 +117,10 @@ hydroloom_name_map <- c(
   vpuid = vector_proc_unit,
   rpuid = raster_proc_unit,
 
-  reachcode = reachcode,
-  reach_meas = reach_measure,
-  frommeas = from_measure,
-  tomeas = to_measure)
+  reachcode = aggregate_id,
+  reach_meas = aggregate_id_measure,
+  frommeas = aggregate_id_from_measure,
+  tomeas = aggregate_id_to_measure)
 
 hydroloom_env <- new.env()
 

@@ -3,7 +3,7 @@ test_that("align_names", {
 
   x <- align_names(x)
 
-  expect_true(all(c("id", "length_km", "reachcode") %in% names(x)))
+  expect_true(all(c("id", "length_km", "aggregate_id") %in% names(x)))
 
   expect_true(is.character(hydroloom_name_definitions))
 })

@@ -242,3 +242,48 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
     return(st_geometry(f))
   })
 }
+
+#' Rescale aggregate id measure to id measure
+#' @description Given a aggregate id (e.g. reachcode) measure and the from and
+#' to measure for a id (e.g. comid flowline), returns the measure along the
+#' id line. This is a utility specific to the NHDPlus data model where
+#' many comid flowlines make up a single reachcode / reach. "Measures"
+#' are typically referenced to reaches. Flowlines have a stated from-measure /
+#' to-measure. In some cases it is useful to rescale the measure such that it
+#' is relative only to the flowline.
+#'
+#' from is downstream -- 0 is the outlet
+#' to is upstream -- 100 is the inlet
+#'
+#' @param measure numeric aggregate measure between 0 and 100
+#' @param from numeric from-measure relative to the aggregate
+#' @param to numeric to-measure relative to the aggregate
+#' @return numeric rescaled measure
+#' @export
+#' @examples
+#' rescale_measures(40, 0, 50)
+#' rescale_measures(60, 50, 100)
+#'
+rescale_measures <- function(measure, from, to) {
+  tryCatch({
+
+    if(!dplyr::between(measure, from, to))
+      stop("measure must be between from and to")
+
+    100 * (measure - from) / (to - from)
+
+  }, error = function(e) {
+    if(measure < from & from - measure < 0.1 |
+       measure > to & measure - to < 0.1) {
+
+      to <- round(to, 1)
+      from <- round(from, 1)
+      measure <- round(measure, 1)
+      100 * (measure - from) / (to - from)
+
+    } else {
+      stop(e)
+    }
+  })
+}
+
