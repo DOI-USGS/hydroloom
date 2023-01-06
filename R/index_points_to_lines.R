@@ -89,8 +89,8 @@ add_index <- function(x) {
 
 add_len <- function(x) {
   x |>
-    mutate(len  = sqrt( ( (.data$X - (lag(.data$X))) ^ 2) +
-                          ( ( (.data$Y - (lag(.data$Y))) ^ 2)))) |>
+    mutate(len  = sqrt( ( (.data$X - (dplyr::lag(.data$X))) ^ 2) +
+                          ( ( (.data$Y - (dplyr::lag(.data$Y))) ^ 2)))) |>
     mutate(len = tidyr::replace_na(.data$len, 0)) |>
     mutate(len = cumsum(.data$len)) |>
     mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
