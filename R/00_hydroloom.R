@@ -35,6 +35,8 @@ aggregate_id <- "aggregate_id"
 aggregate_id_measure <- "aggregate_id_measure"
 aggregate_id_from_measure <- "aggregate_id_from_measure"
 aggregate_id_to_measure <- "aggregate_id_to_measure"
+point_id <- "point_id"
+offset <- "offset"
 
 indid <- "indid"
 toindid <- "toindid"
@@ -47,7 +49,7 @@ good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
                 stream_level, dn_stream_level, stream_order, dendritic_stream_order,
                 feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
                 id_measure, aggregate_id, aggregate_id_measure,
-                aggregate_id_from_measure, aggregate_id_to_measure)
+                aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset)
 
 hnd <- as.list(rep("", length(good_names)))
 names(hnd) <- good_names
@@ -119,6 +121,7 @@ hydroloom_name_map <- c(
 
   reachcode = aggregate_id,
   reach_meas = aggregate_id_measure,
+  reachcode_measure = aggregate_id_measure,
   frommeas = aggregate_id_from_measure,
   tomeas = aggregate_id_to_measure)
 
@@ -212,23 +215,27 @@ hy <- function(x, clean = FALSE) {
 #' is hy?
 #' @description test if object is a valid according to the hy s3 class
 #' @param x object to test
+#' @param silent logical should messages be emitted?
 #' @return logical TRUE if valid
 #' @export
 #'
-is.hy <- function(x) {
+is.hy <- function(x, silent = FALSE) {
 
   if(!inherits(x, "hy")) {
-    message("no hy class attribute")
+    if(!silent)
+      message("no hy class attribute")
     return(FALSE)
   }
 
   if("toid" %in% names(x) && any(is.na(x$toid))) {
-    message("some na toids")
+    if(!silent)
+      message("some na toids")
     return(FALSE)
   }
 
   if(!"orig_names" %in% names(attributes(x))) {
-    message("no original names attribute")
+    if(!silent)
+      message("no original names attribute")
     return(FALSE)
   }
 

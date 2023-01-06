@@ -179,12 +179,7 @@ index_points_to_lines.data.frame <- function(x, points,
                                    precision = precision,
                                    max_matches = max_matches)
 
-  orig_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == id])
-  orig_aggregate_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == aggregate_id])
-  new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
-
-  rename(matched, any_of(stats::setNames(c(id, aggregate_id, aggregate_id_measure),
-                                         c(orig_id, orig_aggregate_id, new_aggregate_measure))))
+  rename_indexed(x, matched)
 
 }
 
@@ -316,12 +311,12 @@ index_points_to_lines.hy <- function(x, points,
       digits = 4)) |>
     ungroup() |> distinct()
 
-  matched <- select(matched, "point_id", node = "nn.idx", offset = "nn.dists", id)
+  matched <- select(matched, point_id, node = "nn.idx", offset = "nn.dists", id)
 
   matched <- left_join(matched,
                        distinct(select(x, "index", aggregate_id, aggregate_id_measure)),
                        by = c("node" = "index")) |>
-    select("point_id", id, aggregate_id, aggregate_id_measure, "offset")
+    select(point_id, id, aggregate_id, aggregate_id_measure, offset)
 
   return(matched)
 }
@@ -389,7 +384,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
   near_wb <- matcher(waterbodies,
                      st_coordinates(points), search_radius)
   near_wb <- left_join(near_wb, wb_atts, by = c("L1" = "index"))
-  near_wb <- left_join(data.frame(point_id = c(1:nrow(points))), near_wb, by = "point_id")
+  near_wb <- left_join(data.frame(point_id = c(1:nrow(points))), near_wb, by = point_id)
   near_wb <- mutate(near_wb, nn.dists = ifelse(.data$nn.dists > search_radius,
                                                NA, .data$nn.dists))
 
@@ -428,5 +423,14 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
   }
 
   out
+}
+
+rename_indexed <- function(x, matched) {
+  orig_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == id])
+  orig_aggregate_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == aggregate_id])
+  new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
+
+  rename(matched, any_of(stats::setNames(c(id, aggregate_id, aggregate_id_measure),
+                                         c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }
 

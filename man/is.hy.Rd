@@ -4,10 +4,12 @@
 \alias{is.hy}
 \title{is hy?}
 \usage{
-is.hy(x)
+is.hy(x, silent = FALSE)
 }
 \arguments{
 \item{x}{object to test}
+
+\item{silent}{logical should messages be emitted?}
 }
 \value{
 logical TRUE if valid
