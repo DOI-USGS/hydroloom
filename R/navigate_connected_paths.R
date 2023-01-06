@@ -124,3 +124,78 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   select(path_lengths, all_of(c("id_1", "id_2", "network_distance_km", "path")))
 
 }
+
+#' Get Partial Flowpath Length
+#' @param hydro_location list containing a hydrologic locations with names
+#' aggregate_id (reachcode) and aggregate_id_measure (reachcode measure).
+#' @param network data.frame network compatible with \link{hydroloom_names}.
+#' @param flowpath data.frame containing one flowpath that corresponds to the
+#' `hydro_location`. Not required if `x` is provided. `x` is not required if
+#' `flowpath` is provided.
+#' @description Finds the upstream and downstream lengths along a given
+#' flowpath (flowline in nhdplus terminology). Internally, the function
+#' rescales the aggregate_id_measure to a id_measure and applies that
+#' rescaled measure to the length of the flowpath.
+#'
+#' @return list containing `up` and `dn` elements with numeric length in
+#' km.
+#' @export
+#' @examples
+#'
+#' x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
+#'
+#' hydro_location <- list(comid = 5329339,
+#'                        reachcode = "18050005000078",
+#'                        reach_meas = 30)
+#'
+#' (pl <- get_partial_length(hydro_location, x))
+#'
+get_partial_length <- function(hydro_location, network = NULL, flowpath = NULL) {
+
+  hydro_location <- align_names(as.data.frame(hydro_location))
+
+  check_names(hydro_location, c(aggregate_id_measure, aggregate_id),
+              "get_partial_length hydro_location")
+
+  if(is.null(flowpath)) {
+
+    if(is.null(network)) {
+      stop("network must be supplied if flowline is null")
+    }
+
+    network <- hy(network)
+
+    check_names(network, c(aggregate_id, aggregate_id_from_measure, aggregate_id_to_measure),
+                "get_partial_length x")
+    flowpath <- get_fl(hydro_location, network)
+  } else {
+    flowpath <- align_names(flowpath)
+    check_names(flowpath, c(aggregate_id, aggregate_id_from_measure, aggregate_id_to_measure))
+  }
+
+  if(nrow(flowpath) == 0) {
+    stop("hydrolocation not found in network provided")
+  }
+
+  meas <- rescale_measures(measure = hydro_location$aggregate_id_measure,
+                           from = flowpath$aggregate_id_from_measure,
+                           to = flowpath$aggregate_id_to_measure) / 100
+
+  list(dn = flowpath$length_km * meas,
+       up = flowpath$length_km * (1 - meas))
+}
+
+# utility function
+get_fl <- function(hydro_location, net) {
+  if(hydro_location$aggregate_id_measure == 100) {
+    filter(net,
+           .data$aggregate_id == hydro_location$aggregate_id &
+             .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
+  } else {
+    filter(net,
+           .data$aggregate_id == hydro_location$aggregate_id &
+             .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
+             .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
+  }
+}
+
