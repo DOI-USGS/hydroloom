@@ -30,11 +30,11 @@ feature_type <- "feature_type"
 feature_type_code <- "feature_type_code"
 vector_proc_unit <- "vector_proc_unit"
 raster_proc_unit <- "raster_proc_unit"
-id_measure <- "measure"
+id_measure <- "id_measure"
 aggregate_id <- "aggregate_id"
-aggregate_id_measure <- "reach_measure"
-aggregate_id_from_measure <- "from_measure"
-aggregate_id_to_measure <- "to_measure"
+aggregate_id_measure <- "aggregate_id_measure"
+aggregate_id_from_measure <- "aggregate_id_from_measure"
+aggregate_id_to_measure <- "aggregate_id_to_measure"
 
 indid <- "indid"
 toindid <- "toindid"
@@ -134,11 +134,12 @@ check_names <- function(x, req_names, context) {
                "hydroloom attributes."), call. = FALSE)
 }
 
-#' @importFrom dplyr filter select left_join all_of any_of bind_rows group_by
-#' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate
-#' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols
-#' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_as_sf st_sf
-#' @importFrom sf st_coordinates st_crs st_join st_reverse st_transform
+#' @importFrom dplyr filter select left_join right_join all_of any_of bind_rows group_by
+#' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate summarise
+#' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag
+#' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_geometry_type st_intersection
+#' @importFrom sf st_cast st_linestring st_is_longlat st_transform st_segmentize st_buffer
+#' @importFrom sf st_as_sf st_sf st_zm st_coordinates st_crs st_join st_reverse
 #' @importFrom pbapply pblapply pbsapply pbapply pboptions
 
 #' @title create an hy fabric object
