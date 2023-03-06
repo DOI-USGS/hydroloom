@@ -303,7 +303,7 @@ index_points_to_lines.hy <- function(x, points,
     group_by(.data$L1) |>
     add_len() |>
     left_join(select(matched, all_of(c("L1", id))), by = "L1") |>
-    left_join(select(fline_atts, -"index"), by = id) |>
+    left_join(select(fline_atts, -"index"), by = id, relationship = "many-to-many") |>
     mutate(aggregate_id_measure = round(
       .data$aggregate_id_from_measure +
         (.data$aggregate_id_to_measure - .data$aggregate_id_from_measure) *
@@ -407,7 +407,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
     out <- left_join(out, select(flines,
                                  wb_outlet_id = id,
                                  wbid, topo_sort),
-                     by = c("joiner" = wbid))
+                     by = c("joiner" = wbid), relationship = "many-to-many")
 
     out <- ungroup(filter(group_by(out, .data$id),
                           is.na(topo_sort) | topo_sort == min(topo_sort)))

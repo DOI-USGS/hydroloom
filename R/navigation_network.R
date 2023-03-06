@@ -299,7 +299,7 @@ private_get_DD <- function(x, id, stop_pathlength_km = 0) {
       ds_hs <- filter(x, .data$topo_sort %in% ds_hs)
       ds_id <- filter(x, .data$levelpath %in% ds_lpid) |>
         left_join(select(ds_hs, levelpath, max_topo_sort = topo_sort),
-                         by = "levelpath") |>
+                         by = "levelpath", relationship = "many-to-many") |>
         filter(.data$topo_sort <= .data$max_topo_sort)
       ds_id <- ds_id$id
     }
