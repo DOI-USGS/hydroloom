@@ -82,7 +82,7 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
   disconnected$toid <- rep(0, nrow(disconnected))
 
   x <- filter(x, !d) |>
-    left_join(joiner_fun(x), by = c("id")) |>
+    left_join(joiner_fun(filter(x, !d)), by = c("id")) |>
     mutate(toid = replace_na(toid, 0)) |>
     bind_rows(disconnected)
 

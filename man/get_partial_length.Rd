@@ -29,6 +29,7 @@ rescaled measure to the length of the flowpath.
 \examples{
 
 x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
+
 hydro_location <- list(comid = 5329339,
                        reachcode = "18050005000078",
                        reach_meas = 30)
