@@ -15,7 +15,7 @@ add_streamlevel(x, coastal = NULL)
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
-\item{coastal_flag}{character attribute name containing a logical flag
+\item{coastal}{character attribute name containing a logical flag
 indicating if a given terminal catchment flows to the coast of is an
 inland sink. If no coastal flag is included, all terminal paths are
 assumed to be coastal.}

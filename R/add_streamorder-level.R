@@ -150,7 +150,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 #' begin at 1 and internal terminal paths begin at 4 as is implemented by
 #' the NHD stream leveling rules.
 #' @inheritParams add_levelpaths
-#' @param coastal_flag character attribute name containing a logical flag
+#' @param coastal character attribute name containing a logical flag
 #' indicating if a given terminal catchment flows to the coast of is an
 #' inland sink. If no coastal flag is included, all terminal paths are
 #' assumed to be coastal.
