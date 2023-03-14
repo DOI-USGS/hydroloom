@@ -17,3 +17,4 @@ RoxygenNote: 7.2.3
 Config/testthat/parallel: true
 Config/testthat/edition: 3
 LazyData: true
+URL: https://doi-usgs.github.io/hydroloom/

@@ -24,3 +24,7 @@ data-raw
 .dockerignore
 ^.*Rplots.pdf$
 README.Rmd
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
