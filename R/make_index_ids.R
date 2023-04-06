@@ -61,7 +61,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
                      rename(out, toindid = "indid"),
                      by = c("toid" = "id"))
 
-    out$toindid <- replace_na(out$toindid, out_val)
+    out$toindid <- replace_na(out$toindid, 0)
 
     out <- select(out, -"toid")
 

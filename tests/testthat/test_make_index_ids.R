@@ -54,6 +54,13 @@ test_that("add indid", {
   expect_error(hydroloom:::make_index_ids(test_data),
                "found one or more pairs of features that reference eachother.")
 
+  x$id <- as.character(x$id)
+
+  y <- add_toids(x)
+
+  y <- make_index_ids(y)
+
+  expect_equal(class(y$to_list$toindid[[1]]), "integer")
 })
 
 test_that("format toid", {
