@@ -85,7 +85,9 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
                           "lp_name_attribute" = name_attribute,
                           "lp_weight_attribute" = weight_attribute)))
 
-  x$toid <- replace_na(x$toid, 0)
+  out_val <- get_outlet_value(x)
+
+  x$toid <- replace_na(x$toid, out_val)
 
   x[["lp_name_attribute"]] <- replace_na(x[["lp_name_attribute"]], " ") # NHDPlusHR uses NA for empty names.
   x[["lp_name_attribute"]][x[["lp_name_attribute"]] == "-1"] <- " "
@@ -133,7 +135,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x$done <- rep(FALSE, nrow(x))
 
-  outlets <- filter(x, .data$toid == 0)
+  outlets <- filter(x, .data$toid == get_outlet_value(x))
 
   while(done < nrow(x) & checker < 10000000) {
     tail_topo <- outlets$topo_sort

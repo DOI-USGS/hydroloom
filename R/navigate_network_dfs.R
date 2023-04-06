@@ -16,18 +16,22 @@
 #'
 #' navigate_network_dfs(x, 8893402)
 #'
+#' navigate_network_dfs(x, 8897784, direction = "up")
+#'
 navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
-
-  if(direction != "down") {
-    stop("up not supported yet.")
-    # will need get_fromids fomr nhdplusTools
-  }
 
   x <- hy(x, clean = TRUE)
 
   if(!all(starts %in% x$id)) stop("all starts must be in x")
 
   g <- make_index_ids(x)
+
+  if(direction == "up") {
+    g <- make_fromids(g, return_list = TRUE)
+
+    names(g) <- c("to", "lengths", "to_list")
+    names(g$to_list) <- c("indid", "id", "toindid")
+  }
 
   starts <- unique(g$to_list$indid[which(g$to_list$id %in% starts)])
 

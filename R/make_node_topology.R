@@ -69,7 +69,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
   x <- left_join(x, select(x, all_of(c(id = id, tonode = fromnode))),
                  by = c(toid = id))
 
-  outlets <- x$toid == 0
+  outlets <- x$toid == get_outlet_value(x)
 
   x$tonode[outlets] <- seq(max(x$tonode, na.rm = TRUE) + 1,
                            max(x$tonode, na.rm = TRUE) + sum(outlets))

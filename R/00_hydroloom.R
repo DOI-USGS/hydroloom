@@ -170,6 +170,14 @@ check_names <- function(x, req_names, context) {
                "hydroloom attributes."), call. = FALSE)
 }
 
+get_outlet_value <- function(x) {
+  if(inherits(x$id, "character")) {
+    ""
+  } else {
+    0
+  }
+}
+
 #' @importFrom dplyr filter select left_join right_join all_of any_of bind_rows group_by
 #' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate summarise
 #' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag
@@ -228,7 +236,9 @@ hy <- function(x, clean = FALSE) {
   }
 
   if("toid" %in% names(x)) {
-    x$toid <- replace_na(x$toid, 0)
+    out_val <- get_outlet_value(x)
+
+    x$toid <- replace_na(x$toid, out_val)
   }
 
   attr(x, "orig_names") <- stats::setNames(names(x), keep_names)

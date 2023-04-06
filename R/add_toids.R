@@ -79,11 +79,13 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
   # avoid cartesian join on disconnected lines!
   disconnected <- filter(x, d)
 
-  disconnected$toid <- rep(0, nrow(disconnected))
+  out_val <- get_outlet_value(x)
+
+  disconnected$toid <- rep(out_val, nrow(disconnected))
 
   x <- filter(x, !d) |>
     left_join(joiner_fun(filter(x, !d)), by = c("id")) |>
-    mutate(toid = replace_na(toid, 0)) |>
+    mutate(toid = replace_na(toid, out_val)) |>
     bind_rows(disconnected)
 
   sf_t <- inherits(x, "sf")

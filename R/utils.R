@@ -214,7 +214,7 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
     } else {
       f <- network[network$id == id, ]
 
-      if(is.na(f$toid) | f$toid == 0) {
+      if(is.na(f$toid) | f$toid == get_outlet_value(f)) {
 
         check_line <- network[network$toid == f$id, ][1, ]
 

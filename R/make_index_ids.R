@@ -50,6 +50,8 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 
   x <- distinct(x)
 
+  out_val <- get_outlet_value(x)
+
   if(any(duplicated(x$id))) {
     out <- data.frame(id = unique(x$id),
                       indid = seq(1, length(unique(x$id))))
@@ -59,7 +61,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
                      rename(out, toindid = "indid"),
                      by = c("toid" = "id"))
 
-    out$toindid <- replace_na(out$toindid, 0)
+    out$toindid <- replace_na(out$toindid, out_val)
 
     out <- select(out, -"toid")
 
@@ -67,7 +69,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
     out <- data.frame(id = x$id,
                       indid = seq(1, nrow(x)))
 
-    out$toindid <- match(x$toid, x$id, nomatch = 0)
+    out$toindid <- match(x$toid, x$id, nomatch = out_val)
   }
 
   if(!long_form) {

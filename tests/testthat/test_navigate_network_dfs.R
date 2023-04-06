@@ -8,7 +8,10 @@ test_that("super basic", {
                list(list(`1` = c(2, 3, 5, 7, 8, 9),
                          `2` = c(4, 6, 8))))
 
-  expect_error(navigate_network_dfs(net, 2, direction = "up"))
+  path <- navigate_network_dfs(net, 9, direction = "up")
+
+  expect_equal(path,
+               list(list(`1` = c(9, 8, 7, 5, 3, 2, 6, 4, 3))))
 })
 
 test_that("total div", {
@@ -32,6 +35,13 @@ test_that("total div", {
   expect_equal(paths, list(list(`1` = c(2, 3, 5, 7, 9),
                                 `2` = c(4, 6, 8, 10)),
                            list(`3` = c(5, 7, 9))))
+
+  paths <- navigate_network_dfs(net, c(9, 10), direction = "up")
+
+  expect_equal(paths,
+               list(list(`1` = c(9, 7, 5, 3, 2)),
+                    list(`1` = c(10, 8, 6, 4, 3))))
+
 })
 
 test_that("real data", {
@@ -59,6 +69,14 @@ test_that("real data", {
 
   expect_error(navigate_network_dfs(g, 12345))
 
+  paths <- navigate_network_dfs(g, 8897784, direction = "up")
+
+  expect_equal(length(paths[[1]]), 85)
+
+  path <- paths[[1]][[which(sapply(paths[[1]], function(x) 8891126 %in% x))]]
+
+  expect_true(8895394 %in% path)
+
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
   g <- hy(x)
 
@@ -69,4 +87,8 @@ test_that("real data", {
   paths <- navigate_network_dfs(g, 8893402, direction = "down")
 
   expect_equal(length(paths[[1]][[1]]), 21)
+
+  paths <- navigate_network_dfs(g, 8897784, direction = "up")
+
+  expect_equal(length(paths[[1]]), 1)
 })

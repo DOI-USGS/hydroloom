@@ -52,7 +52,9 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
   net <- select(drop_geometry(x), all_of(required_atts))
 
-  net$toid <- replace_na(net$toid, 0)
+  out_val <- get_outlet_value(net)
+
+  net$toid <- replace_na(net$toid, out_val)
 
   # First sort so we have upstream first and outlets last.
   net <- sort_network(net)

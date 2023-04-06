@@ -31,4 +31,6 @@ x <- add_toids(x, return_dendritic = FALSE)
 
 navigate_network_dfs(x, 8893402)
 
+navigate_network_dfs(x, 8897784, direction = "up")
+
 }

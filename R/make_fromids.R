@@ -32,6 +32,8 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   # slightly faster but requires data.table
   index_ids <- as.data.table(index_ids)
 
+  ids <- unique(index_ids[,c("indid", "id")])
+
   froms <- unique(merge(
     index_ids[,list(indid)],
     data.table::setnames(index_ids, c("toindid", "indid"), c("indid", "fromindid")),
@@ -40,6 +42,7 @@ make_fromids <- function(index_ids, return_list = FALSE) {
 
   froms <- froms[,list(fromindid = list(c(fromindid))), by = indid]
 
+  froms <- merge(ids, froms, by = "indid", all.x = TRUE)
 
   froms_l <- lengths(froms$fromindid, use.names = FALSE)
   max_from <- max(froms_l)
