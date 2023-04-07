@@ -1,0 +1,68 @@
+---
+title: "Non-dendritic networks"
+author: "dblodgett@usgs.gov"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Non-dendritic networks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include = FALSE}
+library(hydroloom)
+library(dplyr)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  comment = "#>",
+  fig.width=4,
+  fig.height=4,
+  fig.align = "center"
+)
+
+oldoption <- options(scipen = 9999)
+
+```
+
+```{r node, fig.show="hold", fig.width=3, out.width="45%", echo=FALSE, eval=TRUE, fig.cap="We say that 2 is a headwater in the dendritic system, but have the ability to add those connections back later as long as the nodes where diversions exist are left intact."}
+x <- c(2, 2, 3, 2, 2)
+y <- c(5, 4, 3, 2, 1)
+
+a <- c(1.4, 3.5)
+b <- c(.9, 5.1)
+
+main_col = "darkblue"
+div_col = "purple"
+
+par(mar = c(0, 0, 0, 0))
+plot(a, b, col = NA)
+points(x, y)
+text(c(2.15, 1.85, 3.02, 1.85, 2.15), c(5, 4, 3.2, 2, 1), c("N1", "N2", "N3", "N4", "N5"))
+
+make_edges <- function() {
+  arrows(x[1], y[1] - .1, x[2], y[2] + .1, length = .1, col = main_col)
+  arrows(x[2] + .1, y[2] - .1, x[3] - .1, y[3] + .1, length = .1, col = div_col) # right
+  arrows(x[2] + .0, y[2] - .1, x[4] - .0, y[4] + .1, length = .1, col = main_col)
+  arrows(x[3] - .1, y[3] - .1, x[4] + .1, y[4] + .1, length = .1, col = div_col)
+  arrows(x[4], y[4] - .1, x[5], y[5] + .1, length = .1, col = main_col)
+  text(c(2.1, 2.5, 2.5, 1.9, 2.1), c(4.5, 3.8, 2.3, 3, 1.5), c("1", "2", "3", "4", "5"))
+}
+
+make_edges()
+
+par(mar = c(0, 0, 0, 0))
+plot(a, b, col = NA)
+
+make_edges()
+
+# 
+# par(mar = c(0, 0, 0, 0))
+# plot(x, y)
+# arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
+# arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
+# arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
+# text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
+# text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
+```

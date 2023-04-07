@@ -21,6 +21,13 @@
       <ul class="navbar-nav me-auto"><li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
+  </div>
+</li>
 <li class="active nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
 </li>
@@ -41,6 +48,13 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="hydroloom-100">hydroloom 1.0.0<a class="anchor" aria-label="anchor" href="#hydroloom-100"></a></h2>
 <ul><li>Initialized new project</li>
+<li>Create basic <code>hy</code> s3 object handling</li>
+<li>Complete migration of nhdplusTools functions to hydroloom. #1</li>
+<li>Implemented non-dendritic network support in add_toids</li>
+<li>Implemented complete stream order / stream calculator attribute <a href="https://github.com/DOI-USGS/nhdplusTools/issues/188" class="external-link uri">https://github.com/DOI-USGS/nhdplusTools/issues/188</a>
+</li>
+<li>Support for both numeric and character identifiers #2</li>
+<li>Ensure tibble is used throughout</li>
 </ul></div>
   </main></div>
 

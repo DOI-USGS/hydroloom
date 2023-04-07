@@ -8,23 +8,42 @@
 `hydroloom` is a collection of general hydrologic geospatial fabric
 creation tools.
 
-It was created from generic components of
+It was largely created from components of
 [nhdplusTools](https://doi.org/10.5066/P97AS8JD):
 
           Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
           Accessing and Working with the NHDPlus,
           https://doi.org/10.5066/P97AS8JD
 
+Key terms:
+
+### Terminology:
+
+The following definitions have been used as much as possible throughout
+the package.  
+Terms for rivers:  
+**Flowline:** A flowline is an linear geometry that represents a segment
+of a flowing body of water. Some flowlines have no local drainage area
+and are never aggregate features. **Flowpath:** A flowpath is a linear
+geometry that represents the connection between a catchment’s inlet and
+its outlet. All flowpaths have a local drainage area and may be
+aggregates of flowlines. **Catchment:** A physiographic unit with zero
+or one inlets and one outlet. A catchment is represented by one or more
+partial realizations; flowpath, divide, and networks of flowpaths and
+divides.
+
 Development of hydroloom is underway and rapid change should be
 expected.
 
 # Design Notes:
 
-- Using tibble because dplyr verbs for data.frame was dropping the
-  custom hy attributes.
+- Hydroloom uses tibble because dplyr verbs for data.frame was dropping
+  the custom hy attributes.
 - `hy` class tibble standardizes all attribute names in code.
 - graph representation facilitated by `make_index_ids()` and
   `make_fromids()`
+- names are plural when referring to identifiers and singular when
+  referring to a numerical attribute.
 
 # Disclaimer
 

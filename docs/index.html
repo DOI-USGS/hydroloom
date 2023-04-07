@@ -45,6 +45,13 @@
 <li class="nav-item">
   <a class="nav-link" href="reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="articles/non-dendritic.html">Non-dendritic networks</a>
+  </div>
+</li>
 <li class="nav-item">
   <a class="nav-link" href="news/index.html">Changelog</a>
 </li>
@@ -69,22 +76,30 @@
 <h2 id="hydroloom">hydroloom:<a class="anchor" aria-label="anchor" href="#hydroloom"></a>
 </h2>
 <p><code>hydroloom</code> is a collection of general hydrologic geospatial fabric creation tools.</p>
-<p>It was created from generic components of <a href="https://doi.org/10.5066/P97AS8JD" class="external-link">nhdplusTools</a>:</p>
+<p>It was largely created from components of <a href="https://doi.org/10.5066/P97AS8JD" class="external-link">nhdplusTools</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>      Blodgett, D., Johnson, J.M., <span class="dv">2022</span>, nhdplusTools<span class="sc">:</span> Tools <span class="cf">for</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>      Accessing and Working with the NHDPlus,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>      https<span class="sc">:</span><span class="er">//</span>doi.org<span class="sc">/</span><span class="fl">10.5066</span><span class="sc">/</span>P97AS8JD</span></code></pre></div>
+<p>Key terms:</p>
+<div class="section level3">
+<h3 id="terminology">Terminology:<a class="anchor" aria-label="anchor" href="#terminology"></a>
+</h3>
+<p>The following definitions have been used as much as possible throughout the package.<br>
+Terms for rivers:<br><strong>Flowline:</strong> A flowline is an linear geometry that represents a segment of a flowing body of water. Some flowlines have no local drainage area and are never aggregate features. <strong>Flowpath:</strong> A flowpath is a linear geometry that represents the connection between a catchment’s inlet and its outlet. All flowpaths have a local drainage area and may be aggregates of flowlines. <strong>Catchment:</strong> A physiographic unit with zero or one inlets and one outlet. A catchment is represented by one or more partial realizations; flowpath, divide, and networks of flowpaths and divides.</p>
 <p>Development of hydroloom is underway and rapid change should be expected.</p>
+</div>
 </div>
 </div>
 <div class="section level1">
 <h1 id="design-notes">Design Notes:<a class="anchor" aria-label="anchor" href="#design-notes"></a>
 </h1>
 <ul>
-<li>Using tibble because dplyr verbs for data.frame was dropping the custom hy attributes.</li>
+<li>Hydroloom uses tibble because dplyr verbs for data.frame was dropping the custom hy attributes.</li>
 <li>
 <code>hy</code> class tibble standardizes all attribute names in code.</li>
 <li>graph representation facilitated by <code><a href="reference/make_index_ids.html">make_index_ids()</a></code> and <code><a href="reference/make_fromids.html">make_fromids()</a></code>
 </li>
+<li>names are plural when referring to identifiers and singular when referring to a numerical attribute.</li>
 </ul>
 </div>
 <div class="section level1">

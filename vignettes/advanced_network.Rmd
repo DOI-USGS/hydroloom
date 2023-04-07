@@ -3,7 +3,7 @@ title: "Topological Sort Based Network Attributes"
 author: "dblodgett@usgs.gov"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Advanced Network Attributes}
+  %\VignetteIndexEntry{Topological Sort Based Network Attributes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,9 +18,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width=4, 
   fig.height=4, 
-  fig.align = "center",
-  eval=local,
-  cache=local
+  fig.align = "center"
 )
 
 oldoption <- options(scipen = 9999)
@@ -41,7 +39,7 @@ While the `hydroloom` package contains other functions to generate network attri
 
 A network of flowlines can be represented as an edge-to-edge (e.g. edge list) or edge-node topology. An edge list only expresses the connectivity between _edges_ (flowlines in the context of rivers), requiring _nodes_ (confluences in the context of rivers) to be inferred. 
 
-```{r, echo=FALSE, eval=TRUE, , fig.dim=c(6, 4)}
+```{r, echo=FALSE, eval=TRUE, fig.dim=c(6, 4)}
 print.data.frame(data.frame(ID = c(1, 2, 3), 
                             toID = c(3, 3, NA),
                             fromnode = c("N1", "N2", "N3"),
@@ -136,7 +134,7 @@ Creating levelpath and topo_sort identifiers requires a set of base attributes t
 
 4. **`weight_attribute`:** a weight metric is required for stream leveling to determine the dominant upstream flowline. In the NHD, the arbolate sum is used. However, alternative metrics (e.g. total drainage area) can be used instead.
 
-5. **`name_attribute`:** Many times, it is preferable to follow a consistently named path rather than a strict physical weight when stream leveling. In these cases a `nameID` can be provided.
+5. **`name_attribute`:** Many times, it is preferable to follow a consistently named path rather than a strict physical weight when stream leveling. In these cases a `name_attribute` can be provided.
 
 6. **`divergence`:** in order to create a [many:1] upstream to downstream topology, diverted paths must be labeled as such. This attribute is 0 for normal (already [many:1]) connections, 1 for the main path through a divergence, and 2 for any diverted path. 
 
@@ -144,21 +142,19 @@ Creating levelpath and topo_sort identifiers requires a set of base attributes t
 
 To illustrate the above concepts and attributes, we'll start with the "New Hope" demo data included in the `hydroloom` package and add a toid attribute based on the edge-node topology included in the data.
 
-# TODO: Start here
-
 ```{r, echo=TRUE, eval=TRUE}
 # Import data
-source(system.file("extdata/new_hope_data.R", package = "hydroloom"))
+x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 
 # Strip the data back to the required base attributes
-fpath <- get_toid(
-  dplyr::select(new_hope_flowline, id, FromNode, ToNode, Divergence, FTYPE,
-                AreaSqKM, LENGTHKM, GNIS_ID)
+fpath <- hydroloom::add_toids(
+  dplyr::select(x, id, fromnode, tonode, divergence, feature_type,
+                da_sqkm, length_km, GNIS_ID)
 )
 
 # Print
 head(fpath <- select(sf::st_cast(fpath, "LINESTRING"), 
-                     -tonode, -fromnode, -divergence, -ftype))
+                     -tonode, -fromnode, -divergence, -feature_type))
 ```
 
 ### topo_sort and terminal ID
@@ -169,11 +165,11 @@ After removing attributes used to generate the `toid` attribute, we have a `id` 
 head(fpath <- sort_network(fpath, split = TRUE))
 ```
 
-The `sort_network()` function sorts the flowlines such that headwaters come first and the terminal flowline last. Additionally, it produces a `terminalID` representing the outlet ID of the network. If multiple terminal networks had been provided, the `terminalID` would allow us to group the data by complete sub networks (a convenient parallelization scheme).
+The `sort_network()` function sorts the flowlines such that headwaters come first and the terminal flowline last. Additionally, it produces a `terminal_id` representing the outlet `id` of the network. If multiple terminal networks had been provided, the `terminal_id` would allow us to group the data by complete sub networks (a convenient parallelization scheme).
 
-In contrast to the NHD, where the terminal path is identified by the topo_sort ID of the outlet flowline (meaning the outlet of a level path is left to a user to generate), `hydroloom` uses the more stable primary ID for identifying outlets to allow the topo_sort attribute to be generated and discarded as needed.
+In contrast to NHDPlus, where the terminal path is identified by the `topo_sort` `id` of the outlet flowline (meaning the outlet of a level path is left to a user to generate), `hydroloom` uses the more stable primary `id` (COMID in NHDPlus) for identifying outlets to allow the topo_sort attribute to be generated and discarded as needed.
 
-We can visualize this sorting by assigning a temporary "topo_sort" value to the sorted network row wise. Here, we assign the first rows in the sorted set to large values and the last rows to small values in line with the topo_sort order convention in NHDPlus.
+We can visualize this sorting by assigning a temporary "topo_sort" value to the sorted network, row wise. Here, we assign the first rows in the sorted set to large values and the last rows to small values in line with the topo_sort order convention in NHDPlus.
 
 ```{r, echo = TRUE, fig.dim=c(3, 3)}
 fpath['topo_sort'] <- seq(nrow(fpath), 1)
@@ -182,37 +178,30 @@ plot(fpath['topo_sort'], key.pos = NULL)
 
 ### Level Path and outlet ID
 
-To generate a levelpath attribute, a "physical" weight is needed to determine the upstream mainstem at divergences. For this example, we'll follow the NHD convention and calculate the arbolate sum explicitly. The `get_levelpaths()` function will add arbolate sum internally if no weight is explicitly defined.
+To generate a levelpath attribute, a "physical" weight is needed to determine the upstream mainstem at confluences. For this example, we'll follow the NHD convention and calculate the arbolate sum explicitly. The `add_levelpaths()` function will add arbolate sum internally if no weight is explicitly defined.
 
 ```{r}
 # Rename and compute weight
-fpath[["arbolatesum"]] <- calculate_arbolate_sum(
+fpath$arbolatesum <- accumulate_downstream(
   dplyr::select(fpath, 
-                ID = id, toID = toid, length = lengthkm))
+                id, toid, length_km), "length_km")
 
 plot(sf::st_geometry(fpath), lwd = fpath$arbolatesum / 10)
 ```
 
-A `nameID` identifier can also be provided to override the physical `weight` when a "smaller" river has the same name. There is an optional `override_factor` parameter that signifies if the physical weight is `override_factor` times (e.g. 5) larger on an unnamed or differently named upstream path, the physical weight will be used in favor of the named ID. 
-
-As mentioned above, `hydroloom` favors more general naming of to/from nodes then the NHD, so names are modified accordingly.
+A `name_attribute` identifier can also be provided to override the physical `weight_attribute` when a "smaller" river has the same name. There is an optional `override_factor` parameter that signifies if the physical weight is `override_factor` times (e.g. 5) larger on an unnamed or differently named upstream path, the physical weight will be used in favor of the named `id`. 
 
 ```{r levelpath, fig.show="hold", out.width="45%"}
 # Get levelpaths
-lp <- get_levelpaths(
-  dplyr::select(fpath, 
-                ID = id, toID = toid, 
-                nameID = gnis_id, weight = arbolatesum), 
+fpath <- add_levelpaths(fpath, name_attribute = "GNIS_ID",weight_attribute = "arbolatesum", 
   status = FALSE, override_factor = 5)
 
 # Print
-head(fpath <- dplyr::left_join(fpath, lp, by = c("id" = "ID")))
+head(fpath)
 
 plot(fpath["topo_sort"], key.pos = NULL, reset = FALSE)
 plot(fpath["levelpath"], key.pos = NULL)
 ```
-
-Note that the `get_levelpaths` adds an `outletID` signifying the overall network outlet ID (not topo sort / topo_sort) by primary identifier. 
 
 Finally, let's visualize these advanced VAAs! 
 
@@ -230,7 +219,7 @@ dplyr::filter(n() > 2)
 lp <-  unique(lp$levelpath)
 
 # Terminal flowline 
-terminal_fpath <- dplyr::filter(fpath, id %in% terminalID)
+terminal_fpath <- dplyr::filter(fpath, id %in% terminal_id)
 
 gif_file <- "levelpath.gif"
 
@@ -238,7 +227,7 @@ gifski::save_gif({
   for(i in 1:length(lp)) {
     lp_plot <- dplyr::filter(fpath, levelpath == lp[i])
 
-    outlet_plot <- dplyr::filter(lp_plot, id %in% outletID)
+    outlet_plot <- dplyr::filter(lp_plot, id %in% terminal_id)
 
     plot(sf::st_geometry(fpath), lwd = 0.5, col = "grey")
     plot(sf::st_geometry(terminal_fpath), lwd = 3, col = "red", add = TRUE)
@@ -253,16 +242,9 @@ knitr::include_graphics(gif_file)
 
 # Summary
 
-This entire process of sorting the network and building topo_sort, levelpath, and derivative variables is wrapped in the `add_plus_network_attributes()` function to provide performance and simplicity. It supports paralellization and will print status updates in the case when the input network is very large. `add_plus_network_attributes()` returns NHDPlus attribute names (truncated per shapefile rules as is done in the NHDPlus database). 
+This entire process of sorting the network and building topo_sort, levelpath, and derivative variables is wrapped in the nhdplusTools [`add_plus_network_attributes`](https://doi-usgs.github.io/nhdplusTools/reference/add_plus_network_attributes.html) function to provide performance and simplicity. It supports paralellization and will print status updates in the case when the input network is very large. `add_plus_network_attributes` returns NHDPlus attribute names (truncated per shapefile rules as is done in the NHDPlus database). 
 
-The `terminalpa`, `levelpathi`, `dnlevelpat`, and `dnhydroseq` attributes are `hydroseq` identifiers as is the convention in NHDPlus, _not_ primary identifiers (`id`s) as is returned from the base functions demonstrated above.
-
-As of 2/2022, this function does not support the up level path (`uplevelpat`) or up topo_sort (`uphydroseq`) noted in "Other Derived Network Attributes".
-
-```{r}
-head(add_plus_network_attributes(dplyr::select(fpath, id, toid, lengthkm, areasqkm, 
-                                               nameID = gnis_id), status = TRUE))
-```
+The attributes described in this vignette assume that diversions in the network have zero flow such that diversions are treated as if they were headwaters. See the `vignette("non-dendritic")` for information about attributes that include connected divergences.
 
 ```{r teardown, include=FALSE}
 options(oldoption)

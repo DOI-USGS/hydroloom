@@ -23,6 +23,13 @@ attributes."><meta property="og:image" content="https://doi-usgs.github.io/hydro
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
+  </div>
+</li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
 </li>
@@ -70,25 +77,25 @@ attributes.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Bounding box:  xmin: 1496152 ymin: 1551203 xmax: 1527383 ymax: 1577303</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CRS:           unknown</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 746 × 36</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      COMID GNIS_ID GNIS_NAME LENGT…¹ REACH…² WBARE…³ FTYPE FCODE Strea…⁴ Strea…⁵</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #BCBCBC;">*</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 8<span style="text-decoration: underline;">893</span>864 991288  Northeas…   3.24  030300…       0 Stre… <span style="text-decoration: underline;">46</span>006       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 8<span style="text-decoration: underline;">894</span>490 991288  Northeas…   0.002 030300…       0 Conn… <span style="text-decoration: underline;">33</span>400       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 8<span style="text-decoration: underline;">894</span>494 991288  Northeas…   0.102 030300…       0 Conn… <span style="text-decoration: underline;">33</span>400       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 8<span style="text-decoration: underline;">894</span>334 991288  Northeas…   0.073 030300… 8<span style="text-decoration: underline;">892</span>958 Arti… <span style="text-decoration: underline;">55</span>800       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 8<span style="text-decoration: underline;">894</span>492 991288  Northeas…   0.008 030300… 8<span style="text-decoration: underline;">892</span>958 Arti… <span style="text-decoration: underline;">55</span>800       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 8<span style="text-decoration: underline;">893</span>850 991288  Northeas…   0.954 030300…       0 Stre… <span style="text-decoration: underline;">46</span>006       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 8<span style="text-decoration: underline;">893</span>842 991288  Northeas…   0.219 030300…       0 Stre… <span style="text-decoration: underline;">46</span>006       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 8<span style="text-decoration: underline;">894</span>192 991288  Northeas…   3.09  030300…       0 Stre… <span style="text-decoration: underline;">46</span>006       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 8<span style="text-decoration: underline;">894</span>310 991288  Northeas…   0.045 030300… 8<span style="text-decoration: underline;">892</span>932 Arti… <span style="text-decoration: underline;">55</span>800       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 8<span style="text-decoration: underline;">893</span>810 991288  Northeas…   0.583 030300…       0 Stre… <span style="text-decoration: underline;">46</span>006       3       4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 736 more rows, 26 more variables: StreamCalc &lt;int&gt;, FromNode &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     COMID GNIS_ID GNIS_NAME LENGTHKM REACHCODE WBAREACOMI FTYPE FCODE StreamLeve</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #BCBCBC;">*</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    3.24  03030002…          0 Stre… <span style="text-decoration: underline;">46</span>006          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.002 03030002…          0 Conn… <span style="text-decoration: underline;">33</span>400          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.102 03030002…          0 Conn… <span style="text-decoration: underline;">33</span>400          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.073 03030002…    8<span style="text-decoration: underline;">892</span>958 Arti… <span style="text-decoration: underline;">55</span>800          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.008 03030002…    8<span style="text-decoration: underline;">892</span>958 Arti… <span style="text-decoration: underline;">55</span>800          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.954 03030002…          0 Stre… <span style="text-decoration: underline;">46</span>006          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.219 03030002…          0 Stre… <span style="text-decoration: underline;">46</span>006          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    3.09  03030002…          0 Stre… <span style="text-decoration: underline;">46</span>006          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.045 03030002…    8<span style="text-decoration: underline;">892</span>932 Arti… <span style="text-decoration: underline;">55</span>800          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 8.89<span style="color: #949494;">e</span>6 991288  Northeas…    0.583 03030002…          0 Stre… <span style="text-decoration: underline;">46</span>006          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 736 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 27 more variables: StreamOrde &lt;int&gt;, StreamCalc &lt;int&gt;, FromNode &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   ToNode &lt;dbl&gt;, Hydroseq &lt;dbl&gt;, LevelPathI &lt;dbl&gt;, Pathlength &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   TerminalPa &lt;dbl&gt;, ArbolateSu &lt;dbl&gt;, Divergence &lt;int&gt;, StartFlag &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   TerminalFl &lt;int&gt;, DnLevel &lt;int&gt;, UpLevelPat &lt;dbl&gt;, UpHydroseq &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   DnLevelPat &lt;dbl&gt;, DnMinorHyd &lt;dbl&gt;, DnDrainCou &lt;int&gt;, DnHydroseq &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   FromMeas &lt;dbl&gt;, ToMeas &lt;dbl&gt;, RtnDiv &lt;int&gt;, VPUIn &lt;int&gt;, VPUOut &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   AreaSqKM &lt;dbl&gt;, TotDASqKM &lt;dbl&gt;, geom &lt;MULTILINESTRING [m]&gt;, and …</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   FromMeas &lt;dbl&gt;, ToMeas &lt;dbl&gt;, RtnDiv &lt;int&gt;, VPUIn &lt;int&gt;, VPUOut &lt;int&gt;, …</span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

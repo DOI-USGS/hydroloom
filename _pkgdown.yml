@@ -1,4 +1,48 @@
 url: https://doi-usgs.github.io/hydroloom/
 template:
   bootstrap: 5
-
+reference:
+  - title: hy S3 Object
+    contents:
+    - '`hy`'
+    - '`is.hy`'
+    - '`hy_reverse`'
+    - '`hydroloom_names`'
+    - '`hydroloom_name_definitions`'
+    - '`align_names`'
+  - title: Random Helpers
+    contents:
+    - '`fix_flowdir`'
+    - '`get_node`'
+    - '`st_compatibalize`'
+    - '`rename_geometry`'
+    - '`drop_geometry`'
+  - title: Network Attributes
+    contents:
+    - '`sort_network`'
+    - '`add_levelpaths`'
+    - '`add_pathlength`'
+    - '`add_pfafstetter`'
+    - '`add_streamlevel`'
+    - '`add_streamorder`'
+    - '`add_toids`'
+  - title: Network Graph Functions
+    contents:
+      - '`make_index_ids`'
+      - '`make_fromids`'
+      - '`make_node_topology`'
+      - '`format_index_ids`'
+      - '`accumulate_downstream`'
+  - title: Network Navigation
+    contents:
+      - '`navigate_network_dfs`'
+      - '`navigate_connected_paths`'
+      - '`navigate_hydro_network`'
+  - title: Indexing and Linear Referencing
+    contents:
+      - '`index_points_to_lines`'
+      - '`index_points_to_waterbodies`'
+      - '`disambiguate_indexes`'
+      - '`get_hydro_location`'
+      - '`get_partial_length`'
+      - '`rescale_measures`'

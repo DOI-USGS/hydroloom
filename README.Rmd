@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 `hydroloom` is a collection of general hydrologic geospatial fabric creation tools.
 
-It was created from generic components of [nhdplusTools](https://doi.org/10.5066/P97AS8JD):
+It was largely created from components of [nhdplusTools](https://doi.org/10.5066/P97AS8JD):
 
 ```
       Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
@@ -46,10 +46,10 @@ Terms for rivers:
 Development of hydroloom is underway and rapid change should be expected.
 
 # Design Notes:
-- Using tibble because dplyr verbs for data.frame was dropping the custom hy attributes.
+- Hydroloom uses tibble because dplyr verbs for data.frame was dropping the custom hy attributes.
 - `hy` class tibble standardizes all attribute names in code.
 - graph representation facilitated by `make_index_ids()` and `make_fromids()`
-- names are plural when referring to idnetifiers and singular when referring to a numerical attribute.
+- names are plural when referring to identifiers and singular when referring to a numerical attribute.
 
 ```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
 
