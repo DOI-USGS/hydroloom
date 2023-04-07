@@ -188,7 +188,7 @@ get_node <- function(x, position = "end") {
 #' (n2 <- get_node(x[10, ], position = "end"))
 #'
 #' # Pass the broken geometry to fix_flowdir with the network for toCOMID
-#' sf::st_geometry(x)[10] <- fix_flowdir(x$COMID[10], x)
+#' sf::st_geometry(x)[10] <- fix_flowdir(x$id[10], x)
 #'
 #' # Note that the geometry is now in the right order.
 #' (n3 <- get_node(x[10, ], position = "end"))

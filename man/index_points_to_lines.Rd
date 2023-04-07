@@ -31,6 +31,8 @@ index_points_to_lines(
 )
 }
 \arguments{
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+
 \item{points}{sf or sfc of type POINT in analysis projection. NOTE: x will
 be projected to the projection of the points layer.}
 
@@ -53,7 +55,6 @@ point input.
 \description{
 given an sf point geometry column, return id, aggregate_id
 (e.g. reachcode), and aggregate id measure for each point.
-#' @inheritParams add_levelpaths
 }
 \details{
 Note 1: Inputs are cast into LINESTRINGS. Because of this, the measure output

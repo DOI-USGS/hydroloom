@@ -30,6 +30,8 @@ total drainage area, levelpath, and topo_sort attributes.
 }
 \examples{
 
+x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
 x <- add_toids(x)
 
 pfaf <- add_pfafstetter(x, max_level = 2)

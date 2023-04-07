@@ -10,8 +10,8 @@ format_index_ids(g, return_list = FALSE)
 \item{g}{data.frame with \code{id}, \code{inid} and \code{toindid} as returned by \link{make_index_ids}
 with \code{long_form}=TRUE.}
 
-\item{complete}{logical should the a data.frame with a list column be included
-in the return?}
+\item{return_list}{logical if TRUE, the returned list will include a
+"froms_list" element containing all from ids in a list form.}
 }
 \value{
 list containing an adjacency matrix and a lengths vector indicating

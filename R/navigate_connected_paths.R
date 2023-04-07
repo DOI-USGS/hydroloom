@@ -4,12 +4,11 @@
 #' regardless of flow direction.
 #' @inheritParams add_levelpaths
 #' @param outlets vector of ids from data.frame
-#' @param cores integer number of cores to use for parallel computation.
 #' @param status logical print status and progress bars?
 #' @return data.frame containing the distance between pairs of network outlets
 #' and a list column containing flowpath identifiers along path that connect outlets.
 #' For a network with one terminal outlet, the data.frame will have `nrow(x)^2` rows.
-#' @importFrom utils combn
+#' @importFrom utils combn tail
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
@@ -18,7 +17,7 @@
 #'
 #' x <- add_toids(hy(x))
 #'
-#' navigate_connected_paths(fl, outlets)
+#' navigate_connected_paths(x, outlets)
 #'
 navigate_connected_paths <- function(x, outlets, status = FALSE) {
   x <- hy(x)

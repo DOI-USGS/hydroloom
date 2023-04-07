@@ -4,7 +4,7 @@
 #' in the numeric attribute is used for disambiguation. If ascii criteria are used,
 #' the \link[utils]{adist} function is used with the following algorithm:
 #' `1 - adist_score / max_string_length`. Comparisons ignore case.
-#' @param indexes data.frame as output from \link{get_flowline_index} with more than
+#' @param indexes data.frame as output from \link{index_points_to_lines} with more than
 #' one hydrologic location per indexed point.
 #' @param flowpath data.frame with two columns. The first should join to the COMID
 #' field of the indexes and the second should be the numeric or ascii metric such as drainage

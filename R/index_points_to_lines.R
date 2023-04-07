@@ -100,7 +100,7 @@ add_len <- function(x) {
 #' @title Index Points to Lines
 #' @description given an sf point geometry column, return id, aggregate_id
 #' (e.g. reachcode), and aggregate id measure for each point.
-#' #' @inheritParams add_levelpaths
+#' @inheritParams add_levelpaths
 #' @param points sf or sfc of type POINT in analysis projection. NOTE: x will
 #' be projected to the projection of the points layer.
 #' @param search_radius units distance for the nearest neighbor search
@@ -326,8 +326,9 @@ index_points_to_lines.hy <- function(x, points,
 #' COMID of dominant artificial path
 #' @param waterbodies sf data.frame of type POLYGON or MULTIPOLYGON including
 #' a "wbid" attribute.
-#' @inheritParams add_levelpaths
 #' @param points sfc of type POINT
+#' @param flines sf data.frame of type LINESTRING or MULTILINESTRING including
+#' id, wbid, and topo_sort attributes
 #' @param search_radius units class with a numeric value indicating how far to
 #' search for a waterbody boundary in units of provided projection. Set units with
 #' \link[units]{set_units}.

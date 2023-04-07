@@ -12,6 +12,8 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #' @export
 #' @examples
 #'
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
 #' x <- add_toids(x)
 #'
 #' pfaf <- add_pfafstetter(x, max_level = 2)

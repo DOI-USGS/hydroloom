@@ -94,8 +94,8 @@ check_graph <- function(x) {
 #' format index ids
 #' @param g data.frame with `id`, `inid` and `toindid` as returned by \link{make_index_ids}
 #' with `long_form`=TRUE.
-#' @param complete logical should the a data.frame with a list column be included
-#' in the return?
+#' @param return_list logical if TRUE, the returned list will include a
+#' "froms_list" element containing all from ids in a list form.
 #' @return list containing an adjacency matrix and a lengths vector indicating
 #' the number of connections from each node. If `complete` is `TRUE` return
 #' will also include a data.frame with an `indid` column and a `toindid` list

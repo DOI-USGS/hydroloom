@@ -12,8 +12,6 @@ navigate_connected_paths(x, outlets, status = FALSE)
 \item{outlets}{vector of ids from data.frame}
 
 \item{status}{logical print status and progress bars?}
-
-\item{cores}{integer number of cores to use for parallel computation.}
 }
 \value{
 data.frame containing the distance between pairs of network outlets
@@ -32,6 +30,6 @@ outlets <- c(5329303, 5329357, 5329317, 5329365, 5329435, 5329817)
 
 x <- add_toids(hy(x))
 
-navigate_connected_paths(fl, outlets)
+navigate_connected_paths(x, outlets)
 
 }

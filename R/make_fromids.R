@@ -60,3 +60,5 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   return(list(froms = froms_m, lengths = froms_l))
 
 }
+
+fromindid <- NULL

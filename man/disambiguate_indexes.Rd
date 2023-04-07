@@ -7,7 +7,7 @@
 disambiguate_indexes(indexes, flowpath, hydro_location)
 }
 \arguments{
-\item{indexes}{data.frame as output from \link{get_flowline_index} with more than
+\item{indexes}{data.frame as output from \link{index_points_to_lines} with more than
 one hydrologic location per indexed point.}
 
 \item{flowpath}{data.frame with two columns. The first should join to the COMID

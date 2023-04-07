@@ -7,7 +7,7 @@
 get_hydro_location(indexes, flowpath)
 }
 \arguments{
-\item{indexes}{data.frame as output from \link{get_flowline_index}.}
+\item{indexes}{data.frame as output from \link{index_points_to_lines}.}
 
 \item{flowpath}{data.frame with three columns: COMID, FromMeas, and ToMeas
 as well as geometry.}

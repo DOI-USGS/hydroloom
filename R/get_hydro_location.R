@@ -1,7 +1,7 @@
 #' Get Hydro Location
 #' @description given a flowline index, returns the hydrologic location (point)
 #' along the specific linear element referenced by the index.
-#' @param indexes data.frame as output from \link{get_flowline_index}.
+#' @param indexes data.frame as output from \link{index_points_to_lines}.
 #' @param flowpath data.frame with three columns: COMID, FromMeas, and ToMeas
 #' as well as geometry.
 #' @export
