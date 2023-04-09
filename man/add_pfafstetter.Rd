@@ -38,6 +38,7 @@ pfaf <- add_pfafstetter(x, max_level = 2)
 
 plot(pfaf["pf_level_2"], lwd = 2)
 
+if(require(nhdplusTools)) {
 work_dir <- nhdplusTools::nhdplusTools_data_dir()
 
 source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
@@ -72,4 +73,5 @@ hr_catchment <- dplyr::left_join(hr_catchment, colors, by = "pf_level_4")
 
 plot(hr_catchment["color"], border = NA, reset = FALSE)
 plot(sf::st_geometry(x), col = "blue", add = TRUE)
+}
 }

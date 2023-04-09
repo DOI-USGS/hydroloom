@@ -20,6 +20,7 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #'
 #' plot(pfaf["pf_level_2"], lwd = 2)
 #'
+#' if(require(nhdplusTools)) {
 #' work_dir <- nhdplusTools::nhdplusTools_data_dir()
 #'
 #' source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
@@ -54,6 +55,7 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #'
 #' plot(hr_catchment["color"], border = NA, reset = FALSE)
 #' plot(sf::st_geometry(x), col = "blue", add = TRUE)
+#' }
 
 add_pfafstetter <- function(x, max_level = 2, status = FALSE) {
   UseMethod("add_pfafstetter")
