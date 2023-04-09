@@ -10,6 +10,7 @@ Authors@R:
 Description: A collection of utilities that support creation of network attributes for hydrologic networks.
 Imports: dplyr, data.table, sf, units, stats, methods, utils, pbapply, tidyr, RANN, rlang
 Suggests: testthat, nhdplusTools, future, lwgeom, future.apply
+Remotes: doi-usgs/nhdplusTools@hydroloom
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
