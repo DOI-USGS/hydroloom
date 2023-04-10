@@ -15,8 +15,10 @@ make_node_topology(x, add_div = NULL, add = TRUE)
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
-\item{add_div}{data.frame containing id and toid diverted paths to add.
-Should have id and toid fields.}
+\item{add_div}{data.frame of logical containing id and toid diverted paths to add.
+Should have id and toid fields. If TRUE, the network will be interpreted as
+a directed acyclic graph with downstream divergences included in the edge
+topology.}
 
 \item{add}{logical if TRUE, node topology will be added to x in return.}
 }
