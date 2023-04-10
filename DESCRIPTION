@@ -8,6 +8,7 @@ Authors@R:
            email = "dblodgett@usgs.gov",
            comment = c(ORCID = "0000-0001-9489-1710"))
 Description: A collection of utilities that support creation of network attributes for hydrologic networks.
+Depends: R (>= 4.0)
 Imports: dplyr, data.table, sf, units, stats, methods, utils, pbapply, tidyr, RANN, rlang
 Suggests: testthat, nhdplusTools, future, lwgeom, future.apply
 Remotes: doi-usgs/nhdplusTools@hydroloom
