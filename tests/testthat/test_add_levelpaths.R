@@ -133,6 +133,8 @@ test_that("hr levelpath", {
 
   x <- readRDS(list.files(pattern = "hr.rds", full.names = TRUE, recursive = TRUE))
 
+  x <- dplyr::select(x, -Permanent_Identifier)
+
   x <- add_toids(x)
 
   lp <- add_levelpaths(x, "GNIS_Name", "ArbolateSu", status = TRUE)

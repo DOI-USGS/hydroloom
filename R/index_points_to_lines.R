@@ -213,6 +213,7 @@ index_points_to_lines.hy <- function(x, points,
 
   if(!is.na(precision)) {
     suppressWarnings(x <- st_intersection(x, point_buffer))
+    suppressWarnings(x <- st_cast(x, "LINESTRING", warn = FALSE))
   }
 
   x <- select(x, any_of(c(id, aggregate_id,
@@ -221,9 +222,14 @@ index_points_to_lines.hy <- function(x, points,
 
   fline_atts <- drop_geometry(x)
 
+  if(sf::st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
+    warning("converting to LINESTRING, this may be slow, check results")
+  }
+
   suppressWarnings(x <- st_cast(x, "LINESTRING", warn = FALSE))
 
   if(!"XY" %in% class(st_geometry(x)[[1]])) {
+    warning("dropping z coordinates, this may be slow")
     x <- st_zm(x)
   }
 
@@ -300,23 +306,36 @@ index_points_to_lines.hy <- function(x, points,
   x <- x |>
     add_index() |>
     filter(.data$L1 %in% matched$L1) |>
-    group_by(.data$L1) |>
-    add_len() |>
     left_join(select(matched, all_of(c("L1", id))), by = "L1") |>
-    left_join(select(fline_atts, -"index"), by = id, relationship = "many-to-many") |>
-    mutate(aggregate_id_measure = round(
-      .data$aggregate_id_from_measure +
-        (.data$aggregate_id_to_measure - .data$aggregate_id_from_measure) *
-        (.data$id_measure / 100),
-      digits = 4)) |>
-    ungroup() |> distinct()
+    left_join(select(fline_atts, -"index"), by = id, relationship = "many-to-many")
 
   matched <- select(matched, point_id, node = "nn.idx", offset = "nn.dists", id)
 
+  if(aggregate_id_from_measure %in% names(fline_atts)) {
+    x <- x |>
+      group_by(.data$L1) |>
+      add_len() |>
+      mutate(aggregate_id_measure = round(
+        .data$aggregate_id_from_measure +
+          (.data$aggregate_id_to_measure - .data$aggregate_id_from_measure) *
+          (.data$id_measure / 100),
+        digits = 4)) |>
+      ungroup() |> distinct()
+
+    select_vec <- c("index", aggregate_id, aggregate_id_measure)
+    select_vec2 <- c(point_id, id, aggregate_id, aggregate_id_measure, offset)
+
+  } else {
+
+    select_vec <- c("index", aggregate_id)
+    select_vec2 <- c(point_id, id, aggregate_id, offset)
+
+  }
+
   matched <- left_join(matched,
-                       distinct(select(x, "index", aggregate_id, aggregate_id_measure)),
+                       distinct(select(x, all_of(select_vec))),
                        by = c("node" = "index")) |>
-    select(point_id, id, aggregate_id, aggregate_id_measure, offset)
+    select(all_of(select_vec2))
 
   return(matched)
 }

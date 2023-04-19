@@ -4,6 +4,10 @@ test_that("get_pfaf", {
 
   source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
 
+  expect_warning(hy(hr_data$NHDFlowline), "Duplicate names found")
+
+  hr_data$NHDFlowline <- dplyr::select(hr_data$NHDFlowline, -Permanent_Identifier)
+
   fl <- hy(hr_data$NHDFlowline) |> add_toids()
 
   fl <- dplyr::select(fl, id, toid, da_sqkm)

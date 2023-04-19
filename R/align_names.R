@@ -50,6 +50,17 @@ align_names <- function(x) {
                "can't proceed converting to hy object."))
   }
 
+  if(any(duplicated(replace_names))) {
+    doop <- replace_names[duplicated(replace_names)]
+    all_doop <- replace_names[replace_names %in% doop]
+    warning(paste0("Duplicate names found when aligning with hydroloom conventions \n using ",
+                   names(doop), " from ", paste(names(all_doop), collapse = ", ")))
+
+    remove <- all_doop[!names(all_doop) %in% names(doop)]
+    replace_names <- replace_names[!names(replace_names) %in% names(remove)]
+
+  }
+
   x <- rename(x, any_of(stats::setNames(names(replace_names), unname(replace_names))))
 
   switch_back <- !names(x) %in% good_names

@@ -6,6 +6,8 @@ test_that("get location", {
                                        sf::st_point(c(-76.88081, 39.36354))),
                                   crs = 4326))
 
+  sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
+
   indexes <- index_points_to_lines(sample_flines, points)
 
   locations <- get_hydro_location(indexes, sample_flines)

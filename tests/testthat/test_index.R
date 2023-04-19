@@ -48,6 +48,8 @@ sr <- units::set_units(0.1, "degrees")
 
 source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
+sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
+
 test_that("point indexing to nearest existing node works as expected", {
 
   flines_in <- sample_flines
@@ -97,6 +99,24 @@ test_that("point indexing to nearest existing node works as expected", {
   names(flines_in)[1] <- "broken"
   expect_error(index_points_to_lines(flines_in, point, search_radius = sr),
                "index_points_to_lines requires id hydroloom attributes.")
+})
+
+test_that("point indexing works without measures", {
+
+    flines_in <- sample_flines
+
+    flines_in <- sf::st_cast(sf::st_transform(flines_in, 4269),
+                             "LINESTRING", warn = FALSE)
+
+    flines_in <- select(flines_in, -FromMeas, -ToMeas)
+
+    point <- sf::st_sfc(sf::st_point(c(-76.86876, 39.49345)), crs = 4269)
+
+    expect_equal(index_points_to_lines(flines_in, point),
+                 data.frame(point_id = 1,
+                            COMID = 11688298,
+                            REACHCODE = "02060003000579",
+                            offset = 0.000348), tolerance = 0.01)
 })
 
 test_that("point indexing to for multiple points works", {
