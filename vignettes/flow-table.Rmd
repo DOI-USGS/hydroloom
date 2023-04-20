@@ -1,0 +1,69 @@
+---
+title: "NHD Flow Table with Hydroloom"
+author: "dblodgett@usgs.gov"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Non-dendritic networks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  comment = "#>",
+  fig.width=4,
+  fig.height=4,
+  fig.align = "center"
+)
+
+oldoption <- options(scipen = 9999)
+```
+
+```{r}
+library(hydroloom)
+library(dplyr)
+
+dir <- nhdplusTools::download_nhd(tempdir(), "1908", TRUE)
+
+fs <- list.files(dir, pattern = ".*1908.*.gdb", full.names = TRUE)
+
+fl <- sf::st_zm(sf::st_cast(sf::read_sf(fs, "NHDFlowline"), "LINESTRING"))
+
+# remove any coastal features
+fl <- filter(fl, ftype != 566)
+
+point <- sf::st_sfc(sf::st_point(c(-147.911472, 64.796633)), 
+                              crs = 4269)
+
+i <- hydroloom::index_points_to_lines(fl, point)
+
+sub <- fl[fl$permanent_identifier == i$permanent_identifier, ]
+
+mapview::mapview(list(sub, point))
+
+# remove coastal and make terminals go to an empty id.
+flow_table <- sf::read_sf(fs, "NHDFlow") |>
+  filter(from_permanent_identifier %in% fl$permanent_identifier) |>
+  mutate(to_permanent_identifier = 
+           ifelse(!to_permanent_identifier %in% from_permanent_identifier, 
+                  "", 
+                  to_permanent_identifier))
+
+# Remove loops found in navigate network dfs
+remove <- hydroloom::check_hy_graph(flow_table)
+# this is naive and these would normally be reviewed.
+flow_table <- flow_table |>
+  mutate(row = 1:n()) |>
+  filter(!row %in% remove$row)
+
+down <- navigate_network_dfs(flow_table, sub$permanent_identifier, direction = "down")
+up <- navigate_network_dfs(flow_table, sub$permanent_identifier, direction = "up")
+
+subdown <- fl[fl$permanent_identifier %in% unique(unlist(down)),]
+subup <- fl[fl$permanent_identifier %in% unique(unlist(up)),]
+
+mapview::mapview(list(subup, subdown, point))
+```
