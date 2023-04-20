@@ -46,7 +46,12 @@ make_index_ids.data.frame <- function(x, long_form = FALSE) {
 #' @export
 make_index_ids.hy <- function(x, long_form = FALSE) {
 
-  check_graph(x)
+  x <- check_hy_outlets(x)
+
+  if(!isTRUE(check_hy_graph(x))) {
+    stop("found one or more pairs of features that reference eachother.
+          Run check_hy_graph to identify issues.")
+  }
 
   x <- distinct(x)
 
@@ -79,16 +84,61 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
   }
 }
 
-check_graph <- function(x) {
-  x <- left_join(x, drop_geometry(x),
+#' Check hy graph
+#' @description check that a id toid graph doesn't contain localized loops.
+#' @inheritParams add_levelpaths
+#' @return if no localized loops are found, returns TRUE. If localized
+#' loops are found, problem rows with a row number added.
+#' @export
+#' @example
+#' # notice that row 4 (id = 4, toid = 9) and row 8 (id = 9, toid = 4) is a loop.
+#' test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
+#'                       toid = c(2, 3, 4, 9, 7, 8, 9, 4))
+#' check_hy_graph(test_data)
+#'
+check_hy_graph <- function(x) {
+
+  if(!inherits(x, "hy")) {
+    x <- hy(x)
+  }
+
+  x <- left_join(mutate(x, row = 1:n()),
+                 drop_geometry(x),
                  by = c("toid" = "id"),
                  relationship = "many-to-many")
 
-  if(any(x$id == x$toid.y, na.rm = TRUE)) {
-    stop("found one or more pairs of features that reference eachother.")
+  check <- x$id == x$toid.y
+
+  if(any(check, na.rm = TRUE)) {
+
+    filter(x, check)
+
+  } else {
+
+    TRUE
+
   }
 
-  return(invisible())
+}
+
+check_hy_outlets <- function(x) {
+
+  if(!inherits(x, "hy")) {
+    x <- hy(x)
+  }
+
+  check <- !x$toid %in% x$id
+
+  if(any(x$toid[check] != get_outlet_value(x))) {
+
+    warning("Outlets don't follow hydroloom convention, fixing.")
+
+    x$toid[check] <- rep(get_outlet_value(x), sum(check))
+
+  }
+
+  x
+
 }
 
 #' format index ids

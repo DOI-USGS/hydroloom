@@ -54,6 +54,10 @@ test_that("add indid", {
   expect_error(hydroloom:::make_index_ids(test_data),
                "found one or more pairs of features that reference eachother.")
 
+  remove <- check_hy_graph(test_data)
+
+  expect_equal(remove$row, c(4, 8))
+
   x$id <- as.character(x$id)
 
   y <- add_toids(x)
