@@ -1,11 +1,14 @@
 test_that("align_names", {
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
-  x <- align_names(x)
+  x$TotDA <- x$TotDASqKM
+
+  expect_warning(x <- align_names(x), "Duplicate names found when aligning with hydroloom")
 
   expect_true(all(c("id", "length_km", "aggregate_id") %in% names(x)))
 
   expect_true(is.character(hydroloom_name_definitions))
+
 })
 
 test_that("hydroloom_names", {

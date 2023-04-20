@@ -51,6 +51,19 @@ align_names <- function(x) {
   }
 
   if(any(duplicated(replace_names))) {
+
+    if("permanent_identifier" %in% names(replace_names)) {
+
+      replace_names <- replace_names[!names(replace_names) == "permanent_identifier"]
+
+      message("defaulting to comid rather than permanent_identifier")
+
+    }
+
+  }
+
+  if(any(duplicated(replace_names))) {
+
     doop <- replace_names[duplicated(replace_names)]
     all_doop <- replace_names[replace_names %in% doop]
     warning(paste0("Duplicate names found when aligning with hydroloom conventions \n using ",

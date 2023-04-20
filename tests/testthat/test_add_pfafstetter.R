@@ -4,7 +4,7 @@ test_that("get_pfaf", {
 
   source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
 
-  expect_warning(hy(hr_data$NHDFlowline), "Duplicate names found")
+  expect_message(hy(hr_data$NHDFlowline), "defaulting to comid rather than permanent_identifier")
 
   hr_data$NHDFlowline <- dplyr::select(hr_data$NHDFlowline, -Permanent_Identifier)
 
