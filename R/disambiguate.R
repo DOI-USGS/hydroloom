@@ -6,12 +6,12 @@
 #' `1 - adist_score / max_string_length`. Comparisons ignore case.
 #' @param indexes data.frame as output from \link{index_points_to_lines} with more than
 #' one hydrologic location per indexed point.
-#' @param flowpath data.frame with two columns. The first should join to the COMID
+#' @param flowpath data.frame with two columns. The first should join to the id
 #' field of the indexes and the second should be the numeric or ascii metric such as drainage
-#' area or GNIS Name. Names of this data.frame are not used.
+#' area or Name. Names of this data.frame are not used.
 #' @param hydro_location data.frame with two columns. The first should join to the
 #' id field of the indexes and the second should be the numeric or ascii metric such as drainage
-#' area or GNIS Name.. Names of this data,frame are not used.
+#' area or GNIS Name. Names of this data.frame are not used.
 #' @return data.frame indexes deduplicated according to the minimum difference
 #' between the values in the metric columns. If two or more result in the same "minimum"
 #' value, duplicates will be returned.
