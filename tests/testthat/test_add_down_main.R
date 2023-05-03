@@ -1,0 +1,173 @@
+test_that("add down main", {
+
+  f <- system.file("extdata/coastal_example.gpkg", package = "hydroloom")
+
+  g <- sf::read_sf(f)
+  g <- g[g$FTYPE != "Coastline", ]
+
+  outlets <- g$COMID[!g$ToNode %in% g$FromNode]
+
+  d <- dplyr::select(g, COMID, gnis_id, FTYPE,
+                     FromNode, ToNode)
+
+  d <- add_divergence(d,
+                      coastal_outlet_ids = outlets,
+                      inland_outlet_ids = c(),
+                      name_attr = "gnis_id",
+                      type_attr = "FTYPE",
+                      major_types = c("StreamRiver", "ArtificialPath", "Connector"))
+
+  expect_equal(d$COMID, g$COMID)
+  expect_equal(d$divergence, g$Divergence)
+
+  expect_equal(d$divergence[d$COMID == 2544459], 2)
+  expect_equal(d$divergence[d$COMID == 2544461], 1)
+
+})
+
+test_that("base down_level", {
+
+  a <- tibble::tibble(
+    id = c("00BE2E87-F8A4-4D53-8CE6-E192469D86EE", "00BE2E87-F8A4-4D53-8CE6-E192469D86EE"),
+    toid = c("2DAE89DC-2C4B-43A1-AB19-E4BAA997C9D2", "72498570-8338-400C-A167-EB3AA589F18B"),
+    coastal = c(TRUE, TRUE),
+    name_att = c("Stuhini Creek", "Stuhini Creek"),
+    ftype = c(558L, 558L),
+    dn_name_att = c(NA, "Stuhini Creek"),
+    dn_ftype = c(558L, 558L),
+    major_type = c(TRUE, TRUE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(a), "72498570-8338-400C-A167-EB3AA589F18B")
+
+  b <- tibble::tibble(
+    id = c("120497331", "120497331"),
+    toid = c("120513267", "120497186"),
+    coastal = c(TRUE, TRUE),
+    name_att = c(NA_character_, NA_character_),
+    ftype = c(460L, 460L),
+    dn_name_att = c(NA, "Carroll Creek"),
+    dn_ftype = c(460L, 460L),
+    major_type = c(TRUE, TRUE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(b), "120497186")
+
+  c <- tibble::tibble(
+    id = c("67193536", "67193536"),
+    toid = c("67194746", "67194750"),
+    coastal = c(FALSE, FALSE),
+    name_att = c("East Fork Tsivat River", "East Fork Tsivat River"),
+    ftype = c(460L, 460L),
+    dn_name_att = c(NA, "East Fork Tsivat River"),
+    dn_ftype = c(460L, 460L),
+    major_type = c(TRUE, TRUE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(c), "67194750")
+
+  d <- tibble::tibble(
+    id = c("{0691ff49-3167-4387-9d59-bd0e69f23ba0}", "{0691ff49-3167-4387-9d59-bd0e69f23ba0}"),
+    toid = c("{6cc577b7-98b2-4352-9edc-5ec342e93078}", "{a1654838-6109-47b2-b5fd-07d329ff502b}"),
+    coastal = c(TRUE, TRUE),
+    name_att = c(NA_character_, NA_character_),
+    ftype = c(336L, 336L),
+    dn_name_att = c(NA_character_, NA_character_),
+    dn_ftype = c(460L, 336L),
+    major_type = c(TRUE, FALSE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(d), "{6cc577b7-98b2-4352-9edc-5ec342e93078}")
+
+  e <- tibble::tibble(
+    id = c("{3BBADBC2-10CD-42C4-963E-2CC3EBCAB96B}", "{3BBADBC2-10CD-42C4-963E-2CC3EBCAB96B}"),
+    toid = c("00", "102984973"),
+    coastal = c(TRUE, TRUE),
+    name_att = c("South Fork Craig River", "South Fork Craig River"),
+    ftype = c(460L, 460L),
+    dn_name_att = c("South Fork Craig River", "South Fork Craig River"),
+    dn_ftype = c(460L, 460L),
+    major_type = c(TRUE, TRUE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(e), "00")
+
+  f <- tibble::tibble(
+    id = c("1", "1"),
+    toid = c("5", "4"),
+    coastal = c(TRUE, FALSE),
+    name_att = c("South Fork Craig River", "South Fork Craig River"),
+    ftype = c(460L, 460L),
+    dn_name_att = c("South Fork Craig River", "South Fork Craig River"),
+    dn_ftype = c(460L, 460L),
+    major_type = c(TRUE, TRUE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(f), "5")
+
+  g <- tibble::tibble(
+    id = c("1", "1"),
+    toid = c("5", "4"),
+    coastal = c(TRUE, FALSE),
+    name_att = c(NA_character_, NA_character_),
+    ftype = c(460L, 460L),
+    dn_name_att = c("South Fork Craig River", "check"),
+    dn_ftype = c(460L, 460L),
+    major_type = c(FALSE, FALSE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(g), "5")
+
+  h <- tibble::tibble(
+    id = c("1", "1"),
+    toid = c("5", "4"),
+    coastal = c(FALSE, FALSE),
+    name_att = c(NA_character_, NA_character_),
+    ftype = c(460L, 460L),
+    dn_name_att = c("South Fork Craig River", NA_character_),
+    dn_ftype = c(460L, 460L),
+    major_type = c(TRUE, TRUE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(h), "5")
+
+  i <- tibble::tibble(
+    id = c("1", "1"),
+    toid = c("5", "4"),
+    coastal = c(FALSE, FALSE),
+    name_att = c(NA_character_, NA_character_),
+    ftype = c(460L, 460L),
+    dn_name_att = c(NA_character_, NA_character_),
+    dn_ftype = c(460L, 460L),
+    major_type = c(TRUE, FALSE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(i), "5")
+
+  j <- tibble::tibble(
+    id = c("1", "1"),
+    toid = c("5", "4"),
+    coastal = c(FALSE, FALSE),
+    name_att = c(NA_character_, NA_character_),
+    ftype = c(460L, 460L),
+    dn_name_att = c("test", NA_character_),
+    dn_ftype = c(460L, 460L),
+    major_type = c(FALSE, FALSE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(j), "5")
+
+  k <- tibble::tibble(
+    id = c("1", "1"),
+    toid = c("5", "4"),
+    coastal = c(FALSE, FALSE),
+    name_att = c(NA_character_, NA_character_),
+    ftype = c(460L, 460L),
+    dn_name_att = c(NA_character_, NA_character_),
+    dn_ftype = c(460L, 460L),
+    major_type = c(FALSE, FALSE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(k), "4")
+
+})

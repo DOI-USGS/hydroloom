@@ -186,7 +186,7 @@ get_outlet_value <- function(x) {
 
 #' @importFrom dplyr filter select left_join right_join all_of any_of bind_rows group_by
 #' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate summarise
-#' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag
+#' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag case_when
 #' @importFrom rlang :=
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_geometry_type st_intersection
 #' @importFrom sf st_cast st_linestring st_is_longlat st_transform st_segmentize st_buffer

@@ -10,13 +10,13 @@ disambiguate_indexes(indexes, flowpath, hydro_location)
 \item{indexes}{data.frame as output from \link{index_points_to_lines} with more than
 one hydrologic location per indexed point.}
 
-\item{flowpath}{data.frame with two columns. The first should join to the COMID
+\item{flowpath}{data.frame with two columns. The first should join to the id
 field of the indexes and the second should be the numeric or ascii metric such as drainage
-area or GNIS Name. Names of this data.frame are not used.}
+area or Name. Names of this data.frame are not used.}
 
 \item{hydro_location}{data.frame with two columns. The first should join to the
 id field of the indexes and the second should be the numeric or ascii metric such as drainage
-area or GNIS Name.. Names of this data,frame are not used.}
+area or GNIS Name. Names of this data.frame are not used.}
 }
 \value{
 data.frame indexes deduplicated according to the minimum difference
