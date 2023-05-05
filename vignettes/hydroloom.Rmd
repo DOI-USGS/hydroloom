@@ -1,0 +1,93 @@
+---
+title: "Hydroloom Overview"
+author: "dblodgett@usgs.gov"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Non-dendritic networks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  comment = "#>",
+  fig.width=4,
+  fig.height=4,
+  fig.align = "center"
+)
+
+library(sf)
+
+oldoption <- options(scipen = 9999)
+```
+
+# `hy` S3 class
+
+Hydroloom implements an `hy` S3 class designed to simplify integration of `hydroloom` with existing data and workflows. `hy()` converts a data.frame to an `hy` `data.frame` with attributes compatible with `hydroloom` functions. `hy_reverse()` converts a `hy` `data.frame` back to its original attribute names. You can teach `hydroloom` how to map your attributes to `hydroloom_name_definitions()` with the `hydroloom_names()` function.8  
+
+Most `hydroloom` functions will work with either a `hy` object or a `data.frame` containing names registered with `hydroloom_names()`. Any attributes added to the `data.frame` will contain names from `hydroloom` and must be renamed in the calling environment. 
+
+Internally, the `hy` S3 class has an attribute `orig_names` as shown below. The `orig_names` attribute is used to convert original attribute names back to their original values. Using the `hydroloom` names and the `hy` S3 object are note required but adopting `hydroloom_names_definitions()` may be helpful for people aiming for consistent, simple, and accurate attribute names.
+
+
+```{r}
+library(hydroloom)
+
+x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
+  dplyr::select(COMID, REACHCODE, FromNode, ToNode, Hydroseq, TerminalFl, Divergence)
+
+hy(x[1:3,])
+
+attr(hy(x), "orig_names")
+
+```
+# Network Graph Representation
+
+The `make_index_ids()` `hydroloom` function creates an adjacency matrix representation of a flow network as well as some conveniet content that are useful when traversing the graph. This adjacency matrix is used heavily in `hydroloom` functions but and may be useful for people who want to write their own graph traversal algorithms.
+
+A companion to `make_index_ids()`, `make_fromids()` reverses the graph such that the adjacency matrix is directed opposite the direction of the provided graph. This is used for upstream flow network traversals.
+
+In the example below we'll add a dendritic toid and explore the `make_index_ids()` output.
+
+```{r}
+y <- add_toids(x, return_dendritic = TRUE)
+
+ind_id <- make_index_ids(y)
+
+names(ind_id)
+
+dim(ind_id$to)
+
+max(lengths(ind_id$lengths))
+
+names(ind_id$to_list)
+
+sapply(ind_id, class)
+```
+
+Now we'll look at the same thing but for a non dendritic set of toids. Notice that the `to` element of `ind_id` now has three rows. This indicates that one or more of the connections in the matrix has three downstream neighbors. The `lengths` element indicates how many non `NA` values are in each column of the matrix in the `to` element.  
+
+
+```{r}
+
+y <- add_toids(drop_geometry(x), return_dendritic = FALSE)
+
+ind_id <- make_index_ids(y)
+
+names(ind_id)
+dim(ind_id$to)
+
+max(ind_id$lengths)
+
+sum(ind_id$lengths == 2)
+sum(ind_id$lengths == 3)
+
+names(ind_id$to_list)
+
+sapply(ind_id, class)
+```
+
+To be continued...
