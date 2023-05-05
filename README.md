@@ -8,12 +8,36 @@
 `hydroloom` is a collection of general hydrologic geospatial fabric
 creation tools.
 
+Install: `remotes::install_github("doi-usgs/hydroloom")`
+
+Documentation: <https://doi-usgs.github.io/hydroloom/>
+
 It was largely created from components of
 [nhdplusTools](https://doi.org/10.5066/P97AS8JD):
 
           Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
           Accessing and Working with the NHDPlus,
           https://doi.org/10.5066/P97AS8JD
+
+`hydroloom` implements algorithms documented in:
+
+NHDPlus Attributes:
+
+McKay, L., Bondelid, T., Dewald, T., Johnston, J., Moore, R., & Rea, A.
+(2015). NHD Plus Version 2: User Guide.
+<https://www.epa.gov/system/files/documents/2023-04/NHDPlusV2_User_Guide.pdf>
+
+Pfafstetter Attributes:
+
+Verdin, K. L., & Verdin, J. P. (1999). A topological system for
+delineation and codification of the Earth’s river basins. Journal of
+Hydrology, 218(1–2), 1–12.
+<https://doi.org/10.1016/S0022-1694(99)00011-6>
+
+Graph Concepts:
+
+Cormen, T. H., & Leiserson, C. E. (2022). Introduction to Algorithms,
+fourth edition. MIT Press.
 
 Key terms:
 
@@ -24,13 +48,13 @@ the package.
 Terms for rivers:  
 **Flowline:** A flowline is an linear geometry that represents a segment
 of a flowing body of water. Some flowlines have no local drainage area
-and are never aggregate features. **Flowpath:** A flowpath is a linear
-geometry that represents the connection between a catchment’s inlet and
-its outlet. All flowpaths have a local drainage area and may be
-aggregates of flowlines. **Catchment:** A physiographic unit with zero
-or one inlets and one outlet. A catchment is represented by one or more
-partial realizations; flowpath, divide, and networks of flowpaths and
-divides.
+and are never aggregate features.  
+**Flowpath:** A flowpath is a linear geometry that represents the
+connection between a catchment’s inlet and its outlet. All flowpaths
+have a local drainage area and may be aggregates of flowlines.  
+**Catchment:** A physiographic unit with zero or one inlets and one
+outlet. A catchment is represented by one or more partial realizations;
+flowpath, divide, and networks of flowpaths and divides.
 
 Development of hydroloom is underway and rapid change should be
 expected.

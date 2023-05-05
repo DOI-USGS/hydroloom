@@ -20,13 +20,17 @@ this will reorder the nodes so they are."><meta property="og:image" content="htt
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/hydroloom.html">Get started</a>
+</li>
+<li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -120,24 +124,19 @@ numbers of flow direction checks.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> (1520229 1560983)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pass the broken geometry to fix_flowdir with the network for toCOMID</span></span></span>
-<span class="r-in"><span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">fix_flowdir</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">COMID</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span>, <span class="va">x</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Unknown or uninitialised column: `COMID`.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error in vectbl_as_row_location(i, nr, i_arg, assign) : </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Can't subset rows with `i`.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BB0000;">✖</span> Logical subscript `i` must be size 1 or 746, not 0.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> Not compatible with requested type: [type=character; target=double].</span>
+<span class="r-in"><span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">fix_flowdir</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">id</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span>, <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Note that the geometry is now in the right order.</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">n3</span> <span class="op">&lt;-</span> <span class="fu"><a href="get_node.html">get_node</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">10</span>, <span class="op">]</span>, position <span class="op">=</span> <span class="st">"end"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 1 feature and 0 fields</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Geometry type: POINT</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dimension:     XY</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bounding box:  xmin: 1520229 ymin: 1560983 xmax: 1520229 ymax: 1560983</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bounding box:  xmin: 1520118 ymin: 1560497 xmax: 1520118 ymax: 1560497</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CRS:           unknown</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            geometry</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span>       <span style="color: #949494; font-style: italic;">&lt;POINT [m]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> (1520229 1560983)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> (1520118 1560497)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">n1</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>

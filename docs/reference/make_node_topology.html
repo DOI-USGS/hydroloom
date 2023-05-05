@@ -18,13 +18,17 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/hydroloom.html">Get started</a>
+</li>
+<li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -68,8 +72,10 @@
 
 
 <dt>add_div</dt>
-<dd><p>data.frame containing id and toid diverted paths to add.
-Should have id and toid fields.</p></dd>
+<dd><p>data.frame of logical containing id and toid diverted paths to add.
+Should have id and toid fields. If TRUE, the network will be interpreted as
+a directed acyclic graph with downstream divergences included in the edge
+topology.</p></dd>
 
 
 <dt>add</dt>
@@ -91,6 +97,7 @@ attributes provided with id, fromnode and tonode in the first three columns.</p>
 <span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="add_toids.html">add_toids</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="op">-</span><span class="va">ToNode</span>, <span class="op">-</span><span class="va">FromNode</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">make_node_topology</span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>nhdplusTools make_node_topology is deprecated. Use hydroloom version.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># just the divergences which have unique fromids in x but don't in new hope.</span></span></span>
 <span class="r-in"><span><span class="va">div</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_toids.html">add_toids</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">COMID</span>, <span class="va">FromNode</span>, <span class="va">ToNode</span><span class="op">)</span>,</span></span>
@@ -101,6 +108,7 @@ attributes provided with id, fromnode and tonode in the first three columns.</p>
 <span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="add_toids.html">add_toids</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="op">-</span><span class="va">ToNode</span>, <span class="op">-</span><span class="va">FromNode</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">make_node_topology</span><span class="op">(</span><span class="va">y</span>, add_div <span class="op">=</span> <span class="va">div</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>nhdplusTools make_node_topology is deprecated. Use hydroloom version.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

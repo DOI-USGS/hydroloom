@@ -43,12 +43,16 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
+  <a class="nav-link" href="articles/hydroloom.html">Get started</a>
+</li>
+<li class="nav-item">
   <a class="nav-link" href="reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="articles/flow-table.html">NHD Flow Table with Hydroloom</a>
     <a class="dropdown-item" href="articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -76,16 +80,25 @@
 <h2 id="hydroloom">hydroloom:<a class="anchor" aria-label="anchor" href="#hydroloom"></a>
 </h2>
 <p><code>hydroloom</code> is a collection of general hydrologic geospatial fabric creation tools.</p>
+<p>Install: <code>remotes::install_github("doi-usgs/hydroloom")</code></p>
+<p>Documentation: <a href="https://doi-usgs.github.io/hydroloom/" class="uri">https://doi-usgs.github.io/hydroloom/</a></p>
 <p>It was largely created from components of <a href="https://doi.org/10.5066/P97AS8JD" class="external-link">nhdplusTools</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>      Blodgett, D., Johnson, J.M., <span class="dv">2022</span>, nhdplusTools<span class="sc">:</span> Tools <span class="cf">for</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>      Accessing and Working with the NHDPlus,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>      https<span class="sc">:</span><span class="er">//</span>doi.org<span class="sc">/</span><span class="fl">10.5066</span><span class="sc">/</span>P97AS8JD</span></code></pre></div>
+<p><code>hydroloom</code> implements algorithms documented in:</p>
+<p>NHDPlus Attributes:</p>
+<p>McKay, L., Bondelid, T., Dewald, T., Johnston, J., Moore, R., &amp; Rea, A. (2015). NHD Plus Version 2: User Guide. <a href="https://www.epa.gov/system/files/documents/2023-04/NHDPlusV2_User_Guide.pdf" class="external-link uri">https://www.epa.gov/system/files/documents/2023-04/NHDPlusV2_User_Guide.pdf</a></p>
+<p>Pfafstetter Attributes:</p>
+<p>Verdin, K. L., &amp; Verdin, J. P. (1999). A topological system for delineation and codification of the Earth’s river basins. Journal of Hydrology, 218(1–2), 1–12. <a href="https://doi.org/10.1016/S0022-1694(99)00011-6" class="external-link uri">https://doi.org/10.1016/S0022-1694(99)00011-6</a></p>
+<p>Graph Concepts:</p>
+<p>Cormen, T. H., &amp; Leiserson, C. E. (2022). Introduction to Algorithms, fourth edition. MIT Press.</p>
 <p>Key terms:</p>
 <div class="section level3">
 <h3 id="terminology">Terminology:<a class="anchor" aria-label="anchor" href="#terminology"></a>
 </h3>
 <p>The following definitions have been used as much as possible throughout the package.<br>
-Terms for rivers:<br><strong>Flowline:</strong> A flowline is an linear geometry that represents a segment of a flowing body of water. Some flowlines have no local drainage area and are never aggregate features. <strong>Flowpath:</strong> A flowpath is a linear geometry that represents the connection between a catchment’s inlet and its outlet. All flowpaths have a local drainage area and may be aggregates of flowlines. <strong>Catchment:</strong> A physiographic unit with zero or one inlets and one outlet. A catchment is represented by one or more partial realizations; flowpath, divide, and networks of flowpaths and divides.</p>
+Terms for rivers:<br><strong>Flowline:</strong> A flowline is an linear geometry that represents a segment of a flowing body of water. Some flowlines have no local drainage area and are never aggregate features.<br><strong>Flowpath:</strong> A flowpath is a linear geometry that represents the connection between a catchment’s inlet and its outlet. All flowpaths have a local drainage area and may be aggregates of flowlines.<br><strong>Catchment:</strong> A physiographic unit with zero or one inlets and one outlet. A catchment is represented by one or more partial realizations; flowpath, divide, and networks of flowpaths and divides.</p>
 <p>Development of hydroloom is underway and rapid change should be expected.</p>
 </div>
 </div>

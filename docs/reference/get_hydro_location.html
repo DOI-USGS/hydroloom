@@ -20,13 +20,17 @@ along the specific linear element referenced by the index."><meta property="og:i
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/hydroloom.html">Get started</a>
+</li>
+<li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -61,7 +65,7 @@ along the specific linear element referenced by the index.</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>indexes</dt>
-<dd><p>data.frame as output from get_flowline_index.</p></dd>
+<dd><p>data.frame as output from <a href="index_points_to_lines.html">index_points_to_lines</a>.</p></dd>
 
 
 <dt>flowpath</dt>
@@ -79,6 +83,7 @@ as well as geometry.</p></dd>
 <span class="r-in"><span>                                              <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_point</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">76.91711</span>, <span class="fl">39.40884</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                                              <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_point</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">76.88081</span>, <span class="fl">39.36354</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                              crs <span class="op">=</span> <span class="fl">4326</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>converting to LINESTRING, this may be slow, check results</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">get_hydro_location</span><span class="op">(</span><span class="va">indexes</span>, <span class="va">sample_flines</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Geometry set for 3 features </span>

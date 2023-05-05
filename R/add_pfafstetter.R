@@ -1,6 +1,6 @@
 required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 
-#' @title Add Pfafstetter Codes (Experimental)
+#' @title Add Pfafstetter Codes
 #' @description Determines Pfafstetter codes for a dendritic network with
 #' total drainage area, levelpath, and topo_sort attributes.
 #' @inheritParams add_levelpaths

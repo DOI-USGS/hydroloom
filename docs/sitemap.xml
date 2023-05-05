@@ -7,6 +7,12 @@
     <loc>https://doi-usgs.github.io/hydroloom/articles/advanced_network.html</loc>
   </url>
   <url>
+    <loc>https://doi-usgs.github.io/hydroloom/articles/flow-table.html</loc>
+  </url>
+  <url>
+    <loc>https://doi-usgs.github.io/hydroloom/articles/hydroloom.html</loc>
+  </url>
+  <url>
     <loc>https://doi-usgs.github.io/hydroloom/articles/index.html</loc>
   </url>
   <url>
@@ -31,6 +37,9 @@
     <loc>https://doi-usgs.github.io/hydroloom/reference/accumulate_downstream.html</loc>
   </url>
   <url>
+    <loc>https://doi-usgs.github.io/hydroloom/reference/add_divergence.html</loc>
+  </url>
+  <url>
     <loc>https://doi-usgs.github.io/hydroloom/reference/add_levelpaths.html</loc>
   </url>
   <url>
@@ -50,6 +59,9 @@
   </url>
   <url>
     <loc>https://doi-usgs.github.io/hydroloom/reference/align_names.html</loc>
+  </url>
+  <url>
+    <loc>https://doi-usgs.github.io/hydroloom/reference/check_hy_graph.html</loc>
   </url>
   <url>
     <loc>https://doi-usgs.github.io/hydroloom/reference/disambiguate_indexes.html</loc>
@@ -95,6 +107,9 @@
   </url>
   <url>
     <loc>https://doi-usgs.github.io/hydroloom/reference/is.hy.html</loc>
+  </url>
+  <url>
+    <loc>https://doi-usgs.github.io/hydroloom/reference/make_attribute_topology.html</loc>
   </url>
   <url>
     <loc>https://doi-usgs.github.io/hydroloom/reference/make_fromids.html</loc>

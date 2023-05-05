@@ -12,6 +12,7 @@ reference:
     - '`align_names`'
   - title: Random Helpers
     contents:
+    - '`check_hy_graph`'
     - '`fix_flowdir`'
     - '`get_node`'
     - '`st_compatibalize`'
@@ -20,12 +21,14 @@ reference:
   - title: Network Attributes
     contents:
     - '`sort_network`'
+    - '`add_divergence`'
     - '`add_levelpaths`'
     - '`add_pathlength`'
     - '`add_pfafstetter`'
     - '`add_streamlevel`'
     - '`add_streamorder`'
     - '`add_toids`'
+    - '`make_attribute_topology`'
   - title: Network Graph Functions
     contents:
       - '`make_index_ids`'

@@ -43,12 +43,16 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
+  <a class="nav-link" href="../articles/hydroloom.html">Get started</a>
+</li>
+<li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
+    <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -82,14 +86,200 @@
 
     
     
-<div class="figure" style="text-align: center">
-<img src="non-dendritic_files/figure-html/node-1.png" alt="We say that 2 is a headwater in the dendritic system, but have the ability to add those connections back later as long as the nodes where diversions exist are left intact." width="45%"><img src="non-dendritic_files/figure-html/node-2.png" alt="We say that 2 is a headwater in the dendritic system, but have the ability to add those connections back later as long as the nodes where diversions exist are left intact." width="45%"><p class="caption">
-We say that 2 is a headwater in the dendritic system, but have the
-ability to add those connections back later as long as the nodes where
-diversions exist are left intact.
-</p>
+<style type="text/css">
+   .main-container {max-width: 100%;}
+   .row {display: flex;}
+   .column {flex: 50%;}
+</style>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p><code><a href="../articles/advanced_network.html">vignette("advanced_network")</a></code> talks about the basics of
+network topology representation and attributes that build on a strictly
+dendritic network. This vignette expands those topics by describing
+<code>hydroloom</code> functionality that supports non-dendritic
+networks.</p>
 </div>
-  </main>
+<div class="section level2">
+<h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h2>
+<p>As discussed in the <code><a href="../articles/advanced_network.html">vignette("advanced_network")</a></code>
+vignette, a hydrologic flow network can be represented as an edge to
+edge (e.g. edge list) topology or an edge-node topology. In the case of
+dendritic networks, an edge list can be stored as a single “toid”
+attribute on each feature and nodes are redundant as there would be one
+and only one node for each feature. In non-dendritic networks, an edge
+list can include multiple “toid” attributes for each feature,
+necessitating a one to many relationship that can be difficult to
+interpret. Nevertheless, the U.S. National Hydrography Dataset uses an
+edge-list format in its “flow table” and the format is capable of
+storing non-dendritic feature topology.</p>
+<p>Using a node topology to store a flow network, each feature flows
+from one and only one node and flows to one and only one node. This one
+to one relationship between features and their from and to nodes means
+that the topology fits in a table with one row per feature as is common
+practice in spatial feature data.</p>
+<p>For this reason, the NHDPlus data model converts the NHD “flow table”
+into node topology in its representation of non dendritic topology. The
+downside of this approach is that it requires creation of a node
+identifier. These node identifiers are a table deduplication device that
+enables a one to many relationship (the flow table) to be represented as
+two one to one relationships. Given this, in hydrologic flow networks,
+node identifiers can be created based on an edge list and discarded when
+no longer needed.</p>
+<div class="row">
+<div class="column">
+<p><img src="non-dendritic_files/figure-html/node-1.png" width="45%" style="display: block; margin: auto;"></p>
+</div>
+<div class="column">
+<p><img src="non-dendritic_files/figure-html/node2-1.png" width="45%" style="display: block; margin: auto;"></p>
+</div>
+</div>
+<p>In this example of an edge list topology and a node topology for the
+same system, feature ‘1’ flows to two edges but only one node. We can
+represent this in tabular form with a duplicated row for the divergence
+downstream of ‘1’ or with the addition of node identifiers as shown in
+the following tables.</p>
+<div class="row">
+<div class="column">
+<table class="table">
+<thead><tr class="header">
+<th>id</th>
+<th>fromnode</th>
+<th>tonode</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>N1</td>
+<td>N2</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>N2</td>
+<td>N3</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>N3</td>
+<td>N4</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>N2</td>
+<td>N4</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>N4</td>
+<td>N5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="column">
+<table class="table">
+<thead><tr class="header">
+<th>id</th>
+<th>toid</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="non-dendritic-topology-attributes-">Non-dendritic topology attributes.<a class="anchor" aria-label="anchor" href="#non-dendritic-topology-attributes-"></a>
+</h2>
+<p>Non-dendritic networks represent downstream diverted flow where one
+path is primary and all others are thought to be secondary. The
+following attributes are supported by <code>hydroloom</code> to help
+track and work with this primary and secondary downstream
+categorization.</p>
+<div class="section level3">
+<h3 id="fromnode-and-tonode">fromnode and tonode<a class="anchor" aria-label="anchor" href="#fromnode-and-tonode"></a>
+</h3>
+<p>The attributes <code>fromnode</code> and <code>tonode</code> are used
+to store a flow network as a edge node topology where every network
+feature has one and only one node upstream and one and only one node
+downstream. Nodes are useful if converting a flow network to a graph and
+are useful in many analysis contexts as there is a single identifier for
+a confluence or divergence.</p>
+</div>
+<div class="section level3">
+<h3 id="divergence">divergence<a class="anchor" aria-label="anchor" href="#divergence"></a>
+</h3>
+<p>The <code>divergence</code> attribute indicates if a downstream
+connection is primary (1) or secondary (2). If 0, a connection is not
+downstream of a divergence. This attribute is useful as it facilitates
+following a flow network in the “downstream mainstem” direction at every
+divergence.</p>
+</div>
+<div class="section level3">
+<h3 id="return-divergence">return divergence<a class="anchor" aria-label="anchor" href="#return-divergence"></a>
+</h3>
+<p>The <code>return divergence</code> attribute indicates that one or
+more of the features upstream of a given feature originates from a
+divergence. If 0, the upstream features are not part of a diversion. If
+1, one or more of the upstream features is part of a diversion.</p>
+</div>
+<div class="section level3">
+<h3 id="stream-calculator">stream calculator<a class="anchor" aria-label="anchor" href="#stream-calculator"></a>
+</h3>
+<p>The <code>stream calculator</code> attribute is part of the modified
+Strahler stream order as implemented in the NHDPlus data model. It
+indicates if a given feature is part of the downstream mainstem
+dendritic network or is part of a diverted path. If 0, the path is part
+of a diversion. Otherwise <code>stream calculator</code> will be equal
+to stream order. When generating Strahler stream order, if stream
+calculator is 0 for a given feature, that feature is not considered for
+incrementing downstream stream order.</p>
+</div>
+<div class="section level3">
+<h3 id="summary">summary<a class="anchor" aria-label="anchor" href="#summary"></a>
+</h3>
+<p>As a system, <code>stream calculator</code>, <code>divergence</code>
+and <code>return divergence</code> support network navigation and
+processing in the context of diverted paths.</p>
+<ol style="list-style-type: decimal">
+<li>A feature at the top of a diversion will have
+<code>divergence</code> set to 1.</li>
+<li>All features that are part of a diversion that has not yet
+recombined with a main path, will have <code>stream calculator</code>
+set to 0.</li>
+<li>A feature that is just downstream of where a diversion path
+recombines with a main path will have <code>return diversion</code> set
+to 1.</li>
+</ol>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
