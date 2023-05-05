@@ -57,25 +57,25 @@ adds a divergence attribute according to NHDPlus data model methods.
 }
 \details{
 When considering downstream connections with diversions, there are three
-factors considered to determine which is primary.
-1a) same name
-1b) is named
-2) feature type (type_attr controls this)
-3) flows to coast (has a coastal connection is preferred)
+factors considered to determine which is primary.\if{html}{\out{<br>}}
+1a) same name\if{html}{\out{<br>}}
+1b) is named\if{html}{\out{<br>}}
+2) feature type (type_attr controls this)\if{html}{\out{<br>}}
+3) flows to coast (has a coastal connection is preferred)\if{html}{\out{<br>}}
 
-The following list describes the order of precedence for tests
-1: 1a, 2, 3
-2: 1a, 2
-3: The NHDPlus uses diverted fraction this is not used currently.
-4: 1b, 2, 3
-5: 2, 3
-6: 1b, 3
-7: 3,
-8: 1b, 2
-9: 2
-10: 1b
+The following list describes the order of precedence for tests\if{html}{\out{<br>}}
+1: 1a, 2, 3\if{html}{\out{<br>}}
+2: 1a, 2\if{html}{\out{<br>}}
+3: The NHDPlus uses diverted fraction this is not used currently.\if{html}{\out{<br>}}
+4: 1b, 2, 3\if{html}{\out{<br>}}
+5: 2, 3\if{html}{\out{<br>}}
+6: 1b, 3\if{html}{\out{<br>}}
+7: 3,\if{html}{\out{<br>}}
+8: 1b, 2\if{html}{\out{<br>}}
+9: 2\if{html}{\out{<br>}}
+10: 1b\if{html}{\out{<br>}}
 
-If all checks return and no primary connection has been identifierd, the
+If all checks return and no primary connection has been identified, the
 connection with a smaller id is chosen.
 }
 \examples{

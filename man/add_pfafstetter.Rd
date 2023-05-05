@@ -4,7 +4,7 @@
 \alias{add_pfafstetter}
 \alias{add_pfafstetter.data.frame}
 \alias{add_pfafstetter.hy}
-\title{Add Pfafstetter Codes (Experimental)}
+\title{Add Pfafstetter Codes}
 \usage{
 add_pfafstetter(x, max_level = 2, status = FALSE)
 

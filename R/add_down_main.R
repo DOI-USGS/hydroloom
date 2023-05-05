@@ -17,25 +17,25 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #' @details
 #'
 #' When considering downstream connections with diversions, there are three
-#' factors considered to determine which is primary.
-#' 1a) same name
-#' 1b) is named
-#' 2) feature type (type_attr controls this)
-#' 3) flows to coast (has a coastal connection is preferred)
+#' factors considered to determine which is primary.<br>
+#' 1a) same name<br>
+#' 1b) is named<br>
+#' 2) feature type (type_attr controls this)<br>
+#' 3) flows to coast (has a coastal connection is preferred)<br>
 #'
-#'  The following list describes the order of precedence for tests
-#' 1: 1a, 2, 3
-#' 2: 1a, 2
-#' 3: The NHDPlus uses diverted fraction this is not used currently.
-#' 4: 1b, 2, 3
-#' 5: 2, 3
-#' 6: 1b, 3
-#' 7: 3,
-#' 8: 1b, 2
-#' 9: 2
-#' 10: 1b
+#'  The following list describes the order of precedence for tests<br>
+#' 1: 1a, 2, 3<br>
+#' 2: 1a, 2<br>
+#' 3: The NHDPlus uses diverted fraction this is not used currently.<br>
+#' 4: 1b, 2, 3<br>
+#' 5: 2, 3<br>
+#' 6: 1b, 3<br>
+#' 7: 3,<br>
+#' 8: 1b, 2<br>
+#' 9: 2<br>
+#' 10: 1b<br>
 #'
-#' If all checks return and no primary connection has been identifierd, the
+#' If all checks return and no primary connection has been identified, the
 #' connection with a smaller id is chosen.
 #'
 #' @name add_divergence
@@ -60,23 +60,15 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #'                major_types = c("StreamRiver", "ArtificialPath", "Connector"))
 #'
 #'
-add_divergence <- function(x,
-                           coastal_outlet_ids,
-                           inland_outlet_ids,
-                           name_attr,
-                           type_attr ,
-                           major_types) {
+add_divergence <- function(x, coastal_outlet_ids, inland_outlet_ids,
+                           name_attr, type_attr, major_types) {
   UseMethod("add_divergence")
 }
 
 #' @name add_divergence
 #' @export
-add_divergence.data.frame <- function(x,
-                                      coastal_outlet_ids,
-                                      inland_outlet_ids,
-                                      name_attr,
-                                      type_attr ,
-                                      major_types) {
+add_divergence.data.frame <- function(x, coastal_outlet_ids, inland_outlet_ids,
+                                      name_attr, type_attr, major_types) {
 
   x <- hy(x)
 
@@ -92,12 +84,8 @@ add_divergence.data.frame <- function(x,
 
 #' @name add_divergence
 #' @export
-add_divergence.hy <- function(x,
-                           coastal_outlet_ids,
-                           inland_outlet_ids,
-                           name_attr,
-                           type_attr ,
-                           major_types) {
+add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
+                              name_attr, type_attr, major_types) {
 
   x <- select(x, -any_of("toid"))
 
@@ -131,7 +119,7 @@ add_divergence.hy <- function(x,
     try(navigate_network_dfs(x = x, starts = i,
                              direction = "up",
                              reset = FALSE))
-  }, net = net, cl = "future")
+  }, net = x, cl = "future")
 
   paths_df <- data.frame(id = unlist(term),
                          paths = I(unlist(paths,

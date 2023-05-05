@@ -123,23 +123,23 @@ as being "major". e.g. river might be major and canal might be minor.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>When considering downstream connections with diversions, there are three
-factors considered to determine which is primary.
-1a) same name
-1b) is named
-2) feature type (type_attr controls this)
-3) flows to coast (has a coastal connection is preferred)</p>
-<p>The following list describes the order of precedence for tests
-1: 1a, 2, 3
-2: 1a, 2
-3: The NHDPlus uses diverted fraction this is not used currently.
-4: 1b, 2, 3
-5: 2, 3
-6: 1b, 3
-7: 3,
-8: 1b, 2
-9: 2
-10: 1b</p>
-<p>If all checks return and no primary connection has been identifierd, the
+factors considered to determine which is primary.<br>
+1a) same name<br>
+1b) is named<br>
+2) feature type (type_attr controls this)<br>
+3) flows to coast (has a coastal connection is preferred)<br></p>
+<p>The following list describes the order of precedence for tests<br>
+1: 1a, 2, 3<br>
+2: 1a, 2<br>
+3: The NHDPlus uses diverted fraction this is not used currently.<br>
+4: 1b, 2, 3<br>
+5: 2, 3<br>
+6: 1b, 3<br>
+7: 3,<br>
+8: 1b, 2<br>
+9: 2<br>
+10: 1b<br></p>
+<p>If all checks return and no primary connection has been identified, the
 connection with a smaller id is chosen.</p>
     </div>
 
@@ -162,6 +162,7 @@ connection with a smaller id is chosen.</p>
 <span class="r-in"><span>               name_attr <span class="op">=</span> <span class="st">"gnis_id"</span>,</span></span>
 <span class="r-in"><span>               type_attr <span class="op">=</span> <span class="st">"FTYPE"</span>,</span></span>
 <span class="r-in"><span>               major_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"StreamRiver"</span>, <span class="st">"ArtificialPath"</span>, <span class="st">"Connector"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                  | 0 % ~calculating    |++                                                | 3 % ~03s            |++++                                              | 7 % ~02s            |++++++                                            | 10% ~02s            |+++++++                                           | 14% ~01s            |+++++++++                                         | 17% ~01s            |+++++++++++                                       | 21% ~01s            |+++++++++++++                                     | 24% ~01s            |++++++++++++++                                    | 28% ~01s            |++++++++++++++++                                  | 31% ~01s            |++++++++++++++++++                                | 34% ~01s            |+++++++++++++++++++                               | 38% ~01s            |+++++++++++++++++++++                             | 41% ~01s            |+++++++++++++++++++++++                           | 45% ~01s            |+++++++++++++++++++++++++                         | 48% ~01s            |++++++++++++++++++++++++++                        | 52% ~01s            |++++++++++++++++++++++++++++                      | 55% ~00s            |++++++++++++++++++++++++++++++                    | 59% ~00s            |++++++++++++++++++++++++++++++++                  | 62% ~00s            |+++++++++++++++++++++++++++++++++                 | 66% ~00s            |+++++++++++++++++++++++++++++++++++               | 69% ~00s            |+++++++++++++++++++++++++++++++++++++             | 72% ~00s            |++++++++++++++++++++++++++++++++++++++            | 76% ~00s            |++++++++++++++++++++++++++++++++++++++++          | 79% ~00s            |++++++++++++++++++++++++++++++++++++++++++        | 83% ~00s            |++++++++++++++++++++++++++++++++++++++++++++      | 86% ~00s            |+++++++++++++++++++++++++++++++++++++++++++++     | 90% ~00s            |+++++++++++++++++++++++++++++++++++++++++++++++   | 93% ~00s            |+++++++++++++++++++++++++++++++++++++++++++++++++ | 97% ~00s            |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=01s  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 535 features and 6 fields</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Geometry type: LINESTRING</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dimension:     XY</span>

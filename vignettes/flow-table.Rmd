@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 )
 
 oldoption <- options(scipen = 9999)
+
 ```
 
 ```{r}
