@@ -153,3 +153,54 @@ As a system, `stream calculator`, `divergence` and `return divergence` support n
 1. A feature at the top of a diversion will have `divergence` set to 1.
 1. All features that are part of a diversion that has not yet recombined with a main path, will have `stream calculator` set to 0.
 1. A feature that is just downstream of where a diversion path recombines with a main path will have `return diversion` set to 1. 
+
+## Bringing it all together
+
+The example below shows how we can recreate the non-dendritic attributes and use them in practice.
+
+We'll start with the small sample watershed that's included in `hydroloom` and select only the attributes required to recreate the non-dendritic network.  
+
+```{r} 
+
+x <- sf::read_sf(system.file("extdata/new_hope.gpkg", 
+                             package = "hydroloom"))
+
+# First we select only an id, a name, and a feature type.
+flow_net <- x |>
+  select(COMID, GNIS_ID, FTYPE) |>
+  sf::st_transform(5070)
+
+# Now we convert the geometric network to an attribute topology
+# and convert that to a node topology and join our attributes back
+flow_net <- flow_net |>
+  make_attribute_topology(min_distance = 5) |>
+  make_node_topology(add_div = TRUE) |>
+  left_join(drop_geometry(flow_net), by = "COMID")
+
+# We only have one outlet so it doesn't matter if it is coastal
+# or inland but we have to provide it.
+outlets <- filter(flow_net, !tonode %in% fromnode)
+
+# We have these feature types. A larger dataset might include 
+# things like canals which would not be considered  "major"
+unique(flow_net$FTYPE)
+
+# now we run the add_divergence, add_toids, and add_streamorder
+flow_net <- add_divergence(flow_net, 
+                           coastal_outlet_ids = c(), 
+                           inland_outlet_ids = outlets$COMID, 
+                           name_attr = "GNIS_ID", 
+                           type_attr = "FTYPE", 
+                           major_types = unique(flow_net$FTYPE)) |>
+  add_toids() |>
+  add_streamorder()
+
+# Make sure we reproduce what came from our source NHDPlus data.
+sum(flow_net$divergence == 2)
+sum(x$Divergence == 2)
+all(flow_net$divergence == x$Divergence)
+
+names(flow_net)
+
+```
+With the above code, we removed all attributes other than an ID, a name and a feature type and recreated both a dendritic (toid) and non-dendritic (fromnode tonode) topology. We added `divergence` attribute, `stream_order`, and `stream_calculator` attributes.

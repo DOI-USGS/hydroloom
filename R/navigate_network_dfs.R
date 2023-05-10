@@ -33,12 +33,18 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
     names(g$to_list) <- c("indid", "id", "toindid")
   }
 
+  navigate_network_dfs_internal(g, starts, reset)
+
+}
+
+navigate_network_dfs_internal <- function(g, starts, reset) {
+
   starts <- unique(g$to_list$indid[which(g$to_list$id %in% starts)])
 
   if(reset) save_to <- g$to
 
   # Some vectors to track results
-  set <- to_visit <- path <- rep(0, nrow(x))
+  set <- to_visit <- path <- rep(0, ncol(g$to))
 
   out_list <- rep(list(list()), length(starts))
 

@@ -9,7 +9,9 @@ test_that("attribute topology basics", {
   y <- sf::st_transform(y, 5070)
 
   # generate a network from the geometry
-  z <- make_attribute_topology(y, 10)
+  z <- make_attribute_topology(hy(y), 10)
+
+  expect_equal(sum(z$toid == 0), 1)
 
   # add toids from the source network fromnode tonode
   x <- add_toids(hy(x), return_dendritic = FALSE)

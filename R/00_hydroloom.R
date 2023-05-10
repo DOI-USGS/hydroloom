@@ -25,7 +25,7 @@ dn_levelpath <- "dn_levelpath"
 stream_level <- "stream_level"
 dn_stream_level <- "dn_stream_level"
 stream_order <- "stream_order"
-dendritic_stream_order <- "dendritic_stream_order"
+stream_calculator <- "stream_calculator"
 feature_type <- "feature_type"
 feature_type_code <- "feature_type_code"
 vector_proc_unit <- "vector_proc_unit"
@@ -46,7 +46,7 @@ good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
                 topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
                 terminal_topo_sort, terminal_flag, terminal_id, start_flag,
                 levelpath, up_levelpath, dn_levelpath, levelpath_outlet_id,
-                stream_level, dn_stream_level, stream_order, dendritic_stream_order,
+                stream_level, dn_stream_level, stream_order, stream_calculator,
                 feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
                 id_measure, aggregate_id, aggregate_id_measure,
                 aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset)
@@ -88,9 +88,10 @@ hnd$dn_stream_level <- "stream level of downstream mainstem network element"
 hnd$stream_order <- "starting at 1 for headwaters increments by 1 for each larger
                      tributary level, divergences adopt stream order from upstream
                      but returning divergent network does not increment stream order"
-hnd$dendritic_stream_order <- "starting at 1 for headwaters and divirgences increments
-                               by 1 for each larger tributary level, is equal to
-                               stream_order along the dendritic network"
+hnd$stream_calculator <- "starting at 1 for headwaters and 0 along divirted paths
+                          increments by 1 for each larger tributary level, does not
+                          increment along diverted paths. Is equal to stream_order
+                          along the dendritic network"
 hnd$feature_type <- "descriptive feature type monicker"
 hnd$feature_type_code <- "compact feature type identifier"
 hnd$vector_proc_unit <- "identifier for processing units based on vector encapsulation"
@@ -148,8 +149,8 @@ hydroloom_name_map <- c(
 
   streamleve = stream_level,
   dnlevel = dn_stream_level,
-  streamrde = stream_order,
-  streamcalc = dendritic_stream_order,
+  streamorde = stream_order,
+  streamcalc = stream_calculator,
 
   ftype = feature_type,
   fcode = feature_type_code,

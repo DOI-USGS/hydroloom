@@ -15,7 +15,7 @@ add_streamorder(x, status = TRUE)
 \item{status}{boolean if status updates should be printed.}
 }
 \value{
-data.frame containing added \code{stream_order} and \code{stream_calc} attribute.
+data.frame containing added \code{stream_order} and \code{stream_calculator} attribute.
 }
 \description{
 Adds a strahler stream order.
@@ -25,7 +25,7 @@ upstream order plus one. Otherwise it is assigned the maximum upstream order.
 
 To match the nhdplus algorithm, non-dendritic network connectivity and a
 \code{divergence} attribute must be included. All secondary paths will have the
-\code{stream_order} of upstream primary paths and a \code{stream_calc} value of 0.
+\code{stream_order} of upstream primary paths and a \code{stream_calculator} value of 0.
 Secondary paths have no affect on the order of downstream paths.
 }
 \examples{
@@ -36,6 +36,6 @@ x <- add_toids(x, return_dendritic = FALSE)
 x <- add_streamorder(x)
 
 plot(sf::st_geometry(x), lwd = x$stream_order, col = "blue")
-plot(sf::st_geometry(x), lwd = x$stream_calc, col = "blue")
+plot(sf::st_geometry(x), lwd = x$stream_calculator, col = "blue")
 
 }

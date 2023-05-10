@@ -6,11 +6,11 @@
 #'
 #' To match the nhdplus algorithm, non-dendritic network connectivity and a
 #' `divergence` attribute must be included. All secondary paths will have the
-#' `stream_order` of upstream primary paths and a `stream_calc` value of 0.
+#' `stream_order` of upstream primary paths and a `stream_calculator` value of 0.
 #' Secondary paths have no affect on the order of downstream paths.
 #'
 #' @inheritParams add_levelpaths
-#' @return data.frame containing added `stream_order` and `stream_calc` attribute.
+#' @return data.frame containing added `stream_order` and `stream_calculator` attribute.
 #' @export
 #' @name add_streamorder
 #' @examples
@@ -21,7 +21,7 @@
 #' x <- add_streamorder(x)
 #'
 #' plot(sf::st_geometry(x), lwd = x$stream_order, col = "blue")
-#' plot(sf::st_geometry(x), lwd = x$stream_calc, col = "blue")
+#' plot(sf::st_geometry(x), lwd = x$stream_calculator, col = "blue")
 #'
 add_streamorder <- function(x, status = TRUE) {
   UseMethod("add_streamorder")
@@ -38,6 +38,8 @@ add_streamorder.data.frame <- function(x, status = TRUE) {
 }
 
 add_streamorder.hy <- function(x, status = TRUE) {
+
+  if("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
 
   # if there's any non-dendritic network we need a divergence marker
   if(length(unique(x$id)) < nrow(x)) {
@@ -137,7 +139,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
   left_join(x,
             bind_cols(id = unique(net$id), tibble(stream_order = order,
-                                                  stream_calc = calc)),
+                                                  stream_calculator = calc)),
             by = "id")
 
 }

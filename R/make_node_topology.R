@@ -158,9 +158,16 @@ make_nondendritic_topology <- function(x) {
     distinct()
 
   # create a rudimentary node based topology.
-  distinct(data.frame(id = c(x$id, x$toid))) |>
+  out <- distinct(data.frame(id = c(x$id, x$toid))) |>
     left_join(to, by = "id") |>
     left_join(from, by = "id") |>
-    select(id, fromnode, tonode)
+    select(id, fromnode, tonode) |>
+    filter(!id == get_outlet_value(x))
 
+  if(inherits(x, "hy")) {
+    class(out) <- c("hy", class(out))
+    attr(out, "orig_names") <- attr(x, "orig_names")
+  }
+
+  out
 }

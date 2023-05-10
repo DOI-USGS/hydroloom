@@ -260,3 +260,74 @@ down_level <- function(x) {
   x$toid[which(x$toid == min(x$toid))]
 
 }
+
+#' @title add return divergence
+#' @description Adds a return divergence attribute
+#' Algorithm: TODO
+#'
+#' @inheritParams add_levelpaths
+#' @return data.frame containing `return_divergence` attribute
+#' @export
+#' @name add_return_divergence
+#' @examples
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
+#' x <- hy(x)
+#'
+#' x <- add_return_divergence(x)
+#'
+add_return_divergence <- function(x, status = TRUE) {
+  UseMethod("add_return_divergence")
+}
+
+#' @name add_return_divergence
+#' @export
+add_return_divergence.data.frame <- function(x, status = TRUE) {
+  x <- hy(x)
+
+  x <- add_return_divergence(x, status)
+
+  hy_reverse(x)
+}
+
+add_return_divergence.hy <- function(x, status = TRUE) {
+
+  required_atts <- c(id, fromnode, tonode, divergence)
+
+  check_names(x, required_atts, "add_return_divergence")
+
+  net <- select(drop_geometry(x), all_of(required_atts))
+
+  # get all the divergence groups
+  all_div <- net |>
+    distinct() |>
+    # filter(fromnode == 250031673) |>
+    group_by(fromnode) |>
+    filter(max(n()) > 1) |>
+    group_split()
+
+  # get a dendritic network to traverse
+  net <- add_toids(net, return_dendritic = FALSE)
+
+  outlets <- lapply(all_div, function(d, g) {
+    main <- d$id[d$divergence == 1]
+    divs <- d$id[d$divergence == 2]
+
+    # need to pass main as the first start
+    starts <- c(main, divs)
+
+    paths <- hydroloom:::navigate_network_dfs_internal(g, starts, reset = FALSE)
+
+    lapply(paths[2:length(paths)], function(x) {
+      tail(unlist(x, recursive = TRUE, use.names = FALSE), 1)
+    })
+  }, g = make_index_ids(net))
+
+  outlets <- unlist(outlets)
+
+  return <- net$toid[net$id %in% outlets]
+
+  x$return_divergence <- ifelse(x$id %in% return, 1, 0)
+
+  y <- x[x$return_divergence != x$RtnDiv,]
+}

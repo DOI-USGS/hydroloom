@@ -3,20 +3,24 @@ test_that("add streamorder", {
   x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom")) |>
     add_toids()
 
-  # only works without diverted network
   x <- dplyr::filter(x, StreamOrde == StreamCalc)
 
-  y <- add_streamorder(x)
+  expect_error(y <- add_streamorder(x))
 
-  expect_equal(y$stream_order, y$StreamOrde)
+  y <- select(x, -StreamOrde, -StreamCalc)
+
+  y <- add_streamorder(y)
+
+  expect_equal(y$stream_order, x$StreamOrde)
 
   x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE)) |>
     add_toids(return_dendritic = TRUE)
 
-  # only works without diverted network
   x <- dplyr::filter(x, StreamOrde == StreamCalc)
 
-  y <- add_streamorder(x)
+  y <- select(x, -StreamOrde, -StreamCalc)
+
+  y <- add_streamorder(y)
 
   expect_equal(y$stream_order,
                x$StreamOrde)
@@ -24,7 +28,9 @@ test_that("add streamorder", {
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
     add_toids(return_dendritic = FALSE)
 
-  y <- add_streamorder(x)
+  y <- select(x, -StreamOrde, -StreamCalc)
+
+  y <- add_streamorder(y)
 
   expect_equal(y$stream_order,
                x$StreamOrde)

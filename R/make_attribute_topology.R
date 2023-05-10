@@ -32,7 +32,9 @@ make_attribute_topology.data.frame <- function(x, min_distance) {
 
   x <- hy(x)
 
-  make_attribute_topology(x, min_distance)
+  x <- select(x, id)
+
+  hy_reverse(make_attribute_topology(x, min_distance))
 
 }
 
@@ -85,5 +87,7 @@ make_attribute_topology.hy <- function(x, min_distance) {
                      by = c("torow" = "row")) |>
     select(-all_of(c("row", "torow")))
 
-  nodes
+  nodes$toid <- replace_na(nodes$toid, get_outlet_value(nodes))
+
+  left_join(select(drop_geometry(x), -all_of("row")), select(nodes, id, toid), by = id)
 }
