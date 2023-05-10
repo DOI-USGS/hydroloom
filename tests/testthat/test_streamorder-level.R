@@ -1,9 +1,7 @@
 test_that("add streamorder", {
 
   x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom")) |>
-    add_toids()
-
-  x <- dplyr::filter(x, StreamOrde == StreamCalc)
+    add_toids(return_dendritic = FALSE)
 
   expect_error(y <- add_streamorder(x))
 
@@ -14,9 +12,7 @@ test_that("add streamorder", {
   expect_equal(y$stream_order, x$StreamOrde)
 
   x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE)) |>
-    add_toids(return_dendritic = TRUE)
-
-  x <- dplyr::filter(x, StreamOrde == StreamCalc)
+    add_toids(return_dendritic = FALSE)
 
   y <- select(x, -StreamOrde, -StreamCalc)
 
