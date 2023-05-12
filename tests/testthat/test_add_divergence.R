@@ -37,7 +37,7 @@ test_that("add down main", {
 
 test_that("base down_level", {
 
-  a <- tibble::tibble(
+  a <- dplyr::tibble(
     id = c("00BE2E87-F8A4-4D53-8CE6-E192469D86EE", "00BE2E87-F8A4-4D53-8CE6-E192469D86EE"),
     toid = c("2DAE89DC-2C4B-43A1-AB19-E4BAA997C9D2", "72498570-8338-400C-A167-EB3AA589F18B"),
     coastal = c(TRUE, TRUE),
@@ -50,7 +50,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(a), "72498570-8338-400C-A167-EB3AA589F18B")
 
-  b <- tibble::tibble(
+  b <- dplyr::tibble(
     id = c("120497331", "120497331"),
     toid = c("120513267", "120497186"),
     coastal = c(TRUE, TRUE),
@@ -63,7 +63,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(b), "120497186")
 
-  c <- tibble::tibble(
+  c <- dplyr::tibble(
     id = c("67193536", "67193536"),
     toid = c("67194746", "67194750"),
     coastal = c(FALSE, FALSE),
@@ -76,7 +76,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(c), "67194750")
 
-  d <- tibble::tibble(
+  d <- dplyr::tibble(
     id = c("{0691ff49-3167-4387-9d59-bd0e69f23ba0}", "{0691ff49-3167-4387-9d59-bd0e69f23ba0}"),
     toid = c("{6cc577b7-98b2-4352-9edc-5ec342e93078}", "{a1654838-6109-47b2-b5fd-07d329ff502b}"),
     coastal = c(TRUE, TRUE),
@@ -89,7 +89,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(d), "{6cc577b7-98b2-4352-9edc-5ec342e93078}")
 
-  e <- tibble::tibble(
+  e <- dplyr::tibble(
     id = c("{3BBADBC2-10CD-42C4-963E-2CC3EBCAB96B}", "{3BBADBC2-10CD-42C4-963E-2CC3EBCAB96B}"),
     toid = c("00", "102984973"),
     coastal = c(TRUE, TRUE),
@@ -102,7 +102,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(e), "00")
 
-  f <- tibble::tibble(
+  f <- dplyr::tibble(
     id = c("1", "1"),
     toid = c("5", "4"),
     coastal = c(TRUE, FALSE),
@@ -115,7 +115,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(f), "5")
 
-  g <- tibble::tibble(
+  g <- dplyr::tibble(
     id = c("1", "1"),
     toid = c("5", "4"),
     coastal = c(TRUE, FALSE),
@@ -128,7 +128,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(g), "5")
 
-  h <- tibble::tibble(
+  h <- dplyr::tibble(
     id = c("1", "1"),
     toid = c("5", "4"),
     coastal = c(FALSE, FALSE),
@@ -141,7 +141,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(h), "5")
 
-  i <- tibble::tibble(
+  i <- dplyr::tibble(
     id = c("1", "1"),
     toid = c("5", "4"),
     coastal = c(FALSE, FALSE),
@@ -154,7 +154,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(i), "5")
 
-  j <- tibble::tibble(
+  j <- dplyr::tibble(
     id = c("1", "1"),
     toid = c("5", "4"),
     coastal = c(FALSE, FALSE),
@@ -167,7 +167,7 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(j), "5")
 
-  k <- tibble::tibble(
+  k <- dplyr::tibble(
     id = c("1", "1"),
     toid = c("5", "4"),
     coastal = c(FALSE, FALSE),

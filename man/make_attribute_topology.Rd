@@ -39,6 +39,6 @@ z <- make_attribute_topology(y, 10)
 x <- add_toids(hy(x), return_dendritic = FALSE)
 
 x[x$id == x$id[1],]$toid
-z[z$id == x$id[1],]$toid
+z[z$COMID == x$id[1],]$toid
 
 }

@@ -130,7 +130,7 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
     select(all_of(c(id = "paths", "coastal"))) |>
     distinct() |>
     group_by(id) |>
-    filter(!(max(n()) > 1 & !coastal)) |> # remove the non coastal outlet divergences
+    filter(!(max(n()) > 1 & !.data$coastal)) |> # remove the non coastal outlet divergences
     ungroup() |>
     distinct()
 
@@ -147,7 +147,7 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
                               dn_name_att = name_attr,
                               dn_type_att = type_attr)))),
               by = c("toid" = "id")) |>
-    mutate(major_type = dn_type_att %in% major_types) |>
+    mutate(major_type = .data$dn_type_att %in% major_types) |>
     group_split()
 
   div <- lapply(junctions, down_level)
@@ -346,7 +346,7 @@ add_return_divergence.hy <- function(x, status = TRUE) {
     # need to pass main as the first start
     starts <- c(main, divs)
 
-    paths <- hydroloom:::navigate_network_dfs_internal(g, starts, reset = FALSE)
+    paths <- navigate_network_dfs_internal(g, starts, reset = FALSE)
 
     out <- unlist(lapply(paths[2:length(paths)], function(x) {
       lapply(x, function(x2) tail(unlist(x2, recursive = TRUE, use.names = FALSE), 1))

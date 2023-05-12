@@ -31,7 +31,8 @@ Secondary paths have no affect on the order of downstream paths.
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
-x <- add_toids(x, return_dendritic = FALSE)
+x <- add_toids(x, return_dendritic = FALSE) |>
+  dplyr::select(COMID, toid, Divergence)
 
 x <- add_streamorder(x)
 

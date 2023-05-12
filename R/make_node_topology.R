@@ -129,9 +129,9 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 make_nondendritic_topology <- function(x) {
 
   # First create a unique node id that groups on sets of downstream ids
-  n <- select(x, fromid = id, toid) |>
-    filter(!is.na(fromid) & !is.na(toid)) |>
-    group_by(fromid) |>
+  n <- select(x, all_of(c(fromid = id, toid))) |>
+    filter(!is.na(.data$fromid) & !is.na(.data$toid)) |>
+    group_by(.data$fromid) |>
     mutate(node_id = paste(toid, collapse = "-")) |>
     ungroup()
 
