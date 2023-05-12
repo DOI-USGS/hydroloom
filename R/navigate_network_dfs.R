@@ -39,12 +39,16 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
 navigate_network_dfs_internal <- function(g, starts, reset) {
 
-  starts <- unique(g$to_list$indid[which(g$to_list$id %in% starts)])
+  starts <- unique(g$to_list$indid[match(starts, g$to_list$id)])
 
   if(reset) save_to <- g$to
 
   # Some vectors to track results
   set <- to_visit <- path <- rep(0, ncol(g$to))
+
+  # to track where we've been
+  visited <- rep(FALSE, ncol(g$to))
+
 
   out_list <- rep(list(list()), length(starts))
 
@@ -63,17 +67,25 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
     # v is a pointer into the to_visit vector
     v <- 1
 
+    none <- TRUE
+
     # trigger for making a new path
     new_path <- FALSE
 
+    if(reset) visited <- rep(FALSE, ncol(g$to))
+
     while(v > 0) {
 
-      # increment to the next node
-      o <- o + 1
+      if(!visited[node]) {
 
-      set[n] <- node
-      path[n] <- path_id
-      n <- n + 1
+        set[n] <- node
+        path[n] <- path_id
+        n <- n + 1
+
+        visited[node] <- TRUE
+
+        none = FALSE
+      }
 
       for(to in seq_len(g$lengths[node])) {
           # Add the next node to visit to the tracking vector
@@ -99,10 +111,16 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
 
     }
 
-    out_list[[set_id]] <- split(pull(g$to_list, "id")[set[1:(n - 1)]], path[1:(n-1)])
+    if(none) {
+      out_list[[set_id]] <- list()
+    } else {
+      out_list[[set_id]] <- split(pull(g$to_list, "id")[set[1:(n - 1)]], path[1:(n-1)])
+    }
+
     set_id <- set_id + 1
 
     if(reset) g$to <- save_to
+
   }
 
 out_list

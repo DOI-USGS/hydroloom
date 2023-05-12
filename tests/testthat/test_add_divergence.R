@@ -1,3 +1,13 @@
+test_that("add_return_diversion", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  x <- hy(x)
+
+  x <- add_return_divergence(x)
+
+  expect_equal(sum(x$return_divergence == x$RtnDiv), 745)
+})
+
 test_that("add down main", {
 
   f <- system.file("extdata/coastal_example.gpkg", package = "hydroloom")

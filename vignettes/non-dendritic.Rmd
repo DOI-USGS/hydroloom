@@ -193,14 +193,16 @@ flow_net <- add_divergence(flow_net,
                            type_attr = "FTYPE", 
                            major_types = unique(flow_net$FTYPE)) |>
   add_toids() |>
-  add_streamorder()
+  add_streamorder() |>
+  add_return_divergence()
 
 # Make sure we reproduce what came from our source NHDPlus data.
 sum(flow_net$divergence == 2)
 sum(x$Divergence == 2)
 all(flow_net$divergence == x$Divergence)
+sum(flow_net$return_divergence == x$RtnDiv)
 
 names(flow_net)
 
 ```
-With the above code, we removed all attributes other than an ID, a name and a feature type and recreated both a dendritic (toid) and non-dendritic (fromnode tonode) topology. We added `divergence` attribute, `stream_order`, and `stream_calculator` attributes.
+With the above code, we removed all attributes other than an ID, a name and a feature type and recreated both a dendritic (toid) and non-dendritic (fromnode tonode) topology. We added `divergence` attribute, `stream_order`, `stream_calculator`, and `return_divergence` attributes.

@@ -6,12 +6,12 @@ test_that("super basic", {
 
   expect_equal(paths,
                list(list(`1` = c(2, 3, 5, 7, 8, 9),
-                         `2` = c(4, 6, 8))))
+                         `2` = c(4, 6))))
 
   path <- navigate_network_dfs(net, 9, direction = "up")
 
   expect_equal(path,
-               list(list(`1` = c(9, 8, 7, 5, 3, 2, 6, 4, 3))))
+               list(list(`1` = c(9, 8, 7, 5, 3, 2, 6, 4))))
 })
 
 test_that("total div", {
@@ -28,7 +28,7 @@ test_that("total div", {
 
   expect_equal(paths, list(list(`1` = c(2, 3, 5, 7, 9),
                                 `2` = c(4, 6, 8, 10)),
-                           list(`3` = 5)))
+                           list()))
 
   paths <- navigate_network_dfs(net, c(2, 5), direction = "down", reset = TRUE)
 
@@ -40,7 +40,7 @@ test_that("total div", {
 
   expect_equal(paths,
                list(list(`1` = c(9, 7, 5, 3, 2)),
-                    list(`1` = c(10, 8, 6, 4, 3))))
+                    list(`1` = c(10, 8, 6, 4))))
 
 })
 
@@ -60,18 +60,18 @@ test_that("real data", {
 
   expect_equal(length(paths[[1]][[1]]), 20)
 
-  # the tail of diverted paths are back on the path they rejoin
-  expect_true(paths[[1]][[2]][3] %in% paths[[1]][[1]])
+  # the tail of diverted paths point to the path they rejoin
+  expect_true(g$toid[g$id == paths[[1]][[2]][2]] %in% paths[[1]][[1]])
 
   paths <- navigate_network_dfs(g, starts = 8891152)
 
-  expect_equal(length(paths[[1]]), 47)
+  expect_equal(length(paths[[1]]), 46)
 
   expect_error(navigate_network_dfs(g, 12345))
 
   paths <- navigate_network_dfs(g, 8897784, direction = "up")
 
-  expect_equal(length(paths[[1]]), 85)
+  expect_equal(length(paths[[1]]), 83)
 
   path <- paths[[1]][[which(sapply(paths[[1]], function(x) 8891126 %in% x))]]
 

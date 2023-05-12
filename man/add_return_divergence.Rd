@@ -18,8 +18,33 @@ add_return_divergence(x, status = TRUE)
 data.frame containing \code{return_divergence} attribute
 }
 \description{
-Adds a return divergence attribute
-Algorithm: TODO
+Adds a return divergence attribute to the provided network.
+The method implemented matches that of the NHDPlus except
+in the rare case that a diversion includes more than one secondary path.
+
+Requires and \code{id}, \code{fromnode}, \code{tonode} and \code{divergence} attribute.
+See \link{add_divergence} and \link{make_node_topology}.
+
+Algorithm:
+
+All network connections with more than one downstream feature
+are considered.
+
+\link{navigate_network_dfs} is used to find all downstream
+features emanating from the primary (\code{divergence == 1}) outlet of the
+diversion in question and secondary (\code{divergence == 2}) outlet(s) starting
+with the primary outlet.
+
+\link{navigate_network_dfs} is called with \code{reset = FALSE} such that the
+secondary diversion paths terminate where they combine with a previously
+visited feature.
+
+If the diverted paths result in only one outlet, the feature it flows to
+is marked as a return divergence.
+
+If the diverted paths result in more than one outlet, the one that flows to
+the most upstream feature in the set of features downstream of the primary
+outlet of the diversion is marked as the return divergence.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -27,5 +52,9 @@ x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 x <- hy(x)
 
 x <- add_return_divergence(x)
+
+sum(x$return_divergence == x$RtnDiv)
+
+# see description for documentation of one that does not match
 
 }

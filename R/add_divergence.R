@@ -262,8 +262,33 @@ down_level <- function(x) {
 }
 
 #' @title add return divergence
-#' @description Adds a return divergence attribute
-#' Algorithm: TODO
+#' @description Adds a return divergence attribute to the provided network.
+#' The method implemented matches that of the NHDPlus except
+#' in the rare case that a diversion includes more than one secondary path.
+#'
+#' Requires and `id`, `fromnode`, `tonode` and `divergence` attribute.
+#' See \link{add_divergence} and \link{make_node_topology}.
+#'
+#' Algorithm:
+#'
+#' All network connections with more than one downstream feature
+#' are considered.
+#'
+#' \link{navigate_network_dfs} is used to find all downstream
+#' features emanating from the primary (`divergence == 1`) outlet of the
+#' diversion in question and secondary (`divergence == 2`) outlet(s) starting
+#' with the primary outlet.
+#'
+#' \link{navigate_network_dfs} is called with `reset = FALSE` such that the
+#' secondary diversion paths terminate where they combine with a previously
+#' visited feature.
+#'
+#' If the diverted paths result in only one outlet, the feature it flows to
+#' is marked as a return divergence.
+#'
+#' If the diverted paths result in more than one outlet, the one that flows to
+#' the most upstream feature in the set of features downstream of the primary
+#' outlet of the diversion is marked as the return divergence.
 #'
 #' @inheritParams add_levelpaths
 #' @return data.frame containing `return_divergence` attribute
@@ -275,6 +300,10 @@ down_level <- function(x) {
 #' x <- hy(x)
 #'
 #' x <- add_return_divergence(x)
+#'
+#' sum(x$return_divergence == x$RtnDiv)
+#'
+#' # see description for documentation of one that does not match
 #'
 add_return_divergence <- function(x, status = TRUE) {
   UseMethod("add_return_divergence")
@@ -301,15 +330,16 @@ add_return_divergence.hy <- function(x, status = TRUE) {
   # get all the divergence groups
   all_div <- net |>
     distinct() |>
-    # filter(fromnode == 250031673) |>
     group_by(fromnode) |>
     filter(max(n()) > 1) |>
     group_split()
 
   # get a dendritic network to traverse
-  net <- add_toids(net, return_dendritic = FALSE)
+  net <- add_toids(net, return_dendritic = FALSE) |>
+    sort_network() |>
+    mutate(topo_sort = n():1)
 
-  outlets <- lapply(all_div, function(d, g) {
+  outlets <- lapply(all_div, function(d, g, net) {
     main <- d$id[d$divergence == 1]
     divs <- d$id[d$divergence == 2]
 
@@ -318,16 +348,30 @@ add_return_divergence.hy <- function(x, status = TRUE) {
 
     paths <- hydroloom:::navigate_network_dfs_internal(g, starts, reset = FALSE)
 
-    lapply(paths[2:length(paths)], function(x) {
-      tail(unlist(x, recursive = TRUE, use.names = FALSE), 1)
-    })
-  }, g = make_index_ids(net))
+    out <- unlist(lapply(paths[2:length(paths)], function(x) {
+      lapply(x, function(x2) tail(unlist(x2, recursive = TRUE, use.names = FALSE), 1))
+    }))
+
+    if(length(out) > 1) {
+      main <- unlist(paths[1], recursive = TRUE, use.names = FALSE)
+
+      out_net <- net |>
+        filter(.data$id %in% out & .data$toid %in% main) |>
+        left_join(select(net, all_of(c(id, to_topo_sort = topo_sort))),
+                         by = c("toid" = "id")) |>
+        filter(.data$to_topo_sort == max(.data$to_topo_sort))
+
+      out <- unique(out_net$id)
+    }
+
+    out
+
+  }, g = make_index_ids(net), net = net)
 
   outlets <- unlist(outlets)
 
   return <- net$toid[net$id %in% outlets]
 
-  x$return_divergence <- ifelse(x$id %in% return, 1, 0)
+  mutate(x, return_divergence = ifelse(id %in% return, 1, 0))
 
-  y <- x[x$return_divergence != x$RtnDiv,]
 }
