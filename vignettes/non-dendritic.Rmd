@@ -8,12 +8,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-<style type="text/css">
-   .main-container {max-width: 100%;}
-   .row {display: flex;}
-   .column {flex: 50%;}
-</style>
-
 ```{r setup, include = FALSE}
 library(hydroloom)
 library(dplyr)
@@ -33,98 +27,7 @@ oldoption <- options(scipen = 9999)
 
 # Introduction 
 
-`vignette("advanced_network")` talks about the basics of network topology representation and attributes that build on a strictly dendritic network. This vignette expands those topics by describing `hydroloom` functionality that supports non-dendritic networks.
-
-# Background
-
-As discussed in the `vignette("advanced_network")` vignette, a hydrologic flow network can be represented as an edge to edge (e.g. edge list) topology or an edge-node topology. In the case of dendritic networks, an edge list can be stored as a single "toid" attribute on each feature and nodes are redundant as there would be one and only one node for each feature. In non-dendritic networks, an edge list can include multiple "toid" attributes for each feature, necessitating a one to many relationship that can be difficult to interpret. Nevertheless, the U.S. National Hydrography Dataset uses an edge-list format in its "flow table" and the format is capable of storing non-dendritic feature topology. 
-
-Using a node topology to store a flow network, each feature flows from one and only one node and flows to one and only one node. This one to one relationship between features and their from and to nodes means that the topology fits in a table with one row per feature as is common practice in spatial feature data. 
-
-For this reason, the NHDPlus data model converts the NHD "flow table" into node topology in its representation of non dendritic topology. The downside of this approach is that it requires creation of a node identifier. These node identifiers are a table deduplication device that enables a one to many relationship (the flow table) to be represented as two one to one relationships. Given this, in hydrologic flow networks, node identifiers can be created based on an edge list and discarded when no longer needed. 
-
-<div class = "row">
-<div class = "column">
-
-```{r node, fig.show="hold", fig.width=3, out.width="45%", echo=FALSE, eval=TRUE}
-x <- c(2, 2, 3, 2, 2)
-y <- c(5, 4, 3, 2, 1)
-
-a <- c(1.4, 3.5)
-b <- c(.9, 5.1)
-
-main_col = "darkblue"
-div_col = "purple"
-
-par(mar = c(0, 0, 0, 0))
-plot(a, b, col = NA)
-points(x, y)
-text(c(2.15, 1.85, 3.02, 1.85, 2.15), c(5, 4, 3.2, 2, 1), c("N1", "N2", "N3", "N4", "N5"))
-
-make_edges <- function() {
-  arrows(x[1], y[1] - .1, x[2], y[2] + .1, length = .1, col = main_col)
-  arrows(x[2] + .1, y[2] - .1, x[3] - .1, y[3] + .1, length = .1, col = div_col) # right
-  arrows(x[2] + .0, y[2] - .1, x[4] - .0, y[4] + .1, length = .1, col = main_col)
-  arrows(x[3] - .1, y[3] - .1, x[4] + .1, y[4] + .1, length = .1, col = div_col)
-  arrows(x[4], y[4] - .1, x[5], y[5] + .1, length = .1, col = main_col)
-  text(c(2.1, 2.5, 2.5, 1.9, 2.1), c(4.5, 3.8, 2.3, 3, 1.5), c("1", "2", "3", "4", "5"))
-}
-
-make_edges()
-
-```
-
-</div>
-
-<div class = "column">
-
-```{r node2, fig.show="hold", fig.width=3, out.width="45%", echo=FALSE, eval=TRUE}
-
-par(mar = c(0, 0, 0, 0))
-plot(a, b, col = NA)
-
-make_edges()
-
-# 
-# par(mar = c(0, 0, 0, 0))
-# plot(x, y)
-# arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
-# arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
-# arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
-# text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
-# text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
-```
-</div>
-</div>
-
-In this example of an edge list topology and a node topology for the same system, feature '1' flows to two edges but only one node. We can represent this in tabular form with a duplicated row for the divergence downstream of '1' or with the addition of node identifiers as shown in the following tables.
-
-<div class = "row">
-<div class = "column">
-
-| id | fromnode | tonode |
-|----|----------|--------|
-| 1 | N1 | N2 |
-| 2 | N2 | N3 |
-| 3 | N3 | N4 |
-| 4 | N2 | N4 |
-| 5 | N4 | N5 |
-
-</div>
-
-<div class = "column">
-
-| id | toid |
-|----|------|
-| 1 | 2 |
-| 1 | 4 | 
-| 2 | 3 |
-| 3 | 5 | 
-| 4 | 5 | 
-| 5 | 0 | 
-
-</div>
-</div>
+`vignette("hydroloom")` andd `vignette("advanced_network")` talks about the basics of network topology representation and attributes that build on a strictly dendritic network. This vignette expands those topics by describing `hydroloom` functionality that supports non-dendritic networks.
 
 # Non-dendritic topology attributes. 
 

@@ -8,6 +8,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<style type="text/css">
+   .main-container {max-width: 100%;}
+   .row {display: flex;}
+   .column {flex: 50%;}
+</style>
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -24,6 +29,23 @@ library(sf)
 oldoption <- options(scipen = 9999)
 ```
 
+# hydroloom
+
+Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. This is accomplished with 
+1) the `hy` S3 class,  
+2) a collection of utility functions,   
+3) functions to work with a hydrologic network topology as a graph,  
+4) functions to create and add useful network attributes,   
+5) and functions to index data to a network of flow network lines and waterbody polygons.  
+
+This introduction covers the `hy` S3 class and the core flow network topology concepts necessary to use hydroloom effectively. 
+
+The [reference](reference/index.html) list contains full documentation of all functions.
+
+The other [articles](articles/index.html) describe integrated aspects of the package in greater detail.
+
+For the latest development and to open issues, please visit the [package github repository.](https://github.com/DOI-USGS/hydroloom)
+
 # `hy` S3 class
 
 Hydroloom implements an `hy` S3 class designed to simplify integration of `hydroloom` with existing data and workflows. `hy()` converts a data.frame to an `hy` `data.frame` with attributes compatible with `hydroloom` functions. `hy_reverse()` converts a `hy` `data.frame` back to its original attribute names. You can teach `hydroloom` how to map your attributes to `hydroloom_name_definitions()` with the `hydroloom_names()` function.8  
@@ -36,24 +58,153 @@ Internally, the `hy` S3 class has an attribute `orig_names` as shown below. The 
 ```{r}
 library(hydroloom)
 
-x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
+hy_net <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
   dplyr::select(COMID, REACHCODE, FromNode, ToNode, Hydroseq, TerminalFl, Divergence)
 
-hy(x[1:3,])
+hy(hy_net[1:3,])
 
-attr(hy(x), "orig_names")
+attr(hy(hy_net), "orig_names")
 
 ```
-# Network Graph Representation
+# Network Representation
 
-The `make_index_ids()` `hydroloom` function creates an adjacency matrix representation of a flow network as well as some conveniet content that are useful when traversing the graph. This adjacency matrix is used heavily in `hydroloom` functions but and may be useful for people who want to write their own graph traversal algorithms.
+## Representing Dendritic Network Topology
+
+A network of flowlines can be represented as an edge-to-edge (e.g. edge list) or edge-node topology. An edge list only expresses the connectivity between _edges_ (flowlines in the context of rivers), requiring _nodes_ (confluences in the context of rivers) to be inferred. 
+
+```{r, echo=FALSE, eval=TRUE, fig.dim=c(6, 4)}
+print.data.frame(data.frame(ID = c(1, 2, 3), 
+                            toID = c(3, 3, NA),
+                            fromnode = c("N1", "N2", "N3"),
+                            tonode = c("N3", "N3", "N4")), 
+                 row.names = FALSE)
+```
+
+```{r node, fig.show="hold", out.width="45%", echo=FALSE, eval=TRUE, fig.cap="In an edge-node topology, edges are directed to nodes which are then directed to other edges. An edge-to-edge toplogy does not include intervening nodes."}
+x <- c(1, 5, 3, 3)
+y <- c(5, 5, 3, 1)
+
+par(mar = c(0, 0, 0, 0))
+plot(x, y, col = NA)
+arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
+arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
+arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
+text(c(2, 4, 3.15), c(4.2, 4.2, 2), c("1", "2", "3"))
+
+par(mar = c(0, 0, 0, 0))
+plot(x, y)
+arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
+arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
+arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
+text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
+text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
+```
+
+The "toID" of a terminal flowline can be either NA or, by convention, 0 or "". Using 0 or an empty string is preferred within `hydroloom` but both are handled in most cases. Further, as long as 0 is not in the set of IDs, there is little practical difference.
+
+In `hydroloom`, edge-to-edge topology is referred to with "id and toid" attributes.
+
+## Representing Dendritic Network Topology
+
+As discussed in the `vignette("hydroloom")` vignette, a hydrologic flow network can be represented as an edge to edge (e.g. edge list) topology or an edge-node topology. In the case of dendritic networks, an edge list can be stored as a single "toid" attribute on each feature and nodes are redundant as there would be one and only one node for each feature. In non-dendritic networks, an edge list can include multiple "toid" attributes for each feature, necessitating a one to many relationship that can be difficult to interpret. Nevertheless, the U.S. National Hydrography Dataset uses an edge-list format in its "flow table" and the format is capable of storing non-dendritic feature topology. 
+
+Using a node topology to store a flow network, each feature flows from one and only one node and flows to one and only one node. This one to one relationship between features and their from and to nodes means that the topology fits in a table with one row per feature as is common practice in spatial feature data. 
+
+For this reason, the NHDPlus data model converts the NHD "flow table" into node topology in its representation of non dendritic topology. The downside of this approach is that it requires creation of a node identifier. These node identifiers are a table deduplication device that enables a one to many relationship (the flow table) to be represented as two one to one relationships. Given this, in hydrologic flow networks, node identifiers can be created based on an edge list and discarded when no longer needed. 
+
+<div class = "row">
+<div class = "column">
+
+```{r node1, fig.show="hold", fig.width=3, out.width="45%", echo=FALSE, eval=TRUE}
+x <- c(2, 2, 3, 2, 2)
+y <- c(5, 4, 3, 2, 1)
+
+a <- c(1.4, 3.5)
+b <- c(.9, 5.1)
+
+main_col = "darkblue"
+div_col = "purple"
+
+par(mar = c(0, 0, 0, 0))
+plot(a, b, col = NA)
+points(x, y)
+text(c(2.15, 1.85, 3.02, 1.85, 2.15), c(5, 4, 3.2, 2, 1), c("N1", "N2", "N3", "N4", "N5"))
+
+make_edges <- function() {
+  arrows(x[1], y[1] - .1, x[2], y[2] + .1, length = .1, col = main_col)
+  arrows(x[2] + .1, y[2] - .1, x[3] - .1, y[3] + .1, length = .1, col = div_col) # right
+  arrows(x[2] + .0, y[2] - .1, x[4] - .0, y[4] + .1, length = .1, col = main_col)
+  arrows(x[3] - .1, y[3] - .1, x[4] + .1, y[4] + .1, length = .1, col = div_col)
+  arrows(x[4], y[4] - .1, x[5], y[5] + .1, length = .1, col = main_col)
+  text(c(2.1, 2.5, 2.5, 1.9, 2.1), c(4.5, 3.8, 2.3, 3, 1.5), c("1", "2", "3", "4", "5"))
+}
+
+make_edges()
+
+```
+
+</div>
+
+<div class = "column">
+
+```{r node2, fig.show="hold", fig.width=3, out.width="45%", echo=FALSE, eval=TRUE}
+
+par(mar = c(0, 0, 0, 0))
+plot(a, b, col = NA)
+
+make_edges()
+
+# 
+# par(mar = c(0, 0, 0, 0))
+# plot(x, y)
+# arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
+# arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
+# arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
+# text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
+# text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
+```
+</div>
+</div>
+
+In this example of an edge list topology and a node topology for the same system, feature '1' flows to two edges but only one node. We can represent this in tabular form with a duplicated row for the divergence downstream of '1' or with the addition of node identifiers as shown in the following tables.
+
+<div class = "row">
+<div class = "column">
+
+| id | fromnode | tonode |
+|----|----------|--------|
+| 1 | N1 | N2 |
+| 2 | N2 | N3 |
+| 3 | N3 | N4 |
+| 4 | N2 | N4 |
+| 5 | N4 | N5 |
+
+</div>
+
+<div class = "column">
+
+| id | toid |
+|----|------|
+| 1 | 2 |
+| 1 | 4 | 
+| 2 | 3 |
+| 3 | 5 | 
+| 4 | 5 | 
+| 5 | 0 | 
+
+</div>
+</div>
+
+## Network Graph Representation
+
+The `make_index_ids()` `hydroloom` function creates an adjacency matrix representation of a flow network as well as some convenient content that are useful when traversing the graph. This adjacency matrix is used heavily in `hydroloom` functions and may be useful to people who want to write their own graph traversal algorithms.
 
 A companion to `make_index_ids()`, `make_fromids()` reverses the graph such that the adjacency matrix is directed opposite the direction of the provided graph. This is used for upstream flow network traversals.
 
 In the example below we'll add a dendritic toid and explore the `make_index_ids()` output.
 
 ```{r}
-y <- add_toids(x, return_dendritic = TRUE)
+y <- add_toids(hy_net, return_dendritic = TRUE)
 
 ind_id <- make_index_ids(y)
 
@@ -73,7 +224,7 @@ Now we'll look at the same thing but for a non dendritic set of toids. Notice th
 
 ```{r}
 
-y <- add_toids(drop_geometry(x), return_dendritic = FALSE)
+y <- add_toids(drop_geometry(hy_net), return_dendritic = FALSE)
 
 ind_id <- make_index_ids(y)
 
@@ -90,4 +241,3 @@ names(ind_id$to_list)
 sapply(ind_id, class)
 ```
 
-To be continued...

@@ -277,6 +277,73 @@ recombines with a main path will have <code>return diversion</code> set
 to 1.</li>
 </ol>
 </div>
+<div class="section level3">
+<h3 id="bringing-it-all-together">Bringing it all together<a class="anchor" aria-label="anchor" href="#bringing-it-all-together"></a>
+</h3>
+<p>The example below shows how we can recreate the non-dendritic
+attributes and use them in practice.</p>
+<p>We’ll start with the small sample watershed that’s included in
+<code>hydroloom</code> and select only the attributes required to
+recreate the non-dendritic network.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, </span>
+<span>                             package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># First we select only an id, a name, and a feature type.</span></span>
+<span><span class="va">flow_net</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">COMID</span>, <span class="va">GNIS_ID</span>, <span class="va">FTYPE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="fl">5070</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Now we convert the geometric network to an attribute topology</span></span>
+<span><span class="co"># and convert that to a node topology and join our attributes back</span></span>
+<span><span class="va">flow_net</span> <span class="op">&lt;-</span> <span class="va">flow_net</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/make_attribute_topology.html">make_attribute_topology</a></span><span class="op">(</span>min_distance <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/make_node_topology.html">make_node_topology</a></span><span class="op">(</span>add_div <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">left_join</span><span class="op">(</span><span class="fu"><a href="../reference/drop_geometry.html">drop_geometry</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"COMID"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># We only have one outlet so it doesn't matter if it is coastal</span></span>
+<span><span class="co"># or inland but we have to provide it.</span></span>
+<span><span class="va">outlets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">flow_net</span>, <span class="op">!</span><span class="va">tonode</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">fromnode</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># We have these feature types. A larger dataset might include </span></span>
+<span><span class="co"># things like canals which would not be considered  "major"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">$</span><span class="va">FTYPE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "StreamRiver"    "Connector"      "ArtificialPath"</span></span>
+<span></span>
+<span><span class="co"># now we run the add_divergence, add_toids, and add_streamorder</span></span>
+<span><span class="va">flow_net</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_divergence.html">add_divergence</a></span><span class="op">(</span><span class="va">flow_net</span>, </span>
+<span>                           coastal_outlet_ids <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>                           inland_outlet_ids <span class="op">=</span> <span class="va">outlets</span><span class="op">$</span><span class="va">COMID</span>, </span>
+<span>                           name_attr <span class="op">=</span> <span class="st">"GNIS_ID"</span>, </span>
+<span>                           type_attr <span class="op">=</span> <span class="st">"FTYPE"</span>, </span>
+<span>                           major_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">$</span><span class="va">FTYPE</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_toids.html">add_toids</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_streamorder.html">add_streamorder</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_return_divergence.html">add_return_divergence</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Make sure we reproduce what came from our source NHDPlus data.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">$</span><span class="va">divergence</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 84</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">Divergence</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 84</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">$</span><span class="va">divergence</span> <span class="op">==</span> <span class="va">x</span><span class="op">$</span><span class="va">Divergence</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">$</span><span class="va">return_divergence</span> <span class="op">==</span> <span class="va">x</span><span class="op">$</span><span class="va">RtnDiv</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 662</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "COMID"             "toid"              "fromnode"         </span></span>
+<span><span class="co">#&gt;  [4] "tonode"            "GNIS_ID"           "FTYPE"            </span></span>
+<span><span class="co">#&gt;  [7] "divergence"        "stream_order"      "stream_calculator"</span></span>
+<span><span class="co">#&gt; [10] "return_divergence"</span></span></code></pre></div>
+<p>With the above code, we removed all attributes other than an ID, a
+name and a feature type and recreated both a dendritic (toid) and
+non-dendritic (fromnode tonode) topology. We added
+<code>divergence</code> attribute, <code>stream_order</code>,
+<code>stream_calculator</code>, and <code>return_divergence</code>
+attributes.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

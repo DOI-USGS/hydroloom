@@ -98,9 +98,10 @@ attributes used in the hydroloom package.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> , starting at 1 for headwaters increments by 1 for each larger</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      tributary level, divergences adopt stream order from upstream</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      but returning divergent network does not increment stream order</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> , starting at 1 for headwaters and divirgences increments</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                by 1 for each larger tributary level, is equal to</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                stream_order along the dendritic network</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> , starting at 1 for headwaters and 0 along divirted paths</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           increments by 1 for each larger tributary level, does not</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           increment along diverted paths. Is equal to stream_order</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           along the dendritic network</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> , descriptive feature type monicker</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> , compact feature type identifier</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> , identifier for processing units based on vector encapsulation</span>

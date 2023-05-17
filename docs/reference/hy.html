@@ -102,14 +102,14 @@ will be removed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 8<span style="text-decoration: underline;">893</span>810 991288  Northeast Creek     0.583 03030002000022       0 StreamRiver </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 736 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 29 more variables: feature_type_code &lt;int&gt;, stream_level &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   StreamOrde &lt;int&gt;, dendritic_stream_order &lt;int&gt;, fromnode &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   tonode &lt;dbl&gt;, topo_sort &lt;dbl&gt;, levelpath &lt;dbl&gt;, pathlength_km &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   stream_order &lt;int&gt;, stream_calculator &lt;int&gt;, fromnode &lt;dbl&gt;, tonode &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   topo_sort &lt;dbl&gt;, levelpath &lt;dbl&gt;, pathlength_km &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   terminal_topo_sort &lt;dbl&gt;, arbolate_sum &lt;dbl&gt;, divergence &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   start_flag &lt;int&gt;, terminal_flag &lt;int&gt;, dn_stream_level &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   up_levelpath &lt;dbl&gt;, up_topo_sort &lt;dbl&gt;, dn_levelpath &lt;dbl&gt;, …</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">hy</span><span class="op">(</span><span class="va">x</span>, clean <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,<span class="op">]</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 28</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 29</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         id length_km aggregate_id      wbid feature_type   feature_type_code</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 8<span style="text-decoration: underline;">893</span>864     3.24  03030002000018       0 StreamRiver                <span style="text-decoration: underline;">46</span>006</span>
@@ -122,13 +122,13 @@ will be removed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 8<span style="text-decoration: underline;">894</span>192     3.09  03030002000021       0 StreamRiver                <span style="text-decoration: underline;">46</span>006</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 8<span style="text-decoration: underline;">894</span>310     0.045 03030002000021 8<span style="text-decoration: underline;">892</span>932 ArtificialPath             <span style="text-decoration: underline;">55</span>800</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 8<span style="text-decoration: underline;">893</span>810     0.583 03030002000022       0 StreamRiver                <span style="text-decoration: underline;">46</span>006</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: stream_level &lt;int&gt;, dendritic_stream_order &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   fromnode &lt;dbl&gt;, tonode &lt;dbl&gt;, topo_sort &lt;dbl&gt;, levelpath &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   pathlength_km &lt;dbl&gt;, terminal_topo_sort &lt;dbl&gt;, arbolate_sum &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   divergence &lt;int&gt;, start_flag &lt;int&gt;, terminal_flag &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   dn_stream_level &lt;int&gt;, up_levelpath &lt;dbl&gt;, up_topo_sort &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   dn_levelpath &lt;dbl&gt;, dn_minor_topo_sort &lt;dbl&gt;, dn_topo_sort &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   aggregate_id_from_measure &lt;dbl&gt;, aggregate_id_to_measure &lt;dbl&gt;, …</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 23 more variables: stream_level &lt;int&gt;, stream_order &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   stream_calculator &lt;int&gt;, fromnode &lt;dbl&gt;, tonode &lt;dbl&gt;, topo_sort &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   levelpath &lt;dbl&gt;, pathlength_km &lt;dbl&gt;, terminal_topo_sort &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   arbolate_sum &lt;dbl&gt;, divergence &lt;int&gt;, start_flag &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   terminal_flag &lt;int&gt;, dn_stream_level &lt;int&gt;, up_levelpath &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   up_topo_sort &lt;dbl&gt;, dn_levelpath &lt;dbl&gt;, dn_minor_topo_sort &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   dn_topo_sort &lt;dbl&gt;, aggregate_id_from_measure &lt;dbl&gt;, …</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="fu">hy</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="st">"orig_names"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       COMID                     GNIS_ID </span>
@@ -140,9 +140,9 @@ will be removed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       FTYPE                       FCODE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              "feature_type"         "feature_type_code" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  StreamLeve                  StreamOrde </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              "stream_level"                "StreamOrde" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              "stream_level"              "stream_order" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  StreamCalc                    FromNode </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    "dendritic_stream_order"                  "fromnode" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         "stream_calculator"                  "fromnode" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      ToNode                    Hydroseq </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                    "tonode"                 "topo_sort" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  LevelPathI                  Pathlength </span>

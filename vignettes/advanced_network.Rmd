@@ -35,42 +35,6 @@ The NHDPlus data model, which the attributes described here are based on, includ
 
 While the `hydroloom` package contains other functions to generate network attributes, (e.g. `add_pfafstetter()` for Pfafstetter codes and `add_streamorder()` for stream orders) this vignette focuses on the network attributes from the NHDPlus data model that revolve around the **topo_sort** and **levelpath**. In the NHDPlus data model, **topo_sort** is referred to as **hydrosequence** but it is functionally equivalent to a topological sort and is referred to as topo_sort in `hydroloom`.   
 
-## Representing Network Topology
-
-A network of flowlines can be represented as an edge-to-edge (e.g. edge list) or edge-node topology. An edge list only expresses the connectivity between _edges_ (flowlines in the context of rivers), requiring _nodes_ (confluences in the context of rivers) to be inferred. 
-
-```{r, echo=FALSE, eval=TRUE, fig.dim=c(6, 4)}
-print.data.frame(data.frame(ID = c(1, 2, 3), 
-                            toID = c(3, 3, NA),
-                            fromnode = c("N1", "N2", "N3"),
-                            tonode = c("N3", "N3", "N4")), 
-                 row.names = FALSE)
-```
-
-```{r node, fig.show="hold", out.width="45%", echo=FALSE, eval=TRUE, fig.cap="In an edge-node topology, edges are directed to nodes which are then directed to other edges. An edge-to-edge toplogy does not include intervening nodes."}
-x <- c(1, 5, 3, 3)
-y <- c(5, 5, 3, 1)
-
-par(mar = c(0, 0, 0, 0))
-plot(x, y, col = NA)
-arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
-arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
-arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
-text(c(2, 4, 3.15), c(4.2, 4.2, 2), c("1", "2", "3"))
-
-par(mar = c(0, 0, 0, 0))
-plot(x, y)
-arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
-arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
-arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
-text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
-text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
-```
-
-The "toID" of a terminal flowline can be either NA or, by convention, 0 or "". Using 0 or an empty string is preferred within `hydroloom` but both are handled in most cases. Further, as long as 0 is not in the set of IDs, there is little practical difference.
-
-In `hydroloom`, edge-to-edge topology is referred to with "id and toid" attributes.
-
 ## topo_sort
 
 ```{r sort, echo=FALSE, eval=TRUE, fig.cap="Smaller 'topo_sort' values are guaranteed to be downstream of larger values along connected paths.", fig.dim=c(3, 3)}

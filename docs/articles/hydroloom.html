@@ -87,6 +87,27 @@
     
     
 <div class="section level2">
+<h2 id="hydroloom">hydroloom<a class="anchor" aria-label="anchor" href="#hydroloom"></a>
+</h2>
+<p>Hydroloom is designed to provide general hydrologic network
+functionality for any hydrographic or hydrologic data. This is
+accomplished with 1) the <code>hy</code> S3 class, 2) a number of basic
+utility functions, 3) functions to work with a hydrologic network
+topology as a graph, 4) functions to create and add useful network
+attributes,<br>
+5) and functions to index data to a network of flow network lines and
+waterbody polygons.</p>
+<p>This introduction covers the <code>hy</code> S3 class and the core
+flow network topology concepts necessary to use hydroloom
+effectively.</p>
+<p>The <a href="reference/index.html">reference</a> list contains full
+documentation of all functions.</p>
+<p>The other <a href="articles/index.html">articles</a> describe
+integrated aspects of the package in greater detail.</p>
+<p>For the latest development and to open issues, please visit the <a href="https://github.com/DOI-USGS/hydroloom" class="external-link">package github
+repository.</a></p>
+</div>
+<div class="section level2">
 <h2 id="hy-s3-class">
 <code>hy</code> S3 class<a class="anchor" aria-label="anchor" href="#hy-s3-class"></a>
 </h2>
@@ -143,9 +164,9 @@ aiming for consistent, simple, and accurate attribute names.</p>
 </h2>
 <p>The <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code> <code>hydroloom</code> function
 creates an adjacency matrix representation of a flow network as well as
-some conveniet content that are useful when traversing the graph. This
-adjacency matrix is used heavily in <code>hydroloom</code> functions but
-and may be useful for people who want to write their own graph traversal
+some convenient content that are useful when traversing the graph. This
+adjacency matrix is used heavily in <code>hydroloom</code> functions and
+may be useful to people who want to write their own graph traversal
 algorithms.</p>
 <p>A companion to <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code>,
 <code><a href="../reference/make_fromids.html">make_fromids()</a></code> reverses the graph such that the adjacency
