@@ -5,11 +5,21 @@ test_that("add streamorder", {
 
   expect_error(y <- add_streamorder(x))
 
-  y <- select(x, -StreamOrde, -StreamCalc)
+  y <- dplyr::select(x, -StreamOrde, -StreamCalc)
 
   y <- add_streamorder(y)
 
   expect_equal(y$stream_order, x$StreamOrde)
+
+  # also works with fronnode and tonode
+  x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
+
+  y <- x |>
+    dplyr::select(-StreamOrde, -StreamCalc) |>
+    add_streamorder()
+
+  expect_equal(y$stream_order, x$StreamOrde)
+  expect_equal(y$stream_calculator, x$StreamCalc)
 
   x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE)) |>
     add_toids(return_dendritic = FALSE)

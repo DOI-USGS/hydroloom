@@ -19,6 +19,7 @@ data.frame containing added \code{stream_order} and \code{stream_calculator} att
 }
 \description{
 Adds a strahler stream order.
+
 Algorithm: If more than one upstream flowpath has an order equal to the
 maximum upstream order then the downstream flowpath is assigned the maximum
 upstream order plus one. Otherwise it is assigned the maximum upstream order.
@@ -27,12 +28,14 @@ To match the nhdplus algorithm, non-dendritic network connectivity and a
 \code{divergence} attribute must be included. All secondary paths will have the
 \code{stream_order} of upstream primary paths and a \code{stream_calculator} value of 0.
 Secondary paths have no affect on the order of downstream paths.
+
+Requires a toid attribute or fromnode, tonode, and divergence attributes
+that will be used to construct a toid attribute.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
-x <- add_toids(x, return_dendritic = FALSE) |>
-  dplyr::select(COMID, toid, Divergence)
+x <- dplyr::select(x, COMID, FromNode, ToNode, Divergence)
 
 x <- add_streamorder(x)
 

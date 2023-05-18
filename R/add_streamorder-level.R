@@ -1,5 +1,6 @@
 #' @title add Streamorder
 #' @description Adds a strahler stream order.
+#'
 #' Algorithm: If more than one upstream flowpath has an order equal to the
 #' maximum upstream order then the downstream flowpath is assigned the maximum
 #' upstream order plus one. Otherwise it is assigned the maximum upstream order.
@@ -9,6 +10,9 @@
 #' `stream_order` of upstream primary paths and a `stream_calculator` value of 0.
 #' Secondary paths have no affect on the order of downstream paths.
 #'
+#' Requires a toid attribute or fromnode, tonode, and divergence attributes
+#' that will be used to construct a toid attribute.
+#'
 #' @inheritParams add_levelpaths
 #' @return data.frame containing added `stream_order` and `stream_calculator` attribute.
 #' @export
@@ -16,8 +20,7 @@
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #'
-#' x <- add_toids(x, return_dendritic = FALSE) |>
-#'   dplyr::select(COMID, toid, Divergence)
+#' x <- dplyr::select(x, COMID, FromNode, ToNode, Divergence)
 #'
 #' x <- add_streamorder(x)
 #'
@@ -42,18 +45,31 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
   if("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
 
+  if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &
+     !toid %in% names(x)) {
+    net <- select(drop_geometry(x), all_of(c(id, fromnode, tonode, divergence)))
+
+    net <- add_toids(net, return_dendritic = FALSE)
+  }
+
   # if there's any non-dendritic network we need a divergence marker
-  if(length(unique(x$id)) < nrow(x)) {
+  if(length(unique(x$id)) < nrow(x) | exists("net")) {
+
     required_atts <- c(id, toid, divergence)
-    error_context <- "add_streamorder with non-dendritic"
+    error_context <- "If id, fromnode, tonode, and divergence are not supplied, add_streamorder with non-dendritic"
+
   } else {
     required_atts <- c(id, toid)
     error_context <- "add_streamorder"
   }
 
-  check_names(x, required_atts, error_context)
+  if(!exists("net")) {
 
-  net <- select(drop_geometry(x), all_of(required_atts))
+    check_names(x, required_atts, error_context)
+
+    net <- select(drop_geometry(x), all_of(required_atts))
+
+  }
 
   out_val <- get_outlet_value(net)
 
