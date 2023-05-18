@@ -71,10 +71,14 @@ test_that("make_node_topology", {
   expect_equal(length(unique(nhf$FromNode)),
                length(unique(y$fromnode)))
 
-  z <- make_node_topology(x, add_div = add_div)
+  z <- make_node_topology(dplyr::select(x, -Divergence), add_div = add_div)
 
   expect_equal(z$fromnode, y$fromnode)
   expect_equal(z$tonode, y$tonode)
+
+  # if we put these in the same order, the new divergence attribute should match
+  z <- dplyr::left_join(dplyr::select(drop_geometry(x), COMID), z, by = "COMID")
+  expect_equal(z$divergence, x$Divergence)
 
   # the below was used for testing
   # check <- sf::st_drop_geometry(dplyr::left_join(new_hope_flowline, x, by = c("COMID" = "id")))

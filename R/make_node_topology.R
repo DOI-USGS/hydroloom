@@ -8,6 +8,12 @@
 #' @param add logical if TRUE, node topology will be added to x in return.
 #' @return data.frame containing id, fromnode, and tonode attributes or all
 #' attributes provided with id, fromnode and tonode in the first three columns.
+#'
+#' If `add_div` is TRUE, will also add a `divergence` attribute where the
+#' provided diverted paths are assigned value 2, existing main paths that
+#' eminate from a divergence are assigned value 1, and all other paths
+#' are assigned value 0.
+#'
 #' @export
 #' @name make_node_topology
 #' @examples
@@ -94,6 +100,9 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
       add_div <- left_join(select(add_div, all_of(c(id, toid))),
                            select(x, all_of(c(id, tonode))), by = id)
 
+      div2 <- add_div$toid
+      div1 <- x$toid[x$id %in% add_div$id]
+
       # now join upstream renaming the tonode to fromnode
       x <- left_join(x, select(add_div, all_of(c(toid = toid, new_fromnode = tonode))),
                      by = c(id = toid))
@@ -104,6 +113,8 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
       x <- select(x, -"new_fromnode")
 
       x <- distinct(x)
+
+      x <- mutate(x, divergence = ifelse(id %in% div2, 2, ifelse(id %in% div1, 1, 0)))
     }
   }
   if(add & !isTRUE(add_div)) {
