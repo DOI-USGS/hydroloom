@@ -47,7 +47,7 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
   set <- to_visit <- path <- rep(0, ncol(g$to))
 
   # to track where we've been
-  visited <- rep(FALSE, ncol(g$to))
+  visited <- rep(0, ncol(g$to))
 
 
   out_list <- rep(list(list()), length(starts))
@@ -72,17 +72,17 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
     # trigger for making a new path
     new_path <- FALSE
 
-    if(reset) visited <- rep(FALSE, ncol(g$to))
+    if(reset) visited <- rep(0, ncol(g$to))
 
     while(v > 0) {
 
-      if(!visited[node]) {
+      if(visited[node] == 0) {
 
         set[n] <- node
         path[n] <- path_id
         n <- n + 1
 
-        visited[node] <- TRUE
+        visited[node] <- visited[node] + 1
 
         none = FALSE
       }
