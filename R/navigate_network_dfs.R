@@ -37,7 +37,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
 }
 
-navigate_network_dfs_internal <- function(g, starts, reset) {
+navigate_network_dfs_internal <- function(g, starts, reset, check_dag = FALSE) {
 
   starts <- unique(g$to_list$indid[match(starts, g$to_list$id)])
 
@@ -48,6 +48,11 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
 
   # to track where we've been
   visited <- rep(0, ncol(g$to))
+
+  if(check_dag) {
+    # to track visited within a path
+    path_visited <- rep(0, ncol(g$to))
+  }
 
 
   out_list <- rep(list(list()), length(starts))
@@ -66,6 +71,8 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
     n <- 1
     # v is a pointer into the to_visit vector
     v <- 1
+    # keep track of number in path
+    num_in_path <- 0
 
     none <- TRUE
 
@@ -76,11 +83,22 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
 
     while(v > 0) {
 
+      if(check_dag) {
+        if(path_visited[node] != 0) {
+          warning(paste0("loop at ", g$to_list$id[node], "?"))
+          return(g$to_list$id[node])
+        }
+
+        path_visited[node] <- path_visited[node] + 1
+      }
+
       if(visited[node] == 0) {
 
         set[n] <- node
         path[n] <- path_id
         n <- n + 1
+
+        num_in_path <- num_in_path + 1
 
         visited[node] <- visited[node] + 1
 
@@ -90,7 +108,8 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
       for(to in seq_len(g$lengths[node])) {
           # Add the next node to visit to the tracking vector
           to_visit[v] <- g$to[to, node]
-          g$to[to, node] <- 0
+          if(!check_dag)
+            g$to[to, node] <- 0
           v <- v + 1
         }
 
@@ -105,8 +124,17 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
       }
 
       if(new_path) {
+        if(check_dag && num_in_path == 0) {
+          warning(paste0("empty path loop at ", g$to_list$id[node], "?"))
+          return(g$to_list$id[node])
+        }
+
         path_id <- path_id + 1
         new_path <- FALSE
+        num_in_path <- 0
+
+        # it's ok to revisit if we are on a new path
+        if(check_dag) path_visited <- rep(0, ncol(g$to))
       }
 
     }
@@ -122,6 +150,8 @@ navigate_network_dfs_internal <- function(g, starts, reset) {
     if(reset) g$to <- save_to
 
   }
+
+  if(check_dag) return(NA_integer_)
 
 out_list
 

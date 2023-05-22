@@ -87,6 +87,9 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 #' Check hy graph
 #' @description check that a id toid graph doesn't contain localized loops.
 #' @inheritParams add_levelpaths
+#' @param loop_check logical if TRUE, a special mode of
+#' \link{navigate_network_dfs} is used to walk the entire network from
+#' top to bottom searching for loops.
 #' @return if no localized loops are found, returns TRUE. If localized
 #' loops are found, problem rows with a row number added.
 #' @export
@@ -96,10 +99,35 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 #'                       toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 #' check_hy_graph(test_data)
 #'
-check_hy_graph <- function(x) {
+check_hy_graph <- function(x, loop_check = FALSE) {
 
   if(!inherits(x, "hy")) {
     x <- hy(x)
+  }
+
+  if(loop_check) {
+    index_ids <- make_index_ids(x)
+
+    starts <- index_ids$to_list$id[index_ids$to_list$id %in% x$id[!x$id %in% x$toid]]
+
+    fun <- function(s) {
+      lapply(s, function(s) {
+        hydroloom:::navigate_network_dfs_internal(index_ids, s,
+                                                  reset = FALSE,
+                                                  check_dag = TRUE)}
+      )
+    }
+
+    starts <- split(starts, ceiling(seq_along(starts) / 100))
+
+    check <- pbapply::pblapply(starts, FUN = fun, cl = "future")
+
+    check <- unlist(check)
+
+    if(any(!is.na(check))) {
+      return(filter(x, id %in% check))
+    }
+
   }
 
   x <- left_join(mutate(x, row = 1:n()),

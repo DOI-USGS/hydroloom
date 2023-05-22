@@ -11,7 +11,7 @@ Description: A collection of utilities that support creation of network attribut
 Depends: R (>= 4.0)
 Imports: dplyr, data.table, sf, units, stats, methods, utils, pbapply, tidyr, RANN, rlang
 Suggests: testthat, nhdplusTools, future, lwgeom, future.apply
-Remotes: doi-usgs/nhdplusTools@hydroloom
+Remotes: doi-usgs/nhdplusTools@hydroloom, dblodgett-usgs/pbapply@master
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
