@@ -14,29 +14,37 @@ test_that("loop check", {
 
   g <- make_index_ids(test_data)
 
-  expect_warning(hydroloom:::navigate_network_dfs_internal(g, 1, FALSE, check_dag = TRUE),
+  expect_warning(hydroloom:::check_hy_graph_internal(g, 1),
                  "loop")
 
-  expect_warning(hydroloom:::navigate_network_dfs_internal(g, 2, FALSE, check_dag = TRUE),
+  expect_warning(hydroloom:::check_hy_graph_internal(g, 2),
                  "loop")
 
   suppressWarnings(remove <- check_hy_graph(test_data, loop_check = TRUE))
 
-  expect_equal(hy_reverse(remove), dplyr::tibble(id = c(3, 5, 5),
-                                                 toid = c(5, 4, 6)))
+  expect_equal(remove,
+               structure(list(id = c(3, 4, 5, 5, 6),
+                              toid = c(5, 3, 4, 6, 0)),
+                         class = c("hy",
+                                   "tbl_df", "tbl", "data.frame"),
+                         row.names = c(NA, -5L),
+                         orig_names = c(id = "id", toid = "toid")))
 
-  test_data <- data.frame(id = c(1, 1, 2, 3, 4, 5, 6, 6, 7),
-                        toid = c(2, 3, 4, 7, 5, 6, 2, 7, 0))
+  test_data <- data.frame(id = c(1, 1, 2, 3, 4, 5, 6, 6, 7, 8),
+                        toid = c(2, 3, 4, 7, 5, 6, 2, 7, 8, 0))
 
   g <- make_index_ids(test_data)
 
-  expect_warning(hydroloom:::navigate_network_dfs_internal(g, 1, FALSE, check_dag = TRUE),
+  expect_warning(hydroloom:::check_hy_graph_internal(g, 1),
                  "loop")
 
   suppressWarnings(remove <- check_hy_graph(test_data, loop_check = TRUE))
 
-  expect_equal(hy_reverse(remove), dplyr::tibble(id = c(2),
-                                                 toid = c(4)))
+  expect_equal(remove, structure(list(id = c(2, 4, 5, 6, 6, 7, 8),
+                                      toid = c(4, 5, 6, 2, 7, 8, 0)),
+                                 class = c("hy", "tbl_df", "tbl", "data.frame"),
+                                 row.names = c(NA, -7L),
+                                 orig_names = c(id = "id", toid = "toid")))
 
 
   test_data <- data.frame(id = c(1, 1, 3, 2, 4, 5),
@@ -44,7 +52,7 @@ test_that("loop check", {
 
   g <- make_index_ids(test_data)
 
-  check <- hydroloom:::navigate_network_dfs_internal(g, 1, FALSE, check_dag = TRUE)
+  check <- hydroloom:::check_hy_graph_internal(g, 1)
 
   expect_equal(check, NA_integer_)
 
@@ -64,16 +72,12 @@ test_that("big_check", {
 
   g$toid[g$id == 31325125] <- ""
 
-  check_hy_graph(g, loop_check = TRUE)
+  gi <- make_index_ids(g)
 
-  g <- make_index_ids(g)
-
-  expect_equal(hydroloom:::navigate_network_dfs_internal(g, "31325075", FALSE, TRUE),
+  expect_equal(hydroloom:::check_hy_graph_internal(gi, which(gi$to_list$id == "31325075")),
                NA_integer_)
 
-  expect_equal(hydroloom:::navigate_network_dfs_internal(g, "31325137", FALSE, TRUE),
+  expect_equal(hydroloom:::check_hy_graph_internal(gi, which(gi$to_list$id == "31325137")),
                NA_integer_)
-
-
 
 })

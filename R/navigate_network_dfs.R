@@ -37,8 +37,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
 }
 
-# the check_dag version of this function could probably be split out for performance?
-navigate_network_dfs_internal <- function(g, all_starts, reset, check_dag = FALSE) {
+navigate_network_dfs_internal <- function(g, all_starts, reset) {
 
   # these are in indid space
   all_starts <- unique(g$to_list$indid[match(all_starts, g$to_list$id)])
@@ -57,16 +56,6 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, check_dag = FALS
     # this is pre-allocated much much longer than needed
     # a special pointer is used to interact with this tracking vector
     to_visit_pointer <- rep(0, ncol(g$to))
-
-  if(check_dag) {
-    # used to track where the to_visit_pointer members emanated from
-    # shares the special pointer with to_visit_pointer
-    # only used if looking for loops.
-    from_pointer <- rep(0, ncol(g$to))
-
-    # we need froms to get sort order of upstream connections
-    froms <- hydroloom::make_fromids(g)
-  }
 
   # to track where we've been
   visited_tracker <- rep(NA_integer_, ncol(g$to))
@@ -104,16 +93,6 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, check_dag = FALS
 
       message(g$to_list$id[node])
 
-      if(check_dag) {
-        # if we've already visited and this path came from a downstream node.
-        # path_start_position comes from the sort order of the feature upstream
-        # of where the current path started. This finds "back edges".
-        if(!is.na(visited_tracker[node]) && visited_tracker[node] <= path_start_position) {
-          warning(paste0("loop at ", g$to_list$id[node], "?"))
-          return(g$to_list$id[node])
-        }
-      }
-
       if(is.na(visited_tracker[node])) {
         # this is the first time we've seen this,
         # add it to the set in the current path.
@@ -121,24 +100,8 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, check_dag = FALS
         path_index[node_index] <- path_id
         node_index <- node_index + 1
 
-        if(!check_dag) {
-        # mark it as visited
-          visited_tracker[node] <- node_index
-        } else {
-          try(visited_tracker[node] <-
-                # nothing upstream
-                if(froms$lengths[node] == 0) {
-                  0
-                  # only one upstream
-                } else if(froms$lengths[node] == 1) {
-                  visited_tracker[froms$froms[1, node]]
-                  # possibly several upstream
-                } else {
-                  suppressWarnings(min(visited_tracker[froms$froms[, node]], na.rm = TRUE))
-                }, silent = TRUE)
+        visited_tracker[node] <- node_index
 
-          visited_tracker[node] <- clean_order(visited_tracker[node])
-        }
         # this path has stuff
         none_in_path = FALSE
       }
@@ -147,26 +110,6 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, check_dag = FALS
       for(to in seq_len(g$lengths[node])) {
           # Add the next node to visit to the tracking vector
           to_visit_pointer[visit_index] <- g$to[to, node]
-
-          if(check_dag) {
-            # this figures out what the correct sort order should be so when
-            # we come back we know where we left off.
-            # probably a better implementation but I'm tired.
-            try(from_pointer[visit_index] <-
-                    # nothing upstream
-                  if(froms$lengths[node] == 0) {
-                    0
-                    # only one upstream
-                  } else if(froms$lengths[node] == 1) {
-                    visited_tracker[froms$froms[1, node]]
-                    # possibly several upstream
-                  } else {
-                    suppressWarnings(min(visited_tracker[froms$froms[, node]], na.rm = TRUE))
-                  }, silent = TRUE)
-
-            # the above block needs some clean up to get the value to be nice
-            from_pointer[visit_index] <- clean_order(from_pointer[visit_index])
-          }
 
           # break the graph where we've been so we stop next time
           g$to[to, node] <- 0
@@ -193,20 +136,14 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, check_dag = FALS
         path_id <- path_id + 1
         new_path <- FALSE
 
-        # we need to track where the path we are on started to find loops.
-        if(check_dag)
-          path_start_position <- from_pointer[visit_index]
       }
 
     }
 
-    if(!check_dag) {
-      # set up the output
-      if(none_in_path) {
-        out_list[[set_id]] <- list()
-      } else {
-        out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index-1)])
-      }
+    if(none_in_path) {
+      out_list[[set_id]] <- list()
+    } else {
+      out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index-1)])
     }
 
     set_id <- set_id + 1
@@ -215,9 +152,6 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, check_dag = FALS
     if(reset) g$to <- save_to
 
   }
-
-  # if we got this far, Cool!
-  if(check_dag) return(NA_integer_)
 
 out_list
 
