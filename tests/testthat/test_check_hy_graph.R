@@ -17,10 +17,13 @@ test_that("loop check", {
   expect_warning(hydroloom:::navigate_network_dfs_internal(g, 1, FALSE, check_dag = TRUE),
                  "loop")
 
+  expect_warning(hydroloom:::navigate_network_dfs_internal(g, 2, FALSE, check_dag = TRUE),
+                 "loop")
+
   suppressWarnings(remove <- check_hy_graph(test_data, loop_check = TRUE))
 
-  expect_equal(hy_reverse(remove), dplyr::tibble(id = c(4),
-                                                 toid = c(3)))
+  expect_equal(hy_reverse(remove), dplyr::tibble(id = c(3, 5, 5),
+                                                 toid = c(5, 4, 6)))
 
   test_data <- data.frame(id = c(1, 1, 2, 3, 4, 5, 6, 6, 7),
                         toid = c(2, 3, 4, 7, 5, 6, 2, 7, 0))
@@ -52,4 +55,25 @@ test_that("more check", {
   g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
   f <- add_toids(g)
   expect_true(check_hy_graph(f, loop_check = TRUE))
+})
+
+test_that("big_check", {
+  g <- readRDS(list.files(pattern = "loop.rds", recursive = TRUE, full.names = TRUE))
+
+  g$toid[!g$toid %in% g$id] <- ""
+
+  g$toid[g$id == 31325125] <- ""
+
+  check_hy_graph(g, loop_check = TRUE)
+
+  g <- make_index_ids(g)
+
+  expect_equal(hydroloom:::navigate_network_dfs_internal(g, "31325075", FALSE, TRUE),
+               NA_integer_)
+
+  expect_equal(hydroloom:::navigate_network_dfs_internal(g, "31325137", FALSE, TRUE),
+               NA_integer_)
+
+
+
 })
