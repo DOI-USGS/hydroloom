@@ -81,3 +81,16 @@ test_that("big_check", {
                NA_integer_)
 
 })
+
+test_that("recombine", {
+  # this could be used as a test later -- the downstream recombinations look like
+  # loops unless you track parents.
+
+  test_data <- data.frame(id = c(1, 2, 2, 3, 4, 4, 5, 6, 7, 9, 8, 10),
+                          toid = c(2, 3, 7, 4, 5, 8, 6, 0, 9, 5, 10, 6))
+
+  g <- make_index_ids(test_data)
+
+  expect_equal(hydroloom:::check_hy_graph_internal(g, which(g$to_list$id == 1)),
+               NA_integer_)
+})

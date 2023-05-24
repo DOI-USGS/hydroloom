@@ -82,7 +82,7 @@ check_hy_outlets <- function(x) {
 }
 
 
-check_hy_graph_internal <- function(g, all_starts) {
+check_hy_graph_internal <- function(g, all_starts, tolerance = 50, verbose = FALSE, investigate = FALSE, investigate_tolerance = 5) {
 
   # Some vectors to track results
   # indexes into the full set from all starts
@@ -110,7 +110,12 @@ check_hy_graph_internal <- function(g, all_starts) {
 
     while(visit_index > 0) {
 
-      if(visited_tracker[node] > 10) {
+      if(verbose & new_path) {
+        message(g$to_list$id[node])
+        new_path <- FALSE
+      }
+
+      if(visited_tracker[node] > tolerance) {
         reps <- table(set_index)
         reps <- reps[reps > 5]
 
@@ -137,6 +142,7 @@ check_hy_graph_internal <- function(g, all_starts) {
 
         # add to the visit index
         visit_index <- visit_index + 1
+
       }
 
       # go to the last element added in to_visit_pointer
@@ -145,10 +151,16 @@ check_hy_graph_internal <- function(g, all_starts) {
 
       # if nothing there, just increment to the next visit position
       # this indicates we hit a new path
-      while(!node && visit_index > 0) {
+      while(!node && visit_index >= 1) {
         visit_index <- visit_index - 1
         node <- to_visit_pointer[visit_index]
+        if(investigate && visit_index > 0 && visited_tracker[node] > investigate_tolerance) {
+          if(verbose) message("skipping retry of", g$to_list$id[node])
+          node <- 0
+          visit_index <- visit_index - 1
+        }
         new_path <- TRUE
+        if(verbose) message("hit outlet")
       }
 
     }
@@ -158,15 +170,4 @@ check_hy_graph_internal <- function(g, all_starts) {
   # if we got this far, Cool!
   return(NA_integer_)
 
-}
-
-clean_order <- function(x) {
-  # the above block needs some clean up to get the value to be nice
-  if(is.na(x) | is.infinite(x)) {
-    x <- 0
-  } else if(x != 0) {
-    # the path starts one down from the minimum upstream.
-    x <- x + 1
-  }
-  x
 }
