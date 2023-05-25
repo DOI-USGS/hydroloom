@@ -9,8 +9,7 @@ check_hy_graph(x, loop_check = FALSE)
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
-\item{loop_check}{logical if TRUE, a special mode of
-\link{navigate_network_dfs} is used to walk the entire network from
+\item{loop_check}{logical if TRUE, the entire network is walked from
 top to bottom searching for loops.}
 }
 \value{

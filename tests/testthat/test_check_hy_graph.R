@@ -14,20 +14,17 @@ test_that("loop check", {
 
   g <- make_index_ids(test_data)
 
-  expect_warning(hydroloom:::check_hy_graph_internal(g, 1),
-                 "loop")
-
-  expect_warning(hydroloom:::check_hy_graph_internal(g, 2),
-                 "loop")
+  suppressWarnings(expect_warning(hydroloom:::check_hy_graph_internal(g, c(1, 2)),
+                                  "loop"))
 
   suppressWarnings(remove <- check_hy_graph(test_data, loop_check = TRUE))
 
   expect_equal(remove,
-               structure(list(id = c(3, 4, 5, 5, 6),
-                              toid = c(5, 3, 4, 6, 0)),
+               structure(list(id = c(3),
+                              toid = c(5)),
                          class = c("hy",
                                    "tbl_df", "tbl", "data.frame"),
-                         row.names = c(NA, -5L),
+                         row.names = c(NA, -1L),
                          orig_names = c(id = "id", toid = "toid")))
 
   test_data <- data.frame(id = c(1, 1, 2, 3, 4, 5, 6, 6, 7, 8),
@@ -35,15 +32,15 @@ test_that("loop check", {
 
   g <- make_index_ids(test_data)
 
-  expect_warning(hydroloom:::check_hy_graph_internal(g, 1),
-                 "loop")
+  suppressWarnings(expect_warning(hydroloom:::check_hy_graph_internal(g, 1),
+                 "loop"))
 
   suppressWarnings(remove <- check_hy_graph(test_data, loop_check = TRUE))
 
-  expect_equal(remove, structure(list(id = c(2, 4, 5, 6, 6, 7, 8),
-                                      toid = c(4, 5, 6, 2, 7, 8, 0)),
+  expect_equal(remove, structure(list(id = c(2),
+                                      toid = c(4)),
                                  class = c("hy", "tbl_df", "tbl", "data.frame"),
-                                 row.names = c(NA, -7L),
+                                 row.names = c(NA, -1L),
                                  orig_names = c(id = "id", toid = "toid")))
 
 
@@ -54,7 +51,7 @@ test_that("loop check", {
 
   check <- hydroloom:::check_hy_graph_internal(g, 1)
 
-  expect_equal(check, NA_integer_)
+  expect_equal(check, numeric())
 
   expect_true(check_hy_graph(test_data, loop_check = TRUE))
 })
@@ -74,11 +71,7 @@ test_that("big_check", {
 
   gi <- make_index_ids(g)
 
-  expect_equal(hydroloom:::check_hy_graph_internal(gi, which(gi$to_list$id == "31325075")),
-               NA_integer_)
-
-  expect_equal(hydroloom:::check_hy_graph_internal(gi, which(gi$to_list$id == "31325137")),
-               NA_integer_)
+  expect_true(hydroloom::check_hy_graph(g, loop_check = TRUE))
 
 })
 
@@ -89,8 +82,10 @@ test_that("recombine", {
   test_data <- data.frame(id = c(1, 2, 2, 3, 4, 4, 5, 6, 7, 9, 8, 10),
                           toid = c(2, 3, 7, 4, 5, 8, 6, 0, 9, 5, 10, 6))
 
+  igraph::plot.igraph(igraph::graph_from_data_frame(test_data))
+
   g <- make_index_ids(test_data)
 
   expect_equal(hydroloom:::check_hy_graph_internal(g, which(g$to_list$id == 1)),
-               NA_integer_)
+               numeric())
 })
