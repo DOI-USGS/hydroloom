@@ -1,4 +1,4 @@
-#' Check hy graph
+#' Check hy Graph
 #' @description check that a id toid graph doesn't contain localized loops.
 #' @inheritParams add_levelpaths
 #' @param loop_check logical if TRUE, the entire network is walked from
@@ -97,7 +97,7 @@ check_hy_graph_internal <- function(g, all_starts) {
   # trigger for making a new path
   new_path <- FALSE
 
-  pb = txtProgressBar(0, ncol(g$to), style = 3)
+  pb = utils::txtProgressBar(0, ncol(g$to), style = 3)
   on.exit(close(pb))
   n <- 0
 
@@ -110,7 +110,7 @@ check_hy_graph_internal <- function(g, all_starts) {
     visited_tracker[node] <- TRUE
 
     if(!n %% 100)
-      setTxtProgressBar(pb, n)
+      utils::setTxtProgressBar(pb, n)
 
 
     # now look at what's downtream and add to a queue
@@ -176,7 +176,7 @@ check_hy_graph_internal <- function(g, all_starts) {
 
   }
 
-  setTxtProgressBar(pb, n)
+  utils::setTxtProgressBar(pb, n)
 
   # if we got this far, Cool!
   unique(g$to_list$id[as.integer(out_stack$as_list())])
