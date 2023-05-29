@@ -8,8 +8,15 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
 ```{r setup, include = FALSE}
+local <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE")
+
+if(!local) {
+  nhdplusTools::nhdplusTools_data_dir(tempdir())
+}
+
+oldoption <- options(scipen = 9999)
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
@@ -19,32 +26,47 @@ knitr::opts_chunk$set(
   fig.align = "center"
 )
 
-oldoption <- options(scipen = 9999)
-
 ```
 
-```{r}
+This article demonstrates how to work with the NHD flow table using nhdplusTools and hydroloom.
+
+In this first block, we will download, open, and filter the data to prepare to work with it as a network.
+
+```{r, message=FALSE}
 library(hydroloom)
 library(dplyr)
 
-dir <- nhdplusTools::download_nhd(tempdir(), "1908", TRUE)
-
+dir <- nhdplusTools::download_nhd(nhdplusTools::nhdplusTools_data_dir(), 
+                                  "1908", TRUE)
 fs <- list.files(dir, pattern = ".*1908.*.gdb", full.names = TRUE)
 
+# Dropping Z and M and making sure everything is LINESTRING helps later.
 fl <- sf::st_zm(sf::st_cast(sf::read_sf(fs, "NHDFlowline"), "LINESTRING"))
 
-# remove any coastal features
+# remove any coastal (ftype 566) features
 fl <- filter(fl, ftype != 566)
+```
 
+Now that we have a network ready to go, we need to figure out a subset that we want to work with. Here, we'll use `index_points_to_lines()` to find a line near the outlet of the Chena River in Alaska. 
+```{r, message=FALSE}
+# this is a seed point near the outlet of a watershed to consider.
 point <- sf::st_sfc(sf::st_point(c(-147.911472, 64.796633)), 
                               crs = 4269)
 
-i <- hydroloom::index_points_to_lines(fl, point)
+# now we get the line our point is along.
+i <- index_points_to_lines(fl, point)
 
+# Let's see what we have.
 sub <- fl[fl$permanent_identifier == i$permanent_identifier, ]
 
 mapview::mapview(list(sub, point))
+```
 
+Now we load up the NHD "flow table" which contains a list of connections between flowlines. Where there are diversions, the same "from" will have multiple "to" connections so this table doesn't join cleanly to the flowline table. The following code prepares the flow table and runs a network navigation over it to find all the features we need.
+
+Note that in `check_hy_graph()` we are only finding flowlines that flow directly into eachother, not loops of three or more features. We can search for loops like that with the `loop_check` flag to `check_hy_graph` but don't need it to get `navigate_network_dfs()` to work.
+
+```{r, message=FALSE}
 # remove coastal and make terminals go to an empty id.
 flow_table <- sf::read_sf(fs, "NHDFlow") |>
   filter(from_permanent_identifier %in% fl$permanent_identifier) |>
@@ -55,7 +77,8 @@ flow_table <- sf::read_sf(fs, "NHDFlow") |>
 
 # Remove loops found in navigate network dfs
 remove <- hydroloom::check_hy_graph(flow_table)
-# this is naive and these would normally be reviewed.
+
+# this is naive and these removals would normally be reviewed.
 flow_table <- flow_table |>
   mutate(row = 1:n()) |>
   filter(!row %in% remove$row)
@@ -67,4 +90,16 @@ subdown <- fl[fl$permanent_identifier %in% unique(unlist(down)),]
 subup <- fl[fl$permanent_identifier %in% unique(unlist(up)),]
 
 mapview::mapview(list(subup, subdown, point))
+```
+
+There's plenty more we could do from here, but this vignette shows the core of what's needed to get the NHD flow table working with hydroloom.
+
+Looking for help or want more in this vignette? Submit an issue at: https://github.com/DOI-USGS/hydroloom/issues 
+
+```{r teardown, include=FALSE}
+options(oldoption)
+
+if(!local) {
+  unlink(nhdplusTools::nhdplusTools_data_dir(), recursive = TRUE)
+}
 ```

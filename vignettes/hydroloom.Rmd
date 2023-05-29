@@ -31,7 +31,7 @@ oldoption <- options(scipen = 9999)
 
 # hydroloom
 
-Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. This is accomplished with 
+Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. This is accomplished with  
 1) the `hy` S3 class,  
 2) a collection of utility functions,   
 3) functions to work with a hydrologic network topology as a graph,  
