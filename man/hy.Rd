@@ -2,7 +2,7 @@
 % Please edit documentation in R/00_hydroloom.R
 \name{hy}
 \alias{hy}
-\title{create an hy fabric object}
+\title{Create a hy Fabric S3 Object}
 \usage{
 hy(x, clean = FALSE)
 }

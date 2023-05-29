@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{st_compatibalize}
 \alias{st_compatibalize}
-\title{make spatial inputs compatible}
+\title{Make Spatial Inputs Compatible}
 \usage{
 st_compatibalize(sf1, sf2)
 }

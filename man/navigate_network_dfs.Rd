@@ -2,7 +2,7 @@
 % Please edit documentation in R/navigate_network_dfs.R
 \name{navigate_network_dfs}
 \alias{navigate_network_dfs}
-\title{all paths depth first}
+\title{Navigate all Paths Depth First}
 \usage{
 navigate_network_dfs(x, starts, direction = "down", reset = FALSE)
 }
@@ -11,7 +11,7 @@ navigate_network_dfs(x, starts, direction = "down", reset = FALSE)
 
 \item{starts}{vector with ids from x to start at.}
 
-\item{direction}{character only "down" supported so far.}
+\item{direction}{character "up or "down"}
 
 \item{reset}{logical if TRUE, reset graph for each start such that later paths
 will have overlapping results.}

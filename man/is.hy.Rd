@@ -2,7 +2,7 @@
 % Please edit documentation in R/00_hydroloom.R
 \name{is.hy}
 \alias{is.hy}
-\title{is hy?}
+\title{Is Valid \code{hy} Class?}
 \usage{
 is.hy(x, silent = FALSE)
 }

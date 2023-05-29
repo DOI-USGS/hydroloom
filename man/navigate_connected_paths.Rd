@@ -2,7 +2,7 @@
 % Please edit documentation in R/navigate_connected_paths.R
 \name{navigate_connected_paths}
 \alias{navigate_connected_paths}
-\title{Get Paths}
+\title{Navigate Connected Paths}
 \usage{
 navigate_connected_paths(x, outlets, status = FALSE)
 }

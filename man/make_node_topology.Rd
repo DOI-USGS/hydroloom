@@ -4,7 +4,7 @@
 \alias{make_node_topology}
 \alias{make_node_topology.data.frame}
 \alias{make_node_topology.hy}
-\title{make node topology from edge topology}
+\title{Make Node Topology from Edge Topology}
 \usage{
 make_node_topology(x, add_div = NULL, add = TRUE)
 

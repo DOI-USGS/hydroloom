@@ -1,4 +1,4 @@
-#' make node topology from edge topology
+#' @title Make Node Topology from Edge Topology
 #' @description creates a node topology table from an edge topology
 #' @inheritParams add_levelpaths
 #' @param add_div data.frame of logical containing id and toid diverted paths to add.

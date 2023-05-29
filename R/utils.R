@@ -46,7 +46,7 @@ unnest <- function(x, col) {
   out
 }
 
-#' make spatial inputs compatible
+#' @title Make Spatial Inputs Compatible
 #' @description makes sf1 compatible with sf2 by projecting into
 #' the projection of 2 and ensuring that the geometry columns are the
 #' same name.
@@ -73,7 +73,7 @@ st_compatibalize <- function(sf1, sf2) {
 
 }
 
-#' rename_geometry
+#' @title Rename Geometry
 #' @description correctly renames the geometry column
 #' of a sf object.
 #' @param g sf data.table
@@ -94,7 +94,7 @@ rename_geometry <- function(g, name){
   g
 }
 
-#' drop_geometry
+#' @title Drop Geometry
 #' @description drops geometry if present, does nothing otherwise.
 #' @param x data.frame that may contain a geometry column
 #' @return data.frame without geometry column
@@ -112,7 +112,7 @@ drop_geometry <- function(x) {
   }
 }
 
-#' @title Get line Node
+#' @title Get Line Node
 #' @description Given one or more lines, returns a particular node from
 #' the line.
 #' @param x sf sf data.frame with one or more LINESTRING features
@@ -158,7 +158,7 @@ get_node <- function(x, position = "end") {
   st_as_sf(x, coords = c("X", "Y"), crs = in_crs)
 }
 
-#' Fix flow direction
+#' @title Fix Flow Direction
 #' @description If flowlines aren't digitized in the expected direction,
 #' this will reorder the nodes so they are.
 #' @param id integer The id of the flowline to check
@@ -243,7 +243,7 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
   })
 }
 
-#' Rescale aggregate id measure to id measure
+#' @title Rescale Aggregate id Measure to id Measure
 #' @description Given a aggregate id (e.g. reachcode) measure and the from and
 #' to measure for a id (e.g. comid flowline), returns the measure along the
 #' id line. This is a utility specific to the NHDPlus data model where

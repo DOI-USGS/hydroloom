@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_hy_graph.R
 \name{check_hy_graph}
 \alias{check_hy_graph}
-\title{Check hy graph}
+\title{Check hy Graph}
 \usage{
 check_hy_graph(x, loop_check = FALSE)
 }
@@ -10,7 +10,11 @@ check_hy_graph(x, loop_check = FALSE)
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{loop_check}{logical if TRUE, the entire network is walked from
-top to bottom searching for loops.}
+top to bottom searching for loops. This loop detection algorithm visits
+a node in the network only once alll its upstream neighbors have been
+visited. A complete depth first search is performed at each node, searching
+for paths that lead to an already visited (upstream) node. This algorithm
+is often referred to as "recursive depth first search".}
 }
 \value{
 if no localized loops are found, returns TRUE. If localized

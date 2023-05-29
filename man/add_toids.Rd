@@ -4,7 +4,7 @@
 \alias{add_toids}
 \alias{add_toids.data.frame}
 \alias{add_toids.hy}
-\title{add toids}
+\title{Add Downstream IDs}
 \usage{
 add_toids(x, return_dendritic = TRUE)
 

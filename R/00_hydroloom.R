@@ -107,7 +107,16 @@ hnd$point_id <- "identifier of hydrologic location point"
 hnd$offset <- "offset distance from point to line in units of linear reference analysis units"
 hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
 
-hydroloom_name_definitions <- as.character(hnd)
+hydroloom_name_definitions <- stats::setNames(as.character(hnd), names(hnd))
+class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_definitions))
+
+#' @export
+#' @noRd
+print.hydroloom_names <- function(x) {
+  for(i in 1:length(x)) {
+    cat(paste0('"', names(x)[i], '"', ": ", unname(x)[i], "\n"))
+  }
+}
 
 # input names that should be changed to replacement names
 hydroloom_name_map <- c(
@@ -183,8 +192,6 @@ get_outlet_value <- function(x) {
   }
 }
 
-.data <- NULL
-
 #' @importFrom dplyr filter select left_join right_join all_of any_of bind_rows group_by
 #' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate summarise
 #' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag case_when
@@ -194,7 +201,9 @@ get_outlet_value <- function(x) {
 #' @importFrom sf st_as_sf st_sf st_zm st_coordinates st_crs st_join st_reverse
 #' @importFrom pbapply pblapply pbsapply pbapply pboptions
 
-#' @title create an hy fabric object
+.data <- NULL
+
+#' @title Create a hy Fabric S3 Object
 #' @description converts a compatible dataset into a fabric s3 class
 #' @inheritParams add_levelpaths
 #' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
@@ -263,7 +272,7 @@ hy <- function(x, clean = FALSE) {
   x
 }
 
-#' is hy?
+#' Is Valid `hy` Class?
 #' @description test if object is a valid according to the hy s3 class
 #' @param x object to test
 #' @param silent logical should messages be emitted?
@@ -293,7 +302,7 @@ is.hy <- function(x, silent = FALSE) {
   TRUE
 }
 
-#' reverse hy to original names
+#' Reverse `hy` to Original Names
 #' @description renames hy object to original names and removes hy object
 #' attributes.
 #' @inheritParams add_levelpaths

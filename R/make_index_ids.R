@@ -1,4 +1,4 @@
-#' make index ids
+#' @title Make Index ids
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that the row number and id are equal.
 #' @inheritParams add_levelpaths
@@ -84,7 +84,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
   }
 }
 
-#' format index ids
+#' @title Format Index ids
 #' @param g data.frame with `id`, `inid` and `toindid` as returned by \link{make_index_ids}
 #' with `long_form`=TRUE.
 #' @param return_list logical if TRUE, the returned list will include a

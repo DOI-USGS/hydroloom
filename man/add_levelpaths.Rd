@@ -4,7 +4,7 @@
 \alias{add_levelpaths}
 \alias{add_levelpaths.data.frame}
 \alias{add_levelpaths.hy}
-\title{Assign Level Paths}
+\title{Add Level Paths}
 \usage{
 add_levelpaths(
   x,

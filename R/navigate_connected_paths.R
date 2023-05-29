@@ -1,4 +1,4 @@
-#' Get Paths
+#' @title Navigate Connected Paths
 #' @description Given a network and set of ids, finds paths or lengths between all
 #' identified flowpath outlets. This algorithm finds paths between outlets
 #' regardless of flow direction.
@@ -124,7 +124,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 
 }
 
-#' Get Partial Flowpath Length
+#' @title Get Partial Flowpath Length
 #' @param hydro_location list containing a hydrologic locations with names
 #' aggregate_id (reachcode) and aggregate_id_measure (reachcode measure).
 #' @param network data.frame network compatible with \link{hydroloom_names}.

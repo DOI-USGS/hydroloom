@@ -2,7 +2,7 @@
 % Please edit documentation in R/align_names.R
 \name{align_names}
 \alias{align_names}
-\title{Align names to hydroloom convention}
+\title{Align Names to Hydroloom Convention}
 \usage{
 align_names(x)
 }

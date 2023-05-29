@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get_node}
 \alias{get_node}
-\title{Get line Node}
+\title{Get Line Node}
 \usage{
 get_node(x, position = "end")
 }

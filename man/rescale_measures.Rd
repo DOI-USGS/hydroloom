@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{rescale_measures}
 \alias{rescale_measures}
-\title{Rescale aggregate id measure to id measure}
+\title{Rescale Aggregate id Measure to id Measure}
 \usage{
 rescale_measures(measure, from, to)
 }

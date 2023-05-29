@@ -86,132 +86,15 @@
 
     
     
-<style type="text/css">
-   .main-container {max-width: 100%;}
-   .row {display: flex;}
-   .column {flex: 50%;}
-</style>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p><code><a href="../articles/advanced_network.html">vignette("advanced_network")</a></code> talks about the basics of
+<p><code><a href="../articles/hydroloom.html">vignette("hydroloom")</a></code> andd
+<code><a href="../articles/advanced_network.html">vignette("advanced_network")</a></code> talks about the basics of
 network topology representation and attributes that build on a strictly
 dendritic network. This vignette expands those topics by describing
 <code>hydroloom</code> functionality that supports non-dendritic
 networks.</p>
-</div>
-<div class="section level2">
-<h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
-</h2>
-<p>As discussed in the <code><a href="../articles/advanced_network.html">vignette("advanced_network")</a></code>
-vignette, a hydrologic flow network can be represented as an edge to
-edge (e.g. edge list) topology or an edge-node topology. In the case of
-dendritic networks, an edge list can be stored as a single “toid”
-attribute on each feature and nodes are redundant as there would be one
-and only one node for each feature. In non-dendritic networks, an edge
-list can include multiple “toid” attributes for each feature,
-necessitating a one to many relationship that can be difficult to
-interpret. Nevertheless, the U.S. National Hydrography Dataset uses an
-edge-list format in its “flow table” and the format is capable of
-storing non-dendritic feature topology.</p>
-<p>Using a node topology to store a flow network, each feature flows
-from one and only one node and flows to one and only one node. This one
-to one relationship between features and their from and to nodes means
-that the topology fits in a table with one row per feature as is common
-practice in spatial feature data.</p>
-<p>For this reason, the NHDPlus data model converts the NHD “flow table”
-into node topology in its representation of non dendritic topology. The
-downside of this approach is that it requires creation of a node
-identifier. These node identifiers are a table deduplication device that
-enables a one to many relationship (the flow table) to be represented as
-two one to one relationships. Given this, in hydrologic flow networks,
-node identifiers can be created based on an edge list and discarded when
-no longer needed.</p>
-<div class="row">
-<div class="column">
-<p><img src="non-dendritic_files/figure-html/node-1.png" width="45%" style="display: block; margin: auto;"></p>
-</div>
-<div class="column">
-<p><img src="non-dendritic_files/figure-html/node2-1.png" width="45%" style="display: block; margin: auto;"></p>
-</div>
-</div>
-<p>In this example of an edge list topology and a node topology for the
-same system, feature ‘1’ flows to two edges but only one node. We can
-represent this in tabular form with a duplicated row for the divergence
-downstream of ‘1’ or with the addition of node identifiers as shown in
-the following tables.</p>
-<div class="row">
-<div class="column">
-<table class="table">
-<thead><tr class="header">
-<th>id</th>
-<th>fromnode</th>
-<th>tonode</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>1</td>
-<td>N1</td>
-<td>N2</td>
-</tr>
-<tr class="even">
-<td>2</td>
-<td>N2</td>
-<td>N3</td>
-</tr>
-<tr class="odd">
-<td>3</td>
-<td>N3</td>
-<td>N4</td>
-</tr>
-<tr class="even">
-<td>4</td>
-<td>N2</td>
-<td>N4</td>
-</tr>
-<tr class="odd">
-<td>5</td>
-<td>N4</td>
-<td>N5</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="column">
-<table class="table">
-<thead><tr class="header">
-<th>id</th>
-<th>toid</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>1</td>
-<td>2</td>
-</tr>
-<tr class="even">
-<td>1</td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td>2</td>
-<td>3</td>
-</tr>
-<tr class="even">
-<td>3</td>
-<td>5</td>
-</tr>
-<tr class="odd">
-<td>4</td>
-<td>5</td>
-</tr>
-<tr class="even">
-<td>5</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 </div>
 <div class="section level2">
 <h2 id="non-dendritic-topology-attributes-">Non-dendritic topology attributes.<a class="anchor" aria-label="anchor" href="#non-dendritic-topology-attributes-"></a>
@@ -292,7 +175,7 @@ recreate the non-dendritic network.</p>
 <span></span>
 <span><span class="co"># First we select only an id, a name, and a feature type.</span></span>
 <span><span class="va">flow_net</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="va">COMID</span>, <span class="va">GNIS_ID</span>, <span class="va">FTYPE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">COMID</span>, <span class="va">GNIS_ID</span>, <span class="va">FTYPE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="fl">5070</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Now we convert the geometric network to an attribute topology</span></span>
@@ -300,11 +183,13 @@ recreate the non-dendritic network.</p>
 <span><span class="va">flow_net</span> <span class="op">&lt;-</span> <span class="va">flow_net</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/make_attribute_topology.html">make_attribute_topology</a></span><span class="op">(</span>min_distance <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/make_node_topology.html">make_node_topology</a></span><span class="op">(</span>add_div <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">left_join</span><span class="op">(</span><span class="fu"><a href="../reference/drop_geometry.html">drop_geometry</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"COMID"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="fu"><a href="../reference/drop_geometry.html">drop_geometry</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"COMID"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required namespace: future</span></span>
+<span><span class="co">#&gt; Loading required namespace: future.apply</span></span>
 <span></span>
 <span><span class="co"># We only have one outlet so it doesn't matter if it is coastal</span></span>
 <span><span class="co"># or inland but we have to provide it.</span></span>
-<span><span class="va">outlets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">flow_net</span>, <span class="op">!</span><span class="va">tonode</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">fromnode</span><span class="op">)</span></span>
+<span><span class="va">outlets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">flow_net</span>, <span class="op">!</span><span class="va">tonode</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">fromnode</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># We have these feature types. A larger dataset might include </span></span>
 <span><span class="co"># things like canals which would not be considered  "major"</span></span>

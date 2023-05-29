@@ -340,7 +340,7 @@ index_points_to_lines.hy <- function(x, points,
   return(matched)
 }
 
-#' @title Get Waterbody Index
+#' @title Index Points to Waterbodies
 #' @description given an sf point geometry column, return waterbody id, and
 #' COMID of dominant artificial path
 #' @param waterbodies sf data.frame of type POLYGON or MULTIPOLYGON including

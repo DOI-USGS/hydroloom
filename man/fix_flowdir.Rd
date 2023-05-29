@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{fix_flowdir}
 \alias{fix_flowdir}
-\title{Fix flow direction}
+\title{Fix Flow Direction}
 \usage{
 fix_flowdir(id, network = NULL, fn_list = NULL)
 }

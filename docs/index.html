@@ -76,29 +76,89 @@
 <img src="logo.png" class="logo" alt=""><h1 id="hydroloom-">hydroloom <a class="anchor" aria-label="anchor" href="#hydroloom-"></a>
 </h1>
 </div>
+<p><a href="https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></p>
 <div class="section level2">
 <h2 id="hydroloom">hydroloom:<a class="anchor" aria-label="anchor" href="#hydroloom"></a>
 </h2>
-<p><code>hydroloom</code> is a collection of general hydrologic geospatial fabric creation tools.</p>
-<p><em>Install</em>: <code>remotes::install_github("doi-usgs/hydroloom")</code></p>
-<p><em>Documentation</em>: <a href="https://doi-usgs.github.io/hydroloom/" class="uri">https://doi-usgs.github.io/hydroloom/</a></p>
-<p>It was largely created from components of <a href="https://doi.org/10.5066/P97AS8JD" class="external-link">nhdplusTools</a>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Blodgett, D., Johnson, J.M., <span class="dv">2022</span>, nhdplusTools<span class="sc">:</span> Tools <span class="cf">for</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  Accessing and Working with the NHDPlus,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  https<span class="sc">:</span><span class="er">//</span>doi.org<span class="sc">/</span><span class="fl">10.5066</span><span class="sc">/</span>P97AS8JD</span></code></pre></div>
+<p><strong>Install</strong>: <code>remotes::install_github("doi-usgs/hydroloom")</code></p>
+<p><strong>Documentation</strong>: <a href="https://doi-usgs.github.io/hydroloom/articles/hydroloom.html" class="uri">https://doi-usgs.github.io/hydroloom/articles/hydroloom.html</a></p>
+<p><code>hydroloom</code> is a collection of functions to work with hydrologic geospatial fabrics. It has support for attributes that can be seen in:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">hydroloom</span><span class="fu">::</span><span class="va"><a href="reference/hydroloom_name_definitions.html">hydroloom_name_definitions</a></span></span></code></pre></div>
+<details><summary>
+Click to See Definitions
+</summary><div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "id": shared network identifier for catchment divide and flowpath or flowline</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "toid": indicates to the downstream id. May or may not be dendritic</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "fromnode": indicates the node representing the nexus upstream of a catchment</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "tonode": indicates the node represneting the nexus downstream of a catchment</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "divergence": indicates whether a catchment is not downstream of a diversion (0),</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                    the primary path downstream of a divergence (1),</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                    or a minor path downstream of a diversion (2).</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "wbid": waterbody id</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "total_da_sqkm": total drainage area at the outlet of a catchment</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "da_sqkm": local drainage area of a catchment</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "length_km": length of a single catchment's flowpath</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "pathlength_km": distance from the outlet of a catchment to the terminal outlet of a network</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "arbolate_sum": total accumulated length of all upstream flowlines</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "topo_sort": Similar to hydrosequence in NHDPlus. Large topo_sort values</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                   are upstream of small topo_sort values. Note that there are</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                   many valid topological sort orders of a directed graph.</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "up_topo_sort": topo sort value of the upstream mainstem</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "dn_topo_sort": topo sort value of the downstream mainstem</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "dn_minor_topo_sort": topo sort value of the downstream minor network element with the smallest id</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "terminal_topo_sort": topo sort value of the outlet network element</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "terminal_flag": 1 for network terminous 0 for within network</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "terminal_id": id of terminal catchment for entire drainage basin</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "start_flag": 1 for a headwater, 0 otherwise</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "levelpath": provides an identifier for the collection of flowpaths</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                   that make up a single mainstem flowpath of a drainage</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                   basin</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "up_levelpath": levelpath value of the upstream mainstem</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "dn_levelpath": levelpath value of the downstream mainstem</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "levelpath_outlet_id": id of outlet catchment of a levelpath</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "stream_level": starting at 1 for coastal terminals and 4 for inland terminals</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                      increments by 1 for each smaller tributary level</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "dn_stream_level": stream level of downstream mainstem network element</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "stream_order": starting at 1 for headwaters increments by 1 for each larger</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                      tributary level, divergences adopt stream order from upstream</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                      but returning divergent network does not increment stream order</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "stream_calculator": starting at 1 for headwaters and 0 along divirted paths</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                           increments by 1 for each larger tributary level, does not</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                           increment along diverted paths. Is equal to stream_order</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                           along the dendritic network</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "feature_type": descriptive feature type monicker</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "feature_type_code": compact feature type identifier</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "vector_proc_unit": identifier for processing units based on vector encapsulation</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "raster_proc_unit": identifier for processing units based on raster encapsulation</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "id_measure": interpolative linear reference measure along a single identified feature</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "aggregate_id": aggregate identifier useful for 'reach' or 'flowpath' aggregation of flowlines</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "aggregate_id_measure": interpolative linear reference measure along an aggregate feature</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "aggregate_id_from_measure": interpolative linear reference for downstream end of a single</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                   feature that makes up an aggregate feature</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "aggregate_id_to_measure": interpolative linear reference for the upstream end of a single</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                 feature that makes up an aggregate feature</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "point_id": identifier of hydrologic location point</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; "offset": offset distance from point to line in units of linear reference analysis units</span></span></code></pre></div>
+</details><p><br></p>
+<p><code>hydroloom</code> supports your attribute names that map to the in-built definitions. See <a href="https://doi-usgs.github.io/hydroloom/reference/hydroloom_names.html"><code>hydroloom_names()</code></a> for more.</p>
+<p><code>hydroloom</code> supports both dendritic and non-dendritic networks start at <a href="https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html">this vignette</a> for more.</p>
+<p><code>hydroloom</code> was largely created from components of <a href="https://doi.org/10.5066/P97AS8JD" class="external-link">nhdplusTools</a>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Blodgett, D., Johnson, J.M., <span class="dv">2022</span>, nhdplusTools<span class="sc">:</span> Tools <span class="cf">for</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  Accessing and Working with the NHDPlus,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  https<span class="sc">:</span><span class="er">//</span>doi.org<span class="sc">/</span><span class="fl">10.5066</span><span class="sc">/</span>P97AS8JD</span></code></pre></div>
 <p><code>hydroloom</code> implements algorithms documented in:</p>
 <p>NHDPlus Attributes:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>McKay, L., Bondelid, T., Dewald, T., Johnston, J., Moore, R., <span class="sc">&amp;</span> </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  Rea, <span class="fu">A.</span> (<span class="dv">2015</span>). NHD Plus Version <span class="dv">2</span><span class="sc">:</span> User Guide. </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  https<span class="sc">:</span><span class="er">//</span>www.epa.gov<span class="sc">/</span>system<span class="sc">/</span>files<span class="sc">/</span>documents<span class="sc">/</span><span class="dv">2023-04</span><span class="sc">/</span>NHDPlusV2_User_Guide.pdf</span></code></pre></div>
-<p>Pfafstetter Attributes:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Verdin, K. L., <span class="sc">&amp;</span> Verdin, J. <span class="fu">P.</span> (<span class="dv">1999</span>). A topological system <span class="cf">for</span> </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  delineation and codification of the Earth<span class="st">'s river basins. </span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">  Journal of Hydrology, 218(1–2), 1–12. </span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">  https://doi.org/10.1016/S0022-1694(99)00011-6</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>McKay, L., Bondelid, T., Dewald, T., Johnston, J., Moore, R., <span class="sc">&amp;</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  Rea, <span class="fu">A.</span> (<span class="dv">2015</span>). NHD Plus Version <span class="dv">2</span><span class="sc">:</span> User Guide. </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  https<span class="sc">:</span><span class="er">//</span>www.epa.gov<span class="sc">/</span>system<span class="sc">/</span>files<span class="sc">/</span>documents<span class="sc">/</span><span class="dv">2023-04</span><span class="sc">/</span>NHDPlusV2_User_Guide.pdf</span></code></pre></div>
 <p>Graph Concepts:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>Cormen, T. H., <span class="sc">&amp;</span> Leiserson, C. <span class="fu">E.</span> (<span class="dv">2022</span>). Introduction to </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  Algorithms, fourth edition. MIT Press.</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Cormen, T. H., <span class="sc">&amp;</span> Leiserson, C. <span class="fu">E.</span> (<span class="dv">2022</span>). Introduction to </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  Algorithms, fourth edition. MIT Press.</span></code></pre></div>
+<p>Pfafstetter Attributes:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Verdin, K. L., <span class="sc">&amp;</span> Verdin, J. <span class="fu">P.</span> (<span class="dv">1999</span>). A topological system <span class="cf">for</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  delineation and codification of the Earth<span class="st">'s river basins. </span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">  Journal of Hydrology, 218(1–2), 1–12. </span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">  https://doi.org/10.1016/S0022-1694(99)00011-6</span></span></code></pre></div>
 <p>Key terms:</p>
 <div class="section level3">
 <h3 id="terminology">Terminology:<a class="anchor" aria-label="anchor" href="#terminology"></a>

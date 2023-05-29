@@ -161,7 +161,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
 }
 
-#' @title add Streamlevel
+#' @title Add Streamlevel
 #' @description Applies a topological sort and calculates stream level.
 #' Algorithm: Terminal level paths are assigned level 1 (see note 1).
 #' Paths that terminate at a level 1 are assigned level 2. This pattern is

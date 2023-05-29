@@ -6,7 +6,7 @@ align_name_char <- function(x) {
   x
 }
 
-#' @title Align names to hydroloom convention
+#' @title Align Names to Hydroloom Convention
 #' @description this function aligns the attribute names in x
 #' with those used in hydroloom. See \link{hydroloom_names} for how
 #' to add more attribute name mappings if the attributes in your data
@@ -94,7 +94,7 @@ align_names <- function(x) {
 #'            hydroloom_name_definitions), sep = "\n")
 hydroloom_name_definitions
 
-#' @title hydroloom names
+#' @title Get or Set Hydroloom Names
 #' @description Retrieve hydroloom name mapping from hydroloom
 #' environment. Hydroloom uses a specific set of attribute names within
 #' the package and includes mappings from names used in some data sources.

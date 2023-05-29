@@ -4,7 +4,7 @@
 \alias{make_index_ids}
 \alias{make_index_ids.data.frame}
 \alias{make_index_ids.hy}
-\title{make index ids}
+\title{Make Index ids}
 \usage{
 make_index_ids(x, long_form = FALSE)
 

@@ -1,9 +1,9 @@
-#' all paths depth first
+#' @title Navigate all Paths Depth First
 #' @description given a starting node, return all reachable paths. Once visited,
 #' a node is marked as visited and will not take part in a future path.
 #' @inheritParams add_levelpaths
 #' @param starts vector with ids from x to start at.
-#' @param direction character only "down" supported so far.
+#' @param direction character "up or "down"
 #' @param reset logical if TRUE, reset graph for each start such that later paths
 #' will have overlapping results.
 #' @return list containing dfs result for each start.
@@ -91,8 +91,6 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
 
     while(visit_index > 0) {
 
-      message(g$to_list$id[node])
-
       if(is.na(visited_tracker[node])) {
         # this is the first time we've seen this,
         # add it to the set in the current path.
@@ -155,15 +153,4 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
 
 out_list
 
-}
-
-clean_order <- function(x) {
-  # the above block needs some clean up to get the value to be nice
-  if(is.na(x) | is.infinite(x)) {
-    x <- 0
-  } else if(x != 0) {
-    # the path starts one down from the minimum upstream.
-    x <- x + 1
-  }
-  x
 }

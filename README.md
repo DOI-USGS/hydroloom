@@ -3,16 +3,95 @@
 
 # hydroloom <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
+[![R-CMD-check](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml)
+
 ## hydroloom:
 
-`hydroloom` is a collection of general hydrologic geospatial fabric
-creation tools.
+**Install**: `remotes::install_github("doi-usgs/hydroloom")`
 
-*Install*: `remotes::install_github("doi-usgs/hydroloom")`
+**Documentation**:
+<https://doi-usgs.github.io/hydroloom/articles/hydroloom.html>
 
-*Documentation*: <https://doi-usgs.github.io/hydroloom/>
+`hydroloom` is a collection of functions to work with hydrologic
+geospatial fabrics. It has support for attributes that can be seen in:
 
-It was largely created from components of
+``` r
+hydroloom::hydroloom_name_definitions
+```
+
+<details>
+<summary>
+Click to See Definitions
+</summary>
+
+    #> "id": shared network identifier for catchment divide and flowpath or flowline
+    #> "toid": indicates to the downstream id. May or may not be dendritic
+    #> "fromnode": indicates the node representing the nexus upstream of a catchment
+    #> "tonode": indicates the node represneting the nexus downstream of a catchment
+    #> "divergence": indicates whether a catchment is not downstream of a diversion (0),
+    #>                    the primary path downstream of a divergence (1),
+    #>                    or a minor path downstream of a diversion (2).
+    #> "wbid": waterbody id
+    #> "total_da_sqkm": total drainage area at the outlet of a catchment
+    #> "da_sqkm": local drainage area of a catchment
+    #> "length_km": length of a single catchment's flowpath
+    #> "pathlength_km": distance from the outlet of a catchment to the terminal outlet of a network
+    #> "arbolate_sum": total accumulated length of all upstream flowlines
+    #> "topo_sort": Similar to hydrosequence in NHDPlus. Large topo_sort values
+    #>                   are upstream of small topo_sort values. Note that there are
+    #>                   many valid topological sort orders of a directed graph.
+    #> "up_topo_sort": topo sort value of the upstream mainstem
+    #> "dn_topo_sort": topo sort value of the downstream mainstem
+    #> "dn_minor_topo_sort": topo sort value of the downstream minor network element with the smallest id
+    #> "terminal_topo_sort": topo sort value of the outlet network element
+    #> "terminal_flag": 1 for network terminous 0 for within network
+    #> "terminal_id": id of terminal catchment for entire drainage basin
+    #> "start_flag": 1 for a headwater, 0 otherwise
+    #> "levelpath": provides an identifier for the collection of flowpaths
+    #>                   that make up a single mainstem flowpath of a drainage
+    #>                   basin
+    #> "up_levelpath": levelpath value of the upstream mainstem
+    #> "dn_levelpath": levelpath value of the downstream mainstem
+    #> "levelpath_outlet_id": id of outlet catchment of a levelpath
+    #> "stream_level": starting at 1 for coastal terminals and 4 for inland terminals
+    #>                      increments by 1 for each smaller tributary level
+    #> "dn_stream_level": stream level of downstream mainstem network element
+    #> "stream_order": starting at 1 for headwaters increments by 1 for each larger
+    #>                      tributary level, divergences adopt stream order from upstream
+    #>                      but returning divergent network does not increment stream order
+    #> "stream_calculator": starting at 1 for headwaters and 0 along divirted paths
+    #>                           increments by 1 for each larger tributary level, does not
+    #>                           increment along diverted paths. Is equal to stream_order
+    #>                           along the dendritic network
+    #> "feature_type": descriptive feature type monicker
+    #> "feature_type_code": compact feature type identifier
+    #> "vector_proc_unit": identifier for processing units based on vector encapsulation
+    #> "raster_proc_unit": identifier for processing units based on raster encapsulation
+    #> "id_measure": interpolative linear reference measure along a single identified feature
+    #> "aggregate_id": aggregate identifier useful for 'reach' or 'flowpath' aggregation of flowlines
+    #> "aggregate_id_measure": interpolative linear reference measure along an aggregate feature
+    #> "aggregate_id_from_measure": interpolative linear reference for downstream end of a single
+    #>                                   feature that makes up an aggregate feature
+    #> "aggregate_id_to_measure": interpolative linear reference for the upstream end of a single
+    #>                                 feature that makes up an aggregate feature
+    #> "point_id": identifier of hydrologic location point
+    #> "offset": offset distance from point to line in units of linear reference analysis units
+
+</details>
+
+<br/>
+
+`hydroloom` supports your attribute names that map to the in-built
+definitions. See
+[`hydroloom_names()`](https://doi-usgs.github.io/hydroloom/reference/hydroloom_names.html)
+for more.
+
+`hydroloom` supports both dendritic and non-dendritic networks start at
+[this
+vignette](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html)
+for more.
+
+`hydroloom` was largely created from components of
 [nhdplusTools](https://doi.org/10.5066/P97AS8JD):
 
     Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
@@ -27,17 +106,17 @@ NHDPlus Attributes:
       Rea, A. (2015). NHD Plus Version 2: User Guide. 
       https://www.epa.gov/system/files/documents/2023-04/NHDPlusV2_User_Guide.pdf
 
+Graph Concepts:
+
+    Cormen, T. H., & Leiserson, C. E. (2022). Introduction to 
+      Algorithms, fourth edition. MIT Press.
+
 Pfafstetter Attributes:
 
     Verdin, K. L., & Verdin, J. P. (1999). A topological system for 
       delineation and codification of the Earth's river basins. 
       Journal of Hydrology, 218(1–2), 1–12. 
       https://doi.org/10.1016/S0022-1694(99)00011-6
-
-Graph Concepts:
-
-    Cormen, T. H., & Leiserson, C. E. (2022). Introduction to 
-      Algorithms, fourth edition. MIT Press.
 
 Key terms:
 

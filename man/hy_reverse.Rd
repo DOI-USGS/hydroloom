@@ -2,7 +2,7 @@
 % Please edit documentation in R/00_hydroloom.R
 \name{hy_reverse}
 \alias{hy_reverse}
-\title{reverse hy to original names}
+\title{Reverse \code{hy} to Original Names}
 \usage{
 hy_reverse(x)
 }

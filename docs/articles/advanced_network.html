@@ -120,33 +120,6 @@ model that revolve around the <strong>topo_sort</strong> and
 topological sort and is referred to as topo_sort in
 <code>hydroloom</code>.</p>
 <div class="section level3">
-<h3 id="representing-network-topology">Representing Network Topology<a class="anchor" aria-label="anchor" href="#representing-network-topology"></a>
-</h3>
-<p>A network of flowlines can be represented as an edge-to-edge
-(e.g. edge list) or edge-node topology. An edge list only expresses the
-connectivity between <em>edges</em> (flowlines in the context of
-rivers), requiring <em>nodes</em> (confluences in the context of rivers)
-to be inferred.</p>
-<pre><code><span><span class="co">#&gt;  ID toID fromnode tonode</span></span>
-<span><span class="co">#&gt;   1    3       N1     N3</span></span>
-<span><span class="co">#&gt;   2    3       N2     N3</span></span>
-<span><span class="co">#&gt;   3   NA       N3     N4</span></span></code></pre>
-<div class="figure" style="text-align: center">
-<img src="advanced_network_files/figure-html/node-1.png" alt="In an edge-node topology, edges are directed to nodes which are then directed to other edges. An edge-to-edge toplogy does not include intervening nodes." width="45%"><img src="advanced_network_files/figure-html/node-2.png" alt="In an edge-node topology, edges are directed to nodes which are then directed to other edges. An edge-to-edge toplogy does not include intervening nodes." width="45%"><p class="caption">
-In an edge-node topology, edges are directed to nodes which are then
-directed to other edges. An edge-to-edge toplogy does not include
-intervening nodes.
-</p>
-</div>
-<p>The “toID” of a terminal flowline can be either NA or, by convention,
-0 or ““. Using 0 or an empty string is preferred within
-<code>hydroloom</code> but both are handled in most cases. Further, as
-long as 0 is not in the set of IDs, there is little practical
-difference.</p>
-<p>In <code>hydroloom</code>, edge-to-edge topology is referred to with
-“id and toid” attributes.</p>
-</div>
-<div class="section level3">
 <h3 id="topo_sort">topo_sort<a class="anchor" aria-label="anchor" href="#topo_sort"></a>
 </h3>
 <div class="figure" style="text-align: center">
@@ -275,7 +248,7 @@ path.</p></li>
 “New Hope” demo data included in the <code>hydroloom</code> package and
 add a toid attribute based on the edge-node topology included in the
 data.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Import data</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hy.html">hy</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -310,7 +283,7 @@ attribute, we have a <code>id</code> and <code>toid</code> relation
 representing the connectivity of the network as well as attributes
 required to generate a sorted network with
 <code><a href="../reference/sort_network.html">sort_network()</a></code></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">fpath</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sort_network.html">sort_network</a></span><span class="op">(</span><span class="va">fpath</span>, split <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Simple feature collection with 6 features and 6 fields</span></span>
 <span><span class="co">#&gt; Geometry type: LINESTRING</span></span>
@@ -342,10 +315,10 @@ attribute to be generated and discarded as needed.</p>
 value to the sorted network, row wise. Here, we assign the first rows in
 the sorted set to large values and the last rows to small values in line
 with the topo_sort order convention in NHDPlus.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fpath</span><span class="op">[</span><span class="st">'topo_sort'</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fpath</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fpath</span><span class="op">[</span><span class="st">'topo_sort'</span><span class="op">]</span>, key.pos <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
-<p><img src="advanced_network_files/figure-html/unnamed-chunk-4-1.png" width="288" style="display: block; margin: auto;"></p>
+<p><img src="advanced_network_files/figure-html/unnamed-chunk-3-1.png" width="288" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="level-path-and-outlet-id">Level Path and outlet ID<a class="anchor" aria-label="anchor" href="#level-path-and-outlet-id"></a>
@@ -355,14 +328,14 @@ determine the upstream mainstem at confluences. For this example, we’ll
 follow the NHD convention and calculate the arbolate sum explicitly. The
 <code><a href="../reference/add_levelpaths.html">add_levelpaths()</a></code> function will add arbolate sum internally
 if no weight is explicitly defined.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Rename and compute weight</span></span>
 <span><span class="va">fpath</span><span class="op">$</span><span class="va">arbolatesum</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accumulate_downstream.html">accumulate_downstream</a></span><span class="op">(</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">fpath</span>, </span>
 <span>                <span class="va">id</span>, <span class="va">toid</span>, <span class="va">length_km</span><span class="op">)</span>, <span class="st">"length_km"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">fpath</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="va">fpath</span><span class="op">$</span><span class="va">arbolatesum</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<p><img src="advanced_network_files/figure-html/unnamed-chunk-5-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="advanced_network_files/figure-html/unnamed-chunk-4-1.png" width="576" style="display: block; margin: auto;"></p>
 <p>A <code>name_attribute</code> identifier can also be provided to
 override the physical <code>weight_attribute</code> when a “smaller”
 river has the same name. There is an optional
@@ -370,10 +343,12 @@ river has the same name. There is an optional
 weight is <code>override_factor</code> times (e.g. 5) larger on an
 unnamed or differently named upstream path, the physical weight will be
 used in favor of the named <code>id</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get levelpaths</span></span>
 <span><span class="va">fpath</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_levelpaths.html">add_levelpaths</a></span><span class="op">(</span><span class="va">fpath</span>, name_attribute <span class="op">=</span> <span class="st">"GNIS_ID"</span>,weight_attribute <span class="op">=</span> <span class="st">"arbolatesum"</span>, </span>
 <span>  status <span class="op">=</span> <span class="cn">FALSE</span>, override_factor <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required namespace: future</span></span>
+<span><span class="co">#&gt; Loading required namespace: future.apply</span></span>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">fpath</span><span class="op">)</span></span>
@@ -404,7 +379,7 @@ with the outlet flowline colored in red. Remembering that
 first and the terminal flowlines last we invert the network so that
 level paths fill in from outlet to head waters. For clarity, only
 levelpaths with more than 2 flowlines are shown.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Invert plotting order</span></span>
 <span><span class="va">fpath</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">fpath</span>, <span class="va">topo_sort</span><span class="op">)</span> </span>
 <span></span>

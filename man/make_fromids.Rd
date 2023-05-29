@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_fromids.R
 \name{make_fromids}
 \alias{make_fromids}
-\title{Make fromids}
+\title{Convert "to" index ids to "from" index ids}
 \usage{
 make_fromids(index_ids, return_list = FALSE)
 }

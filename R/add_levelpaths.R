@@ -1,6 +1,6 @@
 required_atts_add_levelpaths <- c("id", "toid")
 
-#' Assign Level Paths
+#' Add Level Paths
 #' @description Assigns level paths using the stream-leveling approach of
 #' NHD and NHDPlus. If arbolate sum is provided in the weight column, this
 #' will match the behavior of NHDPlus. Any numeric value can be

@@ -86,15 +86,22 @@
 
     
     
+<style type="text/css">
+   .main-container {max-width: 100%;}
+   .row {display: flex;}
+   .column {flex: 50%;}
+</style>
 <div class="section level2">
 <h2 id="hydroloom">hydroloom<a class="anchor" aria-label="anchor" href="#hydroloom"></a>
 </h2>
 <p>Hydroloom is designed to provide general hydrologic network
 functionality for any hydrographic or hydrologic data. This is
-accomplished with 1) the <code>hy</code> S3 class, 2) a number of basic
-utility functions, 3) functions to work with a hydrologic network
-topology as a graph, 4) functions to create and add useful network
-attributes,<br>
+accomplished with<br>
+1) the <code>hy</code> S3 class,<br>
+2) a collection of utility functions,<br>
+3) functions to work with a hydrologic network topology as a
+graph,<br>
+4) functions to create and add useful network attributes,<br>
 5) and functions to index data to a network of flow network lines and
 waterbody polygons.</p>
 <p>This introduction covers the <code>hy</code> S3 class and the core
@@ -136,10 +143,10 @@ aiming for consistent, simple, and accurate attribute names.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://doi-usgs.github.io/hydroloom/">hydroloom</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="va">hy_net</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">COMID</span>, <span class="va">REACHCODE</span>, <span class="va">FromNode</span>, <span class="va">ToNode</span>, <span class="va">Hydroseq</span>, <span class="va">TerminalFl</span>, <span class="va">Divergence</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/hy.html">hy</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/hy.html">hy</a></span><span class="op">(</span><span class="va">hy_net</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Simple feature collection with 3 features and 7 fields</span></span>
 <span><span class="co">#&gt; Geometry type: MULTILINESTRING</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
@@ -153,15 +160,158 @@ aiming for consistent, simple, and accurate attribute names.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 8<span style="text-decoration: underline;">894</span>494 03030002000018 250<span style="text-decoration: underline;">031</span>897 250<span style="text-decoration: underline;">031</span>895 250<span style="text-decoration: underline;">015</span>826             0          0</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: geom &lt;MULTILINESTRING [m]&gt;</span></span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="fu"><a href="../reference/hy.html">hy</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="st">"orig_names"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="fu"><a href="../reference/hy.html">hy</a></span><span class="op">(</span><span class="va">hy_net</span><span class="op">)</span>, <span class="st">"orig_names"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           COMID       REACHCODE        FromNode          ToNode        Hydroseq </span></span>
 <span><span class="co">#&gt;            "id"  "aggregate_id"      "fromnode"        "tonode"     "topo_sort" </span></span>
 <span><span class="co">#&gt;      TerminalFl      Divergence            geom </span></span>
 <span><span class="co">#&gt; "terminal_flag"    "divergence"          "geom"</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="network-graph-representation">Network Graph Representation<a class="anchor" aria-label="anchor" href="#network-graph-representation"></a>
+<h2 id="network-representation">Network Representation<a class="anchor" aria-label="anchor" href="#network-representation"></a>
 </h2>
+<div class="section level3">
+<h3 id="representing-dendritic-network-topology">Representing Dendritic Network Topology<a class="anchor" aria-label="anchor" href="#representing-dendritic-network-topology"></a>
+</h3>
+<p>A network of flowlines can be represented as an edge-to-edge
+(e.g. edge list) or edge-node topology. An edge list only expresses the
+connectivity between <em>edges</em> (flowlines in the context of
+rivers), requiring <em>nodes</em> (confluences in the context of rivers)
+to be inferred.</p>
+<pre><code><span><span class="co">#&gt;  ID toID fromnode tonode</span></span>
+<span><span class="co">#&gt;   1    3       N1     N3</span></span>
+<span><span class="co">#&gt;   2    3       N2     N3</span></span>
+<span><span class="co">#&gt;   3   NA       N3     N4</span></span></code></pre>
+<div class="figure" style="text-align: center">
+<img src="hydroloom_files/figure-html/node-1.png" alt="In an edge-node topology, edges are directed to nodes which are then directed to other edges. An edge-to-edge toplogy does not include intervening nodes." width="45%"><img src="hydroloom_files/figure-html/node-2.png" alt="In an edge-node topology, edges are directed to nodes which are then directed to other edges. An edge-to-edge toplogy does not include intervening nodes." width="45%"><p class="caption">
+In an edge-node topology, edges are directed to nodes which are then
+directed to other edges. An edge-to-edge toplogy does not include
+intervening nodes.
+</p>
+</div>
+<p>The “toID” of a terminal flowline can be either NA or, by convention,
+0 or ““. Using 0 or an empty string is preferred within
+<code>hydroloom</code> but both are handled in most cases. Further, as
+long as 0 is not in the set of IDs, there is little practical
+difference.</p>
+<p>In <code>hydroloom</code>, edge-to-edge topology is referred to with
+“id and toid” attributes.</p>
+</div>
+<div class="section level3">
+<h3 id="representing-dendritic-network-topology-1">Representing Dendritic Network Topology<a class="anchor" aria-label="anchor" href="#representing-dendritic-network-topology-1"></a>
+</h3>
+<p>As discussed in the <code><a href="../articles/hydroloom.html">vignette("hydroloom")</a></code> vignette, a
+hydrologic flow network can be represented as an edge to edge (e.g. edge
+list) topology or an edge-node topology. In the case of dendritic
+networks, an edge list can be stored as a single “toid” attribute on
+each feature and nodes are redundant as there would be one and only one
+node for each feature. In non-dendritic networks, an edge list can
+include multiple “toid” attributes for each feature, necessitating a one
+to many relationship that can be difficult to interpret. Nevertheless,
+the U.S. National Hydrography Dataset uses an edge-list format in its
+“flow table” and the format is capable of storing non-dendritic feature
+topology.</p>
+<p>Using a node topology to store a flow network, each feature flows
+from one and only one node and flows to one and only one node. This one
+to one relationship between features and their from and to nodes means
+that the topology fits in a table with one row per feature as is common
+practice in spatial feature data.</p>
+<p>For this reason, the NHDPlus data model converts the NHD “flow table”
+into node topology in its representation of non dendritic topology. The
+downside of this approach is that it requires creation of a node
+identifier. These node identifiers are a table deduplication device that
+enables a one to many relationship (the flow table) to be represented as
+two one to one relationships. Given this, in hydrologic flow networks,
+node identifiers can be created based on an edge list and discarded when
+no longer needed.</p>
+<div class="row">
+<div class="column">
+<p><img src="hydroloom_files/figure-html/node1-1.png" width="45%" style="display: block; margin: auto;"></p>
+</div>
+<div class="column">
+<p><img src="hydroloom_files/figure-html/node2-1.png" width="45%" style="display: block; margin: auto;"></p>
+</div>
+</div>
+<p>In this example of an edge list topology and a node topology for the
+same system, feature ‘1’ flows to two edges but only one node. We can
+represent this in tabular form with a duplicated row for the divergence
+downstream of ‘1’ or with the addition of node identifiers as shown in
+the following tables.</p>
+<div class="row">
+<div class="column">
+<table class="table">
+<thead><tr class="header">
+<th>id</th>
+<th>fromnode</th>
+<th>tonode</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>N1</td>
+<td>N2</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>N2</td>
+<td>N3</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>N3</td>
+<td>N4</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>N2</td>
+<td>N4</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>N4</td>
+<td>N5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="column">
+<table class="table">
+<thead><tr class="header">
+<th>id</th>
+<th>toid</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="section level3">
+<h3 id="network-graph-representation">Network Graph Representation<a class="anchor" aria-label="anchor" href="#network-graph-representation"></a>
+</h3>
 <p>The <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code> <code>hydroloom</code> function
 creates an adjacency matrix representation of a flow network as well as
 some convenient content that are useful when traversing the graph. This
@@ -174,8 +324,8 @@ matrix is directed opposite the direction of the provided graph. This is
 used for upstream flow network traversals.</p>
 <p>In the example below we’ll add a dendritic toid and explore the
 <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code> output.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_toids.html">add_toids</a></span><span class="op">(</span><span class="va">x</span>, return_dendritic <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_toids.html">add_toids</a></span><span class="op">(</span><span class="va">hy_net</span>, return_dendritic <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ind_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_index_ids.html">make_index_ids</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span>
 <span></span>
@@ -206,9 +356,9 @@ now has three rows. This indicates that one or more of the connections
 in the matrix has three downstream neighbors. The <code>lengths</code>
 element indicates how many non <code>NA</code> values are in each column
 of the matrix in the <code>to</code> element.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_toids.html">add_toids</a></span><span class="op">(</span><span class="fu"><a href="../reference/drop_geometry.html">drop_geometry</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, return_dendritic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_toids.html">add_toids</a></span><span class="op">(</span><span class="fu"><a href="../reference/drop_geometry.html">drop_geometry</a></span><span class="op">(</span><span class="va">hy_net</span><span class="op">)</span>, return_dendritic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ind_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_index_ids.html">make_index_ids</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span>
 <span></span>
@@ -237,7 +387,7 @@ of the matrix in the <code>to</code> element.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $to_list</span></span>
 <span><span class="co">#&gt; [1] "data.frame"</span></span></code></pre></div>
-<p>To be continued…</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

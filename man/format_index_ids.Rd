@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_index_ids.R
 \name{format_index_ids}
 \alias{format_index_ids}
-\title{format index ids}
+\title{Format Index ids}
 \usage{
 format_index_ids(g, return_list = FALSE)
 }
@@ -20,7 +20,7 @@ will also include a data.frame with an \code{indid} column and a \code{toindid} 
 column.
 }
 \description{
-format index ids
+Format Index ids
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

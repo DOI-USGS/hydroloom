@@ -1,4 +1,4 @@
-#' Make fromids
+#' @title Convert "to" index ids to "from" index ids
 #' @description given a set of index ids as retrieved from \link{make_index_ids}
 #' return an adjacency matrix with pointers to identifiers that flow to the
 #' row of the matrix in question.

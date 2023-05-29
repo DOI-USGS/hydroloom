@@ -2,7 +2,7 @@
 % Please edit documentation in R/align_names.R
 \name{hydroloom_names}
 \alias{hydroloom_names}
-\title{hydroloom names}
+\title{Get or Set Hydroloom Names}
 \usage{
 hydroloom_names(x = NULL, clear = FALSE)
 }

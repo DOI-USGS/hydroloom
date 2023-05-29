@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{drop_geometry}
 \alias{drop_geometry}
-\title{drop_geometry}
+\title{Drop Geometry}
 \usage{
 drop_geometry(x)
 }

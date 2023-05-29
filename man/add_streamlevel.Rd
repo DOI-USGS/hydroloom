@@ -4,7 +4,7 @@
 \alias{add_streamlevel}
 \alias{add_streamlevel.data.frame}
 \alias{add_streamlevel.hy}
-\title{add Streamlevel}
+\title{Add Streamlevel}
 \usage{
 add_streamlevel(x, coastal = NULL)
 

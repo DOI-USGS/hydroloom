@@ -4,7 +4,7 @@
 \alias{make_attribute_topology}
 \alias{make_attribute_topology.data.frame}
 \alias{make_attribute_topology.hy}
-\title{Make attribute topology}
+\title{Make Attribute Topology}
 \usage{
 make_attribute_topology(x, min_distance)
 

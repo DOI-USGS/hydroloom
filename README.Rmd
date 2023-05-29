@@ -15,15 +15,36 @@ knitr::opts_chunk$set(
 
 # hydroloom <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
+[![R-CMD-check](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml)
+
 ## hydroloom: 
 
-`hydroloom` is a collection of general hydrologic geospatial fabric creation tools.
+**Install**: `remotes::install_github("doi-usgs/hydroloom")`
 
-*Install*: `remotes::install_github("doi-usgs/hydroloom")`
+**Documentation**: https://doi-usgs.github.io/hydroloom/articles/hydroloom.html
 
-*Documentation*: https://doi-usgs.github.io/hydroloom/ 
+`hydroloom` is a collection of functions to work with hydrologic geospatial fabrics. It has support for attributes that can be seen in:
 
-It was largely created from components of [nhdplusTools](https://doi.org/10.5066/P97AS8JD):
+```{r, eval=FALSE}
+hydroloom::hydroloom_name_definitions
+```
+
+<details>
+  <summary>Click to See Definitions</summary>
+  
+```{r, echo=FALSE, eval=TRUE}
+  hydroloom::hydroloom_name_definitions
+```
+    
+</details>
+
+<br/>
+
+`hydroloom` supports your attribute names that map to the in-built definitions. See [`hydroloom_names()`](https://doi-usgs.github.io/hydroloom/reference/hydroloom_names.html) for more.
+
+`hydroloom` supports both dendritic and non-dendritic networks start at [this vignette](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html) for more.
+
+`hydroloom` was largely created from components of [nhdplusTools](https://doi.org/10.5066/P97AS8JD):
 
 ```
 Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
@@ -41,6 +62,13 @@ McKay, L., Bondelid, T., Dewald, T., Johnston, J., Moore, R., &
   https://www.epa.gov/system/files/documents/2023-04/NHDPlusV2_User_Guide.pdf
 ```
 
+Graph Concepts:
+
+```
+Cormen, T. H., & Leiserson, C. E. (2022). Introduction to 
+  Algorithms, fourth edition. MIT Press.
+```
+
 Pfafstetter Attributes:
 
 ```
@@ -48,12 +76,6 @@ Verdin, K. L., & Verdin, J. P. (1999). A topological system for
   delineation and codification of the Earth's river basins. 
   Journal of Hydrology, 218(1–2), 1–12. 
   https://doi.org/10.1016/S0022-1694(99)00011-6
-```
-Graph Concepts:
-
-```
-Cormen, T. H., & Leiserson, C. E. (2022). Introduction to 
-  Algorithms, fourth edition. MIT Press.
 ```
 
 Key terms: 

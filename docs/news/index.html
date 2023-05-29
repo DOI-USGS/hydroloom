@@ -52,13 +52,31 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="hydroloom-100">hydroloom 1.0.0<a class="anchor" aria-label="anchor" href="#hydroloom-100"></a></h2>
 <ul><li>Initialized new project</li>
-<li>Create basic <code>hy</code> s3 object handling</li>
+<li>Create basic <code>hy</code> s3 object handling <code><a href="../reference/hy.html">hy()</a></code>
+</li>
+<li>Ensure tibble is used throughout</li>
+<li>Support generic depth first search navigation <code><a href="../reference/navigate_network_dfs.html">navigate_network_dfs()</a></code>
+</li>
 <li>Complete migration of nhdplusTools functions to hydroloom. #1</li>
-<li>Implemented non-dendritic network support in add_toids</li>
-<li>Implemented complete stream order / stream calculator attribute <a href="https://github.com/DOI-USGS/nhdplusTools/issues/188" class="external-link uri">https://github.com/DOI-USGS/nhdplusTools/issues/188</a>
+<li>Support sorting non-dendritic network in <code><a href="../reference/sort_network.html">sort_network()</a></code>
+</li>
+<li>Implemented non-dendritic network support in <code><a href="../reference/add_toids.html">add_toids()</a></code>
+</li>
+<li>Implemented complete stream order / stream calculator attribute <code><a href="../reference/add_streamorder.html">add_streamorder()</a></code> and <code>add_streamcalculator()</code> <a href="https://github.com/DOI-USGS/nhdplusTools/issues/188" class="external-link uri">https://github.com/DOI-USGS/nhdplusTools/issues/188</a>
 </li>
 <li>Support for both numeric and character identifiers #2</li>
-<li>Ensure tibble is used throughout</li>
+<li>Support for NHDPlus and NHD 24k naming schemes #5 <code><a href="../reference/hydroloom_names.html">hydroloom_names()</a></code>
+</li>
+<li>Support for linear indexing for lines that do not have measure attributes #6 <code><a href="../reference/index_points_to_lines.html">index_points_to_lines()</a></code>
+</li>
+<li>Implemented creation of an attribute topology from a geometric network <code><a href="../reference/make_attribute_topology.html">make_attribute_topology()</a></code>
+</li>
+<li>Added vignette showing how to work with the NHD flow table. <a href="https://github.com/DOI-USGS/nhdplusTools/issues/340" class="external-link uri">https://github.com/DOI-USGS/nhdplusTools/issues/340</a> <code><a href="../articles/flow-table.html">vignette("flow-table")</a></code>
+</li>
+<li>Implement method to add divergence attribute to a non-dendritic network. <code><a href="../reference/add_divergence.html">add_divergence()</a></code>
+</li>
+<li>Implement basic graph and sophisticate loop detection algorithm #7 and #9. <code><a href="../reference/check_hy_graph.html">check_hy_graph()</a></code>
+</li>
 </ul></div>
   </main></div>
 

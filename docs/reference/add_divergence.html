@@ -141,6 +141,11 @@ factors considered to determine which is primary.<br>
 10: 1b<br></p>
 <p>If all checks return and no primary connection has been identified, the
 connection with a smaller id is chosen.</p>
+<p>In the case that there are two or more upstream connections, the upstream
+name to use is chosen 1) if there is only one upstream flowline with a name
+2) if one of the upstream flowlines with a name matches the downstream line,
+3) if one of the upstream flowlines is of a "major" type and others are not,
+and 4) the smallest id value otherwise.</p>
     </div>
 
     <div class="section level2">
@@ -162,6 +167,8 @@ connection with a smaller id is chosen.</p>
 <span class="r-in"><span>               name_attr <span class="op">=</span> <span class="st">"gnis_id"</span>,</span></span>
 <span class="r-in"><span>               type_attr <span class="op">=</span> <span class="st">"FTYPE"</span>,</span></span>
 <span class="r-in"><span>               major_types <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"StreamRiver"</span>, <span class="st">"ArtificialPath"</span>, <span class="st">"Connector"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required namespace: future</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required namespace: future.apply</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 535 features and 6 fields</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Geometry type: LINESTRING</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dimension:     XY</span>

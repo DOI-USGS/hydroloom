@@ -3,7 +3,7 @@
 \name{add_return_divergence}
 \alias{add_return_divergence}
 \alias{add_return_divergence.data.frame}
-\title{add return divergence}
+\title{Add Return Divergence}
 \usage{
 add_return_divergence(x, status = TRUE)
 

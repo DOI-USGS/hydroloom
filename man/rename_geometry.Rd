@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{rename_geometry}
 \alias{rename_geometry}
-\title{rename_geometry}
+\title{Rename Geometry}
 \usage{
 rename_geometry(g, name)
 }

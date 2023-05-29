@@ -2,7 +2,7 @@
 % Please edit documentation in R/index_points_to_lines.R
 \name{index_points_to_waterbodies}
 \alias{index_points_to_waterbodies}
-\title{Get Waterbody Index}
+\title{Index Points to Waterbodies}
 \usage{
 index_points_to_waterbodies(
   waterbodies,
