@@ -112,7 +112,7 @@ class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_d
 
 #' @export
 #' @noRd
-print.hydroloom_names <- function(x) {
+print.hydroloom_names <- function(x, ...) {
   for(i in 1:length(x)) {
     cat(paste0('"', names(x)[i], '"', ": ", unname(x)[i], "\n"))
   }

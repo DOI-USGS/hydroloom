@@ -186,13 +186,13 @@ winnow_upstream <- function(n, x_orig, major_types) {
   if(nrow(ups) > 1 &
      # if one name matches
      sum(ups$name_att %in% dns$name_att) == 1) {
-    ups <- filter(ups, name_att %in% dns$name_att)
+    ups <- filter(ups, .data$name_att %in% dns$name_att)
   }
 
   # if one major type and one not
   if(nrow(ups) > 1 &
      sum(ups$type_att %in% major_types) == 1) {
-    ups <- filter(ups, type_att %in% major_types)
+    ups <- filter(ups, .data$type_att %in% major_types)
   }
 
   # just pick the one with the smaller
