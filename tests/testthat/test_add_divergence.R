@@ -8,6 +8,54 @@ test_that("add_return_diversion", {
   expect_equal(sum(x$return_divergence == x$RtnDiv), 745)
 })
 
+test_that("complex split", {
+  # these test if junctions with more than on upstream are handled.
+  # base case
+  x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
+            fromnode = c(1, 2, 3, 3, 4, 5, 6),
+              tonode = c(3, 3, 4, 5, 6, 6, 7),
+            name = c("", "", "", "", "", "", ""),
+            type = c(1, 1, 1, 1, 1, 1, 1))
+
+  x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
+
+  expect_equal(x$divergence[c(3,4)], c(1,2))
+
+  # the rest of these switch from the base case
+  # one matching name use it.
+  x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
+                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
+                  tonode = c(3, 3, 4, 5, 6, 6, 7),
+                  name = c("test", "test2", "bbb", "test2", "", "", ""),
+                  type = c(1, 1, 1, 1, 1, 1, 1))
+
+  x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
+
+  expect_equal(x$divergence[c(3,4)], c(2, 1))
+
+  # one name at all
+  x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
+                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
+                  tonode = c(3, 3, 4, 5, 6, 6, 7),
+                  name = c("test2", "", "", "test2", "", "", ""),
+                  type = c(1, 1, 1, 1, 1, 1, 1))
+
+  x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
+
+  expect_equal(x$divergence[c(3,4)], c(2, 1))
+
+  # major type
+  x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
+                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
+                  tonode = c(3, 3, 4, 5, 6, 6, 7),
+                  name = c("test1", "test2", "test1", "test2", "", "", ""),
+                  type = c(1, 2, 2, 1, 1, 1, 1))
+
+  x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
+
+  expect_equal(x$divergence[c(3,4)], c(2, 1))
+})
+
 test_that("add down main", {
 
   f <- system.file("extdata/coastal_example.gpkg", package = "hydroloom")

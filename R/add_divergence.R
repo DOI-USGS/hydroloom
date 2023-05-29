@@ -38,6 +38,12 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #' If all checks return and no primary connection has been identified, the
 #' connection with a smaller id is chosen.
 #'
+#' In the case that there are two or more upstream connections, the upstream
+#' name to use is chosen 1) if there is only one upstream flowline with a name
+#' 2) if one of the upstream flowlines with a name matches the downstream line,
+#' 3) if one of the upstream flowlines is of a "major" type and others are not,
+#' and 4) the smallest id value otherwise.
+#'
 #' @name add_divergence
 #' @export
 #' @examples
@@ -134,19 +140,23 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
     ungroup() |>
     distinct()
 
+  x <- rename(x_save, all_of(c(name_att = name_attr, type_att = type_attr)))
+
   junctions <- x |>
-    group_by(id) |>
+    group_by(fromnode) |>
     filter(max(n()) > 1) |>
-    rename(all_of(c(name_att = name_attr, type_att = type_attr)))
+    pull(fromnode) |>
+    unique() |>
+    lapply(function(n, x_orig, major_types) winnow_upstream(n, x_orig, major_types),
+      x_orig = x, major_types = major_types)
+
+  junctions <- bind_rows(junctions)
 
   all_div <- unique(junctions$toid)
 
   junctions <- junctions |>
-    left_join(paths_df, by = "id") |>
-    left_join(distinct(select(x_atts, all_of(c(id,
-                              dn_name_att = name_attr,
-                              dn_type_att = type_attr)))),
-              by = c("toid" = "id")) |>
+    group_by(id) |>
+    left_join(paths_df, by = c("toid" = "id")) |>
     mutate(major_type = .data$dn_type_att %in% major_types) |>
     group_split()
 
@@ -156,6 +166,46 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
     mutate(divergence = case_when(id %in% div ~ 1,
                                   id %in% all_div ~ 2,
                                   TRUE ~ 0))
+
+}
+
+# takes a group of upstream lines and figures out which one should be used
+# as the primary for downstream divergence checks.
+winnow_upstream <- function(n, x_orig, major_types) {
+
+  ups <- filter(x_orig, tonode == n)
+  dns <- filter(x_orig, fromnode == n)
+
+  if(nrow(ups) > 1 &
+     any(sum(!is.na(ups$name_att)) == 1)) {
+    # use the one that is named.
+    ups <- filter(ups, !is.na(.data$name_att))
+  }
+
+  # if that didn't get us there,
+  if(nrow(ups) > 1 &
+     # if one name matches
+     sum(ups$name_att %in% dns$name_att) == 1) {
+    ups <- filter(ups, name_att %in% dns$name_att)
+  }
+
+  # if one major type and one not
+  if(nrow(ups) > 1 &
+     sum(ups$type_att %in% major_types) == 1) {
+    ups <- filter(ups, type_att %in% major_types)
+  }
+
+  # just pick the one with the smaller
+  if(nrow(ups) > 1) {
+    ups <- filter(ups, .data$id == min(.data$id))
+  }
+
+  data.frame(id = rep(ups$id, nrow(dns)),
+             name_att = rep(ups$name_att, nrow(dns)),
+             type_att = rep(ups$type_att, nrow(dns)),
+             toid = dns$id,
+             dn_name_att = dns$name_att,
+             dn_type_att = dns$type_att)
 
 }
 
@@ -261,7 +311,7 @@ down_level <- function(x) {
 
 }
 
-#' @title add return divergence
+#' Add Return Divergence
 #' @description Adds a return divergence attribute to the provided network.
 #' The method implemented matches that of the NHDPlus except
 #' in the rare case that a diversion includes more than one secondary path.
