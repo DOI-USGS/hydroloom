@@ -41,7 +41,7 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-          args: 'c("--no-build-vignettes", "--ignore-vignettes")'
+          args: 'c("--no-build-vignettes", "--ignore-vignettes", "--no-manual")'
           error-on: '"error"'
 
       - name: Test coverage
