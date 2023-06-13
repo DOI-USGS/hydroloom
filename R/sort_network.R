@@ -68,7 +68,12 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
     starts <- which(index_ids$to_list$id %in% outlets)
   } else {
     # All the start nodes
-    starts <- which(index_ids$to_list$id %in% x$id[x$toid == get_outlet_value(x)])
+    if(any(x$toid != get_outlet_value(x) & !x$toid %in% x$id)) {
+      warning("no outlet found -- will start from outlets that go no where.")
+      starts <- which(index_ids$to_list$id %in% x$id[!x$toid %in% x$id])
+    } else {
+      starts <- which(index_ids$to_list$id %in% x$id[x$toid == get_outlet_value(x)])
+    }
   }
   # Some vectors to track results
   to_visit <- out <- rep(0, length(index_ids$to_list$id))
