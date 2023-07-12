@@ -63,7 +63,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
   x <- drop_geometry(x)
 
-  if(length(unique(x$id)) != nrow(x)) {
+  if(length(unique(x$id)) != nrow(x) | isTRUE(add_div)) {
     if(!isTRUE(add_div))
       stop("duplicate identifiers found and 'add_div' is not TRUE")
 
