@@ -143,7 +143,7 @@ make_nondendritic_topology <- function(x) {
   n <- select(x, all_of(c(fromid = id, toid))) |>
     filter(!is.na(.data$fromid) & !is.na(.data$toid)) |>
     group_by(.data$fromid) |>
-    mutate(node_id = paste(toid, collapse = "-")) |>
+    mutate(node_id = paste(sort(toid), collapse = "-")) |>
     ungroup()
 
   hw <- unique(n$fromid[!n$fromid %in% n$toid])

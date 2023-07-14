@@ -113,3 +113,22 @@ test_that("make_node_topology", {
   # any(!matches, na.rm = TRUE)
 
 })
+
+test_that("no duplicates in nodes", {
+  # includes a node with both convergent and divergent flowlines.
+  sub <- dplyr::tibble(
+    id = c(
+      "{D08E57F9-54FB-4565-9F12-36B7BA864674}", "3fbc6c54-634d-425d-a109-81b27b1cdaf0",
+      "{22DFB1D5-7181-49E2-B764-0B8536180297}", "{22DFB1D5-7181-49E2-B764-0B8536180297}",
+      "ba3da26d-7e1a-472f-95dd-4b1d1e73f5f8", "ba3da26d-7e1a-472f-95dd-4b1d1e73f5f8"
+    ),
+    toid = c(
+      "3fbc6c54-634d-425d-a109-81b27b1cdaf0", "5e09c754-23e6-4ac7-b8e8-3c21efb05f0d",
+      "{D08E57F9-54FB-4565-9F12-36B7BA864674}", "d0b1d83c-b184-42a1-bd94-b3f92f9f6621",
+      "d0b1d83c-b184-42a1-bd94-b3f92f9f6621", "{D08E57F9-54FB-4565-9F12-36B7BA864674}"
+    ),
+  )
+
+  expect_true(!any(duplicated(hydroloom::make_node_topology(sub, add_div = TRUE)$id)))
+
+})
