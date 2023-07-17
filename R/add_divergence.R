@@ -122,7 +122,7 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
   x_save <- x_save[x_save$id %in% x$id, ]
 
   paths <- pbapply::pblapply(term, function(i, net) {
-    try(navigate_network_dfs(x = x, starts = i,
+    try(navigate_network_dfs(x = net, starts = i,
                              direction = "up",
                              reset = FALSE))
   }, net = x, cl = "future")
