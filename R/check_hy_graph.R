@@ -37,10 +37,11 @@ check_hy_graph <- function(x, loop_check = FALSE) {
 
   }
 
-  x <- left_join(mutate(x, row = 1:n()),
-                 drop_geometry(x),
-                 by = c("toid" = "id"),
-                 relationship = "many-to-many")
+  x <- merge(data.table(mutate(x, row = 1:n())),
+             data.table(drop_geometry(x)),
+             by.x = "toid", by.y = "id", all.x = TRUE)
+
+  x <- dplyr::as_tibble(x)
 
   check <- x$id == x$toid.y
 

@@ -58,13 +58,27 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
   out_val <- get_outlet_value(x)
 
   if(any(duplicated(x$id))) {
-    out <- data.frame(id = unique(x$id),
+    out <- data.table(id = unique(x$id),
                       indid = seq(1, length(unique(x$id))))
 
-    out <- left_join(left_join(select(x, "id", "toid"),
-                               out, by = "id"),
-                     rename(out, toindid = "indid"),
-                     by = c("toid" = "id"))
+    out_rename <- data.table::copy(out)
+    setnames(out_rename, old = "indid", new = "toindid")
+
+    out <- merge(merge(as.data.table(x)[, list(id, toid)],
+                       out, by = "id", all.x = TRUE, sort = FALSE),
+                 out_rename,
+                 by.x = "toid", by.y = "id", all.x = TRUE, sort = FALSE) |>
+      as.data.frame() |>
+      dplyr::as_tibble()
+
+    # dplyr method of the above hanges on large datasets
+    # out2 <- data.frame(id = unique(x$id),
+    #                   indid = seq(1, length(unique(x$id))))
+    #
+    # out2 <- left_join(left_join(select(x, "id", "toid"),
+    #                            out2, by = "id"),
+    #                  rename(out2, toindid = "indid"),
+    #                  by = c("toid" = "id"))
 
     out$toindid <- replace_na(out$toindid, 0)
 

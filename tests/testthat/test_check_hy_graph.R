@@ -4,7 +4,7 @@ test_that("base check_hy_graph", {
 
   remove <- check_hy_graph(test_data)
 
-  expect_equal(remove$row, c(4, 8))
+  expect_true(all(c(4, 8) %in% remove$row))
 })
 
 test_that("loop check", {

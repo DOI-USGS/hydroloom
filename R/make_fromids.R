@@ -7,7 +7,7 @@
 #' "froms_list" element containing all from ids in a list form.
 #' @return list containing a "froms" matrix, "lengths" vector,
 #' and optionally "froms_list" elements.
-#' @importFrom data.table as.data.table
+#' @importFrom data.table as.data.table setnames
 #' @export
 #' @examples
 #'
@@ -36,7 +36,7 @@ make_fromids <- function(index_ids, return_list = FALSE) {
 
   froms <- unique(merge(
     index_ids[,list(indid)],
-    data.table::setnames(index_ids, c("toindid", "indid"), c("indid", "fromindid")),
+    setnames(index_ids, c("toindid", "indid"), c("indid", "fromindid")),
     by = "indid", all.x = TRUE
   ))
 
