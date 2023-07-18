@@ -52,7 +52,13 @@ test_that("real data", {
 
   g <- dplyr::select(sf::st_drop_geometry(g), id, toid)
 
+  gg <- make_index_ids(g)
+
   paths <- navigate_network_dfs(g, 8893402, direction = "down")
+
+  paths2 <- navigate_network_dfs(gg, 8893402, direction = "down")
+
+  expect_identical(paths, paths2)
 
   expect_equal(length(paths), 1)
 
@@ -69,7 +75,24 @@ test_that("real data", {
 
   expect_error(navigate_network_dfs(g, 12345))
 
+  expect_error(navigate_network_dfs(gg, 12345),
+               "all starts must be in x")
+
+  expect_error(navigate_network_dfs(gg, 8891152, direction = "up"),
+               "'down' if x contains to index ids")
+
+  ggg <- make_fromids(gg, return_list = FALSE)
+
+  expect_error(navigate_network_dfs(ggg, 8891152, direction = "down"),
+               "make_index_ids or make_fromids")
+
+  ggg <- make_fromids(gg, return_list = TRUE)
+
   paths <- navigate_network_dfs(g, 8897784, direction = "up")
+
+  paths2 <- navigate_network_dfs(ggg, 8897784, direction = "up")
+
+  expect_identical(paths, paths2)
 
   expect_equal(length(paths[[1]]), 83)
 

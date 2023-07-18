@@ -7,7 +7,10 @@
 navigate_network_dfs(x, starts, direction = "down", reset = FALSE)
 }
 \arguments{
-\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+\item{x}{data.frame containing hydroloom compatible network or list
+as returned by \link{make_index_ids} (for down) or \link{make_from_ids}
+(for up). The list formats avoids recreating the index ids for every call
+to navigate network dfs in the case that it needs to be called many times.}
 
 \item{starts}{vector with ids from x to start at.}
 

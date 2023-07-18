@@ -1,7 +1,10 @@
 #' @title Navigate all Paths Depth First
 #' @description given a starting node, return all reachable paths. Once visited,
 #' a node is marked as visited and will not take part in a future path.
-#' @inheritParams add_levelpaths
+#' @param x data.frame containing hydroloom compatible network or list
+#' as returned by \link{make_index_ids} (for down) or \link{make_from_ids}
+#' (for up). The list formats avoids recreating the index ids for every call
+#' to navigate network dfs in the case that it needs to be called many times.
 #' @param starts vector with ids from x to start at.
 #' @param direction character "up or "down"
 #' @param reset logical if TRUE, reset graph for each start such that later paths
@@ -20,17 +23,47 @@
 #'
 navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
-  x <- hy(x, clean = TRUE)
+  if(identical(names(x),  c("to", "lengths", "to_list"))) {
 
-  if(!all(starts %in% x$id)) stop("all starts must be in x")
+    if(direction != "down")
+      stop("Direction must be 'down' if x contains to index ids")
 
-  g <- make_index_ids(x)
+    g <- x
+    rm(x)
 
-  if(direction == "up") {
-    g <- make_fromids(g, return_list = TRUE)
+    if(!all(starts %in% g$to_list$id)) stop("all starts must be in x")
+
+  } else if(identical(names(x), c("froms", "lengths", "froms_list"))) {
+
+    if(direction != "up")
+      stop("Direction must be 'up' if x contains from index ids")
+
+    g <- x
+    rm(x)
 
     names(g) <- c("to", "lengths", "to_list")
     names(g$to_list) <- c("indid", "id", "toindid")
+
+  } else {
+
+    if(!inherits(x, "data.frame"))
+      stop("if x is not a length three list as
+            returned by make_index_ids or make_fromids
+            it must be a data.frame compatible with hydroloom")
+
+    x <- hy(x, clean = TRUE)
+
+    if(!all(starts %in% x$id)) stop("all starts must be in x")
+
+    g <- make_index_ids(x)
+
+    if(direction == "up") {
+      g <- make_fromids(g, return_list = TRUE)
+
+      names(g) <- c("to", "lengths", "to_list")
+      names(g$to_list) <- c("indid", "id", "toindid")
+    }
+
   }
 
   navigate_network_dfs_internal(g, starts, reset)
