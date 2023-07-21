@@ -126,3 +126,26 @@ test_that("no stated outlet", {
   expect_equal(nrow(wbd), nrow(net))
 
 })
+
+test_that("divergences as outlets limit the result", {
+  net <- dplyr::tibble(
+    id = c("59149125", "59149129", "56784393", "59149189"),
+    toid = c("59149189", "59149189", "", ""),
+    gnis_id = c(NA_character_, NA_character_, NA_character_, NA_character_),
+    feature_type = c(460L, 336L, 460L, 336L),
+    direction = c(709L, 709L, 713L, 713L),
+  ) |>
+    structure(
+      class = c("hy", "tbl_df", "tbl", "data.frame"),
+      orig_names = c(
+        id = "id", fromnode = "fromnode", tonode = "tonode", gnis_id = "gnis_id",
+        ftype = "feature_type", direction = "direction"
+      )
+    )
+
+  net2 <- sort_network(net, split = TRUE)
+
+  expect_equal(net2$id, c("59149125", "59149129", "59149189", "56784393"))
+  expect_equal(net2$terminal_id, c("59149189", "59149189", "59149189", "56784393"))
+
+})

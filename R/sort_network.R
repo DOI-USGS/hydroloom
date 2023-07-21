@@ -6,6 +6,11 @@
 #' with tributaries navigation. The full network from each
 #' outlet is returned in sorted order.
 #'
+#' If a network includes diversions, all flowlines downstream of
+#' the diversion are visited prior to continueing upstream. See
+#' note on the `outlets` parameter for implications of this
+#' implementation detail.
+#'
 #' @export
 #' @inheritParams add_levelpaths
 #' @param split logical if TRUE, the result will be split into
@@ -14,6 +19,8 @@
 #' attribute.
 #' @param outlets same as id in x. if specified, only the network
 #' emanating from these outlets will be considered and returned.
+#' NOTE: If outlets does not include all outlets from a given
+#' network containing diversions, a partial network may be returned.
 #' @return data.frame containing a topologically sorted version
 #' of the requested network and optionally a terminal id.
 #' @name sort_network
@@ -78,8 +85,6 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   # Some vectors to track results
   to_visit <- out <- rep(0, length(index_ids$to_list$id))
 
-  visited <- rep(FALSE, length(index_ids$to_list$id))
-
   # Use to track if a node is ready to be visited.
   # will subtract from this and not visit the upstream until ready element = 1
   ready <- index_ids$lengths
@@ -132,8 +137,6 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
           if(ready[next_node] == 1) {
             # Add the next node to visit to the tracking vector
             to_visit[v] <- next_node
-            # mark as visited
-            visited[next_node] <- TRUE
 
             v <- v + 1
           } else {
@@ -141,12 +144,8 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
             # downstream neighbors have been visited. Ready is initialized
             # to the length of downstream neighbors and provides a check.
             ready[next_node] <- ready[next_node] - 1
-            o <- o - 1
           }
 
-          # mark it as visited so we don't come back
-          # not needed?
-          # froms$froms[from, node] <- NA
         }}
 
       # go to the last element added in to_visit
@@ -162,12 +161,12 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
     }
 
     if(split) {
-      out_list[[set_id]] <- pull(x[set[1:(n - 1)], 1])
+      out_list[[set_id]] <- index_ids$to_list$id[set[1:(n - 1)]]
       set_id <- set_id + 1
     }
   }
 
-  if(split) names(out_list) <- pull(x[starts, 1])
+  if(split) names(out_list) <- index_ids$to_list$id[starts]
 
   ### rewrites x into the correct order. ###
   id_order <- unique(x$id)[which(out != 0)]
