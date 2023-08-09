@@ -229,3 +229,38 @@ test_that("base down_level", {
   testthat::expect_equal(hydroloom:::down_level(k), "4")
 
 })
+
+test_that("winnow works with name count", {
+  x_orig <- dplyr::tibble(
+    id = c("167280297", "167280300", "167280301", "167282662"),
+    fromnode = c(41971, 43610, 41973, 41971),
+    tonode = c(41968, 41971, 41971, 43712),
+    name_att = c("00881819", "00875875", "00881819", "00875875"),
+    type_att = c(558L, 558L, 558L, 558L),
+    direction = c(709L, 709L, 709L, 709L),
+  ) |>
+    structure(
+      class = c("hy", "tbl_df", "tbl", "data.frame"),
+      orig_names = c(
+        id = "id", fromnode = "fromnode", tonode = "tonode", gnis_id = "gnis_id",
+        ftype = "feature_type", direction = "direction"
+      )
+    )
+
+  n <- 41971
+
+  major_types <- c(460, 558, 334)
+
+  name_count <- c("00875875" = 38L, "00881819" = 68L) |>
+    structure(
+      dim = 2L,
+      dimnames = list(c("00875875", "00881819")) |>
+        structure(names = ""),
+      class = "table"
+    )
+
+  expect_equal(hydroloom:::winnow_upstream(n, x_orig, major_types, name_count)$name_att[1],
+               "00881819")
+
+  unlink("divergence_checks.txt")
+})

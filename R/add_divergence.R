@@ -144,13 +144,15 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
 
   x <- rename(x_save, all_of(c(name_att = name_attr, type_att = type_attr)))
 
+  name_count <- table(x$name_att)
+
   junctions <- x |>
     group_by(fromnode) |>
     filter(max(n()) > 1) |>
     pull(fromnode) |>
     unique() |>
-    lapply(function(n, x_orig, major_types) winnow_upstream(n, x_orig, major_types),
-      x_orig = x, major_types = major_types)
+    lapply(function(n, x_orig, major_types, name_count) winnow_upstream(n, x_orig, major_types, name_count),
+      x_orig = x, major_types = major_types, name_count = name_count)
 
   junctions <- bind_rows(junctions)
 
@@ -173,7 +175,7 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
 
 # takes a group of upstream lines and figures out which one should be used
 # as the primary for downstream divergence checks.
-winnow_upstream <- function(n, x_orig, major_types) {
+winnow_upstream <- function(n, x_orig, major_types, name_count) {
 
   ups <- filter(x_orig, tonode == n)
   dns <- filter(x_orig, fromnode == n)
@@ -199,9 +201,26 @@ winnow_upstream <- function(n, x_orig, major_types) {
 
   # just pick the one with the smaller name id and log
   if(nrow(ups) > 1) {
-    ups <- filter(ups, .data$name_att == min(.data$name_att))
+    if(sum(!is.na(ups$name_att)) > 1) {
 
-    cat(paste0("picking ", ups$id, " as main."), file = "divergence_checks.txt")
+      counts <- name_count[names(name_count) %in% ups$name_att]
+
+      pick <- names(counts)[which(counts == max(counts))]
+
+      if(length(pick) == 1) {
+        ups <- filter(ups, .data$name_att == pick)
+
+        cat(paste0("picking ", ups$id, " as main.\n"), file = "divergence_checks.txt", append = TRUE)
+      }
+
+    }
+
+    if(nrow(ups) > 1) {
+
+      ups <- filter(ups, .data$id == min(.data$id))
+
+    }
+
   }
 
   data.frame(id = rep(ups$id, nrow(dns)),
