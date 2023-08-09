@@ -149,3 +149,13 @@ test_that("divergences as outlets limit the result", {
   expect_equal(net2$terminal_id, c("59149189", "59149189", "59149189", "56784393"))
 
 })
+
+test_that("custom outlet values aren't messed up", {
+  net <- readRDS(list.files(pattern = "sort_test.rds", recursive = TRUE, full.names = TRUE))
+
+  warnings <- capture_warnings(out <- hydroloom::sort_network(dplyr::rename(net, id = ID, toid = toNexID)))
+
+  expect_true(which(out$toid == -1) > which(out$toid == 24))
+
+  expect_equal(sum(grepl("Outlets don't follow|no outlet found", warnings)), 2)
+})

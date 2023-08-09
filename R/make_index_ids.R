@@ -46,7 +46,7 @@ make_index_ids.data.frame <- function(x, long_form = FALSE) {
 #' @export
 make_index_ids.hy <- function(x, long_form = FALSE) {
 
-  x <- check_hy_outlets(x)
+  x <- check_hy_outlets(x, fix = FALSE)
 
   if(!isTRUE(check_hy_graph(x))) {
     stop("found one or more pairs of features that reference eachother.

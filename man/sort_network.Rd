@@ -18,7 +18,9 @@ outlet id of each independent network is added as a "terminalID"
 attribute.}
 
 \item{outlets}{same as id in x. if specified, only the network
-emanating from these outlets will be considered and returned.}
+emanating from these outlets will be considered and returned.
+NOTE: If outlets does not include all outlets from a given
+network containing diversions, a partial network may be returned.}
 }
 \value{
 data.frame containing a topologically sorted version
@@ -31,6 +33,11 @@ and potentially split set of output.
 Can also be used as a very fast implementation of upstream
 with tributaries navigation. The full network from each
 outlet is returned in sorted order.
+
+If a network includes diversions, all flowlines downstream of
+the diversion are visited prior to continueing upstream. See
+note on the \code{outlets} parameter for implications of this
+implementation detail.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

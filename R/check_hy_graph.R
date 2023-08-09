@@ -57,7 +57,7 @@ check_hy_graph <- function(x, loop_check = FALSE) {
 
 }
 
-check_hy_outlets <- function(x) {
+check_hy_outlets <- function(x, fix = FALSE) {
 
   if(!inherits(x, "hy")) {
     x <- hy(x)
@@ -67,9 +67,17 @@ check_hy_outlets <- function(x) {
 
   if(any(x$toid[check] != get_outlet_value(x))) {
 
-    warning("Outlets don't follow hydroloom convention, fixing.")
+    if(fix) {
 
-    x$toid[check] <- rep(get_outlet_value(x), sum(check))
+      warning("Outlets don't follow hydroloom convention, fixing.")
+
+      x$toid[check] <- rep(get_outlet_value(x), sum(check))
+
+    } else {
+
+      warning("Outlets don't follow hydroloom convention, not fixing.")
+
+    }
 
   }
 

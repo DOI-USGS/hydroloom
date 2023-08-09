@@ -258,14 +258,14 @@ hy <- function(x, clean = FALSE) {
     x$toid <- replace_na(x$toid, out_val)
   }
 
-  attr(x, "orig_names") <- stats::setNames(names(x), keep_names)
-
   # strip tbl
   if(inherits(x, "sf")) {
     x <- st_sf(as_tibble(x))
   } else {
     x <- as_tibble(x)
   }
+
+  attr(x, "orig_names") <- stats::setNames(names(x), keep_names)
 
   class(x) <- c("hy", class(x))
 

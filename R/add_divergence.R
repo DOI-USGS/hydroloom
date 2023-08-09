@@ -197,9 +197,11 @@ winnow_upstream <- function(n, x_orig, major_types) {
     ups <- filter(ups, .data$type_att %in% major_types)
   }
 
-  # just pick the one with the smaller
+  # just pick the one with the smaller name id and log
   if(nrow(ups) > 1) {
-    ups <- filter(ups, .data$id == min(.data$id))
+    ups <- filter(ups, .data$name_att == min(.data$name_att))
+
+    cat(paste0("picking ", ups$id, " as main."), file = "divergence_checks.txt")
   }
 
   data.frame(id = rep(ups$id, nrow(dns)),
