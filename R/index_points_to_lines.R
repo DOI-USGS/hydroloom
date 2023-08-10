@@ -212,8 +212,9 @@ index_points_to_lines.hy <- function(x, points,
   search_radius <- as.numeric(search_radius) # everything in same units now
 
   if(!is.na(precision)) {
-    suppressWarnings(x <- st_intersection(x, point_buffer))
-    suppressWarnings(x <- st_cast(x, "LINESTRING", warn = FALSE))
+
+    x <- x[lengths(st_intersects(x, point_buffer, sparse = TRUE)) > 0, ]
+
   }
 
   x <- select(x, any_of(c(id, aggregate_id,
@@ -306,7 +307,7 @@ index_points_to_lines.hy <- function(x, points,
   x <- x |>
     add_index() |>
     filter(.data$L1 %in% matched$L1) |>
-    left_join(select(matched, all_of(c("L1", id))), by = "L1") |>
+    left_join(select(matched, all_of(c("L1", id))), by = "L1", relationship = "many-to-many") |>
     left_join(select(fline_atts, -"index"), by = id, relationship = "many-to-many")
 
   matched <- select(matched, point_id, node = "nn.idx", offset = "nn.dists", id)

@@ -182,6 +182,35 @@ test_that("multipart indexing", {
 
 })
 
+test_that("no duplicates when using precision", {
+  # https://github.com/DOI-USGS/hydroloom/issues/11
+
+  # Define points
+  locs <- dplyr::tibble(id = c(1, 2),
+                 lon = c(-83.87865, -83.87975),
+                 lat = c(35.60989, 35.60963))
+  points <- sf::st_as_sf(locs, coords = c("lon", "lat"), crs = 4326) |>
+    sf::st_transform(5070)
+  flines_aoi <- sf::st_buffer(points, dist = units::as_units(5000, "m")) |>
+    sf::st_bbox() |>
+    sf::st_as_sfc()
+
+  # Define objects that we'd pass to get_flowline_index
+  search_rad <- units::as_units(500, "m")
+  max_match <- 3
+  precision <- 10
+  flines <- sf::read_sf(list.files(pattern = "index_precision.gpkg",
+                                   full.names = TRUE, recursive = TRUE))
+
+  check <-index_points_to_lines(x = flines, points = points,
+                        search_radius = search_rad,
+                        max_matches = max_match,
+                        precision = precision) |>
+    dplyr::filter(point_id == 2)
+
+  expect_equal(length(unique(check$comid)), 3)
+})
+
 test_that("disambiguate", {
 
   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
