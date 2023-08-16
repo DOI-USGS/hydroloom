@@ -44,11 +44,22 @@ test_that("complex split", {
 
   expect_equal(x$divergence[c(3,4)], c(2, 1))
 
-  # major type
+  # major type name override
   x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
                   fromnode = c(1, 2, 3, 3, 4, 5, 6),
                   tonode = c(3, 3, 4, 5, 6, 6, 7),
                   name = c("test1", "test2", "test1", "test2", "", "", ""),
+                  type = c(1, 2, 2, 1, 1, 1, 1))
+
+  x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
+
+  expect_equal(x$divergence[c(3,4)], c(1, 2))
+
+  # major type
+  x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
+                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
+                  tonode = c(3, 3, 4, 5, 6, 6, 7),
+                  name = c("test1", "test2", "test3", "test4", "", "", ""),
                   type = c(1, 2, 2, 1, 1, 1, 1))
 
   x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
