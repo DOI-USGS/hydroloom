@@ -228,6 +228,19 @@ test_that("base down_level", {
 
   testthat::expect_equal(hydroloom:::down_level(k), "4")
 
+  k <- dplyr::tibble(
+    id = c("146073319", "146073319"),
+    name_att = c("00246611", "00246611"),
+    type_att = c(336L, 336L),
+    toid = c("7ff2749a-869f-480f-a092-cbe3a4446ef0", "6f0fb7e8-b38c-4252-a9a2-3865d94987d5"),
+    dn_name_att = c("00246611", "00249685"),
+    dn_type_att = c(336L, 336L),
+    coastal = c(FALSE, FALSE),
+    major_type = c(FALSE, FALSE),
+  )
+
+  testthat::expect_equal(hydroloom:::down_level(k), "7ff2749a-869f-480f-a092-cbe3a4446ef0")
+
 })
 
 test_that("winnow works with name count", {

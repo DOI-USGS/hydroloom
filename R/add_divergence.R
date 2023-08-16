@@ -267,6 +267,10 @@ down_level <- function(x) {
                     x$major_type)
 
     if(length(pick) == 1) return(x$toid[pick])
+
+    pick <- which(x$dn_name_att == x$name_att[1])
+
+    if(length(pick) == 1) return(x$toid[pick])
   }
 
   # if any of the downs are named and a major type is in the mix we can check 4
