@@ -4,6 +4,7 @@
 # hydroloom <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
 [![R-CMD-check](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml)
+[![codecov](https://codecov.io/gh/doi-usgs/hydroloom/branch/main/graph/badge.svg)](https://app.codecov.io/gh/doi-usgs/hydroloom)
 
 ## hydroloom:
 
