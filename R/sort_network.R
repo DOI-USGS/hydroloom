@@ -174,6 +174,8 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
   if(split & o - 1 != length(id_order)) stop("Are two or more outlets within the same network?")
 
+  if(is.null(outlets) && length(unique(x$id)) != length(out)) warning("some features missed in sort. Are there loops in the network?")
+
   x <- filter(x, .data$id %in% id_order) |>
     left_join(tibble(id = id_order, sorter = out), by = "id") |>
     arrange(desc(.data$sorter)) |>
