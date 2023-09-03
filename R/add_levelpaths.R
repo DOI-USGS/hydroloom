@@ -125,44 +125,40 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x <- arrange(x, .data$topo_sort)
 
-  topo_sort <- x$topo_sort
+  to_ind <- make_index_ids(x)
 
-  matcher <- pbsapply(x$id, function(id, df) {
-    which(x$toid == id)
-  }, df = x, cl = "future")
-
-  names(matcher) <- x$id
+  from_ind <- make_fromids(to_ind, return_list = TRUE)
 
   x$done <- rep(FALSE, nrow(x))
 
-  outlets <- filter(x, .data$toid == get_outlet_value(x))
+  x$ind <- seq_len(nrow(x))
+  x$toind <- to_ind$to
+
+  outlet_ind <- x[which(x$toid == get_outlet_value(x)),]
 
   while(done < nrow(x) & checker < 10000000) {
-    tail_topo <- outlets$topo_sort
 
-    pathids <- if(nrow(outlets) == 1) {
-      list(par_get_path(as.list(outlets), x, matcher, status, "lp_weight_attribute"))
+    pathids <- if(nrow(outlet_ind) == 1) {
+      list(par_get_path(as.list(outlet_ind), x, from_ind, status, "lp_weight_attribute"))
     } else {
-      pblapply(split(outlets, seq_len(nrow(outlets))),
-                    par_get_path,
-                    x_in = x, matcher = matcher,
-                    status = status, wat = "lp_weight_attribute", cl = "future")
+      lapply(split(outlet_ind, seq_len(nrow(outlet_ind))),
+             par_get_path,
+             x_in = x, from_ind = from_ind,
+             status = status, wat = "lp_weight_attribute")
     }
 
     pathids <- bind_rows(pathids)
 
-    reset <- match(pathids$id, x$id)
+    x$levelpath[pathids$ind] <- pathids$levelpath
 
-    x$levelpath[reset] <- pathids$levelpath
+    done <- done + nrow(pathids)
 
-    n_reset <- length(reset)
+    x$done[pathids$ind] <- rep(TRUE, nrow(pathids))
 
-    done <- done + n_reset
-
-    x$done[reset] <- rep(TRUE, n_reset)
-
-    outlets <- x[x$toid %in% pathids$id &
-                   !x$id %in% pathids$id, ]
+    # grab everything that goes to the path we just followed
+    outlet_ind <- stats::na.omit(as.numeric(from_ind$froms[, pathids$ind]))
+    # remove the path we just follwed
+    outlet_ind <- x[outlet_ind[!outlet_ind %in% pathids$ind],]
 
     checker <- checker + 1
 
@@ -175,8 +171,8 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x <- put_hyg(x, hy_g)
 
-  x <- select(x, all_of(c("id", "toid", "levelpath_outlet_id", "topo_sort", "levelpath")),
-              !all_of(c("done", "lp_name_attribute", "lp_weight_attribute")))
+  x <- select(x, all_of(c(id, toid, levelpath_outlet_id, topo_sort, levelpath)),
+              !all_of(c("done", "lp_name_attribute", "lp_weight_attribute", "ind", "toind")))
 
   x <- left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
                  by = id)
@@ -184,12 +180,12 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   return(x)
 }
 
-par_get_path <- function(outlet, x_in, matcher, status, wat) {
+par_get_path <- function(outlet, x_in, from_ind, status, wat) {
   out <- get_path(x = x_in,
-                  tailid = outlet[names(outlet) == "id"][[1]],
-                  matcher = matcher,
+                  tailid = outlet[names(outlet) == "ind"][[1]],
+                  from_ind = from_ind,
                   status = status, wat = wat)
-  tibble(id = out,
+  tibble(ind = out,
          levelpath = rep(outlet[names(outlet) == "topo_sort"][[1]],
                          length(out)))
 }
@@ -212,7 +208,7 @@ add_levelpath_outlet_ids <-  function(x) {
 #' @param override_factor numeric follow weight if this many times larger
 #' @param status print status?
 #'
-get_path <- function(x, tailid, matcher, status, wat) {
+get_path <- function(x, tailid, from_ind, status, wat) {
 
   keep_going <- TRUE
   tracker <- rep(NA, nrow(x))
@@ -222,7 +218,7 @@ get_path <- function(x, tailid, matcher, status, wat) {
 
   while(keep_going) {
     tryCatch({
-      next_tails <- x[matcher[[as.character(tailid)]], ]
+      next_tails <- x[stats::na.omit(from_ind$froms[,tailid]), ]
 
       if(nrow(next_tails) > 1) {
 
@@ -236,13 +232,13 @@ get_path <- function(x, tailid, matcher, status, wat) {
 
       }
 
-      if(tailid %in% tracker) stop(paste0("loop at", tailid))
+      # if(tailid %in% tracker) stop(paste0("loop at", tailid))
 
       tracker[counter] <- tailid
 
       counter <- counter + 1
 
-      tailid <- next_tails$id
+      tailid <- next_tails$ind
 
       if(status && counter %% 1000 == 0) message(paste("long mainstem", counter))
     }, error = function(e) {
