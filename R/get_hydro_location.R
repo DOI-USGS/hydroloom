@@ -41,7 +41,7 @@ get_hydro_location <- function(indexes, flowpath) {
 
 get_hydro_location_single <- function(x) {
 
-  coords <- sf::st_coordinates(x[[2]]) |>
+  coords <- st_coordinates(x[[2]]) |>
     add_index() |>
     add_len()
 
@@ -58,15 +58,15 @@ get_hydro_location_single <- function(x) {
 
   if(nds == nus) {
     return(
-      sf::st_sfc(sf::st_point(c(coords$X[nds], coords$Y[nds])),
-                 crs = sf::st_crs(x[[2]]))
+      st_sfc(st_point(c(coords$X[nds], coords$Y[nds])),
+                 crs = st_crs(x[[2]]))
     )}
 
   new_m <- rescale_measures(m, coords$id_measure[nds], coords$id_measure[nus])
 
   new <- interp_meas(new_m, coords$X[nds], coords$Y[nds], coords$X[nus], coords$Y[nus])
 
-  return(sf::st_sfc(sf::st_point(c(new[[1]], new[[2]])), crs = sf::st_crs(x[[2]])))
+  return(st_sfc(st_point(c(new[[1]], new[[2]])), crs = st_crs(x[[2]])))
 }
 
 interp_meas <- function(m, x1, y1, x2, y2) {

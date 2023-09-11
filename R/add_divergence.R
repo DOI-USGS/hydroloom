@@ -123,7 +123,7 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
 
   x <- make_fromids(make_index_ids(x), return_list = TRUE)
 
-  paths <- pbapply::pblapply(term, function(i, net) {
+  paths <- pblapply(term, function(i, net) {
     try(navigate_network_dfs(x = net, starts = i,
                              direction = "up",
                              reset = FALSE))
@@ -133,8 +133,8 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
                          paths = I(unlist(paths,
                                           recursive = FALSE))) |>
     mutate(coastal = id %in% coastal_outlet_ids) |>
-    tidyr::unnest(cols = c(paths)) |>
-    tidyr::unnest(cols = c(paths)) |>
+    unnest(cols = c(paths)) |>
+    unnest(cols = c(paths)) |>
     select(all_of(c(id = "paths", "coastal"))) |>
     distinct() |>
     group_by(id) |>

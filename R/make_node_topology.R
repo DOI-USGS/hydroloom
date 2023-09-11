@@ -72,7 +72,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
   } else {
 
     if(any(is.na(x$toid))) stop("NA toids found -- must be 0")
-    if(!all(x$toid[x$toid != hydroloom:::get_outlet_value(x)] %in% x$id)) stop("Not all non zero toids are in ids")
+    if(!all(x$toid[x$toid != get_outlet_value(x)] %in% x$id)) stop("Not all non zero toids are in ids")
     if(any(c(fromnode, tonode) %in% names(x))) stop("fromnode or tonode already in data")
 
     order <- data.frame(id = x$id)

@@ -156,7 +156,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     x$done[pathids$ind] <- rep(TRUE, nrow(pathids))
 
     # grab everything that goes to the path we just followed
-    outlet_ind <- stats::na.omit(as.numeric(from_ind$froms[, pathids$ind]))
+    outlet_ind <- na.omit(as.numeric(from_ind$froms[, pathids$ind]))
     # remove the path we just follwed
     outlet_ind <- x[outlet_ind[!outlet_ind %in% pathids$ind],]
 
@@ -218,7 +218,7 @@ get_path <- function(x, tailid, from_ind, status, wat) {
 
   while(keep_going) {
     tryCatch({
-      next_tails <- x[stats::na.omit(from_ind$froms[,tailid]), ]
+      next_tails <- x[na.omit(from_ind$froms[,tailid]), ]
 
       if(nrow(next_tails) > 1) {
 

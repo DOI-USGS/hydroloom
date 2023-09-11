@@ -51,7 +51,7 @@ disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
 
   indexes <- align_names(indexes)
 
-  renamer <- stats::setNames(names(indexes), orig_index_names)
+  renamer <- setNames(names(indexes), orig_index_names)
 
   call_rename <- FALSE
   if(!is.hy(flowpath, silent = TRUE)) call_rename <- TRUE
@@ -107,7 +107,7 @@ disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
 }
 
 string_score <- function(x) {
-  raw_score <- as.numeric(utils::adist(x[[1]], x[[2]], ignore.case = TRUE))
+  raw_score <- as.numeric(adist(x[[1]], x[[2]], ignore.case = TRUE))
 
   (1 - (raw_score) / max(c(nchar(x[[1]]), nchar(x[[2]]))))
 }

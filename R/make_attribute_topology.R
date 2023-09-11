@@ -44,8 +44,8 @@ make_attribute_topology.hy <- function(x, min_distance) {
 
   # first we get start and end nodes
   nodes <- as.data.frame(cbind(
-    sf::st_coordinates(hydroloom::get_node(x, "start")),
-    sf::st_coordinates(hydroloom::get_node(x, "end"))))
+    st_coordinates(get_node(x, "start")),
+    st_coordinates(get_node(x, "end"))))
 
   # add the id to the nodes
   nodes$id <- x$id
@@ -60,7 +60,7 @@ make_attribute_topology.hy <- function(x, min_distance) {
   xs <- 1:nrow(nodes)
 
   # apply over allnodes
-  closest <- pbapply::pblapply(xs, function(x, nodes) {
+  closest <- pblapply(xs, function(x, nodes) {
 
     # distance from one node to all other nodes
     d <- sqrt((nodes$ex[x] - nodes$sx)^2 + (nodes$ey[x] - nodes$sy)^2)
@@ -80,7 +80,7 @@ make_attribute_topology.hy <- function(x, min_distance) {
 
   # remove row == torow and get group size.
   nodes <- select(nodes, all_of(c("row", "torow"))) |>
-    tidyr::unnest(cols = "torow") |>
+    unnest(cols = "torow") |>
     filter(.data$row != .data$torow) |>
     left_join(drop_geometry(x), by = "row") |>
     left_join(select(drop_geometry(x), row, toid = id),

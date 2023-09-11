@@ -12,7 +12,7 @@ get_hyg <- function(x, add, id = "id") {
 put_hyg <- function(x, hy_g) {
   if(!is.null(hy_g)) {
     orig_names <- attr(x, "orig_names")
-    x <- sf::st_sf(left_join(x, hy_g, by = id))
+    x <- st_sf(left_join(x, hy_g, by = id))
     attr(x, "orig_names") <- orig_names
 
     if(!inherits(x, "hy")) {
@@ -30,7 +30,7 @@ replace_na <- function(x, y) {
 
 #' simple unnest for a single list column
 #' @noRd
-unnest <- function(x, col) {
+simple_unnest <- function(x, col) {
 
   times <- lengths(x[[col]])
   base_names <- names(x)[!names(x) == col]
@@ -39,7 +39,7 @@ unnest <- function(x, col) {
 
   names(out) <- base_names
 
-  out <- dplyr::bind_cols(out)
+  out <- bind_cols(out)
 
   out[[col]] <- unlist(x[[col]])
 
@@ -267,7 +267,7 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
 rescale_measures <- function(measure, from, to) {
   tryCatch({
 
-    if(!dplyr::between(measure, from, to))
+    if(!between(measure, from, to))
       stop("measure must be between from and to")
 
     100 * (measure - from) / (to - from)

@@ -74,7 +74,7 @@ align_names <- function(x) {
 
   }
 
-  x <- rename(x, any_of(stats::setNames(names(replace_names), unname(replace_names))))
+  x <- rename(x, any_of(setNames(names(replace_names), unname(replace_names))))
 
   switch_back <- !names(x) %in% good_names
 

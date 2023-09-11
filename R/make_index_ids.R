@@ -61,7 +61,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
     out <- data.table(id = unique(x$id),
                       indid = seq(1, length(unique(x$id))))
 
-    out_rename <- data.table::copy(out)
+    out_rename <- copy(out)
     setnames(out_rename, old = "indid", new = "toindid")
 
     out <- merge(merge(as.data.table(x)[, list(id, toid)],
@@ -69,7 +69,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
                  out_rename,
                  by.x = "toid", by.y = "id", all.x = TRUE, sort = FALSE) |>
       as.data.frame() |>
-      dplyr::as_tibble()
+      as_tibble()
 
     # dplyr method of the above hanges on large datasets
     # out2 <- data.frame(id = unique(x$id),

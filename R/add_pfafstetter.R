@@ -92,7 +92,6 @@ add_pfafstetter.hy <- function(x, max_level = 2, status = FALSE) {
 }
 
 #' @noRd
-#' @importFrom dplyr arrange left_join
 get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, status = FALSE) {
 
   if(!levelpath_outlet_id %in% names(x)) {
@@ -149,7 +148,7 @@ get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, stat
   out[["pfaf"]] <- out$p_id + pre_pfaf * 10
 
   if(all(sapply(out$members, function(x) all(is.na(x))))) out$members[[1]] <- mainstem$id
-  out <- unnest(out, "members")
+  out <- simple_unnest(out, "members")
   out <- list(out[!is.na(out$members), ])
 
   if(nrow(out[[1]]) == 0 | all(out[[1]]$members %in% mainstem$id)) {
@@ -174,8 +173,6 @@ apply_fun <- function(p, p9, x, max_level, status) {
   }
 }
 
-#' @importFrom tidyr pivot_wider
-#' @importFrom dplyr select
 #' @noRd
 cleanup_pfaf <- function(pfaf) {
   # Add level number
@@ -187,8 +184,8 @@ cleanup_pfaf <- function(pfaf) {
   # Deduplicate problem tributaries
   remove <- do.call(c, lapply(1:length(unique(pfaf$level)), function(l, pfaf) {
     check <- pfaf[pfaf$level == l, ]
-    check <- dplyr::group_by(check, .data$id)
-    check <- dplyr::filter(check, n() > 1 & .data$pfaf < max(.data$pfaf))$uid
+    check <- group_by(check, .data$id)
+    check <- filter(check, n() > 1 & .data$pfaf < max(.data$pfaf))$uid
   }, pfaf = pfaf))
 
   pfaf <- pivot_wider(select(pfaf[!pfaf$uid %in% remove, ], -"uid"),

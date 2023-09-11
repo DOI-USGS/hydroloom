@@ -8,7 +8,6 @@
 #' @return data.frame containing the distance between pairs of network outlets
 #' and a list column containing flowpath identifiers along path that connect outlets.
 #' For a network with one terminal outlet, the data.frame will have `nrow(x)^2` rows.
-#' @importFrom utils combn tail
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
@@ -50,7 +49,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   if(status)
     message("Finding all downstream paths.")
 
-  all_dn <- pbapply::pblapply(index$indid[id_match], function(indid, toindid) {
+  all_dn <- pblapply(index$indid[id_match], function(indid, toindid) {
     out <- get_dwn(indid, toindid)
     if((lo <- length(out)) > 1) {
       out[2:lo] # don't want to include the starting flowpath
@@ -94,7 +93,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   get_length <- function(p, length_km)
     sum(length_km$length_km[p[[1]]], length_km$length_km[p[[2]]])
 
-  path_lengths <- pbapply::pblapply(connected_paths, get_length, length_km = length_km)
+  path_lengths <- pblapply(connected_paths, get_length, length_km = length_km)
 
   path_lengths <- cbind(as.data.frame(matrix(id_match[pairs[lengths(paths) > 0,]],
                                              ncol = 2)),

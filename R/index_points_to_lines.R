@@ -28,7 +28,7 @@ matcher <- function(coords, points, search_radius, max_matches = 1) {
 
   # Now limit to max matches per point
   matched <- group_by(matched, .data$point_id) |>
-    filter(dplyr::row_number() <= max_matches) |>
+    filter(row_number() <= max_matches) |>
     ungroup() |>
     as.data.frame()
 
@@ -39,18 +39,18 @@ check_search_radius <- function(search_radius, points) {
 
   if(is.null(search_radius)) {
     if(st_is_longlat(points)) {
-      search_radius <- units::set_units(0.01, "degrees")
+      search_radius <- set_units(0.01, "degrees")
     } else {
-      search_radius <- units::set_units(200, "m")
+      search_radius <- set_units(200, "m")
 
-      units(search_radius) <- units::as_units(
+      units(search_radius) <- as_units(
         st_crs(points, parameters = TRUE)$ud_unit)
     }
   }
 
   if(!inherits(search_radius, "units")) {
     warning("search_radius units not set, trying units of points.")
-    units(search_radius) <- units::as_units(
+    units(search_radius) <- as_units(
       st_crs(points, parameters = TRUE)$ud_unit)
   }
 
@@ -89,9 +89,9 @@ add_index <- function(x) {
 
 add_len <- function(x) {
   x |>
-    mutate(len  = sqrt( ( (.data$X - (dplyr::lag(.data$X))) ^ 2) +
-                          ( ( (.data$Y - (dplyr::lag(.data$Y))) ^ 2)))) |>
-    mutate(len = tidyr::replace_na(.data$len, 0)) |>
+    mutate(len  = sqrt( ( (.data$X - (lag(.data$X))) ^ 2) +
+                          ( ( (.data$Y - (lag(.data$Y))) ^ 2)))) |>
+    mutate(len = replace_na(.data$len, 0)) |>
     mutate(len = cumsum(.data$len)) |>
     mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
 }
@@ -199,8 +199,8 @@ index_points_to_lines.hy <- function(x, points,
 
   point_buffer <- st_buffer(points, search_radius)
 
-  if(units(search_radius) == units(units::as_units("degrees"))) {
-    if(st_is_longlat(in_crs) & search_radius > units::set_units(1, "degree")) {
+  if(units(search_radius) == units(as_units("degrees"))) {
+    if(st_is_longlat(in_crs) & search_radius > set_units(1, "degree")) {
       warning("search radius is large for lat/lon input, are you sure?")
     }
   }
@@ -223,7 +223,7 @@ index_points_to_lines.hy <- function(x, points,
 
   fline_atts <- drop_geometry(x)
 
-  if(sf::st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
+  if(st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
     warning("converting to LINESTRING, this may be slow, check results")
   }
 
@@ -273,7 +273,7 @@ index_points_to_lines.hy <- function(x, points,
     x <- x |>
       mutate(index = seq_len(nrow(x))) |>
       st_cast("LINESTRING", warn = FALSE) |>
-      st_segmentize(dfMaxLength = units::as_units(precision, "m"))
+      st_segmentize(dfMaxLength = as_units(precision, "m"))
 
     fline_atts <- right_join(fline_atts,
                              select(drop_geometry(x),
@@ -354,8 +354,6 @@ index_points_to_lines.hy <- function(x, points,
 #' \link[units]{set_units}.
 #' @return data.frame with two columns, COMID, in_wb_COMID, near_wb_COMID,
 #' near_wb_dist, and outlet_fline_COMID. Distance is in units of provided projection.
-#' @importFrom sf st_join st_geometry_type
-#' @importFrom dplyr select mutate bind_cols
 #' @export
 #' @examples
 #'
@@ -451,7 +449,7 @@ rename_indexed <- function(x, matched) {
   orig_aggregate_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == aggregate_id])
   new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
 
-  rename(matched, any_of(stats::setNames(c(id, aggregate_id, aggregate_id_measure),
+  rename(matched, any_of(setNames(c(id, aggregate_id, aggregate_id_measure),
                                          c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }
 

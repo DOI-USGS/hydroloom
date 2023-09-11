@@ -41,7 +41,7 @@ check_hy_graph <- function(x, loop_check = FALSE) {
              data.table(drop_geometry(x)),
              by.x = "toid", by.y = "id", all.x = TRUE)
 
-  x <- dplyr::as_tibble(x)
+  x <- as_tibble(x)
 
   check <- x$id == x$toid.y
 
@@ -91,11 +91,11 @@ check_hy_graph_internal <- function(g, all_starts) {
   f <- make_fromids(g)
 
   # used to track which path tops we need to go back to
-  to_visit_queue <- fastmap::fastqueue(missing_default = 0)
+  to_visit_queue <- fastqueue(missing_default = 0)
 
   lapply(all_starts, function(x) to_visit_queue$add(x))
 
-  out_stack <- fastmap::faststack()
+  out_stack <- faststack()
 
   # to track where we've been
   visited_tracker <- rep(FALSE, ncol(g$to))
@@ -106,7 +106,7 @@ check_hy_graph_internal <- function(g, all_starts) {
   # trigger for making a new path
   new_path <- FALSE
 
-  pb = utils::txtProgressBar(0, ncol(g$to), style = 3)
+  pb = txtProgressBar(0, ncol(g$to), style = 3)
   on.exit(close(pb))
   n <- 0
 
@@ -119,7 +119,7 @@ check_hy_graph_internal <- function(g, all_starts) {
     visited_tracker[node] <- TRUE
 
     if(!n %% 100)
-      utils::setTxtProgressBar(pb, n)
+      setTxtProgressBar(pb, n)
 
 
     # now look at what's downtream and add to a queue
@@ -185,7 +185,7 @@ check_hy_graph_internal <- function(g, all_starts) {
 
   }
 
-  utils::setTxtProgressBar(pb, n)
+  setTxtProgressBar(pb, n)
 
   # if we got this far, Cool!
   unique(g$to_list$id[as.integer(out_stack$as_list())])
@@ -195,7 +195,7 @@ check_hy_graph_internal <- function(g, all_starts) {
 loop_search_dfs <- function(g, node, visited_tracker) {
 
   # stack to track stuff we need to visit
-  to_visit_stack <- fastmap::faststack(missing_default = 0)
+  to_visit_stack <- faststack(missing_default = 0)
 
   # while we still have nodes to check
   while(node != 0) {

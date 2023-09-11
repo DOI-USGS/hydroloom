@@ -184,11 +184,11 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   if(split) {
 
     # this is only two columns
-    ids <- methods::as(names(out_list), class(pull(x[1, 1])))
+    ids <- as(names(out_list), class(pull(x[1, 1])))
 
     out_list <- data.frame(ids = ids) |>
       mutate(set = out_list) |>
-      unnest("set")
+      simple_unnest("set")
 
     names(out_list) <- c(terminal_id, id)
 

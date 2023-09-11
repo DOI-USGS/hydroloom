@@ -7,7 +7,6 @@
 #' "froms_list" element containing all from ids in a list form.
 #' @return list containing a "froms" matrix, "lengths" vector,
 #' and optionally "froms_list" elements.
-#' @importFrom data.table as.data.table setnames
 #' @export
 #' @examples
 #'
@@ -20,7 +19,7 @@
 #'
 make_fromids <- function(index_ids, return_list = FALSE) {
 
-  index_ids <- unnest(index_ids$to_list, "toindid")
+  index_ids <- simple_unnest(index_ids$to_list, "toindid")
 
   # froms <- left_join(select(index_ids, "indid"),
   #                    select(index_ids, indid = "toindid", fromindid = "indid"),

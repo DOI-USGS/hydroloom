@@ -107,7 +107,7 @@ hnd$point_id <- "identifier of hydrologic location point"
 hnd$offset <- "offset distance from point to line in units of linear reference analysis units"
 hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
 
-hydroloom_name_definitions <- stats::setNames(as.character(hnd), names(hnd))
+hydroloom_name_definitions <- setNames(as.character(hnd), names(hnd))
 class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_definitions))
 
 #' @export
@@ -193,14 +193,22 @@ get_outlet_value <- function(x) {
 }
 
 #' @importFrom dplyr filter select left_join right_join all_of any_of bind_rows group_by
-#' @importFrom dplyr ungroup n rename row_number arrange desc distinct mutate summarise
+#' @importFrom dplyr ungroup n rename row_number between arrange desc distinct mutate summarise
 #' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag case_when
+#' @importFrom data.table copy data.table as.data.table setnames
+#' @importFrom tidyr unnest replace_na pivot_wider
 #' @importFrom rlang :=
 #' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_geometry_type st_intersects
 #' @importFrom sf st_cast st_linestring st_is_longlat st_transform st_segmentize st_buffer
 #' @importFrom sf st_as_sf st_sf st_zm st_coordinates st_crs st_join st_reverse
+#' @importFrom sf st_point st_sfc
 #' @importFrom pbapply pblapply pbsapply pbapply pboptions
 #' @importFrom RANN nn2
+#' @importFrom stats setNames na.omit
+#' @importFrom fastmap fastqueue faststack
+#' @importFrom utils txtProgressBar setTxtProgressBar adist combn tail
+#' @importFrom units set_units as_units
+#' @importFrom methods as
 
 .data <- NULL
 
@@ -266,7 +274,7 @@ hy <- function(x, clean = FALSE) {
     x <- as_tibble(x)
   }
 
-  attr(x, "orig_names") <- stats::setNames(names(x), keep_names)
+  attr(x, "orig_names") <- setNames(names(x), keep_names)
 
   class(x) <- c("hy", class(x))
 

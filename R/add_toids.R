@@ -41,7 +41,6 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
 }
 
 .datatable.aware=TRUE
-#' @importFrom data.table data.table
 #' @name add_toids
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
