@@ -32,7 +32,7 @@ matcher <- function(coords, points, search_radius, max_matches = 1) {
     ungroup() |>
     as.data.frame()
 
-  return(matched)
+  matched
 }
 
 check_search_radius <- function(search_radius, points) {
@@ -338,7 +338,7 @@ index_points_to_lines.hy <- function(x, points,
                        by = c("node" = "index")) |>
     select(all_of(select_vec2))
 
-  return(matched)
+  matched
 }
 
 #' @title Index Points to Waterbodies

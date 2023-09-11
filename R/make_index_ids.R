@@ -137,6 +137,6 @@ format_index_ids <- function(g, return_list = FALSE) {
   if(return_list) return(list(to = to_m, lengths = to_l,
                               to_list = g))
 
-  return(list(to = to_m, lengths = to_l))
+  list(to = to_m, lengths = to_l)
 
 }

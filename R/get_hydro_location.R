@@ -66,7 +66,7 @@ get_hydro_location_single <- function(x) {
 
   new <- interp_meas(new_m, coords$X[nds], coords$Y[nds], coords$X[nus], coords$Y[nus])
 
-  return(st_sfc(st_point(c(new[[1]], new[[2]])), crs = st_crs(x[[2]])))
+  st_sfc(st_point(c(new[[1]], new[[2]])), crs = st_crs(x[[2]]))
 }
 
 interp_meas <- function(m, x1, y1, x2, y2) {

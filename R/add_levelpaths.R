@@ -174,10 +174,9 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x <- select(x, all_of(c(id, toid, levelpath_outlet_id, topo_sort, levelpath)),
               !all_of(c("done", "lp_name_attribute", "lp_weight_attribute", "ind", "toind")))
 
-  x <- left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
-                 by = id)
+  left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
+            by = id)
 
-  return(x)
 }
 
 par_get_path <- function(outlet, x_in, from_ind, status, wat) {
@@ -248,8 +247,7 @@ get_path <- function(x, tailid, from_ind, status, wat) {
 
   }
 
-
-  return(tracker[!is.na(tracker)])
+  tracker[!is.na(tracker)]
 }
 
 reweight <- function(x, ..., override_factor, nat, wat) {

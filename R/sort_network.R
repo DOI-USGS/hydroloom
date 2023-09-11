@@ -199,5 +199,5 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
   x <- put_hyg(x, hy_g)
 
-  return(x)
+  x
 }

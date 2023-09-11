@@ -42,7 +42,7 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #' name to use is chosen 1) if there is only one upstream flowline with a name
 #' 2) if one of the upstream flowlines with a name matches the downstream line,
 #' 3) if one of the upstream flowlines is of a "major" type and others are not,
-#' and 4) the smallest id value otherwise.
+#' and, 4) if no criteria exist to select one, the smallest id value otherwise.
 #'
 #' @name add_divergence
 #' @export

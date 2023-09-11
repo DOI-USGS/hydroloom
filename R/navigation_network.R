@@ -131,9 +131,9 @@ get_UT <- function(x, id, distance) {
 
     x <- filter(x, .data$id %in% all)
 
-    return(filter(x, .data$pathlength_km <= stop_pathlength_km)$id)
+    filter(x, .data$pathlength_km <= stop_pathlength_km)$id
   } else {
-    return(all)
+    all
   }
 }
 
@@ -160,9 +160,9 @@ private_get_UT <- function(x, id) {
   trib_id <- filter(x, levelpath %in% trib_lpid)$id
 
   if (length(trib_id) > 0) {
-    return(c(full_main$id, private_get_UT(x, trib_id)))
+    c(full_main$id, private_get_UT(x, trib_id))
   } else {
-    return(full_main$id)
+    full_main$id
   }
 }
 
@@ -187,7 +187,7 @@ get_UM <- function(x, id, distance = NULL) {
 
   }
 
-  return(main_us$id)
+  main_us$id
 }
 
 get_DM <- function(x, id, distance = NULL) {
@@ -210,7 +210,7 @@ get_DM <- function(x, id, distance = NULL) {
       filter(id %in% main_ds$id, (pathlength_km + length_km) >= stop_pathlength_km)
   }
 
-  return(main_ds$id)
+  main_ds$id
 }
 
 
@@ -246,7 +246,7 @@ private_get_DM <- function(x, id) {
     }
   }
 
-  return(select(ds_main, id, topo_sort))
+  select(ds_main, id, topo_sort)
 }
 
 get_DD <- function(x, id, distance = NULL) {
@@ -267,9 +267,9 @@ get_DD <- function(x, id, distance = NULL) {
   if (!is.null(distance)) {
     x <- filter(x, id %in% unique(all))
 
-    return(filter(x, (pathlength_km + length_km) >= stop_pathlength_km)$id)
+    filter(x, (pathlength_km + length_km) >= stop_pathlength_km)$id
   } else {
-    return(unique(all))
+    unique(all)
   }
 }
 
@@ -311,7 +311,7 @@ private_get_DD <- function(x, id, stop_pathlength_km = 0) {
 
     c(ds_main$id, private_get_DD(x, ds_id, stop_pathlength_km))
   } else {
-    return(ds_main$id)
+    ds_main$id
   }
 }
 

@@ -56,7 +56,7 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   if(return_list) return(list(froms = froms_m, lengths = froms_l,
                               froms_list = froms))
 
-  return(list(froms = froms_m, lengths = froms_l))
+  list(froms = froms_m, lengths = froms_l)
 
 }
 

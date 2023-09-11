@@ -52,5 +52,5 @@ add_pathlength.hy <- function(x) {
     }
   }
 
-  return(left_join(orig_order, x, by = id))
+  left_join(orig_order, x, by = id)
 }

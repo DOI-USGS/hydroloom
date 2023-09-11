@@ -203,5 +203,5 @@ cleanup_pfaf <- function(pfaf) {
       floor(pfaf[, (i + 1)][is.na(pfaf[, i, drop = TRUE]), ] / 10)
   }
 
-  return(pfaf)
+  pfaf
 }

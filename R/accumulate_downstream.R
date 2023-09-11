@@ -13,7 +13,7 @@ required_atts_accumulate <- c(id, toid)
 #'
 #' plot(x['totDASqKM'], lwd = x$totDASqKM / 50)
 accumulate_downstream <- function(x, var) {
-  if(!var %in% names(x)) stop(paste(var, "must be in x"))
+  if(!var %in% names(x)) stop(var, " must be in x")
 
   UseMethod("accumulate_downstream")
 }
@@ -58,5 +58,5 @@ accumulate_downstream.hy <- function(x, var) {
 
   x <- distinct(left_join(cat_order, x, by = "id"))
 
-  return(x[[var]])
+  x[[var]]
 }

@@ -80,7 +80,7 @@ align_names <- function(x) {
 
   names(x)[switch_back] <- orig_names[switch_back]
 
-  return(x)
+  x
 
 }
 
@@ -129,6 +129,6 @@ hydroloom_names <- function(x = NULL, clear = FALSE) {
 
   assign("hydroloom_name_map", hl, envir = hydroloom_env)
 
-  return(hl)
+  hl
 
 }
