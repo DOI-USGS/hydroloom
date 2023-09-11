@@ -159,3 +159,9 @@ test_that("custom outlet values aren't messed up", {
 
   expect_equal(sum(grepl("Outlets don't follow|no outlet found", warnings)), 2)
 })
+
+test_that("loop warning", {
+  test_data <- data.frame(id = c(1, 2, 3, 4, 5, 5, 6, 7),
+                          toid = c(3, 4, 4, 5, 6, 3, 7, 0))
+  expect_warning(sort_network(test_data), "loops")
+})
