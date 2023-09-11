@@ -3,11 +3,11 @@ matcher <- function(coords, points, search_radius, max_matches = 1) {
 
   max_match_ <- ifelse(nrow(coords) < 1000, nrow(coords), 1000)
 
-  matched <- RANN::nn2(data = coords[, 1:2],
-                       query = matrix(points[, c("X", "Y")], ncol = 2),
-                       k = ifelse(max_matches > 1, max_match_, 1),
-                       searchtype = "radius",
-                       radius = search_radius)
+  matched <- nn2(data = coords[, 1:2],
+                 query = matrix(points[, c("X", "Y")], ncol = 2),
+                 k = ifelse(max_matches > 1, max_match_, 1),
+                 searchtype = "radius",
+                 radius = search_radius)
 
   matched <- data.frame(nn.idx = as.integer(matched$nn.idx),
                         nn.dists = as.numeric(matched$nn.dists),

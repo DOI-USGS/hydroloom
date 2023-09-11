@@ -200,6 +200,7 @@ get_outlet_value <- function(x) {
 #' @importFrom sf st_cast st_linestring st_is_longlat st_transform st_segmentize st_buffer
 #' @importFrom sf st_as_sf st_sf st_zm st_coordinates st_crs st_join st_reverse
 #' @importFrom pbapply pblapply pbsapply pbapply pboptions
+#' @importFrom RANN nn2
 
 .data <- NULL
 
