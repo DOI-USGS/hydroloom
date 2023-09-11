@@ -132,7 +132,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x$done <- rep(FALSE, nrow(x))
 
   x$ind <- seq_len(nrow(x))
-  x$toind <- to_ind$to
+  x$toind <- to_ind$to[1,]
 
   outlet_ind <- x[which(x$toid == get_outlet_value(x)),]
 
