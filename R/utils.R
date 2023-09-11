@@ -1,3 +1,11 @@
+get_outlet_value <- function(x) {
+  if(inherits(x$id, "character")) {
+    ""
+  } else {
+    0
+  }
+}
+
 get_hyg <- function(x, add, id = "id") {
   if(add && inherits(x, "sf")) {
     select(x, all_of(id)) |>

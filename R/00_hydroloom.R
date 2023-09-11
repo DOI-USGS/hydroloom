@@ -1,3 +1,28 @@
+##### 00_hydroloom.R contains package wide variables and key package declarations. #####
+
+#' @importFrom dplyr filter select left_join right_join all_of any_of bind_rows group_by
+#' @importFrom dplyr ungroup n rename row_number between arrange desc distinct mutate summarise
+#' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag case_when
+#' @importFrom data.table copy data.table as.data.table setnames
+#' @importFrom tidyr unnest replace_na pivot_wider
+#' @importFrom rlang :=
+#' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_geometry_type st_intersects
+#' @importFrom sf st_cast st_linestring st_is_longlat st_transform st_segmentize st_buffer
+#' @importFrom sf st_as_sf st_sf st_zm st_coordinates st_crs st_join st_reverse
+#' @importFrom sf st_point st_sfc
+#' @importFrom pbapply pblapply pbsapply pbapply pboptions
+#' @importFrom RANN nn2
+#' @importFrom stats setNames na.omit
+#' @importFrom fastmap fastqueue faststack
+#' @importFrom utils txtProgressBar setTxtProgressBar adist combn tail
+#' @importFrom units set_units as_units
+#' @importFrom methods as
+#'
+
+# hydroloom uses .data for masking in many dplyr functions
+# hydroloom attributes are used for tidyselection elsewhere
+.data <- NULL
+
 # hydroloom Attributes
 id <- "id"
 toid <- "toid"
@@ -110,6 +135,7 @@ hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
 hydroloom_name_definitions <- setNames(as.character(hnd), names(hnd))
 class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_definitions))
 
+# declared here to go with hydroloom names.
 #' @export
 #' @noRd
 print.hydroloom_names <- function(x, ...) {
@@ -182,165 +208,4 @@ check_names <- function(x, req_names, context) {
   if(!all(req_names %in% names(x)))
     stop(paste(context, "requires", paste(req_names, collapse = ", "),
                "hydroloom attributes."), call. = FALSE)
-}
-
-get_outlet_value <- function(x) {
-  if(inherits(x$id, "character")) {
-    ""
-  } else {
-    0
-  }
-}
-
-#' @importFrom dplyr filter select left_join right_join all_of any_of bind_rows group_by
-#' @importFrom dplyr ungroup n rename row_number between arrange desc distinct mutate summarise
-#' @importFrom dplyr everything as_tibble pull group_split tibble bind_cols lag case_when
-#' @importFrom data.table copy data.table as.data.table setnames
-#' @importFrom tidyr unnest replace_na pivot_wider
-#' @importFrom rlang :=
-#' @importFrom sf "st_geometry<-" st_drop_geometry st_geometry st_geometry_type st_intersects
-#' @importFrom sf st_cast st_linestring st_is_longlat st_transform st_segmentize st_buffer
-#' @importFrom sf st_as_sf st_sf st_zm st_coordinates st_crs st_join st_reverse
-#' @importFrom sf st_point st_sfc
-#' @importFrom pbapply pblapply pbsapply pbapply pboptions
-#' @importFrom RANN nn2
-#' @importFrom stats setNames na.omit
-#' @importFrom fastmap fastqueue faststack
-#' @importFrom utils txtProgressBar setTxtProgressBar adist combn tail
-#' @importFrom units set_units as_units
-#' @importFrom methods as
-
-.data <- NULL
-
-#' @title Create a hy Fabric S3 Object
-#' @description converts a compatible dataset into a fabric s3 class
-#' @inheritParams add_levelpaths
-#' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
-#' will be removed.
-#' @return hy object with attributes compatible with the hydroloom package.
-#' @export
-#' @examples
-#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-#'
-#' hy(x)
-#'
-#' hy(x, clean = TRUE)[1:10,]
-#'
-#' attr(hy(x), "orig_names")
-#'
-hy <- function(x, clean = FALSE) {
-
-  orig_names <- names(x)
-
-  g <- NULL
-  geom_name <- NULL
-  if(inherits(x, "sf")) {
-    geom_name <- attr(x, "sf_column")
-    g <- st_geometry(x)
-    x <- drop_geometry(x)
-  }
-
-  x <- align_names(x)
-
-  keep_names <- orig_names
-
-  if(clean) {
-
-    keep_names <- orig_names[which(names(x) %in% good_names)]
-
-    x <- select(x, all_of(names(x)[names(x) %in% good_names]))
-
-    if(!is.null(geom_name))
-      orig_names <- orig_names[!orig_names %in% geom_name]
-
-  } else if(!is.null(g)) {
-
-    keep_names <- keep_names[c(which(keep_names != geom_name), which(keep_names == geom_name))]
-
-    x <- st_sf(x, geom = g)
-
-  }
-
-  if("toid" %in% names(x)) {
-    out_val <- get_outlet_value(x)
-
-    x$toid <- replace_na(x$toid, out_val)
-  }
-
-  # strip tbl
-  if(inherits(x, "sf")) {
-    x <- st_sf(as_tibble(x))
-  } else {
-    x <- as_tibble(x)
-  }
-
-  attr(x, "orig_names") <- setNames(names(x), keep_names)
-
-  class(x) <- c("hy", class(x))
-
-  x
-}
-
-#' Is Valid `hy` Class?
-#' @description test if object is a valid according to the hy s3 class
-#' @param x object to test
-#' @param silent logical should messages be emitted?
-#' @return logical TRUE if valid
-#' @export
-#'
-is.hy <- function(x, silent = FALSE) {
-
-  if(!inherits(x, "hy")) {
-    if(!silent)
-      message("no hy class attribute")
-    return(FALSE)
-  }
-
-  if("toid" %in% names(x) && any(is.na(x$toid))) {
-    if(!silent)
-      message("some na toids")
-    return(FALSE)
-  }
-
-  if(!"orig_names" %in% names(attributes(x))) {
-    if(!silent)
-      message("no original names attribute")
-    return(FALSE)
-  }
-
-  TRUE
-}
-
-#' Reverse `hy` to Original Names
-#' @description renames hy object to original names and removes hy object
-#' attributes.
-#' @inheritParams add_levelpaths
-#' @export
-#' @examples
-#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-#' x <- hy(x)
-#'
-#' hy_reverse(x)
-#'
-hy_reverse <- function(x) {
-
-  if(!is.hy(x)) stop("must be an hy object")
-
-  orig_names <- attr(x, "orig_names")
-
-  attr(x, "orig_names") <- NULL
-
-  rep_names <- names(orig_names)[match(names(x), orig_names)]
-
-  names(x)[which(names(x) %in% orig_names)] <- rep_names[!is.na(rep_names)]
-
-  class(x) <- class(x)[!class(x) == "hy"]
-
-  if(inherits(x, "sf")) {
-    attr(x, "sf_column") <- names(orig_names)[orig_names == attr(x, "sf_column")]
-    x <- st_sf(x)
-  }
-
-  x
-
 }
