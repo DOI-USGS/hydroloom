@@ -83,40 +83,43 @@ hnd$id <- "shared network identifier for catchment divide and flowpath or flowli
 hnd$toid <- "indicates to the downstream id. May or may not be dendritic"
 hnd$fromnode <- "indicates the node representing the nexus upstream of a catchment"
 hnd$tonode <- "indicates the node represneting the nexus downstream of a catchment"
-hnd$divergence <- "indicates whether a catchment is not downstream of a diversion (0),
-                   the primary path downstream of a divergence (1),
-                   or a minor path downstream of a diversion (2)."
+hnd$divergence <-
+"indicates whether a catchment is not downstream of a diversion (0),
+\t the primary path downstream of a divergence (1),
+\t or a minor path downstream of a diversion (2)."
 hnd$wbid <- "waterbody id"
 hnd$total_da_sqkm <- "total drainage area at the outlet of a catchment"
 hnd$da_sqkm <- "local drainage area of a catchment"
 hnd$length_km <- "length of a single catchment's flowpath"
-hnd$pathlength_km <- "distance from the outlet of a catchment to the terminal outlet of a network"
+hnd$pathlength_km <- "distance from the outlet of a catchment to the terminal
+\t outlet of a network"
 hnd$arbolate_sum <- "total accumulated length of all upstream flowlines"
 hnd$topo_sort <- "Similar to hydrosequence in NHDPlus. Large topo_sort values
-                  are upstream of small topo_sort values. Note that there are
-                  many valid topological sort orders of a directed graph."
+\t are upstream of small topo_sort values. Note that there are
+\t many valid topological sort orders of a directed graph."
 hnd$up_topo_sort <- "topo sort value of the upstream mainstem"
 hnd$dn_topo_sort <- "topo sort value of the downstream mainstem"
-hnd$dn_minor_topo_sort <- "topo sort value of the downstream minor network element with the smallest id"
+hnd$dn_minor_topo_sort <- "topo sort value of the downstream minor network
+\t element with the smallest id"
 hnd$terminal_topo_sort <- "topo sort value of the outlet network element"
 hnd$terminal_flag <- "1 for network terminous 0 for within network"
 hnd$terminal_id <- "id of terminal catchment for entire drainage basin"
 hnd$start_flag <- "1 for a headwater, 0 otherwise"
 hnd$levelpath <- "provides an identifier for the collection of flowpaths
-                  that make up a single mainstem flowpath of a drainage
-                  basin"
+\t that make up a single mainstem flowpath of a drainage
+\t basin"
 hnd$up_levelpath <- "levelpath value of the upstream mainstem"
 hnd$dn_levelpath <- "levelpath value of the downstream mainstem"
 hnd$stream_level <- "starting at 1 for coastal terminals and 4 for inland terminals
-                     increments by 1 for each smaller tributary level"
+\t increments by 1 for each smaller tributary level"
 hnd$dn_stream_level <- "stream level of downstream mainstem network element"
 hnd$stream_order <- "starting at 1 for headwaters increments by 1 for each larger
-                     tributary level, divergences adopt stream order from upstream
-                     but returning divergent network does not increment stream order"
+\t tributary level, divergences adopt stream order from upstream
+\t but returning divergent network does not increment stream order"
 hnd$stream_calculator <- "starting at 1 for headwaters and 0 along divirted paths
-                          increments by 1 for each larger tributary level, does not
-                          increment along diverted paths. Is equal to stream_order
-                          along the dendritic network"
+\t increments by 1 for each larger tributary level, does not
+\t increment along diverted paths. Is equal to stream_order
+\t along the dendritic network"
 hnd$feature_type <- "descriptive feature type monicker"
 hnd$feature_type_code <- "compact feature type identifier"
 hnd$vector_proc_unit <- "identifier for processing units based on vector encapsulation"
@@ -125,9 +128,9 @@ hnd$id_measure <- "interpolative linear reference measure along a single identif
 hnd$aggregate_id <- "aggregate identifier useful for 'reach' or 'flowpath' aggregation of flowlines"
 hnd$aggregate_id_measure <- "interpolative linear reference measure along an aggregate feature"
 hnd$aggregate_id_from_measure <- "interpolative linear reference for downstream end of a single
-                                  feature that makes up an aggregate feature"
+\t feature that makes up an aggregate feature"
 hnd$aggregate_id_to_measure <- "interpolative linear reference for the upstream end of a single
-                                feature that makes up an aggregate feature"
+\t feature that makes up an aggregate feature"
 hnd$point_id <- "identifier of hydrologic location point"
 hnd$offset <- "offset distance from point to line in units of linear reference analysis units"
 hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
@@ -140,7 +143,7 @@ class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_d
 #' @noRd
 print.hydroloom_names <- function(x, ...) {
   for(i in 1:length(x)) {
-    cat(paste0('"', names(x)[i], '"', ": ", unname(x)[i], "\n"))
+    cat(paste0(i, ' "', names(x)[i], '"', ": \n\t ", unname(x)[i], "\n"))
   }
 }
 
