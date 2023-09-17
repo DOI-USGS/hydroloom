@@ -99,6 +99,7 @@ Terms for rivers:
 **Catchment:** A physiographic unit with zero or one inlets and one outlet. 
                A catchment is represented by one or more partial realizations;
                flowpath, divide, and networks of flowpaths and divides.  
+**Catchment Divide:** The polygon boundary that encompasses a catchment.
 
 # Design Notes:
 - Hydroloom uses tibble because dplyr verbs for data.frame was dropping the custom hy attributes.
