@@ -53,6 +53,13 @@ Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
   https://doi.org/10.5066/P97AS8JD
 ```
 
+`hydroloom` will support some key functionality of `nhdplusTools`. Some components
+of `nhdplusTools` will be deprecated in a future version of the package in favor
+of the `hydroloom` implementation. In general, `nhdplusTools` will continue to
+support web service functionality and particulars of the NHDPlus data model. 
+In contrast, `hydroloom` is intended to be more general and focused specifically 
+on hydro fabric data functionality.
+
 `hydroloom` implements algorithms documented in:
 
 NHDPlus Attributes:
@@ -79,8 +86,6 @@ Verdin, K. L., & Verdin, J. P. (1999). A topological system for
   https://doi.org/10.1016/S0022-1694(99)00011-6
 ```
 
-Key terms: 
-
 ### Terminology: 
 
 The following definitions have been used as much as possible throughout the package.  
@@ -94,8 +99,6 @@ Terms for rivers:
 **Catchment:** A physiographic unit with zero or one inlets and one outlet. 
                A catchment is represented by one or more partial realizations;
                flowpath, divide, and networks of flowpaths and divides.  
-
-Development of hydroloom is underway and rapid change should be expected.
 
 # Design Notes:
 - Hydroloom uses tibble because dplyr verbs for data.frame was dropping the custom hy attributes.
