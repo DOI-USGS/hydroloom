@@ -21,6 +21,7 @@ reference:
   - title: Network Graph and Topology Functions
     contents:
       - '`sort_network`'
+      - '`add_topo_sort`'
       - '`add_toids`'
       - '`make_attribute_topology`'
       - '`make_node_topology`'

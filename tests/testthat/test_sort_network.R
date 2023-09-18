@@ -14,6 +14,9 @@ test_that("get_sorted", {
 
   expect_equal(nrow(sort_network(test_data)), nrow(test_data))
 
+  expect_equal(c("id", "toid", "topo_sort"),
+               names(add_topo_sort(test_data)))
+
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
                           toid = c(2, 3, 4, 0, 7, 8, 9, 0))
 

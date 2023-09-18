@@ -40,7 +40,7 @@ add_pathlength.hy <- function(x) {
 
   x <- sort_network(drop_geometry(x))[nrow(x):1, ]
 
-  x$pathlength_km <- rep(0, length(x$length_km))
+  x$pathlength_km <- rep(0, nrow(x))
 
   toids <- match(x$toid, x$id)
 

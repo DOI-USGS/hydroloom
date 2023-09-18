@@ -413,8 +413,7 @@ add_return_divergence.hy <- function(x, status = TRUE) {
 
   # get a dendritic network to traverse
   net <- add_toids(net, return_dendritic = FALSE) |>
-    sort_network() |>
-    mutate(topo_sort = n():1)
+    add_topo_sort()
 
   outlets <- lapply(all_div, function(d, g, net) {
     main <- d$id[d$divergence == 1]

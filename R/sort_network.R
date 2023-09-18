@@ -51,7 +51,6 @@ sort_network <- function(x, split = FALSE, outlets = NULL) {
 #' @export
 #'
 sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
-  class_x <- class(x)
 
   x <- hy(x)
 
@@ -61,6 +60,9 @@ sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
 
 }
 
+#' @name sort_network
+#' @export
+#'
 sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
@@ -200,4 +202,38 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   x <- put_hyg(x, hy_g)
 
   x
+}
+
+#' Add topo_sort
+#' @description calls \link{sort_network} without support for splitting the network
+#' and adds a nrow:1 topo_sort attribute.
+#' @inheritParams sort_network
+#' @return data.frame containing a topo_sort attribute.
+#' @name add_topo_sort
+#' @export
+add_topo_sort <- function(x, outlets = NULL) {
+  UseMethod("add_topo_sort")
+}
+
+#' @name add_topo_sort
+#' @export
+#'
+add_topo_sort.data.frame <- function(x, outlets = NULL) {
+
+  x <- hy(x)
+
+  x <- add_topo_sort(x, outlets)
+
+  hy_reverse(x)
+
+}
+
+#' @name add_topo_sort
+#' @export
+#'
+add_topo_sort.hy <- function(x, outlets = NULL) {
+
+  sort_network(x, outlets = outlets) |>
+    mutate(topo_sort = n():1)
+
 }

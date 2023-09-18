@@ -99,7 +99,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x <- sort_network(x)
 
-  x$topo_sort <- seq(nrow(x), 1)
+  x <- add_topo_sort(x)
   x$levelpath <- rep(0, nrow(x))
 
   x <- x |> # get downstream name id added
