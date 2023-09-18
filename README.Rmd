@@ -34,7 +34,8 @@ hydroloom::hydroloom_name_definitions
   <summary>Click to See Definitions</summary>
   
 ```{r, echo=FALSE, eval=TRUE}
-  hydroloom::hydroloom_name_definitions
+  knitr::kable(data.frame(Name = names(hydroloom::hydroloom_name_definitions), 
+                          Definition = unname(hydroloom::hydroloom_name_definitions)))
 ```
     
 </details>

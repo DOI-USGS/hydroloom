@@ -10,6 +10,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' @param name_attribute character attribute to be used as name identifiers.
 #' @param weight_attribute character attribute to be used as weight.
 #' @param override_factor numeric multiplier to use to override `name_attribute`.
+#' See details.
 #' @param status boolean if status updates should be printed.
 #' @return data.frame with id, levelpath_outlet_id, topo_sort, and levelpath columns.
 #' See details for more info.

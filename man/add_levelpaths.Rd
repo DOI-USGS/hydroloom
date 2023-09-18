@@ -37,7 +37,8 @@ add_levelpaths(
 
 \item{weight_attribute}{character attribute to be used as weight.}
 
-\item{override_factor}{numeric multiplier to use to override \code{name_attribute}.}
+\item{override_factor}{numeric multiplier to use to override \code{name_attribute}.
+See details.}
 
 \item{status}{boolean if status updates should be printed.}
 }
