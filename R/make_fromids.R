@@ -19,7 +19,7 @@
 #'
 make_fromids <- function(index_ids, return_list = FALSE) {
 
-  index_ids <- simple_unnest(index_ids$to_list, "toindid")
+  index_ids <- unnest(index_ids$to_list, "toindid")
 
   # froms <- left_join(select(index_ids, "indid"),
   #                    select(index_ids, indid = "toindid", fromindid = "indid"),

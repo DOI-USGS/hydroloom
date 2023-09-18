@@ -17,8 +17,8 @@ a "wbid" attribute.}
 
 \item{points}{sfc of type POINT}
 
-\item{flines}{sf data.frame of type LINESTRING or MULTILINESTRING including
-id, wbid, and topo_sort attributes}
+\item{flines}{sf data.frame (optional) of type LINESTRING or MULTILINESTRING including
+id, wbid, and topo_sort attributes. If ommited, only waterbody indexes are returned.}
 
 \item{search_radius}{units class with a numeric value indicating how far to
 search for a waterbody boundary in units of provided projection. Set units with

@@ -31,7 +31,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   if(!all(outlets %in% x$id))
     stop("All outlets must be in x.")
 
-  x <- drop_geometry(x)
+  x <- st_drop_geometry(x)
 
   index <- make_index_ids(select(x, id, toid), long_form = TRUE)
 
@@ -182,18 +182,3 @@ get_partial_length <- function(hydro_location, network = NULL, flowpath = NULL) 
   list(dn = flowpath$length_km * meas,
        up = flowpath$length_km * (1 - meas))
 }
-
-# utility function
-get_fl <- function(hydro_location, net) {
-  if(hydro_location$aggregate_id_measure == 100) {
-    filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
-  } else {
-    filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
-             .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
-  }
-}
-

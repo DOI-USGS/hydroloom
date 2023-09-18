@@ -21,11 +21,11 @@ test_that("drop_geometry", {
 
   expect_true("sf" %in% class(x))
 
-  x <- hydroloom:::drop_geometry(x)
+  x <- sf::st_drop_geometry(x)
 
   expect_true(!"sf" %in% class(x))
 
-  x <- hydroloom:::drop_geometry(x)
+  x <- sf::st_drop_geometry(x)
 
   expect_true(!"sf" %in% class(x))
 })

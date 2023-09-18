@@ -11,7 +11,7 @@ check_hy_graph(x, loop_check = FALSE)
 
 \item{loop_check}{logical if TRUE, the entire network is walked from
 top to bottom searching for loops. This loop detection algorithm visits
-a node in the network only once alll its upstream neighbors have been
+a node in the network only once all its upstream neighbors have been
 visited. A complete depth first search is performed at each node, searching
 for paths that lead to an already visited (upstream) node. This algorithm
 is often referred to as "recursive depth first search".}

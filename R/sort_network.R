@@ -66,7 +66,7 @@ sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
 sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
-  x <- select(drop_geometry(x), id, toid, everything())
+  x <- select(st_drop_geometry(x), id, toid, everything())
 
   # index for fast traversal
   index_ids <- make_index_ids(x)
@@ -190,7 +190,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
     out_list <- data.frame(ids = ids) |>
       mutate(set = out_list) |>
-      simple_unnest("set")
+      unnest("set")
 
     names(out_list) <- c(terminal_id, id)
 

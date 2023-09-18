@@ -66,7 +66,7 @@ plot(x["pf_level_3"], lwd = 2)
 pfaf <- add_pfafstetter(x, max_level = 4)
 
 hr_catchment <- dplyr::left_join(hr_data$NHDPlusCatchment,
-                                 drop_geometry(pfaf), by = c("FEATUREID" = "id"))
+                                 st_drop_geometry(pfaf), by = c("FEATUREID" = "id"))
 
 colors <- data.frame(pf_level_4 = unique(hr_catchment$pf_level_4),
                      color = sample(terrain.colors(length(unique(hr_catchment$pf_level_4)))))

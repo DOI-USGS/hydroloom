@@ -49,7 +49,8 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
     if(!inherits(x, "data.frame"))
       stop("if x is not a length three list as
             returned by make_index_ids or make_fromids
-            it must be a data.frame compatible with hydroloom")
+            it must be a data.frame that can be coerced
+            to an hy object.")
 
     x <- hy(x, clean = TRUE)
 

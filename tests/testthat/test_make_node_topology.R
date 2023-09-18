@@ -40,7 +40,7 @@ test_that("make_node_topology", {
                length(unique(y$fromnode)))
 
   # just the divergences which have unique fromids in x but don't in new hope.
-  add_div <- add_toids(drop_geometry(dplyr::select(nhf,
+  add_div <- add_toids(st_drop_geometry(dplyr::select(nhf,
                                                    COMID, FromNode, ToNode)),
                        return_dendritic = FALSE)
   add_div <- add_div[add_div$toid %in%
@@ -77,7 +77,7 @@ test_that("make_node_topology", {
   expect_equal(z$tonode, y$tonode)
 
   # if we put these in the same order, the new divergence attribute should match
-  z <- dplyr::left_join(dplyr::select(drop_geometry(x), COMID), z, by = "COMID")
+  z <- dplyr::left_join(dplyr::select(st_drop_geometry(x), COMID), z, by = "COMID")
   expect_equal(z$divergence, x$Divergence)
 
   # the below was used for testing

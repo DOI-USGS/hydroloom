@@ -2,6 +2,10 @@
 #' @description given a set of lines with starting and ending nodes that
 #' form a geometric network, construct an attribute topology.
 #' @inheritParams add_levelpaths
+#' @details
+#' If a `future` plan is set up, node distance calculations will be
+#' applied using future workers.
+#'
 #' @param min_distance numeric distance in units compatible with the units of
 #' the projection of `lines`. If no nodes are found within this distance, no
 #' connection will be returned.
@@ -82,12 +86,12 @@ make_attribute_topology.hy <- function(x, min_distance) {
   nodes <- select(nodes, all_of(c("row", "torow"))) |>
     unnest(cols = "torow") |>
     filter(.data$row != .data$torow) |>
-    left_join(drop_geometry(x), by = "row") |>
-    left_join(select(drop_geometry(x), row, toid = id),
+    left_join(st_drop_geometry(x), by = "row") |>
+    left_join(select(st_drop_geometry(x), row, toid = id),
                      by = c("torow" = "row")) |>
     select(-all_of(c("row", "torow")))
 
   nodes$toid <- replace_na(nodes$toid, get_outlet_value(nodes))
 
-  left_join(select(drop_geometry(x), -all_of("row")), select(nodes, id, toid), by = id)
+  left_join(select(st_drop_geometry(x), -all_of("row")), select(nodes, id, toid), by = id)
 }

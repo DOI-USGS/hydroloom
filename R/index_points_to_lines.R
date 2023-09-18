@@ -17,8 +17,6 @@ matcher <- function(coords, points, search_radius, max_matches = 1) {
                                        index = seq_len(nrow(coords))),
                        by = c("nn.idx" = "index"))
 
-  rm(coords)
-
   matched <- filter(matched, .data$nn.dists <= search_radius)
 
   # First get rid of duplicate nodes on the same line.
@@ -49,7 +47,7 @@ check_search_radius <- function(search_radius, points) {
   }
 
   if(!inherits(search_radius, "units")) {
-    warning("search_radius units not set, trying units of points.")
+    warning("search_radius units not set, trying units of points CRS.")
     units(search_radius) <- as_units(
       st_crs(points, parameters = TRUE)$ud_unit)
   }
@@ -70,6 +68,8 @@ make_singlepart <- function(x, warn_text = "") {
 
   gt <- st_geometry_type(x, by_geometry = FALSE)
 
+  x <- st_zm(x)
+
   if(grepl("^MULTI", gt)) {
     x <- st_cast(x, gsub("^MULTI", "", gt), warn = FALSE)
   }
@@ -78,8 +78,23 @@ make_singlepart <- function(x, warn_text = "") {
     warning(warn_text)
   }
 
-  st_zm(x)
+  x
 }
+
+# utility function
+get_fl <- function(hydro_location, net) {
+  if(hydro_location$aggregate_id_measure == 100) {
+    filter(net,
+           .data$aggregate_id == hydro_location$aggregate_id &
+             .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
+  } else {
+    filter(net,
+           .data$aggregate_id == hydro_location$aggregate_id &
+             .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
+             .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
+  }
+}
+
 
 add_index <- function(x) {
   x |>
@@ -96,6 +111,10 @@ add_len <- function(x) {
     mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
 }
 
+interp_meas <- function(m, x1, y1, x2, y2) {
+  list(x1 + (m / 100) * (x2 - x1),
+       y1 + (m / 100) * (y2 - y1))
+}
 
 #' @title Index Points to Lines
 #' @description given an sf point geometry column, return id, aggregate_id
@@ -221,7 +240,7 @@ index_points_to_lines.hy <- function(x, points,
                         aggregate_id_from_measure, aggregate_id_to_measure))) |>
     mutate(index = seq_len(nrow(x)))
 
-  fline_atts <- drop_geometry(x)
+  fline_atts <- st_drop_geometry(x)
 
   if(st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
     warning("converting to LINESTRING, this may be slow, check results")
@@ -276,7 +295,7 @@ index_points_to_lines.hy <- function(x, points,
       st_segmentize(dfMaxLength = as_units(precision, "m"))
 
     fline_atts <- right_join(fline_atts,
-                             select(drop_geometry(x),
+                             select(st_drop_geometry(x),
                                     "L1", precision_index = "index"),
                              by = c("index" = "L1"))
 
@@ -347,8 +366,8 @@ index_points_to_lines.hy <- function(x, points,
 #' @param waterbodies sf data.frame of type POLYGON or MULTIPOLYGON including
 #' a "wbid" attribute.
 #' @param points sfc of type POINT
-#' @param flines sf data.frame of type LINESTRING or MULTILINESTRING including
-#' id, wbid, and topo_sort attributes
+#' @param flines sf data.frame (optional) of type LINESTRING or MULTILINESTRING including
+#' id, wbid, and topo_sort attributes. If ommited, only waterbody indexes are returned.
 #' @param search_radius units class with a numeric value indicating how far to
 #' search for a waterbody boundary in units of provided projection. Set units with
 #' \link[units]{set_units}.
@@ -392,7 +411,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
 
   points <- suppressMessages(st_join(points, waterbodies))
 
-  wb_atts <- mutate(drop_geometry(waterbodies), index = seq_len(nrow(waterbodies)))
+  wb_atts <- mutate(st_drop_geometry(waterbodies), index = seq_len(nrow(waterbodies)))
 
   waterbodies <- make_singlepart(waterbodies, "Converting to singlepart.")
 
@@ -407,7 +426,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
   near_wb <- mutate(near_wb, nn.dists = ifelse(.data$nn.dists > search_radius,
                                                NA, .data$nn.dists))
 
-  out <- drop_geometry(st_as_sf(bind_cols(select(near_wb, near_wbid = wbid,
+  out <- st_drop_geometry(st_as_sf(bind_cols(select(near_wb, near_wbid = wbid,
                                                  near_wb_dist = "nn.dists"),
                                           select(points, in_wbid = wbid))))
 
@@ -421,7 +440,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
                                        .data$in_wbid, .data$near_wbid),
                   id = seq_len(nrow(out)))
 
-    flines <- drop_geometry(flines)
+    flines <- st_drop_geometry(flines)
 
     out <- left_join(out, select(flines,
                                  wb_outlet_id = id,

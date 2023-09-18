@@ -38,7 +38,7 @@ add_pathlength.hy <- function(x) {
 
   orig_order <- select(x, id)
 
-  x <- sort_network(drop_geometry(x))[nrow(x):1, ]
+  x <- sort_network(st_drop_geometry(x))[nrow(x):1, ]
 
   x$pathlength_km <- rep(0, nrow(x))
 

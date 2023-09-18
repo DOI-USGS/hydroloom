@@ -30,30 +30,6 @@ put_hyg <- function(x, hy_g) {
   x
 }
 
-# can replace this with something better?
-replace_na <- function(x, y) {
-  x[is.na(x)] <- y
-  x
-}
-
-#' simple unnest for a single list column
-#' @noRd
-simple_unnest <- function(x, col) {
-
-  times <- lengths(x[[col]])
-  base_names <- names(x)[!names(x) == col]
-
-  out <- lapply(base_names, function(n) rep(x[[n]], times = times))
-
-  names(out) <- base_names
-
-  out <- bind_cols(out)
-
-  out[[col]] <- unlist(x[[col]])
-
-  out
-}
-
 #' @title Make Spatial Inputs Compatible
 #' @description makes sf1 compatible with sf2 by projecting into
 #' the projection of 2 and ensuring that the geometry columns are the
@@ -102,7 +78,7 @@ rename_geometry <- function(g, name){
   g
 }
 
-#' @title Drop Geometry
+#' @title Drop Geometry (deprecated)
 #' @description drops geometry if present, does nothing otherwise.
 #' @param x data.frame that may contain a geometry column
 #' @return data.frame without geometry column
@@ -110,9 +86,10 @@ rename_geometry <- function(g, name){
 #' @examples
 #'
 #' (g <- sf::st_sf(a=3, geo = sf::st_sfc(sf::st_point(1:2))))
-#' drop_geometry(g)
+#' st_drop_geometry(g)
 #'
 drop_geometry <- function(x) {
+  warning("no longer needed -- will be dropped")
   if("sf" %in% class(x)) {
     st_drop_geometry(x)
   } else {
@@ -295,3 +272,16 @@ rescale_measures <- function(measure, from, to) {
   })
 }
 
+# utility function
+get_fl <- function(hydro_location, net) {
+  if(hydro_location$aggregate_id_measure == 100) {
+    filter(net,
+           .data$aggregate_id == hydro_location$aggregate_id &
+             .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
+  } else {
+    filter(net,
+           .data$aggregate_id == hydro_location$aggregate_id &
+             .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
+             .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
+  }
+}

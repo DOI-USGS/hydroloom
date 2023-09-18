@@ -47,7 +47,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
   if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &
      !toid %in% names(x)) {
-    net <- select(drop_geometry(x), all_of(c(id, fromnode, tonode, divergence)))
+    net <- select(st_drop_geometry(x), all_of(c(id, fromnode, tonode, divergence)))
 
     net <- add_toids(net, return_dendritic = FALSE)
   }
@@ -67,7 +67,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
     check_names(x, required_atts, error_context)
 
-    net <- select(drop_geometry(x), all_of(required_atts))
+    net <- select(st_drop_geometry(x), all_of(required_atts))
 
   }
 
@@ -93,7 +93,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
   if(divergence %in% names(x)) {
     # get a divergence marker as logical
     div <- left_join(tibble(id = index_ids$to_list$id),
-                     distinct(select(drop_geometry(x),
+                     distinct(select(st_drop_geometry(x),
                                      all_of(c(id, divergence)))),
                      by = id)
 
@@ -222,7 +222,7 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
 
   x$dn_levelpath <- replace_na(x$dn_levelpath, 0)
 
-  net <- select(drop_geometry(x), any_of(c(levelpath, dn_levelpath, coastal)))
+  net <- select(st_drop_geometry(x), any_of(c(levelpath, dn_levelpath, coastal)))
 
   l <- net |>
     filter(.data$levelpath != .data$dn_levelpath) |>

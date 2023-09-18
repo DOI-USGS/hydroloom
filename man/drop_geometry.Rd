@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{drop_geometry}
 \alias{drop_geometry}
-\title{Drop Geometry}
+\title{Drop Geometry (deprecated)}
 \usage{
 drop_geometry(x)
 }
@@ -18,6 +18,6 @@ drops geometry if present, does nothing otherwise.
 \examples{
 
 (g <- sf::st_sf(a=3, geo = sf::st_sfc(sf::st_point(1:2))))
-drop_geometry(g)
+st_drop_geometry(g)
 
 }

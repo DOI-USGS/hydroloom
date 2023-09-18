@@ -61,8 +61,8 @@ disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
   check_names(indexes, c(point_id, id, aggregate_id, aggregate_id_measure, offset),
               "disambiguage_indexes flowpath")
 
-  flowpath <- drop_geometry(flowpath)
-  hydro_location <- drop_geometry(hydro_location)
+  flowpath <- st_drop_geometry(flowpath)
+  hydro_location <- st_drop_geometry(hydro_location)
 
   if(ncol(flowpath) != 2 | ncol(hydro_location) != 2) {
     stop("flowpath and hydrolocation must be two-column data.frames")

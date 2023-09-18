@@ -19,6 +19,9 @@
 #' @importFrom methods as
 #'
 
+# hydroloom uses data.table for some key joins. This ensures the syntax is recognized
+.datatable.aware=TRUE
+
 # hydroloom uses .data for masking in many dplyr functions
 # hydroloom attributes are used for tidyselection elsewhere
 .data <- NULL

@@ -26,6 +26,10 @@ data.frame with id and toid
 given a set of lines with starting and ending nodes that
 form a geometric network, construct an attribute topology.
 }
+\details{
+If a \code{future} plan is set up, node distance calculations will be
+applied using future workers.
+}
 \examples{
 
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

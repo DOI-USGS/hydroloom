@@ -224,7 +224,7 @@ Now we'll look at the same thing but for a non dendritic set of toids. Notice th
 
 ```{r}
 
-y <- add_toids(drop_geometry(hy_net), return_dendritic = FALSE)
+y <- add_toids(st_drop_geometry(hy_net), return_dendritic = FALSE)
 
 ind_id <- make_index_ids(y)
 

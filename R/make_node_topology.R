@@ -61,7 +61,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
   hy_g <- get_hyg(x, add, id)
 
-  x <- drop_geometry(x)
+  x <- st_drop_geometry(x)
 
   if(length(unique(x$id)) != nrow(x) | isTRUE(add_div)) {
     if(!isTRUE(add_div))
@@ -95,7 +95,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
     if(!is.null(add_div)) {
       # we need to get the node the divergences upstream neighbor goes to
       # first get the new outlet nodes for our old ids
-      add_div <- drop_geometry(add_div[, 1:2])
+      add_div <- st_drop_geometry(add_div[, 1:2])
       names(add_div)[1:2] <- c(id, toid)
       add_div <- left_join(select(add_div, all_of(c(id, toid))),
                            select(x, all_of(c(id, tonode))), by = id)
@@ -110,7 +110,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
       x <- mutate(x, fromnode = ifelse(!is.na(.data$new_fromnode),
                                        .data$new_fromnode, .data$fromnode))
 
-      x <- select(x, -"new_fromnode")
+      x <- select(x, -all_of("new_fromnode"))
 
       x <- distinct(x)
 
@@ -170,9 +170,9 @@ make_nondendritic_topology <- function(x) {
 
   # create a rudimentary node based topology.
   out <- distinct(data.frame(id = c(x$id, x$toid))) |>
-    left_join(to, by = "id") |>
-    left_join(from, by = "id") |>
-    select(id, fromnode, tonode) |>
+    left_join(to, by = id) |>
+    left_join(from, by = id) |>
+    select(all_of(c(id, fromnode, tonode))) |>
     filter(!id == get_outlet_value(x))
 
   if(inherits(x, "hy")) {

@@ -30,7 +30,7 @@ accumulate_downstream.hy <- function(x, var) {
 
   check_names(x, required_atts_accumulate, "accumulation")
 
-  x <- drop_geometry(x)
+  x <- st_drop_geometry(x)
 
   cat_order <- select(x, "id")
 

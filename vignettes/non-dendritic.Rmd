@@ -78,7 +78,7 @@ flow_net <- x |>
 flow_net <- flow_net |>
   make_attribute_topology(min_distance = 5) |>
   make_node_topology(add_div = TRUE) |>
-  left_join(drop_geometry(flow_net), by = "COMID")
+  left_join(st_drop_geometry(flow_net), by = "COMID")
 
 # We only have one outlet so it doesn't matter if it is coastal
 # or inland but we have to provide it.

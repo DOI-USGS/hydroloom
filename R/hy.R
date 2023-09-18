@@ -23,7 +23,7 @@ hy <- function(x, clean = FALSE) {
   if(inherits(x, "sf")) {
     geom_name <- attr(x, "sf_column")
     g <- st_geometry(x)
-    x <- drop_geometry(x)
+    x <- st_drop_geometry(x)
   }
 
   x <- align_names(x)

@@ -109,7 +109,7 @@ navigate_hydro_network.hy <- function(x, start, mode, distance = NULL) {
     "DD" = get_DD
   )
 
-  fun(select(drop_geometry(x), all_of(required_atts)),
+  fun(select(st_drop_geometry(x), all_of(required_atts)),
       start, distance)
 
 }
@@ -239,7 +239,7 @@ private_get_DM <- function(x, id) {
         filter(levelpath == ds_lpid$levelpath & topo_sort <= ds_hs$dn_topo_sort) |>
         select(id)
 
-      return(rbind(
+      return(bind_rows(
         select(ds_main, id, topo_sort),
         private_get_DM(x, id = ds_id$id)
       ))

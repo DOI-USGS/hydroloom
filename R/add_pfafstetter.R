@@ -48,7 +48,7 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #' pfaf <- add_pfafstetter(x, max_level = 4)
 #'
 #' hr_catchment <- dplyr::left_join(hr_data$NHDPlusCatchment,
-#'                                  drop_geometry(pfaf), by = c("FEATUREID" = "id"))
+#'                                  st_drop_geometry(pfaf), by = c("FEATUREID" = "id"))
 #'
 #' colors <- data.frame(pf_level_4 = unique(hr_catchment$pf_level_4),
 #'                      color = sample(terrain.colors(length(unique(hr_catchment$pf_level_4)))))
@@ -83,12 +83,12 @@ add_pfafstetter.hy <- function(x, max_level = 2, status = FALSE) {
 
   mainstem_levelpath <- unique(x$levelpath[x$topo_sort == min(x$topo_sort)])
 
-  mainstem <- drop_geometry(x)[x$levelpath == mainstem_levelpath, ]
+  mainstem <- st_drop_geometry(x)[x$levelpath == mainstem_levelpath, ]
 
   left_join(x,
-            do.call(rbind, get_pfaf_9(select(drop_geometry(x),
-                                             all_of(required_atts_pfafsetter)),
-                                      mainstem, max_level, status = status)) |>
+            bind_rows(get_pfaf_9(select(st_drop_geometry(x),
+                                        all_of(required_atts_pfafsetter)),
+                                 mainstem, max_level, status = status)) |>
 
               cleanup_pfaf(), by = id)
 }
@@ -150,7 +150,7 @@ get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, stat
   out[["pfaf"]] <- out$p_id + pre_pfaf * 10
 
   if(all(sapply(out$members, function(x) all(is.na(x))))) out$members[[1]] <- mainstem$id
-  out <- simple_unnest(out, "members")
+  out <- unnest(out, "members")
   out <- list(out[!is.na(out$members), ])
 
   if(nrow(out[[1]]) == 0 | all(out[[1]]$members %in% mainstem$id)) {

@@ -7,7 +7,7 @@
 format_index_ids(g, return_list = FALSE)
 }
 \arguments{
-\item{g}{data.frame with \code{id}, \code{inid} and \code{toindid} as returned by \link{make_index_ids}
+\item{g}{data.frame graph with \code{id}, \code{inid} and \code{toindid} as returned by \link{make_index_ids}
 with \code{long_form}=TRUE.}
 
 \item{return_list}{logical if TRUE, the returned list will include a

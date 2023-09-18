@@ -112,7 +112,7 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
 
   x_save <- x
 
-  x <- drop_geometry(x) |>
+  x <- st_drop_geometry(x) |>
     add_toids(return_dendritic = FALSE) |>
     select(-all_of(c(fromnode, tonode))) |>
     sort_network()
@@ -402,7 +402,7 @@ add_return_divergence.hy <- function(x, status = TRUE) {
 
   check_names(x, required_atts, "add_return_divergence")
 
-  net <- select(drop_geometry(x), all_of(required_atts))
+  net <- select(st_drop_geometry(x), all_of(required_atts))
 
   # get all the divergence groups
   all_div <- net |>

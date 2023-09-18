@@ -99,7 +99,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 }
 
 #' @title Format Index ids
-#' @param g data.frame with `id`, `inid` and `toindid` as returned by \link{make_index_ids}
+#' @param g data.frame graph with `id`, `inid` and `toindid` as returned by \link{make_index_ids}
 #' with `long_form`=TRUE.
 #' @param return_list logical if TRUE, the returned list will include a
 #' "froms_list" element containing all from ids in a list form.

@@ -40,7 +40,6 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
   hy_reverse(x)
 }
 
-.datatable.aware=TRUE
 #' @name add_toids
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
@@ -49,8 +48,8 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   # joiner_fun <- function(x) {
   #   select(
-  #     left_join(select(drop_geometry(x), "id", "tonode"),
-  #               select(drop_geometry(x), toid = "id", "fromnode"),
+  #     left_join(select(st_drop_geometry(x), "id", "tonode"),
+  #               select(st_drop_geometry(x), toid = "id", "fromnode"),
   #               by = c("tonode" = "fromnode")), -"tonode")
   # }
 

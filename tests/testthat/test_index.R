@@ -108,7 +108,7 @@ test_that("point indexing works without measures", {
     flines_in <- sf::st_cast(sf::st_transform(flines_in, 4269),
                              "LINESTRING", warn = FALSE)
 
-    flines_in <- select(flines_in, -FromMeas, -ToMeas)
+    flines_in <- dplyr::select(flines_in, -FromMeas, -ToMeas)
 
     point <- sf::st_sfc(sf::st_point(c(-76.86876, 39.49345)), crs = 4269)
 
@@ -175,7 +175,7 @@ test_that("multipart indexing", {
                                                           search_radius = 500))
 
   expect_true(all(c("Attempting to combine multipart lines into single part lines. Check results!!",
-                    "search_radius units not set, trying units of points.")
+                    "search_radius units not set, trying units of points CRS.")
                   %in% warn))
 
   expect_true(all(index$COMID == 51664))

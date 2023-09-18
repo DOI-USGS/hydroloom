@@ -3,7 +3,7 @@
 #' @inheritParams add_levelpaths
 #' @param loop_check logical if TRUE, the entire network is walked from
 #' top to bottom searching for loops. This loop detection algorithm visits
-#' a node in the network only once alll its upstream neighbors have been
+#' a node in the network only once all its upstream neighbors have been
 #' visited. A complete depth first search is performed at each node, searching
 #' for paths that lead to an already visited (upstream) node. This algorithm
 #' is often referred to as "recursive depth first search".
@@ -38,12 +38,12 @@ check_hy_graph <- function(x, loop_check = FALSE) {
   }
 
   x <- merge(data.table(mutate(x, row = 1:n())),
-             data.table(drop_geometry(x)),
+             data.table(rename(st_drop_geometry(x), toid_check = toid)),
              by.x = "toid", by.y = "id", all.x = TRUE)
 
   x <- as_tibble(x)
 
-  check <- x$id == x$toid.y
+  check <- x$id == x$toid_check
 
   if(any(check, na.rm = TRUE)) {
 
@@ -69,13 +69,13 @@ check_hy_outlets <- function(x, fix = FALSE) {
 
     if(fix) {
 
-      warning("Outlets don't follow hydroloom convention, fixing.")
+      warning("Outlets don't follow hydroloom convention of 0 or '', fixing.")
 
       x$toid[check] <- rep(get_outlet_value(x), sum(check))
 
     } else {
 
-      warning("Outlets don't follow hydroloom convention, not fixing.")
+      warning("Outlets don't follow hydroloom convention of 0 or '', not fixing.")
 
     }
 

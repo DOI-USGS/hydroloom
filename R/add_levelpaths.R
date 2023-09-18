@@ -82,7 +82,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   orig_names <- attr(x, "orig_names")
 
-  x <- drop_geometry(x)
+  x <- st_drop_geometry(x)
 
   extra <- select(x, all_of(c(id, names(x)[!names(x) %in% required_atts_add_levelpaths])))
 
@@ -103,7 +103,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x$levelpath <- rep(0, nrow(x))
 
   x <- x |> # get downstream name id added
-    left_join(drop_geometry(select(x, all_of(c("id", ds_nameid = "lp_name_attribute")))),
+    left_join(st_drop_geometry(select(x, all_of(c("id", ds_nameid = "lp_name_attribute")))),
               by = c("toid" = "id")) |>
     # if it's na, we need it to be an empty string
     mutate(ds_nameid = ifelse(is.na(.data$ds_nameid),
@@ -195,7 +195,7 @@ par_get_path <- function(outlet, x_in, from_ind, status, wat) {
 }
 
 add_levelpath_outlet_ids <-  function(x) {
-  left_join(x, drop_geometry(x) |>
+  left_join(x, st_drop_geometry(x) |>
               group_by(.data$levelpath) |>
               filter(.data$topo_sort == min(.data$topo_sort)) |>
               ungroup() |>
