@@ -2,7 +2,7 @@
 #' @description given a starting node, return all reachable paths. Once visited,
 #' a node is marked as visited and will not take part in a future path.
 #' @param x data.frame containing hydroloom compatible network or list
-#' as returned by \link{make_index_ids} (for down) or \link{make_from_ids}
+#' as returned by \link{make_index_ids} (for down) or \link{make_fromids}
 #' (for up). The list formats avoids recreating the index ids for every call
 #' to navigate network dfs in the case that it needs to be called many times.
 #' @param starts vector with ids from x to start at.

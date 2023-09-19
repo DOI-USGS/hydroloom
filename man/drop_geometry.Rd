@@ -18,6 +18,6 @@ drops geometry if present, does nothing otherwise.
 \examples{
 
 (g <- sf::st_sf(a=3, geo = sf::st_sfc(sf::st_point(1:2))))
-st_drop_geometry(g)
+sf::st_drop_geometry(g)
 
 }

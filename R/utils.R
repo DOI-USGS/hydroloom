@@ -86,7 +86,7 @@ rename_geometry <- function(g, name){
 #' @examples
 #'
 #' (g <- sf::st_sf(a=3, geo = sf::st_sfc(sf::st_point(1:2))))
-#' st_drop_geometry(g)
+#' sf::st_drop_geometry(g)
 #'
 drop_geometry <- function(x) {
   warning("no longer needed -- will be dropped")
