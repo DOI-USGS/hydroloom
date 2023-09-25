@@ -25,12 +25,7 @@ NOTE: these values will reset when R is restarted. Add desired settings
 to a project or user .Rprofile to make long term additions.
 }
 \examples{
-hydroloom_names()
 
-hydroloom_names(c(myid = "id"), clear = TRUE)
-
-detach("package:hydroloom", unload = TRUE)
-library("hydroloom")
 hydroloom_names()
 
 }

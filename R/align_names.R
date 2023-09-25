@@ -110,12 +110,7 @@ hydroloom_name_definitions
 #' x.
 #' @export
 #' @examples
-#' hydroloom_names()
 #'
-#' hydroloom_names(c(myid = "id"), clear = TRUE)
-#'
-#' detach("package:hydroloom", unload = TRUE)
-#' library("hydroloom")
 #' hydroloom_names()
 #'
 hydroloom_names <- function(x = NULL, clear = FALSE) {

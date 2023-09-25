@@ -104,9 +104,10 @@ data functionality.
 
 NHDPlus Attributes:
 
-    McKay, L., Bondelid, T., Dewald, T., Johnston, J., Moore, R., & 
-      Rea, A. (2015). NHD Plus Version 2: User Guide. 
-      https://www.epa.gov/system/files/documents/2023-04/NHDPlusV2_User_Guide.pdf
+    Moore, R.B., McKay, L.D., Rea, A.H., Bondelid, T.R., Price, C.V., Dewald, T.G., 
+      and Johnston, C.M., 2019, User's guide for the national hydrography dataset 
+      plus (NHDPlus) high resolution: U.S. Geological Survey Open-File Report 2019–1096, 
+      66 p., https://doi.org/10.3133/ofr20191096.
 
 Graph Concepts:
 

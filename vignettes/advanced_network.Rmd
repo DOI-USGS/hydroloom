@@ -30,11 +30,11 @@ oldoption <- options(scipen = 9999)
 
 ### Terminology
 
-The terms used below are derived from concepts of [graph theory](https://en.wikipedia.org/wiki/Graph_theory), the [HY\_Features](http://opengeospatial.github.io/HY_Features/) conceptual data model, and the [NHDPlus](https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus) data model. Many of the concepts here are also presented in: [Mainstems: A logical data model implementing *mainstem* and *drainage* basin feature types based on WaterML2 Part 3: HY Features concepts](https://pubs.er.usgs.gov/publication/70216698). This article formed an early draft of this paper: [Generating a reference flow network with improved connectivity to support durable data integration and reproducibility in the coterminous US](https://pubs.usgs.gov/publication/70243816). 
+The terms used below are derived from concepts of [graph theory](https://en.wikipedia.org/wiki/Graph_theory), the [HY\_Features](http://opengeospatial.github.io/HY_Features/) conceptual data model, and the [NHDPlus](https://pubs.usgs.gov/publication/ofr20191096) data model. Many of the concepts here are also presented in: [Mainstems: A logical data model implementing *mainstem* and *drainage* basin feature types based on WaterML2 Part 3: HY Features concepts](https://pubs.usgs.gov/publication/70216698). This article formed an early draft of this paper: [Generating a reference flow network with improved connectivity to support durable data integration and reproducibility in the coterminous US](https://pubs.usgs.gov/publication/70243816). 
 
 # Introduction
 
-The NHDPlus data model, which the attributes described here are based on, includes many 'value added attributes' (VAA). This vignette discusses a core set of VAAs that `hydroloom` can create from readily available hydrographic inputs. The vignette begins with a background needed to understand what these attributes are, and then demonstrates how to create them based on some sample input data. These attributes are documented in the [NHDPlus manual](https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus), and every effort has been made to faithfully implement their meaning. 
+The NHDPlus data model, which the attributes described here are based on, includes many 'value added attributes' (VAA). This vignette discusses a core set of VAAs that `hydroloom` can create from readily available hydrographic inputs. The vignette begins with a background needed to understand what these attributes are, and then demonstrates how to create them based on some sample input data. These attributes are documented in the [NHDPlus manual](https://pubs.usgs.gov/publication/ofr20191096), and every effort has been made to faithfully implement their meaning. 
 
 While the `hydroloom` package contains other functions to generate network attributes, (e.g. `add_pfafstetter()` for Pfafstetter codes and `add_streamorder()` for stream orders) this vignette focuses on the network attributes from the NHDPlus data model that revolve around the **topo_sort** and **levelpath**. In the NHDPlus data model, **topo_sort** is referred to as **hydrosequence** but it is functionally equivalent to a topological sort and is referred to as topo_sort in `hydroloom`.   
 
@@ -73,7 +73,7 @@ A level path is derived from "stream level" which assigns an integer value to ma
 
 "Stream leveling" is the process of establishing uniquely identified "level paths" through a stream network. This is accomplished with a set of rules that determine which tributary should be considered dominant at every confluence to establish the "mainstem rivers" for each "drainage basin" in a network. `hydroloom` supports creation of stream level with the `add_streamlevel()` function, and the creation of level path with `add_levelpaths()`. `hydroloom` adopts the convention used in NHDPlus, to assign the levelpath as the topo_sort of the path's outlet. 
 
-See [Mainstems: A logical data model implementing *mainstem* and *drainage* basin feature types based on WaterML2 Part 3: HY Features concepts](https://pubs.er.usgs.gov/publication/70216698) for an in depth discussion of these concepts.
+See [Mainstems: A logical data model implementing *mainstem* and *drainage* basin feature types based on WaterML2 Part 3: HY Features concepts](https://pubs.usgs.gov/publication/70216698) for an in depth discussion of these concepts.
 
 ## Other Derived Network Attributes
 

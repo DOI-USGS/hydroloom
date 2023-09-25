@@ -36,7 +36,7 @@ make_attribute_topology.data.frame <- function(x, min_distance) {
 
   x <- hy(x)
 
-  x <- select(x, id)
+  x <- select(x, all_of(c(id)))
 
   hy_reverse(make_attribute_topology(x, min_distance))
 
