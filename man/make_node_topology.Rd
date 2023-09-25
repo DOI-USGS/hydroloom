@@ -28,7 +28,7 @@ attributes provided with id, fromnode and tonode in the first three columns.
 
 If \code{add_div} is TRUE, will also add a \code{divergence} attribute where the
 provided diverted paths are assigned value 2, existing main paths that
-eminate from a divergence are assigned value 1, and all other paths
+emanate from a divergence are assigned value 1, and all other paths
 are assigned value 0.
 }
 \description{

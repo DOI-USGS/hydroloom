@@ -75,6 +75,8 @@ Note 5: "from" is downstream -- 0 is the outlet "to" is upstream -- 100 is the i
 }
 \examples{
 
+\donttest{
+
 source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
 point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
@@ -96,5 +98,7 @@ index_points_to_lines(sample_flines,
                                  crs = 4326),
                       search_radius = units::set_units(0.2, "degrees"),
                       max_matches = 10)
+
+ }
 
 }

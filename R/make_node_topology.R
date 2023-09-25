@@ -11,7 +11,7 @@
 #'
 #' If `add_div` is TRUE, will also add a `divergence` attribute where the
 #' provided diverted paths are assigned value 2, existing main paths that
-#' eminate from a divergence are assigned value 1, and all other paths
+#' emanate from a divergence are assigned value 1, and all other paths
 #' are assigned value 0.
 #'
 #' @export

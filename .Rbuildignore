@@ -28,3 +28,4 @@ README.Rmd
 ^docs$
 ^pkgdown$
 ^\.github$
+CONTRIBUTING.md

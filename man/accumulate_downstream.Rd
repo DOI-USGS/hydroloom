@@ -3,11 +3,14 @@
 \name{accumulate_downstream}
 \alias{accumulate_downstream}
 \alias{accumulate_downstream.data.frame}
+\alias{accumulate_downstream.hy}
 \title{Accumulate Variable Downstream}
 \usage{
 accumulate_downstream(x, var)
 
 \method{accumulate_downstream}{data.frame}(x, var)
+
+\method{accumulate_downstream}{hy}(x, var)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

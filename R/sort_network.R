@@ -7,7 +7,7 @@
 #' outlet is returned in sorted order.
 #'
 #' If a network includes diversions, all flowlines downstream of
-#' the diversion are visited prior to continueing upstream. See
+#' the diversion are visited prior to continuing upstream. See
 #' note on the `outlets` parameter for implications of this
 #' implementation detail.
 #'
@@ -15,7 +15,7 @@
 #' @inheritParams add_levelpaths
 #' @param split logical if TRUE, the result will be split into
 #' independent networks identified by the id of their outlet. The
-#' outlet id of each independent network is added as a "terminalID"
+#' outlet id of each independent network is added as a "terminalid"
 #' attribute.
 #' @param outlets same as id in x. if specified, only the network
 #' emanating from these outlets will be considered and returned.
@@ -206,7 +206,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
 #' Add topo_sort
 #' @description calls \link{sort_network} without support for splitting the network
-#' and adds a nrow:1 topo_sort attribute.
+#' and adds a `nrow:1` topo_sort attribute.
 #' @inheritParams sort_network
 #' @return data.frame containing a topo_sort attribute.
 #' @name add_topo_sort

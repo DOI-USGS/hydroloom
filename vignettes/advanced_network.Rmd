@@ -12,13 +12,16 @@ vignette: >
 library(hydroloom)
 library(dplyr)
 
+local <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE")
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
   fig.width=6, 
   fig.height=6, 
-  fig.align = "center"
+  fig.align="center",
+  eval=local
 )
 
 oldoption <- options(scipen = 9999)
@@ -31,7 +34,7 @@ The terms used below are derived from concepts of [graph theory](https://en.wiki
 
 # Introduction
 
-The NHDPlus data model, which the attributes described here are based on, includes many 'value added attributes' (VAA). This vignette discusses a core set of VAA's that `hydroloom` can create from readily available hydrographic inputs. The vignette begins with a background needed to understand what these attributes are, and then demonstrates how to create them based on some sample input data. These attributes are documented in the [NHDPlus manual](https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus), and every effort has been made to faithfully implement their meaning. 
+The NHDPlus data model, which the attributes described here are based on, includes many 'value added attributes' (VAA). This vignette discusses a core set of VAAs that `hydroloom` can create from readily available hydrographic inputs. The vignette begins with a background needed to understand what these attributes are, and then demonstrates how to create them based on some sample input data. These attributes are documented in the [NHDPlus manual](https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus), and every effort has been made to faithfully implement their meaning. 
 
 While the `hydroloom` package contains other functions to generate network attributes, (e.g. `add_pfafstetter()` for Pfafstetter codes and `add_streamorder()` for stream orders) this vignette focuses on the network attributes from the NHDPlus data model that revolve around the **topo_sort** and **levelpath**. In the NHDPlus data model, **topo_sort** is referred to as **hydrosequence** but it is functionally equivalent to a topological sort and is referred to as topo_sort in `hydroloom`.   
 
@@ -206,7 +209,7 @@ knitr::include_graphics(gif_file)
 
 # Summary
 
-This entire process of sorting the network and building topo_sort, levelpath, and derivative variables is wrapped in the nhdplusTools [`add_plus_network_attributes`](https://doi-usgs.github.io/nhdplusTools/reference/add_plus_network_attributes.html) function to provide performance and simplicity. It supports paralellization and will print status updates in the case when the input network is very large. `add_plus_network_attributes` returns NHDPlus attribute names (truncated per shapefile rules as is done in the NHDPlus database). 
+This entire process of sorting the network and building topo_sort, levelpath, and derivative variables is wrapped in the nhdplusTools [`add_plus_network_attributes`](https://doi-usgs.github.io/nhdplusTools/reference/add_plus_network_attributes.html) function to provide performance and simplicity. It supports parallelization and will print status updates in the case when the input network is very large. `add_plus_network_attributes` returns NHDPlus attribute names (truncated per shapefile rules as is done in the NHDPlus database). 
 
 The attributes described in this vignette assume that diversions in the network have zero flow such that diversions are treated as if they were headwaters. See the `vignette("non-dendritic")` for information about attributes that include connected divergences.
 

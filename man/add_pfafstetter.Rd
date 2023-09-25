@@ -15,7 +15,7 @@ add_pfafstetter(x, max_level = 2, status = FALSE)
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
-\item{max_level}{integer number of pfaf levels to attempt to calculate.
+\item{max_level}{integer number of levels to attempt to calculate.
 If the network doesn't have resolution to support the desired level,
 unexpected behavior may occur.}
 
@@ -40,8 +40,12 @@ pfaf <- add_pfafstetter(x, max_level = 2)
 
 plot(pfaf["pf_level_2"], lwd = 2)
 
+\dontrun{
+
 if(require(nhdplusTools)) {
-work_dir <- nhdplusTools::nhdplusTools_data_dir()
+
+# uses tempdir for example
+work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
 
 source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
 
@@ -75,5 +79,6 @@ hr_catchment <- dplyr::left_join(hr_catchment, colors, by = "pf_level_4")
 
 plot(hr_catchment["color"], border = NA, reset = FALSE)
 plot(sf::st_geometry(x), col = "blue", add = TRUE)
+}
 }
 }

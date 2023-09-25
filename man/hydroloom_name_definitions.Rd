@@ -8,6 +8,5 @@ A names character vector containing definitions of all
 attributes used in the hydroloom package.
 }
 \examples{
-cat(paste0(names(hydroloom_name_definitions), ", ",
-           hydroloom_name_definitions), sep = "\n")
+hydroloom_name_definitions
 }

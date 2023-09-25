@@ -28,7 +28,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #'
 #' test_flowline <- add_toids(g)
 #'
-#' # use nhdplus attributes directly
+#' # use NHDPlus attributes directly
 #' add_levelpaths(test_flowline,
 #'                name_attribute = "GNIS_ID",
 #'                weight_attribute = "ArbolateSu")

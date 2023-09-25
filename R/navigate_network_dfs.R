@@ -97,7 +97,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
   # will store output sets (per start) and paths (per sub path)
   out_list <- rep(list(list()), length(all_starts))
 
-  # output set andd path ids used to populate out_list
+  # output set and path ids used to populate out_list
   set_id <- 1
   path_id <- 1
 

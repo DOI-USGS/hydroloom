@@ -18,15 +18,16 @@ a "wbid" attribute.}
 \item{points}{sfc of type POINT}
 
 \item{flines}{sf data.frame (optional) of type LINESTRING or MULTILINESTRING including
-id, wbid, and topo_sort attributes. If ommited, only waterbody indexes are returned.}
+id, wbid, and topo_sort attributes. If omitted, only waterbody indexes are returned.}
 
 \item{search_radius}{units class with a numeric value indicating how far to
 search for a waterbody boundary in units of provided projection. Set units with
 \link[units]{set_units}.}
 }
 \value{
-data.frame with two columns, COMID, in_wb_COMID, near_wb_COMID,
-near_wb_dist, and outlet_fline_COMID. Distance is in units of provided projection.
+data.frame with columns, \code{COMID}, \code{in_wb_COMID}, \code{near_wb_COMID},
+\code{near_wb_dist}, and \code{outlet_fline_COMID}.
+Distance is in units of provided projection.
 }
 \description{
 given an sf point geometry column, return waterbody id, and

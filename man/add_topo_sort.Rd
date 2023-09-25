@@ -25,5 +25,5 @@ data.frame containing a topo_sort attribute.
 }
 \description{
 calls \link{sort_network} without support for splitting the network
-and adds a nrow:1 topo_sort attribute.
+and adds a \code{nrow:1} topo_sort attribute.
 }

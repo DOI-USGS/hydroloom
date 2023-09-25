@@ -3,7 +3,7 @@ title: "Hydroloom Overview"
 author: "dblodgett@usgs.gov"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Non-dendritic networks}
+  %\VignetteIndexEntry{Hydroloom Overview}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,13 +15,16 @@ vignette: >
 </style>
 
 ```{r setup, include = FALSE}
+local <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE")
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
   fig.width=4,
   fig.height=4,
-  fig.align = "center"
+  fig.align = "center",
+  eval=local
 )
 
 library(sf)
@@ -39,10 +42,6 @@ Hydroloom is designed to provide general hydrologic network functionality for an
 5) and functions to index data to a network of flow network lines and waterbody polygons.  
 
 This introduction covers the `hy` S3 class and the core flow network topology concepts necessary to use hydroloom effectively. 
-
-The [reference](reference/index.html) list contains full documentation of all functions.
-
-The other [articles](articles/index.html) describe integrated aspects of the package in greater detail.
 
 For the latest development and to open issues, please visit the [package github repository.](https://github.com/DOI-USGS/hydroloom)
 
@@ -73,8 +72,8 @@ attr(hy(hy_net), "orig_names")
 A network of flowlines can be represented as an edge-to-edge (e.g. edge list) or edge-node topology. An edge list only expresses the connectivity between _edges_ (flowlines in the context of rivers), requiring _nodes_ (confluences in the context of rivers) to be inferred. 
 
 ```{r, echo=FALSE, eval=TRUE, fig.dim=c(6, 4)}
-print.data.frame(data.frame(ID = c(1, 2, 3), 
-                            toID = c(3, 3, NA),
+print.data.frame(data.frame(id = c(1, 2, 3), 
+                            toid = c(3, 3, NA),
                             fromnode = c("N1", "N2", "N3"),
                             tonode = c("N3", "N3", "N4")), 
                  row.names = FALSE)
@@ -100,7 +99,7 @@ text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
 text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
 ```
 
-The "toID" of a terminal flowline can be either NA or, by convention, 0 or "". Using 0 or an empty string is preferred within `hydroloom` but both are handled in most cases. Further, as long as 0 is not in the set of IDs, there is little practical difference.
+The "toid" of a terminal flowline can be either NA or, by convention, 0 or "". Using 0 or an empty string is preferred within `hydroloom` but both are handled in most cases. Further, as long as 0 is not in the set of IDs, there is little practical difference.
 
 In `hydroloom`, edge-to-edge topology is referred to with "id and toid" attributes.
 

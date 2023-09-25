@@ -17,7 +17,6 @@ reference:
     - '`get_node`'
     - '`st_compatibalize`'
     - '`rename_geometry`'
-    - '`drop_geometry`'
   - title: Network Graph and Topology Functions
     contents:
       - '`sort_network`'

@@ -3,11 +3,14 @@
 \name{add_streamorder}
 \alias{add_streamorder}
 \alias{add_streamorder.data.frame}
+\alias{add_streamorder.hy}
 \title{add Streamorder}
 \usage{
 add_streamorder(x, status = TRUE)
 
 \method{add_streamorder}{data.frame}(x, status = TRUE)
+
+\method{add_streamorder}{hy}(x, status = TRUE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
@@ -24,7 +27,7 @@ Algorithm: If more than one upstream flowpath has an order equal to the
 maximum upstream order then the downstream flowpath is assigned the maximum
 upstream order plus one. Otherwise it is assigned the maximum upstream order.
 
-To match the nhdplus algorithm, non-dendritic network connectivity and a
+To match the NHDPlus algorithm, non-dendritic network connectivity and a
 \code{divergence} attribute must be included. All secondary paths will have the
 \code{stream_order} of upstream primary paths and a \code{stream_calculator} value of 0.
 Secondary paths have no affect on the order of downstream paths.

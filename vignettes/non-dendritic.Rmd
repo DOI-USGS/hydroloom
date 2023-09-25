@@ -12,13 +12,16 @@ vignette: >
 library(hydroloom)
 library(dplyr)
 
+local <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE")
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
   fig.width=6,
   fig.height=6,
-  fig.align = "center"
+  fig.align = "center",
+  eval=local
 )
 
 oldoption <- options(scipen = 9999)
@@ -27,7 +30,7 @@ oldoption <- options(scipen = 9999)
 
 # Introduction 
 
-`vignette("hydroloom")` andd `vignette("advanced_network")` talks about the basics of network topology representation and attributes that build on a strictly dendritic network. This vignette expands those topics by describing `hydroloom` functionality that supports non-dendritic networks.
+`vignette("hydroloom")` and `vignette("advanced_network")` talks about the basics of network topology representation and attributes that build on a strictly dendritic network. This vignette expands those topics by describing `hydroloom` functionality that supports non-dendritic networks.
 
 # Non-dendritic topology attributes. 
 
@@ -78,7 +81,7 @@ flow_net <- x |>
 flow_net <- flow_net |>
   make_attribute_topology(min_distance = 5) |>
   make_node_topology(add_div = TRUE) |>
-  left_join(st_drop_geometry(flow_net), by = "COMID")
+  left_join(sf::st_drop_geometry(flow_net), by = "COMID")
 
 # We only have one outlet so it doesn't matter if it is coastal
 # or inland but we have to provide it.

@@ -78,25 +78,6 @@ rename_geometry <- function(g, name){
   g
 }
 
-#' @title Drop Geometry (deprecated)
-#' @description drops geometry if present, does nothing otherwise.
-#' @param x data.frame that may contain a geometry column
-#' @return data.frame without geometry column
-#' @export
-#' @examples
-#'
-#' (g <- sf::st_sf(a=3, geo = sf::st_sfc(sf::st_point(1:2))))
-#' sf::st_drop_geometry(g)
-#'
-drop_geometry <- function(x) {
-  warning("no longer needed -- will be dropped")
-  if("sf" %in% class(x)) {
-    st_drop_geometry(x)
-  } else {
-    x
-  }
-}
-
 #' @title Get Line Node
 #' @description Given one or more lines, returns a particular node from
 #' the line.

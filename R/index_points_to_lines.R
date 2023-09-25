@@ -153,6 +153,8 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #' @export
 #' @examples
 #'
+#' \donttest{
+#'
 #' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #'
 #' point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
@@ -174,6 +176,8 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #'                                  crs = 4326),
 #'                       search_radius = units::set_units(0.2, "degrees"),
 #'                       max_matches = 10)
+#'
+#'  }
 #'
 index_points_to_lines <- function(x, points,
                                   search_radius = NULL,
@@ -367,12 +371,13 @@ index_points_to_lines.hy <- function(x, points,
 #' a "wbid" attribute.
 #' @param points sfc of type POINT
 #' @param flines sf data.frame (optional) of type LINESTRING or MULTILINESTRING including
-#' id, wbid, and topo_sort attributes. If ommited, only waterbody indexes are returned.
+#' id, wbid, and topo_sort attributes. If omitted, only waterbody indexes are returned.
 #' @param search_radius units class with a numeric value indicating how far to
 #' search for a waterbody boundary in units of provided projection. Set units with
 #' \link[units]{set_units}.
-#' @return data.frame with two columns, COMID, in_wb_COMID, near_wb_COMID,
-#' near_wb_dist, and outlet_fline_COMID. Distance is in units of provided projection.
+#' @return data.frame with columns, `COMID`, `in_wb_COMID`, `near_wb_COMID`,
+#' `near_wb_dist`, and `outlet_fline_COMID`.
+#' Distance is in units of provided projection.
 #' @export
 #' @examples
 #'
@@ -471,4 +476,3 @@ rename_indexed <- function(x, matched) {
   rename(matched, any_of(setNames(c(id, aggregate_id, aggregate_id_measure),
                                          c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }
-

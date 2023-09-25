@@ -26,6 +26,8 @@ accumulate_downstream.data.frame <- function(x, var) {
   accumulate_downstream(x, attr(x, "orig_names")[var])
 }
 
+#' @name accumulate_downstream
+#' @export
 accumulate_downstream.hy <- function(x, var) {
 
   check_names(x, required_atts_accumulate, "accumulation")

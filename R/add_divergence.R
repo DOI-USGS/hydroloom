@@ -396,6 +396,8 @@ add_return_divergence.data.frame <- function(x, status = TRUE) {
   hy_reverse(x)
 }
 
+#' @name add_return_divergence
+#' @export
 add_return_divergence.hy <- function(x, status = TRUE) {
 
   required_atts <- c(id, fromnode, tonode, divergence)

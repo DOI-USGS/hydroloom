@@ -66,7 +66,7 @@ g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
 test_flowline <- add_toids(g)
 
-# use nhdplus attributes directly
+# use NHDPlus attributes directly
 add_levelpaths(test_flowline,
                name_attribute = "GNIS_ID",
                weight_attribute = "ArbolateSu")

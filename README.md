@@ -8,13 +8,18 @@
 
 ## hydroloom:
 
-**Install**: `remotes::install_github("doi-usgs/hydroloom")`
-
-**Documentation**:
-<https://doi-usgs.github.io/hydroloom/articles/hydroloom.html>
+**Install:** remotes::install_github(“doi-usgs/hydroloom”)
 
 `hydroloom` is a collection of functions to work with hydrologic
-geospatial fabrics. It has support for attributes that can be seen in:
+geospatial fabrics. Hydroloom is designed to provide general hydrologic
+network functionality for any hydrographic or hydrologic data. The
+package intended for developers of workflows and other packages that
+require low level network and network data manipulation utilities.
+
+**To Learn More, visit the pkgdown site**:
+<https://doi-usgs.github.io/hydroloom/articles/hydroloom.html>
+
+Hyroloom has support for attributes that can be seen in:
 
 ``` r
 hydroloom::hydroloom_name_definitions
@@ -30,7 +35,7 @@ Click to See Definitions
 | id                        | shared network identifier for catchment divide and flowpath or flowline                                                                                                                               |
 | toid                      | indicates to the downstream id. May or may not be dendritic                                                                                                                                           |
 | fromnode                  | indicates the node representing the nexus upstream of a catchment                                                                                                                                     |
-| tonode                    | indicates the node represneting the nexus downstream of a catchment                                                                                                                                   |
+| tonode                    | indicates the node representing the nexus downstream of a catchment                                                                                                                                   |
 | divergence                | indicates whether a catchment is not downstream of a diversion (0), the primary path downstream of a divergence (1), or a minor path downstream of a diversion (2).                                   |
 | wbid                      | waterbody id                                                                                                                                                                                          |
 | total_da_sqkm             | total drainage area at the outlet of a catchment                                                                                                                                                      |
@@ -53,8 +58,8 @@ Click to See Definitions
 | stream_level              | starting at 1 for coastal terminals and 4 for inland terminals increments by 1 for each smaller tributary level                                                                                       |
 | dn_stream_level           | stream level of downstream mainstem network element                                                                                                                                                   |
 | stream_order              | starting at 1 for headwaters increments by 1 for each larger tributary level, divergences adopt stream order from upstream but returning divergent network does not increment stream order            |
-| stream_calculator         | starting at 1 for headwaters and 0 along divirted paths increments by 1 for each larger tributary level, does no increment along diverted paths. Is equal to stream_order along the dendritic network |
-| feature_type              | descriptive feature type monicker                                                                                                                                                                     |
+| stream_calculator         | starting at 1 for headwaters and 0 along diverted paths increments by 1 for each larger tributary level, does no increment along diverted paths. Is equal to stream_order along the dendritic network |
+| feature_type              | descriptive feature type moniker                                                                                                                                                                      |
 | feature_type_code         | compact feature type identifier                                                                                                                                                                       |
 | vector_proc_unit          | identifier for processing units based on vector encapsulation                                                                                                                                         |
 | raster_proc_unit          | identifier for processing units based on raster encapsulation                                                                                                                                         |
@@ -131,10 +136,12 @@ outlet. A catchment is represented by one or more partial realizations;
 flowpath, divide, and networks of flowpaths and divides.  
 **Catchment Divide:** The polygon boundary that encompasses a catchment.
 
-# Design Notes:
+### Design Notes:
 
 - Hydroloom uses tibble because dplyr verbs for data.frame was dropping
   the custom hy attributes.
+- The `data.table` package is used for some key joins to enhance
+  scalability but dplyr is preferred for clarity.
 - `hy` class tibble standardizes all attribute names in code.
 - graph representation facilitated by `make_index_ids()` and
   `make_fromids()`

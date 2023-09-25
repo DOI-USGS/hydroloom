@@ -90,8 +90,7 @@ align_names <- function(x) {
 #' @name hydroloom_name_definitions
 #' @export
 #' @examples
-#' cat(paste0(names(hydroloom_name_definitions), ", ",
-#'            hydroloom_name_definitions), sep = "\n")
+#' hydroloom_name_definitions
 hydroloom_name_definitions
 
 #' @title Get or Set Hydroloom Names
@@ -110,6 +109,15 @@ hydroloom_name_definitions
 #' @param clear logical if TRUE, all names will be removed and replaced with
 #' x.
 #' @export
+#' @examples
+#' hydroloom_names()
+#'
+#' hydroloom_names(c(myid = "id"), clear = TRUE)
+#'
+#' detach("package:hydroloom", unload = TRUE)
+#' library("hydroloom")
+#' hydroloom_names()
+#'
 hydroloom_names <- function(x = NULL, clear = FALSE) {
 
   hl <- get("hydroloom_name_map", envir = hydroloom_env)

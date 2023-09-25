@@ -22,7 +22,7 @@ km.
 }
 \description{
 Finds the upstream and downstream lengths along a given
-flowpath (flowline in nhdplus terminology). Internally, the function
+flowpath (flowline in NHDPlus terminology). Internally, the function
 rescales the aggregate_id_measure to a id_measure and applies that
 rescaled measure to the length of the flowpath.
 }

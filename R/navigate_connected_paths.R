@@ -131,7 +131,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 #' `hydro_location`. Not required if `x` is provided. `x` is not required if
 #' `flowpath` is provided.
 #' @description Finds the upstream and downstream lengths along a given
-#' flowpath (flowline in nhdplus terminology). Internally, the function
+#' flowpath (flowline in NHDPlus terminology). Internally, the function
 #' rescales the aggregate_id_measure to a id_measure and applies that
 #' rescaled measure to the length of the flowpath.
 #'

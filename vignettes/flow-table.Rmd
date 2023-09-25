@@ -3,7 +3,7 @@ title: "NHD Flow Table with Hydroloom"
 author: "dblodgett@usgs.gov"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Non-dendritic networks}
+  %\VignetteIndexEntry{NHD Flow Table with Hydroloom}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -23,7 +23,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width=4,
   fig.height=4,
-  fig.align = "center"
+  fig.align = "center",
+  eval=local
 )
 
 ```
@@ -89,7 +90,11 @@ up <- navigate_network_dfs(flow_table, sub$permanent_identifier, direction = "up
 subdown <- fl[fl$permanent_identifier %in% unique(unlist(down)),]
 subup <- fl[fl$permanent_identifier %in% unique(unlist(up)),]
 
-mapview::mapview(list(subup, subdown, point))
+map_image <- "flow-table-fig.jpeg"
+map <- mapview::mapview(list(subup, subdown, point))
+mapview::mapviewOptions(fgb = FALSE)
+mapview::mapshot(map, file = map_image)
+knitr::include_graphics(map_image)
 ```
 
 There's plenty more we could do from here, but this vignette shows the core of what's needed to get the NHD flow table working with hydroloom.

@@ -17,7 +17,7 @@ sort_network(x, split = FALSE, outlets = NULL)
 
 \item{split}{logical if TRUE, the result will be split into
 independent networks identified by the id of their outlet. The
-outlet id of each independent network is added as a "terminalID"
+outlet id of each independent network is added as a "terminalid"
 attribute.}
 
 \item{outlets}{same as id in x. if specified, only the network
@@ -38,7 +38,7 @@ with tributaries navigation. The full network from each
 outlet is returned in sorted order.
 
 If a network includes diversions, all flowlines downstream of
-the diversion are visited prior to continueing upstream. See
+the diversion are visited prior to continuing upstream. See
 note on the \code{outlets} parameter for implications of this
 implementation detail.
 }

@@ -5,7 +5,7 @@
 #' maximum upstream order then the downstream flowpath is assigned the maximum
 #' upstream order plus one. Otherwise it is assigned the maximum upstream order.
 #'
-#' To match the nhdplus algorithm, non-dendritic network connectivity and a
+#' To match the NHDPlus algorithm, non-dendritic network connectivity and a
 #' `divergence` attribute must be included. All secondary paths will have the
 #' `stream_order` of upstream primary paths and a `stream_calculator` value of 0.
 #' Secondary paths have no affect on the order of downstream paths.
@@ -41,6 +41,8 @@ add_streamorder.data.frame <- function(x, status = TRUE) {
   hy_reverse(x)
 }
 
+#' @name add_streamorder
+#' @export
 add_streamorder.hy <- function(x, status = TRUE) {
 
   if("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
