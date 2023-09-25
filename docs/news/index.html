@@ -38,7 +38,13 @@
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"></ul></div>
+      <ul class="navbar-nav"><li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/DOI-USGS/hydroloom/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div>
 
     
   </div>
@@ -46,7 +52,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      
+      <small>Source: <a href="https://github.com/DOI-USGS/hydroloom/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
@@ -57,17 +63,17 @@
 <li>Ensure tibble is used throughout</li>
 <li>Support generic depth first search navigation <code><a href="../reference/navigate_network_dfs.html">navigate_network_dfs()</a></code>
 </li>
-<li>Complete migration of nhdplusTools functions to hydroloom. #1</li>
+<li>Complete migration of nhdplusTools functions to hydroloom. <a href="https://github.com/DOI-USGS/hydroloom/issues/1" class="external-link">#1</a></li>
 <li>Support sorting non-dendritic network in <code><a href="../reference/sort_network.html">sort_network()</a></code>
 </li>
 <li>Implemented non-dendritic network support in <code><a href="../reference/add_toids.html">add_toids()</a></code>
 </li>
 <li>Implemented complete stream order / stream calculator attribute <code><a href="../reference/add_streamorder.html">add_streamorder()</a></code> and <code>add_streamcalculator()</code> <a href="https://github.com/DOI-USGS/nhdplusTools/issues/188" class="external-link uri">https://github.com/DOI-USGS/nhdplusTools/issues/188</a>
 </li>
-<li>Support for both numeric and character identifiers #2</li>
-<li>Support for NHDPlus and NHD 24k naming schemes #5 <code><a href="../reference/hydroloom_names.html">hydroloom_names()</a></code>
+<li>Support for both numeric and character identifiers <a href="https://github.com/DOI-USGS/hydroloom/issues/2" class="external-link">#2</a></li>
+<li>Support for NHDPlus and NHD 24k naming schemes <a href="https://github.com/DOI-USGS/hydroloom/issues/5" class="external-link">#5</a> <code><a href="../reference/hydroloom_names.html">hydroloom_names()</a></code>
 </li>
-<li>Support for linear indexing for lines that do not have measure attributes #6 <code><a href="../reference/index_points_to_lines.html">index_points_to_lines()</a></code>
+<li>Support for linear indexing for lines that do not have measure attributes <a href="https://github.com/DOI-USGS/hydroloom/issues/6" class="external-link">#6</a> <code><a href="../reference/index_points_to_lines.html">index_points_to_lines()</a></code>
 </li>
 <li>Implemented creation of an attribute topology from a geometric network <code><a href="../reference/make_attribute_topology.html">make_attribute_topology()</a></code>
 </li>
@@ -75,7 +81,7 @@
 </li>
 <li>Implement method to add divergence attribute to a non-dendritic network. <code><a href="../reference/add_divergence.html">add_divergence()</a></code>
 </li>
-<li>Implement basic graph and sophisticate loop detection algorithm #7 and #9. <code><a href="../reference/check_hy_graph.html">check_hy_graph()</a></code>
+<li>Implement basic graph and sophisticate loop detection algorithm <a href="https://github.com/DOI-USGS/hydroloom/issues/7" class="external-link">#7</a> and <a href="https://github.com/DOI-USGS/hydroloom/issues/9" class="external-link">#9</a>. <code><a href="../reference/check_hy_graph.html">check_hy_graph()</a></code>
 </li>
 </ul></div>
   </main></div>

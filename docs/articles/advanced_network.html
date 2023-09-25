@@ -64,7 +64,14 @@
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
 </form>
 
-      <ul class="navbar-nav"></ul>
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/DOI-USGS/hydroloom/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 
     
@@ -80,7 +87,7 @@
                         <h4 data-toc-skip class="author"><a href="mailto:dblodgett@usgs.gov" class="email">dblodgett@usgs.gov</a></h4>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/DOI-USGS/hydroloom/blob/HEAD/vignettes/advanced_network.Rmd" class="external-link"><code>vignettes/advanced_network.Rmd</code></a></small>
       <div class="d-none name"><code>advanced_network.Rmd</code></div>
     </div>
 
@@ -91,19 +98,21 @@
 </h4>
 <p>The terms used below are derived from concepts of <a href="https://en.wikipedia.org/wiki/Graph_theory" class="external-link">graph theory</a>, the
 <a href="http://opengeospatial.github.io/HY_Features/" class="external-link">HY_Features</a>
-data model, and the <a href="https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus" class="external-link">NHDPlus</a>
+conceptual data model, and the <a href="https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus" class="external-link">NHDPlus</a>
 data model. Many of the concepts here are also presented in: <a href="https://pubs.er.usgs.gov/publication/70216698" class="external-link">Mainstems: A
 logical data model implementing <em>mainstem</em> and <em>drainage</em>
-basin feature types based on WaterML2 Part 3: HY Features
-concepts</a>.</p>
+basin feature types based on WaterML2 Part 3: HY Features concepts</a>.
+This article formed an early draft of this paper: <a href="https://pubs.usgs.gov/publication/70243816" class="external-link">Generating a reference
+flow network with improved connectivity to support durable data
+integration and reproducibility in the coterminous US</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>The NHDPlus data model, which the attributes described here are based
 on, includes many ‘value added attributes’ (VAA). This vignette
-discusses a core set of VAA’s that <code>hydroloom</code> can create
-from readily available hydrographic inputs. The vignette begins with a
+discusses a core set of VAAs that <code>hydroloom</code> can create from
+readily available hydrographic inputs. The vignette begins with a
 background needed to understand what these attributes are, and then
 demonstrates how to create them based on some sample input data. These
 attributes are documented in the <a href="https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus" class="external-link">NHDPlus
@@ -420,7 +429,7 @@ levelpaths with more than 2 flowlines are shown.</p>
 <p>This entire process of sorting the network and building topo_sort,
 levelpath, and derivative variables is wrapped in the nhdplusTools <a href="https://doi-usgs.github.io/nhdplusTools/reference/add_plus_network_attributes.html" class="external-link"><code>add_plus_network_attributes</code></a>
 function to provide performance and simplicity. It supports
-paralellization and will print status updates in the case when the input
+parallelization and will print status updates in the case when the input
 network is very large. <code>add_plus_network_attributes</code> returns
 NHDPlus attribute names (truncated per shapefile rules as is done in the
 NHDPlus database).</p>

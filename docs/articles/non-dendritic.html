@@ -64,7 +64,14 @@
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
 </form>
 
-      <ul class="navbar-nav"></ul>
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/DOI-USGS/hydroloom/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 
     
@@ -80,7 +87,7 @@
                         <h4 data-toc-skip class="author"><a href="mailto:dblodgett@usgs.gov" class="email">dblodgett@usgs.gov</a></h4>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/DOI-USGS/hydroloom/blob/HEAD/vignettes/non-dendritic.Rmd" class="external-link"><code>vignettes/non-dendritic.Rmd</code></a></small>
       <div class="d-none name"><code>non-dendritic.Rmd</code></div>
     </div>
 
@@ -89,7 +96,7 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p><code><a href="../articles/hydroloom.html">vignette("hydroloom")</a></code> andd
+<p><code><a href="../articles/hydroloom.html">vignette("hydroloom")</a></code> and
 <code><a href="../articles/advanced_network.html">vignette("advanced_network")</a></code> talks about the basics of
 network topology representation and attributes that build on a strictly
 dendritic network. This vignette expands those topics by describing
@@ -183,7 +190,7 @@ recreate the non-dendritic network.</p>
 <span><span class="va">flow_net</span> <span class="op">&lt;-</span> <span class="va">flow_net</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/make_attribute_topology.html">make_attribute_topology</a></span><span class="op">(</span>min_distance <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/make_node_topology.html">make_node_topology</a></span><span class="op">(</span>add_div <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="fu"><a href="../reference/drop_geometry.html">drop_geometry</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"COMID"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">flow_net</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"COMID"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required namespace: future</span></span>
 <span><span class="co">#&gt; Loading required namespace: future.apply</span></span>
 <span></span>

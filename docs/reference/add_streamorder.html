@@ -3,7 +3,7 @@
 Algorithm: If more than one upstream flowpath has an order equal to the
 maximum upstream order then the downstream flowpath is assigned the maximum
 upstream order plus one. Otherwise it is assigned the maximum upstream order.
-To match the nhdplus algorithm, non-dendritic network connectivity and a
+To match the NHDPlus algorithm, non-dendritic network connectivity and a
 divergence attribute must be included. All secondary paths will have the
 stream_order of upstream primary paths and a stream_calculator value of 0.
 Secondary paths have no affect on the order of downstream paths.
@@ -12,7 +12,7 @@ that will be used to construct a toid attribute."><title>add Streamorder — add
 Algorithm: If more than one upstream flowpath has an order equal to the
 maximum upstream order then the downstream flowpath is assigned the maximum
 upstream order plus one. Otherwise it is assigned the maximum upstream order.
-To match the nhdplus algorithm, non-dendritic network connectivity and a
+To match the NHDPlus algorithm, non-dendritic network connectivity and a
 divergence attribute must be included. All secondary paths will have the
 stream_order of upstream primary paths and a stream_calculator value of 0.
 Secondary paths have no affect on the order of downstream paths.
@@ -56,7 +56,13 @@ that will be used to construct a toid attribute."><meta property="og:image" cont
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"></ul></div>
+      <ul class="navbar-nav"><li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/DOI-USGS/hydroloom/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div>
 
     
   </div>
@@ -64,7 +70,7 @@ that will be used to construct a toid attribute."><meta property="og:image" cont
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>add Streamorder</h1>
-      
+      <small class="dont-index">Source: <a href="https://github.com/DOI-USGS/hydroloom/blob/HEAD/R/add_streamorder-level.R" class="external-link"><code>R/add_streamorder-level.R</code></a></small>
       <div class="d-none name"><code>add_streamorder.Rd</code></div>
     </div>
 
@@ -73,7 +79,7 @@ that will be used to construct a toid attribute."><meta property="og:image" cont
 <p>Algorithm: If more than one upstream flowpath has an order equal to the
 maximum upstream order then the downstream flowpath is assigned the maximum
 upstream order plus one. Otherwise it is assigned the maximum upstream order.</p>
-<p>To match the nhdplus algorithm, non-dendritic network connectivity and a
+<p>To match the NHDPlus algorithm, non-dendritic network connectivity and a
 <code>divergence</code> attribute must be included. All secondary paths will have the
 <code>stream_order</code> of upstream primary paths and a <code>stream_calculator</code> value of 0.
 Secondary paths have no affect on the order of downstream paths.</p>
@@ -86,6 +92,9 @@ that will be used to construct a toid attribute.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_streamorder</span><span class="op">(</span><span class="va">x</span>, status <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for data.frame</span></span>
+<span><span class="fu">add_streamorder</span><span class="op">(</span><span class="va">x</span>, status <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for hy</span></span>
 <span><span class="fu">add_streamorder</span><span class="op">(</span><span class="va">x</span>, status <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 

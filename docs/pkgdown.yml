@@ -1,4 +1,4 @@
-pandoc: 2.19.2
+pandoc: 3.1.1
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
@@ -6,7 +6,7 @@ articles:
   flow-table: flow-table.html
   hydroloom: hydroloom.html
   non-dendritic: non-dendritic.html
-last_built: 2023-05-29T17:11Z
+last_built: 2023-09-25T16:59Z
 urls:
   reference: https://doi-usgs.github.io/hydroloom/reference
   article: https://doi-usgs.github.io/hydroloom/articles

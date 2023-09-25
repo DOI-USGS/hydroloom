@@ -50,7 +50,13 @@ to a project or user .Rprofile to make long term additions."><meta property="og:
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"></ul></div>
+      <ul class="navbar-nav"><li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/DOI-USGS/hydroloom/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div>
 
     
   </div>
@@ -58,7 +64,7 @@ to a project or user .Rprofile to make long term additions."><meta property="og:
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Get or Set Hydroloom Names</h1>
-      
+      <small class="dont-index">Source: <a href="https://github.com/DOI-USGS/hydroloom/blob/HEAD/R/align_names.R" class="external-link"><code>R/align_names.R</code></a></small>
       <div class="d-none name"><code>hydroloom_names.Rd</code></div>
     </div>
 
@@ -91,6 +97,68 @@ x.</p></dd>
 
 </dl></div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">hydroloom_names</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       comid                   nhdplusid </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        "id"                        "id" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   featureid        permanent_identifier </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        "id"                        "id" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   from_permanent_identifier                        toid </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        "id"                      "toid" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                     tocomid     to_permanent_identifier </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      "toid"                      "toid" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      tonode                    fromnode </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    "tonode"                  "fromnode" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  divergence                  wbareacomi </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                "divergence"                      "wbid" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   totdasqkm                       totda </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             "total_da_sqkm"             "total_da_sqkm" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    areasqkm                    lengthkm </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   "da_sqkm"                 "length_km" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  pathlength                  arbolatesu </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             "pathlength_km"              "arbolate_sum" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    hydroseq                  uphydroseq </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 "topo_sort"              "up_topo_sort" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  dnhydroseq                  dnminorhyd </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              "dn_topo_sort"        "dn_minor_topo_sort" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  terminalpa                  terminalfl </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        "terminal_topo_sort"             "terminal_flag" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   startflag                  levelpathi </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                "start_flag"                 "levelpath" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 levelpathid                    outletID </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 "levelpath"       "levelpath_outlet_id" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  uplevelpat                  dnlevelpat </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              "up_levelpath"              "dn_levelpath" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  streamleve                     dnlevel </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              "stream_level"           "dn_stream_level" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  streamorde                  streamcalc </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              "stream_order"         "stream_calculator" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       ftype                       fcode </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              "feature_type"         "feature_type_code" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       vpuid                       rpuid </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          "vector_proc_unit"          "raster_proc_unit" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   reachcode                  reach_meas </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              "aggregate_id"      "aggregate_id_measure" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           reachcode_measure                    frommeas </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      "aggregate_id_measure" "aggregate_id_from_measure" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      tomeas </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   "aggregate_id_to_measure" </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">hydroloom_names</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>myid <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span>, clear <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> myid </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "id" </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/detach.html" class="external-link">detach</a></span><span class="op">(</span><span class="st">"package:hydroloom"</span>, unload <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'hydroloom' namespace cannot be unloaded:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   namespace 'hydroloom' is imported by 'nhdplusTools' so cannot be unloaded</span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/DOI-USGS/hydroloom" class="external-link">"hydroloom"</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">hydroloom_names</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> myid </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "id" </span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

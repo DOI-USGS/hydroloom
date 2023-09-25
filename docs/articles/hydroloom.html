@@ -64,7 +64,14 @@
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
 </form>
 
-      <ul class="navbar-nav"></ul>
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/DOI-USGS/hydroloom/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 
     
@@ -80,7 +87,7 @@
                         <h4 data-toc-skip class="author"><a href="mailto:dblodgett@usgs.gov" class="email">dblodgett@usgs.gov</a></h4>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/DOI-USGS/hydroloom/blob/HEAD/vignettes/hydroloom.Rmd" class="external-link"><code>vignettes/hydroloom.Rmd</code></a></small>
       <div class="d-none name"><code>hydroloom.Rmd</code></div>
     </div>
 
@@ -107,10 +114,6 @@ waterbody polygons.</p>
 <p>This introduction covers the <code>hy</code> S3 class and the core
 flow network topology concepts necessary to use hydroloom
 effectively.</p>
-<p>The <a href="reference/index.html">reference</a> list contains full
-documentation of all functions.</p>
-<p>The other <a href="articles/index.html">articles</a> describe
-integrated aspects of the package in greater detail.</p>
 <p>For the latest development and to open issues, please visit the <a href="https://github.com/DOI-USGS/hydroloom" class="external-link">package github
 repository.</a></p>
 </div>
@@ -141,7 +144,7 @@ original values. Using the <code>hydroloom</code> names and the
 <code>hydroloom_names_definitions()</code> may be helpful for people
 aiming for consistent, simple, and accurate attribute names.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://doi-usgs.github.io/hydroloom/">hydroloom</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DOI-USGS/hydroloom" class="external-link">hydroloom</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hy_net</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">COMID</span>, <span class="va">REACHCODE</span>, <span class="va">FromNode</span>, <span class="va">ToNode</span>, <span class="va">Hydroseq</span>, <span class="va">TerminalFl</span>, <span class="va">Divergence</span><span class="op">)</span></span>
@@ -177,7 +180,7 @@ aiming for consistent, simple, and accurate attribute names.</p>
 connectivity between <em>edges</em> (flowlines in the context of
 rivers), requiring <em>nodes</em> (confluences in the context of rivers)
 to be inferred.</p>
-<pre><code><span><span class="co">#&gt;  ID toID fromnode tonode</span></span>
+<pre><code><span><span class="co">#&gt;  id toid fromnode tonode</span></span>
 <span><span class="co">#&gt;   1    3       N1     N3</span></span>
 <span><span class="co">#&gt;   2    3       N2     N3</span></span>
 <span><span class="co">#&gt;   3   NA       N3     N4</span></span></code></pre>
@@ -188,7 +191,7 @@ directed to other edges. An edge-to-edge toplogy does not include
 intervening nodes.
 </p>
 </div>
-<p>The “toID” of a terminal flowline can be either NA or, by convention,
+<p>The “toid” of a terminal flowline can be either NA or, by convention,
 0 or ““. Using 0 or an empty string is preferred within
 <code>hydroloom</code> but both are handled in most cases. Further, as
 long as 0 is not in the set of IDs, there is little practical
@@ -358,7 +361,7 @@ element indicates how many non <code>NA</code> values are in each column
 of the matrix in the <code>to</code> element.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_toids.html">add_toids</a></span><span class="op">(</span><span class="fu"><a href="../reference/drop_geometry.html">drop_geometry</a></span><span class="op">(</span><span class="va">hy_net</span><span class="op">)</span>, return_dendritic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_toids.html">add_toids</a></span><span class="op">(</span><span class="fu">st_drop_geometry</span><span class="op">(</span><span class="va">hy_net</span><span class="op">)</span>, return_dendritic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ind_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_index_ids.html">make_index_ids</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span>
 <span></span>
