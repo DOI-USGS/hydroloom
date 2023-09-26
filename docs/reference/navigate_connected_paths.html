@@ -101,14 +101,40 @@ For a network with one terminal outlet, the data.frame will have <code>nrow(x)^2
 <span class="r-in"><span><span class="va">outlets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5329303</span>, <span class="fl">5329357</span>, <span class="fl">5329317</span>, <span class="fl">5329365</span>, <span class="fl">5329435</span>, <span class="fl">5329817</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_toids.html">add_toids</a></span><span class="op">(</span><span class="fu"><a href="hy.html">hy</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Unknown or uninitialised column: `id`.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Unknown or uninitialised column: `id`.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Unknown or uninitialised column: `id`.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in `[.data.frame`(as.data.frame(data.table(toid = x$id, node = x$fromnode)[data.table(id = x$id,     node = x$tonode), on = "node"]), , c("id", "toid")):</span> undefined columns selected</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">navigate_connected_paths</span><span class="op">(</span><span class="va">x</span>, <span class="va">outlets</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Unknown or uninitialised column: `id`.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in navigate_connected_paths(x, outlets):</span> All outlets must be in x.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       id_1    id_2 network_distance_km</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  5329303 5329357              18.742</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  5329303 5329317               5.797</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  5329303 5329365              22.345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  5329303 5329435              35.130</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  5329303 5329817              16.043</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  5329357 5329317              12.945</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  5329357 5329365               3.603</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  5329357 5329435              16.388</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  5329357 5329817               8.937</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 5329317 5329365              16.548</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 5329317 5329435              29.333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 5329317 5329817              10.246</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 5329365 5329435              12.785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 5329365 5329817              12.540</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 5329435 5329817              25.325</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                         path</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        7, 6, 5, 4, 3, 2, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    3, 2, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                     8, 7, 6, 5, 4, 3, 2, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  15, 14, 13, 12, 11, 60, 62, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                      18, 17, 5, 4, 3, 2, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                                 7, 6, 5, 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                                                          8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                       15, 14, 13, 12, 11, 60, 62, 10, 9, 8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                               7, 6, 18, 17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                                             8, 7, 6, 5, 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11          15, 14, 13, 12, 11, 60, 62, 10, 9, 8, 7, 6, 5, 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                              18, 17, 5, 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                         15, 14, 13, 12, 11, 60, 62, 10, 9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                                           8, 7, 6, 18, 17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15        15, 14, 13, 12, 11, 60, 62, 10, 9, 8, 7, 6, 18, 17</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
