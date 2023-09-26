@@ -30,3 +30,4 @@ README.Rmd
 ^\.github$
 CONTRIBUTING.md
 cran-comments.md
+^CRAN-SUBMISSION$
