@@ -12,7 +12,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' @param override_factor numeric multiplier to use to override `name_attribute`.
 #' See details.
 #' @param status boolean if status updates should be printed.
-#' @return data.frame with id, levelpath_outlet_id, topo_sort, and levelpath columns.
+#' @returns data.frame with id, levelpath_outlet_id, topo_sort, and levelpath columns.
 #' See details for more info.
 #' @details
 #' The levelpath algorithm defines upstream mainstem paths through a network.

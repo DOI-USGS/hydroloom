@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"), 
            email = "dblodgett@usgs.gov",
            comment = c(ORCID = "0000-0001-9489-1710"))
-Description: A collection of utilities that support creation of network attributes for hydrologic networks.
+Description: A collection of utilities that support creation of network attributes for hydrologic networks. Hydroloom implements methods and algorithms from NHDPlus <doi:https://doi.org/10.3133/ofr20191096> general graph algorithms documented in Introduction to Algorithms <ISBN:9780262046305> and the pfafstetter coding system <doi:10.1016/S0022-1694(99)00011-6>.  
 Depends: R (>= 4.0)
 Imports: dplyr, data.table, sf, units, stats, methods, utils, pbapply, tidyr, RANN, rlang, fastmap
 Suggests: testthat, nhdplusTools, future, lwgeom, future.apply, knitr, gifski, mapview

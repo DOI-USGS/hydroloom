@@ -9,7 +9,7 @@
 #' @param min_distance numeric distance in units compatible with the units of
 #' the projection of `lines`. If no nodes are found within this distance, no
 #' connection will be returned.
-#' @return data.frame with id and toid
+#' @returns data.frame with id and toid
 #' @export
 #' @examples
 #'

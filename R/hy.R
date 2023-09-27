@@ -3,7 +3,7 @@
 #' @inheritParams add_levelpaths
 #' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
 #' will be removed.
-#' @return hy object with attributes compatible with the hydroloom package.
+#' @returns hy object with attributes compatible with the hydroloom package.
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -71,7 +71,7 @@ hy <- function(x, clean = FALSE) {
 #' @description test if object is a valid according to the hy s3 class
 #' @param x object to test
 #' @param silent logical should messages be emitted?
-#' @return logical TRUE if valid
+#' @returns logical TRUE if valid
 #' @export
 #'
 is.hy <- function(x, silent = FALSE) {
@@ -101,6 +101,7 @@ is.hy <- function(x, silent = FALSE) {
 #' @description renames hy object to original names and removes hy object
 #' attributes.
 #' @inheritParams add_levelpaths
+#' @returns returns x with attribute names converted to original names provided to \link{hy}
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

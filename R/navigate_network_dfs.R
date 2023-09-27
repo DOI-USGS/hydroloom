@@ -9,7 +9,7 @@
 #' @param direction character "up or "down"
 #' @param reset logical if TRUE, reset graph for each start such that later paths
 #' will have overlapping results.
-#' @return list containing dfs result for each start.
+#' @returns list containing dfs result for each start.
 #' @export
 #' @examples
 #'

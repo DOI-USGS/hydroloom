@@ -11,6 +11,9 @@ st_compatibalize(sf1, sf2)
 
 \item{sf2}{sf data.frame}
 }
+\value{
+sf1 transformed and renamed to be compatible with sf2
+}
 \description{
 makes sf1 compatible with sf2 by projecting into
 the projection of 2 and ensuring that the geometry columns are the

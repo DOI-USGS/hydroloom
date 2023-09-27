@@ -16,7 +16,7 @@ align_name_char <- function(x) {
 #' used in hydroloom.
 #'
 #' @inheritParams add_levelpaths
-#' @return data.frame renamed to match hydroloom as possible.
+#' @returns data.frame renamed to match hydroloom as possible.
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -88,6 +88,7 @@ align_names <- function(x) {
 #' @description A names character vector containing definitions of all
 #' attributes used in the hydroloom package.
 #' @name hydroloom_name_definitions
+#' @returns named character vector with `hydroloom_names` class to support custom print method
 #' @export
 #' @examples
 #' hydroloom_name_definitions
@@ -108,6 +109,7 @@ hydroloom_name_definitions
 #' the current value stored in the hydroloom environment will be returned.
 #' @param clear logical if TRUE, all names will be removed and replaced with
 #' x.
+#' @returns named character vector containing hydroloom names with registered attribute name mappings in `names`.
 #' @export
 #' @examples
 #'

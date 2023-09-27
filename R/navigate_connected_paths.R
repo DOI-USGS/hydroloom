@@ -5,7 +5,7 @@
 #' @inheritParams add_levelpaths
 #' @param outlets vector of ids from data.frame
 #' @param status logical print status and progress bars?
-#' @return data.frame containing the distance between pairs of network outlets
+#' @returns data.frame containing the distance between pairs of network outlets
 #' and a list column containing flowpath identifiers along path that connect outlets.
 #' For a network with one terminal outlet, the data.frame will have `nrow(x)^2` rows.
 #' @export
@@ -135,7 +135,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 #' rescales the aggregate_id_measure to a id_measure and applies that
 #' rescaled measure to the length of the flowpath.
 #'
-#' @return list containing `up` and `dn` elements with numeric length in
+#' @returns list containing `up` and `dn` elements with numeric length in
 #' km.
 #' @export
 #' @examples

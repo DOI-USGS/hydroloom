@@ -14,6 +14,7 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #' type indicator.
 #' @param major_types vector of values of `type_attr` that should be interpreted
 #' as being "major". e.g. river might be major and canal might be minor.
+#' @returns returns x with a `divergence` attribute appended
 #' @details
 #'
 #' When considering downstream connections with diversions, there are three
@@ -368,7 +369,7 @@ down_level <- function(x) {
 #' outlet of the diversion is marked as the return divergence.
 #'
 #' @inheritParams add_levelpaths
-#' @return data.frame containing `return_divergence` attribute
+#' @returns data.frame containing `return_divergence` attribute
 #' @export
 #' @name add_return_divergence
 #' @examples

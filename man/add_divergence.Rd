@@ -51,6 +51,9 @@ type indicator.}
 \item{major_types}{vector of values of \code{type_attr} that should be interpreted
 as being "major". e.g. river might be major and canal might be minor.}
 }
+\value{
+returns x with a \code{divergence} attribute appended
+}
 \description{
 Given a non-dendritic flow network and required attributes,
 adds a divergence attribute according to NHDPlus data model methods.

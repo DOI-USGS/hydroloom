@@ -5,7 +5,7 @@
 #' @param index_ids data.frame as returned by \link{make_index_ids}
 #' @param return_list logical if TRUE, the returned list will include a
 #' "froms_list" element containing all from ids in a list form.
-#' @return list containing a "froms" matrix, "lengths" vector,
+#' @returns list containing a "froms" matrix, "lengths" vector,
 #' and optionally "froms_list" elements.
 #' @export
 #' @examples

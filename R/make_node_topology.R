@@ -6,7 +6,7 @@
 #' a directed acyclic graph with downstream divergences included in the edge
 #' topology.
 #' @param add logical if TRUE, node topology will be added to x in return.
-#' @return data.frame containing id, fromnode, and tonode attributes or all
+#' @returns data.frame containing id, fromnode, and tonode attributes or all
 #' attributes provided with id, fromnode and tonode in the first three columns.
 #'
 #' If `add_div` is TRUE, will also add a `divergence` attribute where the

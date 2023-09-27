@@ -17,6 +17,9 @@ accumulate_downstream(x, var)
 
 \item{var}{variable to accumulate.}
 }
+\value{
+vector of the same length as \code{nrow(x)} containing values of \code{var} accumulated downstream
+}
 \description{
 given a variable, accumulate according to network topology.
 }

@@ -9,6 +9,9 @@ hy_reverse(x)
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 }
+\value{
+returns x with attribute names converted to original names provided to \link{hy}
+}
 \description{
 renames hy object to original names and removes hy object
 attributes.

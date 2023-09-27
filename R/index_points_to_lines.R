@@ -130,7 +130,7 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #' @param precision numeric the resolution of measure precision in the output in meters.
 #' @param max_matches numeric the maximum number of matches to return if multiple are
 #' found in search_radius
-#' @return data.frame with five columns, point_id, id, aggregate_id,
+#' @returns data.frame with five columns, point_id, id, aggregate_id,
 #' aggregate_id_measure, and offset. point_id is the row or list element in the
 #' point input.
 #' @details
@@ -375,7 +375,7 @@ index_points_to_lines.hy <- function(x, points,
 #' @param search_radius units class with a numeric value indicating how far to
 #' search for a waterbody boundary in units of provided projection. Set units with
 #' \link[units]{set_units}.
-#' @return data.frame with columns, `COMID`, `in_wb_COMID`, `near_wb_COMID`,
+#' @returns data.frame with columns, `COMID`, `in_wb_COMID`, `near_wb_COMID`,
 #' `near_wb_dist`, and `outlet_fline_COMID`.
 #' Distance is in units of provided projection.
 #' @export

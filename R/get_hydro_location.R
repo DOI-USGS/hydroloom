@@ -4,6 +4,7 @@
 #' @param indexes data.frame as output from \link{index_points_to_lines}.
 #' @param flowpath data.frame with three columns: id, frommeas, and tomeas
 #' as well as geometry.
+#' @returns sfc_POINT simple feature geometry list of length `nrow(indexes)`
 #' @export
 #' @examples
 #' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))

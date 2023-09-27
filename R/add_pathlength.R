@@ -3,7 +3,7 @@
 #' @inheritParams add_levelpaths
 #' @name add_pathlength
 #' @export
-#' @return data.frame containing pathlength_km
+#' @returns data.frame containing pathlength_km
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #'

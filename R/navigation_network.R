@@ -41,7 +41,7 @@ get_start_row <- function(x, id) {
 #' @param distance numeric distance in km to limit navigation. The first
 #' catchment that exceeds the provided distance is included.
 #' @details if only `mode` is supplied, require network attributes are displayed.
-#' @return vector of identifiers found along navigation
+#' @returns vector of identifiers found along navigation
 #' @name navigate_hydro_network
 #' @export
 #' @examples

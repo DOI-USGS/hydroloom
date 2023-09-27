@@ -40,15 +40,16 @@ pfaf <- add_pfafstetter(x, max_level = 2)
 
 plot(pfaf["pf_level_2"], lwd = 2)
 
-\dontrun{
-
+\donttest{
 if(require(nhdplusTools)) {
 
 # uses tempdir for example
 work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
 
+try(
 source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
-
+)
+if(exists("hr_data")) {
 x <- hy(hr_data$NHDFlowline)
 
 x <- add_toids(x)
@@ -79,6 +80,9 @@ hr_catchment <- dplyr::left_join(hr_catchment, colors, by = "pf_level_4")
 
 plot(hr_catchment["color"], border = NA, reset = FALSE)
 plot(sf::st_geometry(x), col = "blue", add = TRUE)
+} else {
+  message("nhdplusTools > 1.0 required for this example")
+}
 }
 }
 }

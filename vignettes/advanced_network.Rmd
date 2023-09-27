@@ -45,9 +45,10 @@ x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 x <- add_toids(x)
 x <- sort_network(x)
 x$topo_sort <- seq(nrow(x), 1)
-par(mar = c(0, 0, 0, 0))
+oldpar <- par(mar = c(0, 0, 0, 0))
 plot(sf::st_geometry(x), col = NA)
 plot(x["topo_sort"], add = TRUE, lwd = 2)
+par(oldpar)
 ```
 
 The NHDPlus data model includes an attribute called *hydrosequence* that is functionally a [topological sort](https://en.wikipedia.org/wiki/Topological_sorting) of the flowline network. It provides an integer identifier guaranteed to decrease in the downstream direction. For flowlines that are not connected by a single direction navigation (e.g. parallel tributaries) the topo_sort has no significance. However, when two flowlines have a direct navigation, the downstream flowline will always have the smaller topo_sort. `hydroloom` supports creation of topo_sort with the `sort_network()` function.
@@ -64,9 +65,10 @@ lp <- data.frame(lp = sort(unique(x$levelpath)))
 lp$lpid <- seq_len(nrow(lp))
 x <- dplyr::left_join(x, lp, by = c("levelpath" = "lp"))
 
-par(mar = c(0, 0, 0, 0))
+oldpar <- par(mar = c(0, 0, 0, 0))
 plot(sf::st_geometry(x), col = NA)
 plot(x["lpid"], add = TRUE, lwd = 2)
+par(oldpar)
 ```
 
 A level path is derived from "stream level" which assigns an integer value to mainstem rivers from outlet up the network (see NHDPlus documentation for more). Rivers terminating to the ocean are given level 1 and this level extends all the way to the headwaters. Rivers terminating in level 1 rivers are given level 2, and so on.  

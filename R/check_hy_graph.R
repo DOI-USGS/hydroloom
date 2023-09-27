@@ -7,7 +7,7 @@
 #' visited. A complete depth first search is performed at each node, searching
 #' for paths that lead to an already visited (upstream) node. This algorithm
 #' is often referred to as "recursive depth first search".
-#' @return if no localized loops are found, returns TRUE. If localized
+#' @returns if no localized loops are found, returns TRUE. If localized
 #' loops are found, problem rows with a row number added.
 #' @export
 #' @examples

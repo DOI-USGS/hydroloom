@@ -5,6 +5,7 @@ required_atts_accumulate <- c(id, toid)
 #' @inheritParams add_levelpaths
 #' @param var variable to accumulate.
 #' @name accumulate_downstream
+#' @returns vector of the same length as `nrow(x)` containing values of `var` accumulated downstream
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

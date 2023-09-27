@@ -21,7 +21,7 @@
 #' emanating from these outlets will be considered and returned.
 #' NOTE: If outlets does not include all outlets from a given
 #' network containing diversions, a partial network may be returned.
-#' @return data.frame containing a topologically sorted version
+#' @returns data.frame containing a topologically sorted version
 #' of the requested network and optionally a terminal id.
 #' @name sort_network
 #' @examples
@@ -208,7 +208,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 #' @description calls \link{sort_network} without support for splitting the network
 #' and adds a `nrow:1` topo_sort attribute.
 #' @inheritParams sort_network
-#' @return data.frame containing a topo_sort attribute.
+#' @returns data.frame containing a topo_sort attribute.
 #' @name add_topo_sort
 #' @export
 add_topo_sort <- function(x, outlets = NULL) {

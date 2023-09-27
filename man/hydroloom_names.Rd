@@ -14,6 +14,9 @@ the current value stored in the hydroloom environment will be returned.}
 \item{clear}{logical if TRUE, all names will be removed and replaced with
 x.}
 }
+\value{
+named character vector containing hydroloom names with registered attribute name mappings in \code{names}.
+}
 \description{
 Retrieve hydroloom name mapping from hydroloom
 environment. Hydroloom uses a specific set of attribute names within

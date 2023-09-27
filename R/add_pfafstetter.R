@@ -9,7 +9,7 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #' @param max_level integer number of levels to attempt to calculate.
 #' If the network doesn't have resolution to support the desired level,
 #' unexpected behavior may occur.
-#' @return data.frame with added pfafstetter column
+#' @returns data.frame with added pfafstetter column
 #' @name add_pfafstetter
 #' @export
 #' @examples
@@ -22,15 +22,16 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #'
 #' plot(pfaf["pf_level_2"], lwd = 2)
 #'
-#' \dontrun{
-#'
+#' \donttest{
 #' if(require(nhdplusTools)) {
 #'
 #' # uses tempdir for example
 #' work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
 #'
+#' try(
 #' source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
-#'
+#' )
+#' if(exists("hr_data")) {
 #' x <- hy(hr_data$NHDFlowline)
 #'
 #' x <- add_toids(x)
@@ -61,6 +62,9 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #'
 #' plot(hr_catchment["color"], border = NA, reset = FALSE)
 #' plot(sf::st_geometry(x), col = "blue", add = TRUE)
+#' } else {
+#'   message("nhdplusTools > 1.0 required for this example")
+#' }
 #' }
 #' }
 

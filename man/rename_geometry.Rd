@@ -11,6 +11,9 @@ rename_geometry(g, name)
 
 \item{name}{character name to be used for geometry}
 }
+\value{
+sf data.frame with geometry column renamed according to name parameter
+}
 \description{
 correctly renames the geometry column
 of a sf object.

@@ -12,6 +12,9 @@ get_hydro_location(indexes, flowpath)
 \item{flowpath}{data.frame with three columns: id, frommeas, and tomeas
 as well as geometry.}
 }
+\value{
+sfc_POINT simple feature geometry list of length \code{nrow(indexes)}
+}
 \description{
 given a flowline index, returns the hydrologic location (point)
 along the specific linear element referenced by the index.

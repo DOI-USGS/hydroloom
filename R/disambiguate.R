@@ -12,7 +12,7 @@
 #' @param hydro_location data.frame with two columns. The first should join to the
 #' id field of the indexes and the second should be the numeric or ascii metric such as drainage
 #' area or GNIS Name. Names of this data.frame are not used.
-#' @return data.frame indexes deduplicated according to the minimum difference
+#' @returns data.frame indexes deduplicated according to the minimum difference
 #' between the values in the metric columns. If two or more result in the same "minimum"
 #' value, duplicates will be returned.
 #' @export

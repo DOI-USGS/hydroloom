@@ -3,6 +3,9 @@
 \name{hydroloom_name_definitions}
 \alias{hydroloom_name_definitions}
 \title{Hydroloom Name Definitions}
+\value{
+named character vector with \code{hydroloom_names} class to support custom print method
+}
 \description{
 A names character vector containing definitions of all
 attributes used in the hydroloom package.

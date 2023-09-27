@@ -5,7 +5,7 @@
 #' @param long_form logical if TRUE, return will be a long-form version of the
 #' `to_list`. This form can be converted to the default list format with
 #' \link{format_index_ids}.
-#' @return list containing named elements: `to`: adjacency matrix `lengths`:
+#' @returns list containing named elements: `to`: adjacency matrix `lengths`:
 #' vector indicating the number of connections from each node, and: `to_list`:
 #' a data.frame with an `id`, `indid` and a `toindid` list column. If long_form
 #' = TRUE, return will be a long form data.frame with no list column as in `to_list`.
@@ -103,7 +103,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 #' with `long_form`=TRUE.
 #' @param return_list logical if TRUE, the returned list will include a
 #' "froms_list" element containing all from ids in a list form.
-#' @return list containing an adjacency matrix and a lengths vector indicating
+#' @returns list containing an adjacency matrix and a lengths vector indicating
 #' the number of connections from each node. If `complete` is `TRUE` return
 #' will also include a data.frame with an `indid` column and a `toindid` list
 #' column.

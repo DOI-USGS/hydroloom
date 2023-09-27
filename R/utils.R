@@ -36,6 +36,7 @@ put_hyg <- function(x, hy_g) {
 #' same name.
 #' @param sf1 sf data.frame
 #' @param sf2 sf data.frame
+#' @returns sf1 transformed and renamed to be compatible with sf2
 #' @export
 #' @examples
 #'
@@ -62,6 +63,7 @@ st_compatibalize <- function(sf1, sf2) {
 #' of a sf object.
 #' @param g sf data.table
 #' @param name character name to be used for geometry
+#' @returns sf data.frame with geometry column renamed according to name parameter
 #' @export
 #' @examples
 #'
@@ -84,7 +86,7 @@ rename_geometry <- function(g, name){
 #' @param x sf sf data.frame with one or more LINESTRING features
 #' @param position character either "start" or "end"
 #' @export
-#' @return sf data.frame containing requested nodes
+#' @returns sf data.frame containing requested nodes
 #' @examples
 #'
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -135,7 +137,7 @@ get_node <- function(x, position = "end") {
 #' `network` input is upstream (`"start"`) or downstream (`"end"`) of the flowline to be checked.
 #' This option allows pre-compilation of pairs of features which may be useful for very large
 #' numbers of flow direction checks.
-#' @return a geometry for the feature that has been reversed if needed.
+#' @returns a geometry for the feature that has been reversed if needed.
 #' @export
 #' @examples
 #'
@@ -224,7 +226,7 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
 #' @param measure numeric aggregate measure between 0 and 100
 #' @param from numeric from-measure relative to the aggregate
 #' @param to numeric to-measure relative to the aggregate
-#' @return numeric rescaled measure
+#' @returns numeric rescaled measure
 #' @export
 #' @examples
 #' rescale_measures(40, 0, 50)

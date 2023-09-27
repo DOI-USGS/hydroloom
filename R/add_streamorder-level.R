@@ -14,7 +14,7 @@
 #' that will be used to construct a toid attribute.
 #'
 #' @inheritParams add_levelpaths
-#' @return data.frame containing added `stream_order` and `stream_calculator` attribute.
+#' @returns data.frame containing added `stream_order` and `stream_calculator` attribute.
 #' @export
 #' @name add_streamorder
 #' @examples
@@ -178,7 +178,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 #' inland sink. If no coastal flag is included, all terminal paths are
 #' assumed to be coastal.
 #'
-#' @return data,frame containing added `stream_level` attribute
+#' @returns data,frame containing added `stream_level` attribute
 #' @export
 #' @name add_streamlevel
 #' @examples
