@@ -5,10 +5,14 @@
 
 [![R-CMD-check](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml)
 [![codecov](https://codecov.io/gh/doi-usgs/hydroloom/branch/main/graph/badge.svg)](https://app.codecov.io/gh/doi-usgs/hydroloom)
+[![CRAN](https://www.r-pkg.org/badges/version/hydroloom)](https://cran.r-project.org/package=hydroloom)
 
 ## hydroloom:
 
-**Install:** remotes::install_github(“doi-usgs/hydroloom”)
+**Install:** `install.packages("hydroloom")`
+
+Or for latest development:
+`remotes::install_github("doi-usgs/hydroloom")`
 
 `hydroloom` is a collection of functions to work with hydrologic
 geospatial fabrics. Hydroloom is designed to provide general hydrologic
@@ -18,6 +22,11 @@ require low level network and network data manipulation utilities.
 
 **To Learn More, visit the pkgdown site**:
 <https://doi-usgs.github.io/hydroloom/articles/hydroloom.html>
+
+## Citation:
+
+    Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics, 
+    https://doi.org/10.5066/P9AQCUY0
 
 Hyroloom has support for attributes that can be seen in:
 

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="A collection of utilities that support creation of network attributes for hydrologic networks. Hydroloom implements methods and algorithms from NHDPlus &lt;doi:10.3133/ofr20191096&gt; general graph algorithms documented in Introduction to Algorithms &lt;ISBN:9780262046305&gt; and the pfafstetter coding system &lt;doi:10.1016/S0022-1694(99)00011-6&gt;.  ">
+<meta name="description" content="A collection of utilities that support creation of network attributes for hydrologic networks. Methods and algorithms implemented are documented in Moore et al. (2019) &lt;doi:10.3133/ofr20191096&gt;), Cormen and Leiserson (2022) &lt;ISBN:9780262046305&gt; and Verdin and Verdin (1999) &lt;doi:10.1016/S0022-1694(99)00011-6&gt;.  ">
 <title>Utilities to Weave Hydrologic Fabrics • hydroloom</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -18,7 +18,7 @@
 <script src="deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Utilities to Weave Hydrologic Fabrics">
-<meta property="og:description" content="A collection of utilities that support creation of network attributes for hydrologic networks. Hydroloom implements methods and algorithms from NHDPlus &lt;doi:10.3133/ofr20191096&gt; general graph algorithms documented in Introduction to Algorithms &lt;ISBN:9780262046305&gt; and the pfafstetter coding system &lt;doi:10.1016/S0022-1694(99)00011-6&gt;.  ">
+<meta property="og:description" content="A collection of utilities that support creation of network attributes for hydrologic networks. Methods and algorithms implemented are documented in Moore et al. (2019) &lt;doi:10.3133/ofr20191096&gt;), Cormen and Leiserson (2022) &lt;ISBN:9780262046305&gt; and Verdin and Verdin (1999) &lt;doi:10.1016/S0022-1694(99)00011-6&gt;.  ">
 <meta property="og:image" content="https://doi-usgs.github.io/hydroloom/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -83,15 +83,22 @@
 <img src="logo.png" class="logo" alt=""><h1 id="hydroloom-">hydroloom <a class="anchor" aria-label="anchor" href="#hydroloom-"></a>
 </h1>
 </div>
-<p><a href="https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/doi-usgs/hydroloom" class="external-link"><img src="https://codecov.io/gh/doi-usgs/hydroloom/branch/main/graph/badge.svg" alt="codecov"></a></p>
+<p><a href="https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/DOI-USGS/hydroloom/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/doi-usgs/hydroloom" class="external-link"><img src="https://codecov.io/gh/doi-usgs/hydroloom/branch/main/graph/badge.svg" alt="codecov"></a> <a href="https://cran.r-project.org/package=hydroloom" class="external-link"><img src="https://www.r-pkg.org/badges/version/hydroloom" alt="CRAN"></a></p>
 <div class="section level2">
 <h2 id="hydroloom">hydroloom:<a class="anchor" aria-label="anchor" href="#hydroloom"></a>
 </h2>
-<p><strong>Install:</strong> remotes::install_github(“doi-usgs/hydroloom”)</p>
+<p><strong>Install:</strong> <code>install.packages("hydroloom")</code></p>
+<p>Or for latest development: <code>remotes::install_github("doi-usgs/hydroloom")</code></p>
 <p><code>hydroloom</code> is a collection of functions to work with hydrologic geospatial fabrics. Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. The package intended for developers of workflows and other packages that require low level network and network data manipulation utilities.</p>
 <p><strong>To Learn More, visit the pkgdown site</strong>: <a href="https://doi-usgs.github.io/hydroloom/articles/hydroloom.html" class="uri">https://doi-usgs.github.io/hydroloom/articles/hydroloom.html</a></p>
+</div>
+<div class="section level2">
+<h2 id="citation">Citation:<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>Blodgett, D., <span class="dv">2023</span>, hydroloom<span class="sc">:</span> Utilities to Weave Hydrologic Fabrics, </span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>https<span class="sc">:</span><span class="er">//</span>doi.org<span class="sc">/</span><span class="fl">10.5066</span><span class="sc">/</span>P9AQCUY0</span></code></pre></div>
 <p>Hyroloom has support for attributes that can be seen in:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">hydroloom</span><span class="fu">::</span><span class="va"><a href="reference/hydroloom_name_definitions.html">hydroloom_name_definitions</a></span></span></code></pre></div>
 <details><summary>
 Click to See Definitions
@@ -262,24 +269,24 @@ Click to See Definitions
 <p><code>hydroloom</code> supports your attribute names that map to the in-built definitions. See <a href="https://doi-usgs.github.io/hydroloom/reference/hydroloom_names.html"><code>hydroloom_names()</code></a> for more.</p>
 <p><code>hydroloom</code> supports both dendritic and non-dendritic networks start at <a href="https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html">this vignette</a> for more.</p>
 <p><code>hydroloom</code> was largely created from components of <a href="https://doi.org/10.5066/P97AS8JD" class="external-link">nhdplusTools</a>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>Blodgett, D., Johnson, J.M., <span class="dv">2022</span>, nhdplusTools<span class="sc">:</span> Tools <span class="cf">for</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  Accessing and Working with the NHDPlus,</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  https<span class="sc">:</span><span class="er">//</span>doi.org<span class="sc">/</span><span class="fl">10.5066</span><span class="sc">/</span>P97AS8JD</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>Blodgett, D., Johnson, J.M., <span class="dv">2022</span>, nhdplusTools<span class="sc">:</span> Tools <span class="cf">for</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  Accessing and Working with the NHDPlus,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  https<span class="sc">:</span><span class="er">//</span>doi.org<span class="sc">/</span><span class="fl">10.5066</span><span class="sc">/</span>P97AS8JD</span></code></pre></div>
 <p><code>hydroloom</code> will support some key functionality of <code>nhdplusTools</code>. Some components of <code>nhdplusTools</code> will be deprecated in a future version of the package in favor of the <code>hydroloom</code> implementation. In general, <code>nhdplusTools</code> will continue to support web service functionality and particulars of the NHDPlus data model. In contrast, <code>hydroloom</code> is intended to be more general and focused specifically on hydro fabric data functionality.</p>
 <p><code>hydroloom</code> implements algorithms documented in:</p>
 <p>NHDPlus Attributes:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>Moore, R.B., McKay, L.D., Rea, A.H., Bondelid, T.R., Price, C.V., Dewald, T.G., </span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  and Johnston, C.M., <span class="dv">2019</span>, User<span class="st">'s guide for the national hydrography dataset </span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="st">  plus (NHDPlus) high resolution: U.S. Geological Survey Open-File Report 2019–1096, </span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="st">  66 p., https://doi.org/10.3133/ofr20191096.</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>Moore, R.B., McKay, L.D., Rea, A.H., Bondelid, T.R., Price, C.V., Dewald, T.G., </span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  and Johnston, C.M., <span class="dv">2019</span>, User<span class="st">'s guide for the national hydrography dataset </span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="st">  plus (NHDPlus) high resolution: U.S. Geological Survey Open-File Report 2019–1096, </span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="st">  66 p., https://doi.org/10.3133/ofr20191096.</span></span></code></pre></div>
 <p>Graph Concepts:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>Cormen, T. H., <span class="sc">&amp;</span> Leiserson, C. <span class="fu">E.</span> (<span class="dv">2022</span>). Introduction to </span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  Algorithms, fourth edition. MIT Press.</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>Cormen, T. H., <span class="sc">&amp;</span> Leiserson, C. <span class="fu">E.</span> (<span class="dv">2022</span>). Introduction to </span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  Algorithms, fourth edition. MIT Press.</span></code></pre></div>
 <p>Pfafstetter Attributes:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>Verdin, K. L., <span class="sc">&amp;</span> Verdin, J. <span class="fu">P.</span> (<span class="dv">1999</span>). A topological system <span class="cf">for</span> </span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  delineation and codification of the Earth<span class="st">'s river basins. </span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="st">  Journal of Hydrology, 218(1–2), 1–12. </span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="st">  https://doi.org/10.1016/S0022-1694(99)00011-6</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>Verdin, K. L., <span class="sc">&amp;</span> Verdin, J. <span class="fu">P.</span> (<span class="dv">1999</span>). A topological system <span class="cf">for</span> </span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  delineation and codification of the Earth<span class="st">'s river basins. </span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="st">  Journal of Hydrology, 218(1–2), 1–12. </span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="st">  https://doi.org/10.1016/S0022-1694(99)00011-6</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="terminology">Terminology:<a class="anchor" aria-label="anchor" href="#terminology"></a>
 </h3>
@@ -311,6 +318,7 @@ Terms for rivers:<br><strong>Flowline:</strong> A flowline is an linear geometry
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=hydroloom" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/DOI-USGS/hydroloom/" class="external-link">Browse source code</a></li>
 </ul>
 </div>
