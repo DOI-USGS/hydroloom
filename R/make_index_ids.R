@@ -61,6 +61,8 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
     out <- data.table(id = unique(x$id),
                       indid = seq(1, length(unique(x$id))))
 
+    out <- unique(out)
+
     out_rename <- copy(out)
     setnames(out_rename, old = "indid", new = "toindid")
 

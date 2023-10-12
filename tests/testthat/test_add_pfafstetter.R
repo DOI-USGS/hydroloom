@@ -1,7 +1,5 @@
 test_that("get_pfaf", {
 
-  skip("need nhdplusTools up to date")
-
   work_dir <- nhdplusTools::nhdplusTools_data_dir()
 
   source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
