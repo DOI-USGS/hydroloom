@@ -88,7 +88,8 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x <- select(x, all_of(c(required_atts_add_levelpaths,
                           "lp_name_attribute" = name_attribute,
-                          "lp_weight_attribute" = weight_attribute)))
+                          "lp_weight_attribute" = weight_attribute))) |>
+    distinct()
 
   out_val <- get_outlet_value(x)
 
