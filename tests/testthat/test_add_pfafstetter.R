@@ -1,5 +1,7 @@
 test_that("get_pfaf", {
 
+  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
+
   work_dir <- nhdplusTools::nhdplusTools_data_dir()
 
   source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))

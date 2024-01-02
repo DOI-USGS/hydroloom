@@ -1,4 +1,6 @@
 test_that("index to waterbodies", {
+  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
+
   source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
 
   wb <- sf::read_sf(sample_data, "NHDWaterbody")
@@ -46,11 +48,14 @@ test_that("index to waterbodies", {
 
 sr <- units::set_units(0.1, "degrees")
 
-source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+if(require(nhdplusTools)) {
+  source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
-sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
-
+  sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
+}
 test_that("point indexing to nearest existing node works as expected", {
+
+  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
 
   flines_in <- sample_flines
 
@@ -212,6 +217,8 @@ test_that("no duplicates when using precision", {
 })
 
 test_that("disambiguate", {
+
+  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
 
   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
