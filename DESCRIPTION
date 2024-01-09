@@ -19,4 +19,4 @@ Config/testthat/parallel: true
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-US
-URL: https://github.com/DOI-USGS/hydroloom
+URL: https://github.com/DOI-USGS/hydroloom, https://doi-usgs.github.io/hydroloom/
