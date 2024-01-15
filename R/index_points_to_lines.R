@@ -154,7 +154,7 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #' @examples
 #'
 #' \donttest{
-#'
+#' if(require(nhdplusTools)) {
 #' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #'
 #' point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
@@ -177,6 +177,7 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #'                       search_radius = units::set_units(0.2, "degrees"),
 #'                       max_matches = 10)
 #'
+#'  }
 #'  }
 #'
 index_points_to_lines <- function(x, points,

@@ -53,6 +53,7 @@ if(require(nhdplusTools)) {
 
   sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
 }
+
 test_that("point indexing to nearest existing node works as expected", {
 
   if(!require(nhdplusTools)) skip("Missing nhdplusTools")
@@ -108,6 +109,8 @@ test_that("point indexing to nearest existing node works as expected", {
 
 test_that("point indexing works without measures", {
 
+  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
+
     flines_in <- sample_flines
 
     flines_in <- sf::st_cast(sf::st_transform(flines_in, 4269),
@@ -125,6 +128,8 @@ test_that("point indexing works without measures", {
 })
 
 test_that("point indexing to for multiple points works", {
+
+  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
 
   flines_in <- sample_flines
 
