@@ -10,11 +10,11 @@ Authors@R:
 Description: A collection of utilities that support creation of network attributes for hydrologic networks. Methods and algorithms implemented are documented in Moore et al. (2019) <doi:10.3133/ofr20191096>), Cormen and Leiserson (2022) <ISBN:9780262046305> and Verdin and Verdin (1999) <doi:10.1016/S0022-1694(99)00011-6>.  
 Depends: R (>= 4.0)
 Imports: dplyr, data.table, sf, units, stats, methods, utils, pbapply, tidyr, RANN, rlang, fastmap
-Suggests: testthat, nhdplusTools, future, lwgeom, future.apply, knitr, gifski, mapview
+Suggests: testthat, nhdplusTools, future, lwgeom, future.apply, knitr, gifski, mapview, geos
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Config/testthat/parallel: true
 Config/testthat/edition: 3
 VignetteBuilder: knitr
