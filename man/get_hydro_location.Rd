@@ -20,6 +20,7 @@ given a flowline index, returns the hydrologic location (point)
 along the specific linear element referenced by the index.
 }
 \examples{
+if(require(nhdplusTools)) {
 source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
 indexes <- index_points_to_lines(sample_flines,
@@ -29,5 +30,5 @@ indexes <- index_points_to_lines(sample_flines,
                               crs = 4326)))
 
 get_hydro_location(indexes, sample_flines)
-
+}
 }

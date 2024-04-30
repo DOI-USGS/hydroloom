@@ -7,6 +7,7 @@
 #' @returns sfc_POINT simple feature geometry list of length `nrow(indexes)`
 #' @export
 #' @examples
+#' if(require(nhdplusTools)) {
 #' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #'
 #' indexes <- index_points_to_lines(sample_flines,
@@ -16,7 +17,7 @@
 #'                               crs = 4326)))
 #'
 #' get_hydro_location(indexes, sample_flines)
-#'
+#'}
 get_hydro_location <- function(indexes, flowpath) {
   flowpath <- hy(flowpath)
 

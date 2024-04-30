@@ -1,4 +1,6 @@
 test_that("get location", {
+  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
+
   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
   points <- sf::st_sfc(sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),

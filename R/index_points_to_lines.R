@@ -154,7 +154,7 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #' @examples
 #'
 #' \donttest{
-#'
+#' if(require(nhdplusTools)) {
 #' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #'
 #' point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
@@ -177,6 +177,7 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #'                       search_radius = units::set_units(0.2, "degrees"),
 #'                       max_matches = 10)
 #'
+#'  }
 #'  }
 #'
 index_points_to_lines <- function(x, points,
@@ -220,7 +221,16 @@ index_points_to_lines.hy <- function(x, points,
 
   search_radius <- check_search_radius(search_radius, points)
 
-  point_buffer <- st_buffer(points, search_radius)
+  if(!is.na(precision)) {
+    if(requireNamespace("geos", quietly = TRUE)) {
+      point_buffer <- geos::geos_buffer(geos::as_geos_geometry(sf::st_geometry(points)),
+                                        distance = search_radius)
+
+      point_buffer <- sf::st_as_sfc(point_buffer)
+    } else {
+      point_buffer <- st_buffer(points, search_radius)
+    }
+  }
 
   if(units(search_radius) == units(as_units("degrees"))) {
     if(st_is_longlat(in_crs) & search_radius > set_units(1, "degree")) {

@@ -11,6 +11,8 @@ vignette: >
 ```{r setup, include = FALSE}
 local <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE")
 
+if(!require(nhdplusTools)) local <- FALSE
+
 if(!local) {
   nhdplusTools::nhdplusTools_data_dir(tempdir())
 }
@@ -42,7 +44,7 @@ dir <- nhdplusTools::download_nhd(nhdplusTools::nhdplusTools_data_dir(),
 fs <- list.files(dir, pattern = ".*1908.*.gdb", full.names = TRUE)
 
 # Dropping Z and M and making sure everything is LINESTRING helps later.
-fl <- sf::st_zm(sf::st_cast(sf::read_sf(fs, "NHDFlowline"), "LINESTRING"))
+fl <- sf::st_cast(sf::st_zm(sf::read_sf(fs, "NHDFlowline"), "LINESTRING"))
 
 # remove any coastal (ftype 566) features
 fl <- filter(fl, ftype != 566)

@@ -1,3 +1,8 @@
+hydroloom 1.0.1 and 1.0.2
+==========
+
+- Add checks if nhdplusTools is available.
+
 hydroloom 1.0.0
 ==========
 

@@ -1,7 +1,5 @@
-citHeader("To cite hydroloom in publications use:")
-
-citEntry(
-  entry     = "Manual",
+bibentry(
+  bibtype = "Manual",
   title     = "hydroloom: Utilities to Weave Hydrologic Fabrics",
   publisher = "U.S. Geological Survey",
   address   ="Reston, VA",

@@ -17,6 +17,7 @@
 #' value, duplicates will be returned.
 #' @export
 #' @examples
+#' if(require(nhdplusTools)) {
 #' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #'
 #' hydro_location <- sf::st_sf(id = c(1, 2, 3),
@@ -45,6 +46,7 @@
 #' result[result$point_id == 2, ]
 #'
 #' result[result$point_id == 3, ]
+#' }
 #'
 disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
   orig_index_names <- names(indexes)

@@ -31,6 +31,7 @@ the \link[utils]{adist} function is used with the following algorithm:
 \code{1 - adist_score / max_string_length}. Comparisons ignore case.
 }
 \examples{
+if(require(nhdplusTools)) {
 source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
 hydro_location <- sf::st_sf(id = c(1, 2, 3),
@@ -59,5 +60,6 @@ result[result$point_id == 1, ]
 result[result$point_id == 2, ]
 
 result[result$point_id == 3, ]
+}
 
 }

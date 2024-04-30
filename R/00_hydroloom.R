@@ -140,10 +140,15 @@ hydroloom_name_map <- c(
   featureid = id,
   permanent_identifier = id,
   from_permanent_identifier = id,
+  reconciled_id = id,
+  aggregated_id = id,
 
   toid = toid,
   tocomid = toid,
   to_permanent_identifier = toid,
+  reconciled_toid = toid,
+  aggregated_toid = toid,
+
   tonode = tonode,
   fromnode = fromnode,
   divergence = divergence,

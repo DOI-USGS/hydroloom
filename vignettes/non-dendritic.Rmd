@@ -80,7 +80,7 @@ flow_net <- x |>
 # and convert that to a node topology and join our attributes back
 flow_net <- flow_net |>
   make_attribute_topology(min_distance = 5) |>
-  make_node_topology(add_div = TRUE) |>
+  hydroloom::make_node_topology(add_div = TRUE) |>
   left_join(sf::st_drop_geometry(flow_net), by = "COMID")
 
 # We only have one outlet so it doesn't matter if it is coastal
