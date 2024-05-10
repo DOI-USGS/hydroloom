@@ -69,7 +69,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
     vars <- c("id", "toid")
     if("downmain" %in% names(x)) vars <- c(vars, "downmain")
 
-    out <- merge(merge(as.data.table(x)[, ..vars],
+    out <- merge(merge(as.data.table(x)[, vars, with = FALSE],
                        out, by = "id", all.x = TRUE, sort = FALSE),
                  out_rename,
                  by.x = "toid", by.y = "id", all.x = TRUE, sort = FALSE) |>

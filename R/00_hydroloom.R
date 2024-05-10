@@ -65,6 +65,8 @@ aggregate_id_from_measure <- "aggregate_id_from_measure"
 aggregate_id_to_measure <- "aggregate_id_to_measure"
 point_id <- "point_id"
 offset <- "offset"
+upmain <- "upmain"
+downmain <- "downmain"
 
 indid <- "indid"
 toindid <- "toindid"
@@ -77,7 +79,8 @@ good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
                 stream_level, dn_stream_level, stream_order, stream_calculator,
                 feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
                 id_measure, aggregate_id, aggregate_id_measure,
-                aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset)
+                aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset,
+                upmain, downmain)
 
 hnd <- as.list(rep("", length(good_names)))
 names(hnd) <- good_names
@@ -120,6 +123,8 @@ hnd$aggregate_id_to_measure <- "interpolative linear reference for the upstream 
 hnd$point_id <- "identifier of hydrologic location point"
 hnd$offset <- "offset distance from point to line in units of linear reference analysis units"
 hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
+hnd$upmain <- "indicates that a given network element is the primary upstream connection at a confluence"
+hnd$downmain <- "indicates that a given network element is the primary downstream connection at a confluence"
 
 hydroloom_name_definitions <- setNames(as.character(hnd), names(hnd))
 class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_definitions))

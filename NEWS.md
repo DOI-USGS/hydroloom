@@ -1,3 +1,9 @@
+hydroloom 1.0.3
+==========
+
+- Add support for upmain and downmain in `make_index_ids()` and `make_fromids()`.
+- Add support for "flownetwork" representation of the network with a `to_flownetwork` function.
+
 hydroloom 1.0.1 and 1.0.2
 ==========
 
