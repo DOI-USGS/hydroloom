@@ -63,6 +63,35 @@ test_that("add indid", {
   expect_equal(class(y$to_list$toindid[[1]]), "integer")
 })
 
+test_that("with downmain", {
+  f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  # TODO: put this into a function?
+  x <- hy(f, clean = TRUE) |>
+    select(id, fromnode, tonode, divergence, stream_level) |>
+    add_toids(return_dendritic = FALSE)
+    x <- x |>
+    left_join(distinct(select(x, toid = id, toid_divergence = divergence)), by = "toid") |>
+    left_join(distinct(select(x, toid = id, toid_stream_level = stream_level)), by = "toid") |>
+    mutate(downmain = toid_divergence != 2,
+           upmain = stream_level == toid_stream_level) |>
+    select(id, toid, upmain, downmain) |>
+    distinct()
+
+  dm <- x[x$downmain,]
+  um <- x[x$upmain, ]
+
+  expect_equal(nrow(dm[dm$id %in% dm$id[duplicated(dm$id)],]), 0)
+  expect_equal(nrow(um[um$toid %in% um$toid[duplicated(um$toid)],]), 0)
+
+  i <- make_index_ids(x)
+
+  expect_contains(names(i), "main")
+
+  expect_contains(names(i$to_list), "main")
+
+})
+
 test_that("format toid", {
   x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 
