@@ -90,6 +90,12 @@ test_that("with downmain", {
 
   expect_contains(names(i$to_list), "main")
 
+  j <- make_fromids(i, upmain = distinct(select(x, id, upmain)))
+
+  expect_contains(names(j), "main")
+
+  expect_contains(names(j$froms_list), "main")
+
 })
 
 test_that("format toid", {
