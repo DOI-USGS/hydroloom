@@ -4,10 +4,14 @@
 \alias{to_flownetwork}
 \title{to flownetwork}
 \usage{
-to_flownetwork(x)
+to_flownetwork(x, warn_dendritic = TRUE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
+
+\item{warn_dendritic}{logical if TRUE and a dendritic \code{toid} attribute is
+provided, a warning will be emitted as toid is expected to be non-dendritic
+for any \code{downmain} to be \code{FALSE}.}
 }
 \value{
 data.frame "id", "toid", "upmain" and "downmain attributes. A check
@@ -28,8 +32,8 @@ an attribute containing 0, 1, or 2 where 0 indicates there is only one
 downstream connection, 1 is the main connection downstream
 of a diversion and 2 is secondary connection downstream of a diversion.
 
-\code{stream_level} or \code{levelpath},
-integer attributes which will have one and only one matching value upstream
+\code{levelpath},
+integer attribute which will have one and only one matching value upstream
 at a confluence.
 }
 \examples{

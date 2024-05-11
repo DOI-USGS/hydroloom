@@ -14,7 +14,9 @@ to navigate network dfs in the case that it needs to be called many times.}
 
 \item{starts}{vector with ids from x to start at.}
 
-\item{direction}{character "up or "down"}
+\item{direction}{character "up", "upmain", "down", or "downmain". If "upmain" or
+"downmain", x must contain sufficient information to construct an upmain and
+downmain network (see details).}
 
 \item{reset}{logical if TRUE, reset graph for each start such that later paths
 will have overlapping results.}
@@ -25,6 +27,30 @@ list containing dfs result for each start.
 \description{
 given a starting node, return all reachable paths. Once visited,
 a node is marked as visited and will not take part in a future path.
+}
+\details{
+\code{navigate_network_dfs} offers two usage patterns. In the simple case,
+you can provide an \code{hy} in which case preprocessing is performed automatically,
+or you can do the preprocessing ahead of time and provide index ids. The latter
+is more complicated but can be much faster in certain circumstances.
+
+\code{hy} object:
+
+If the function will only be called one or a few times, it can be called
+with x containing (at a minimum) \code{id} and \code{toid}. For "upmain" and "downmain"
+support, x also requires attributes for determination of the primary upstream
+and downstream connection across every junction.
+
+In this pattern, the \code{hy} object will be passed to  \link{make_index_ids}
+called for every call to \code{navigate_network_dfs} and the resulting index ids
+will be used for network navigation.
+
+Index ids:
+
+If the function will be called repeatedly or index_ids are available for
+other reasons, the index_id list as created by \link{make_index_ids} (for
+downstream) or \link{make_fromids} (for upstream) can be used. For "upmain"
+and "downmain" support, the \code{main} element must be included.
 }
 \examples{
 

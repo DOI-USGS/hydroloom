@@ -4,6 +4,9 @@
 #' "upmain" and "downmain attributes.
 #'
 #' @inheritParams add_levelpaths
+#' @param warn_dendritic logical if TRUE and a dendritic `toid` attribute is
+#' provided, a warning will be emitted as toid is expected to be non-dendritic
+#' for any `downmain` to be `FALSE`.
 #' @details
 #'
 #' Required attributes:
@@ -15,8 +18,8 @@
 #' downstream connection, 1 is the main connection downstream
 #' of a diversion and 2 is secondary connection downstream of a diversion.
 #'
-#' `stream_level` or `levelpath`,
-#' integer attributes which will have one and only one matching value upstream
+#' `levelpath`,
+#' integer attribute which will have one and only one matching value upstream
 #' at a confluence.
 #'
 #' @return data.frame "id", "toid", "upmain" and "downmain attributes. A check
@@ -28,31 +31,31 @@
 #' f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #' to_flownetwork(f)
 #'
-to_flownetwork <- function(x) {
+to_flownetwork <- function(x, warn_dendritic = TRUE) {
 
   x <- hy(x, clean = TRUE)
 
-  if("fromnode" %in% names(x)) x <- add_toids(x, return_dendritic = FALSE)
-
-  if(!"divergence" %in% names(x)) stop("must provide a divergence attribute")
-
-  if("stream_level" %in% names(x)) {
-    level <- "stream_level"
-  } else if("levelpath" %in% names(x)) {
-    level <- "levelpath"
-  } else {
-    stop("must provide either stream_level of levelpath attribute")
+  if("toid" %in% names(x) & warn_dendritic) {
+    if(!any(duplicated(x$id)))
+      warning("toid was provided and appears to be dendritic.")
   }
 
-  x <- select(x, all_of(c(id, toid, divergence, level)))
+  if(fromnode %in% names(x) & !toid %in% names(x))
+    x <- add_toids(x, return_dendritic = FALSE)
+
+  if(!divergence %in% names(x)) stop("must provide a divergence attribute")
+
+  if(!levelpath %in% names(x)) stop("must provide a levelpath attribute")
+
+  x <- select(x, all_of(c(id, toid, divergence, levelpath)))
 
   x <- x |>
     left_join(distinct(select(x, toid = id, toid_divergence = divergence)),
                      by = "toid") |>
-    left_join(distinct(select(x, all_of(c(toid = id, toid_level = level)))),
+    left_join(distinct(select(x, all_of(c(toid = id, toid_level = levelpath)))),
                      by = "toid") |>
-    mutate(downmain = .data$toid_divergence != 2,
-           upmain = !!level == .data$toid_level) |>
+    mutate(downmain = .data$toid_divergence != 2) |>
+    mutate(upmain = .data$toid_level == levelpath) |> # friggin dplyr syntax
     select(id, toid, upmain, downmain) |>
     distinct()
 

@@ -115,3 +115,24 @@ test_that("real data", {
 
   expect_equal(length(paths[[1]]), 1)
 })
+
+test_that("main", {
+  f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  x <- to_flownetwork(f)
+
+  upmain <- distinct(select(x, id, upmain))
+
+  x <- make_index_ids(x)
+
+  navigate_network_dfs(x, 8891126, "downmain")
+
+  y <- make_fromids(x, return_list = TRUE, upmain = upmain)
+
+  expect_error(navigate_network_dfs(x, 8897784, "upmain"), "must be 'down'")
+  expect_error(navigate_network_dfs(y, 8897784, "downmain"), "must be 'up'")
+
+  navigate_network_dfs(y, 8897784, "upmain")
+
+  navigate_network_dfs(f, 8891126, "downmain")
+})
