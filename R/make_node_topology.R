@@ -67,7 +67,32 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
     if(!isTRUE(add_div))
       stop("duplicate identifiers found and 'add_div' is not TRUE")
 
-    return(make_nondendritic_topology(x))
+    out <- make_nondendritic_topology(x)
+
+    if(add) {
+
+      x <- select(x, -all_of(toid)) |>
+        distinct()
+
+      x <- left_join(out, x, by = "id")
+
+      rm(out)
+
+      if(!is.null(hy_g)) {
+        x <- sf::st_sf(left_join(x, hy_g, by = id))
+      }
+
+      if(inherits(x, "hy")) {
+        orig_names <- attributes(x)$orig_names
+      }
+
+      x <- x[ , c(id, fromnode, tonode,
+                  names(x)[!names(x) %in% c(id, fromnode, tonode)])]
+
+      attr(x, "orig_names") <- orig_names
+
+      return(x)
+    }
 
   } else {
 

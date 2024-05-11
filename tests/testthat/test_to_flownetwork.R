@@ -14,15 +14,14 @@ test_that("to_flownetwork", {
 
   expect_equal(nrow(x), 832)
 
-  f <- select(f, -StreamLeve)
+  expect_true(x$upmain[x$id == 8894360])
+  expect_true(x$upmain[x$id == 8894356])
 
-  y <- to_flownetwork(f)
+  expect_true(x$upmain[x$id == 8893396])
+  expect_false(x$upmain[x$id == 8894154])
 
-  expect_equal(hy_reverse(x), hy_reverse(y))
-
-  x <- select(f, -LevelPathI)
-
-  expect_error(to_flownetwork(x), "either stream_level of levelpath")
+  expect_true(x$downmain[x$toid == 8893428])
+  expect_false(x$downmain[x$toid == 8893442])
 
   x <- select(f, -Divergence)
 
