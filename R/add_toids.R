@@ -100,7 +100,7 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   if(return_dendritic) {
     x <- select(x, -fromnode)
-    x <- rename(x, fromnode = orig_fromnode)
+    x <- rename(x, fromnode = "orig_fromnode")
   }
 
   x

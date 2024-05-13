@@ -15,6 +15,7 @@ vignette: >
 </style>
 
 ```{r setup, include = FALSE}
+library(hydroloom)
 eval <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE") &
   requireNamespace("nhdplusTools", quietly = TRUE)
 
@@ -47,7 +48,6 @@ While similar, the two functions use completely different implementations. `navi
 For the rest of this vignette, we will use the new_hope sample dataset included with hydroloom. A map some basic summary information about the data are shown just below.
 
 ```{r}
-library(nhdplusTools)
 library(hydroloom)
 library(sf)
 
@@ -72,7 +72,7 @@ map_prep <- \(x, tol = 100) sf::st_geometry(x) |> # no attributes
 pc <- list(flowline = list(col = NA)) # to hide flowlines in basemap
 
 oldpar <- par(mar = c(0, 0, 0, 0)) # par is reset in cleanup
-plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
 
 plot(map_prep(hy_net), col = "blue", add = TRUE)
 
@@ -102,7 +102,7 @@ headwater <- main_path[main_path$topo_sort == max(main_path$topo_sort), ]
 
 # basemap
 par(mar = c(0, 0, 0, 0))
-plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
 
 # plot the elements prepped above
 plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
@@ -135,7 +135,7 @@ half_path <- navigate_hydro_network(hy_net,
 half_path <- hy_net[hy_net$id %in% half_path, ]
 
 par(mar = c(0, 0, 0, 0))
-plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
 plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
 plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
@@ -158,7 +158,7 @@ down <- navigate_hydro_network(hy_net,
 down <- hy_net[hy_net$id %in% down, ]
 
 par(mar = c(0, 0, 0, 0))
-plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
 plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(start), col = "magenta", add = TRUE, lwd = 4)
 plot(map_prep(up), col = "darkblue", add = TRUE, lwd = 2)
@@ -237,7 +237,7 @@ names(base_net)
 nrow(base_net)
 
 # now switch from a flownetwork topology to a node topology.
-base_net <- make_node_topology(base_net, add_div = TRUE, add = TRUE)
+base_net <- hydroloom::make_node_topology(base_net, add_div = TRUE, add = TRUE)
 
 names(base_net)
 nrow(base_net)
@@ -302,7 +302,7 @@ different_upmain
 different_upmain <- hy_net[hy_net$id %in% c(different_upmain$id, different_upmain$toid), ]
 
 par(mar = c(0, 0, 0, 0))
-plot_nhdplus(bbox = sf::st_bbox(different_upmain), plot_config = pc)
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(different_upmain), plot_config = pc)
 plot(map_prep(hy_net, 10), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(different_upmain, 10), col = "blue", add = TRUE, lwd = 2)
 ```
@@ -327,7 +327,7 @@ half_path <- navigate_network_dfs(flow_net,
 half_path <- hy_net[hy_net$id %in% unlist(half_path), ]
 
 par(mar = c(0, 0, 0, 0))
-plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
 plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
 plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
@@ -350,7 +350,7 @@ down <- navigate_network_dfs(flow_net,
 down <- hy_net[hy_net$id %in% unlist(down), ]
 
 par(mar = c(0, 0, 0, 0))
-plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
 plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(start), col = "magenta", add = TRUE, lwd = 4)
 plot(map_prep(up), col = "darkblue", add = TRUE, lwd = 2)

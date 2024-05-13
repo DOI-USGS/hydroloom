@@ -103,7 +103,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
   }
 
-  if(!exists(("g"))) {
+  if(!exists("g", inherits = FALSE)) {
     g <- x
     rm(x)
   }
