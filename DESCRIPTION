@@ -1,6 +1,6 @@
 Package: hydroloom
 Title: Utilities to Weave Hydrologic Fabrics
-Version: 1.0.2
+Version: 1.1.0
 Authors@R: 
     person(given = "David", 
            family = "Blodgett", 
