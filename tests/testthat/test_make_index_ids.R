@@ -63,6 +63,25 @@ test_that("add indid", {
   expect_equal(class(y$to_list$toindid[[1]]), "integer")
 })
 
+test_that("with downmain", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  x <- to_flownetwork(x)
+
+  i <- make_index_ids(x)
+
+  expect_contains(names(i), "main")
+
+  expect_contains(names(i$to_list), "main")
+
+  j <- make_fromids(i, upmain = distinct(select(x, id, upmain)), return_list = TRUE)
+
+  expect_contains(names(j), "main")
+
+  expect_contains(names(j$froms_list), "main")
+
+})
+
 test_that("format toid", {
   x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 

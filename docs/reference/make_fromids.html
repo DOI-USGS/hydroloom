@@ -33,6 +33,7 @@ row of the matrix in question."><meta property="og:image" content="https://doi-u
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
     <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
+    <a class="dropdown-item" href="../articles/network_navigation.html">Network Navigation</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -68,7 +69,7 @@ row of the matrix in question.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">make_fromids</span><span class="op">(</span><span class="va">index_ids</span>, return_list <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">make_fromids</span><span class="op">(</span><span class="va">index_ids</span>, return_list <span class="op">=</span> <span class="cn">FALSE</span>, upmain <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -80,6 +81,12 @@ row of the matrix in question.</p>
 <dt>return_list</dt>
 <dd><p>logical if TRUE, the returned list will include a
 "froms_list" element containing all from ids in a list form.</p></dd>
+
+
+<dt>upmain</dt>
+<dd><p>data.frame containing <code>id</code> and <code>upmain</code> columns. <code>upmain</code> should
+be a logical value indicating if the id is the upmain connection from its
+downstream neighbors.</p></dd>
 
 </dl></div>
     <div class="section level2">

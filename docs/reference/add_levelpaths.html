@@ -37,6 +37,7 @@ no nameid is available."><meta property="og:image" content="https://doi-usgs.git
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
     <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
+    <a class="dropdown-item" href="../articles/network_navigation.html">Network Navigation</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -143,7 +144,7 @@ indication.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/sf/man/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">test_flowline</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_toids.html">add_toids</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -173,9 +174,9 @@ indication.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 33 more variables: geom &lt;MULTILINESTRING [m]&gt;, GNIS_ID &lt;chr&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   GNIS_NAME &lt;chr&gt;, LENGTHKM &lt;dbl&gt;, REACHCODE &lt;chr&gt;, WBAREACOMI &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   FTYPE &lt;chr&gt;, FCODE &lt;int&gt;, StreamLeve &lt;int&gt;, StreamOrde &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   StreamCalc &lt;int&gt;, FromNode &lt;dbl&gt;, ToNode &lt;dbl&gt;, Pathlength &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   TerminalPa &lt;dbl&gt;, ArbolateSu &lt;dbl&gt;, Divergence &lt;int&gt;, StartFlag &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   TerminalFl &lt;int&gt;, DnLevel &lt;int&gt;, UpLevelPat &lt;dbl&gt;, UpHydroseq &lt;dbl&gt;, …</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   StreamCalc &lt;int&gt;, ToNode &lt;dbl&gt;, Pathlength &lt;dbl&gt;, TerminalPa &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   ArbolateSu &lt;dbl&gt;, Divergence &lt;int&gt;, StartFlag &lt;int&gt;, TerminalFl &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   DnLevel &lt;int&gt;, UpLevelPat &lt;dbl&gt;, UpHydroseq &lt;dbl&gt;, DnLevelPat &lt;dbl&gt;, …</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># use hy attributes where they can be mapped</span></span></span>
 <span class="r-in"><span><span class="fu">add_levelpaths</span><span class="op">(</span><span class="fu"><a href="hy.html">hy</a></span><span class="op">(</span><span class="va">test_flowline</span><span class="op">)</span>,</span></span>
@@ -203,7 +204,7 @@ indication.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 33 more variables: geom &lt;MULTILINESTRING [m]&gt;, GNIS_ID &lt;chr&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   GNIS_NAME &lt;chr&gt;, length_km &lt;dbl&gt;, aggregate_id &lt;chr&gt;, wbid &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   feature_type &lt;chr&gt;, feature_type_code &lt;int&gt;, stream_level &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   stream_order &lt;int&gt;, stream_calculator &lt;int&gt;, fromnode &lt;dbl&gt;, tonode &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   stream_order &lt;int&gt;, stream_calculator &lt;int&gt;, tonode &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   pathlength_km &lt;dbl&gt;, terminal_topo_sort &lt;dbl&gt;, arbolate_sum &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   divergence &lt;int&gt;, start_flag &lt;int&gt;, terminal_flag &lt;int&gt;, …</span></span>
 <span class="r-in"><span></span></span>

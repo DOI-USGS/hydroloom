@@ -5,6 +5,9 @@
 #' @param index_ids data.frame as returned by \link{make_index_ids}
 #' @param return_list logical if TRUE, the returned list will include a
 #' "froms_list" element containing all from ids in a list form.
+#' @param upmain data.frame containing `id` and `upmain` columns. `upmain` should
+#' be a logical value indicating if the id is the upmain connection from its
+#' downstream neighbors.
 #' @returns list containing a "froms" matrix, "lengths" vector,
 #' and optionally "froms_list" elements.
 #' @export
@@ -17,9 +20,11 @@
 #'
 #' make_fromids(y)
 #'
-make_fromids <- function(index_ids, return_list = FALSE) {
+make_fromids <- function(index_ids, return_list = FALSE, upmain = NULL) {
 
   index_ids <- unnest(index_ids$to_list, "toindid")
+
+  index_ids <- select(index_ids, -any_of("main"))
 
   # froms <- left_join(select(index_ids, "indid"),
   #                    select(index_ids, indid = "toindid", fromindid = "indid"),
@@ -31,6 +36,10 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   # slightly faster but requires data.table
   index_ids <- as.data.table(index_ids)
 
+  if(!is.null(upmain)) {
+    index_ids <- merge(index_ids, as.data.table(upmain), by = "id", all.x = TRUE, sort = FALSE)
+  }
+
   ids <- unique(index_ids[,c("indid", "id")])
 
   froms <- unique(merge(
@@ -39,7 +48,12 @@ make_fromids <- function(index_ids, return_list = FALSE) {
     by = "indid", all.x = TRUE
   ))
 
-  froms <- froms[,list(fromindid = list(c(fromindid))), by = indid]
+  if(!is.null(upmain)) {
+    froms <- froms[,list(fromindid = list(c(fromindid)),
+                         main = list(c(upmain))), by = indid]
+  } else {
+    froms <- froms[,list(fromindid = list(c(fromindid))), by = indid]
+  }
 
   froms <- merge(ids, froms, by = "indid", all.x = TRUE)
 
@@ -50,13 +64,21 @@ make_fromids <- function(index_ids, return_list = FALSE) {
   froms_m <- matrix(sapply(froms$fromindid, '[', seq(max_from)),
                     nrow = max_from, ncol = nrow(froms))
 
+  main_m <- matrix(sapply(froms$main, '[', seq(max_from)),
+                   nrow = max_from, ncol = nrow(froms))
+
   # NAs should be length 0
   froms_l[is.na(froms_m[1, ])] <- 0
 
-  if(return_list) return(list(froms = froms_m, lengths = froms_l,
-                              froms_list = froms))
+  out <- list(froms = froms_m, lengths = froms_l)
 
-  list(froms = froms_m, lengths = froms_l)
+  if(!is.null(upmain)) {
+    out <- c(out, list(main = main_m))
+  }
+
+  if(return_list) return(c(out, list(froms_list = froms)))
+
+  out
 
 }
 

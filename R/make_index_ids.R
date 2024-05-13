@@ -66,7 +66,10 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
     out_rename <- copy(out)
     setnames(out_rename, old = "indid", new = "toindid")
 
-    out <- merge(merge(as.data.table(x)[, list(id, toid)],
+    vars <- c("id", "toid")
+    if("downmain" %in% names(x)) vars <- c(vars, "downmain")
+
+    out <- merge(merge(as.data.table(x)[, vars, with = FALSE],
                        out, by = "id", all.x = TRUE, sort = FALSE),
                  out_rename,
                  by.x = "toid", by.y = "id", all.x = TRUE, sort = FALSE) |>
@@ -119,9 +122,16 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 #'
 format_index_ids <- function(g, return_list = FALSE) {
 
-  g <- data.frame(id = unique(g$id),
-                  indid = unique(g$indid),
-                  toindid = I(split(g$toindid, g$indid)))
+  if("downmain" %in% names(g)) {
+    g <- data.frame(id = unique(g$id),
+                    indid = unique(g$indid),
+                    toindid = I(split(g$toindid, g$indid)),
+                    main = I(split(g$downmain, g$indid)))
+  } else {
+    g <- data.frame(id = unique(g$id),
+                    indid = unique(g$indid),
+                    toindid = I(split(g$toindid, g$indid)))
+  }
 
   to_l <- lengths(g$toindid)
   max_to <- max(to_l)
@@ -129,16 +139,26 @@ format_index_ids <- function(g, return_list = FALSE) {
   # Convert list to matrix with NA fill
   to_m <- as.matrix(sapply(g$toindid, '[', seq(max_to)))
 
+  if("main" %in% names(g))
+    main <- as.matrix(sapply(g$main, '[', seq(max_to)))
+
   if(max_to == 1) {
     to_m <- matrix(to_m, nrow = 1)
+
+    if("main" %in% names(g))
+      main <- matrix(main, nrow = 1)
   }
 
   # NAs should be length 0
   to_l[is.na(to_m[1, ])] <- 0
 
-  if(return_list) return(list(to = to_m, lengths = to_l,
-                              to_list = g))
+  out <- list(to = to_m, lengths = to_l)
 
-  list(to = to_m, lengths = to_l)
+  if("main" %in% names(g))
+    out <- c(out, list(main = main))
+
+  if(return_list) return(c(out, list(to_list = g)))
+
+  out
 
 }

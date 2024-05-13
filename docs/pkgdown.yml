@@ -5,8 +5,9 @@ articles:
   advanced_network: advanced_network.html
   flow-table: flow-table.html
   hydroloom: hydroloom.html
+  network_navigation: network_navigation.html
   non-dendritic: non-dendritic.html
-last_built: 2024-04-30T19:45Z
+last_built: 2024-05-13T17:44Z
 urls:
   reference: https://doi-usgs.github.io/hydroloom/reference
   article: https://doi-usgs.github.io/hydroloom/articles

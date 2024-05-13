@@ -45,3 +45,11 @@ test_that("s3 class creation", {
 
   expect_equal(x, hy_reverse(hy(x)))
 })
+
+test_that("test print", {
+
+  p <- capture_output(print(hydroloom_name_definitions))
+
+  expect_true(grepl("topo_sort", p))
+
+})

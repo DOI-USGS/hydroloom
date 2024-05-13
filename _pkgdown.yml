@@ -24,6 +24,7 @@ reference:
       - '`add_toids`'
       - '`make_attribute_topology`'
       - '`make_node_topology`'
+      - '`to_flownetwork`'
       - '`make_index_ids`'
       - '`make_fromids`'
       - '`format_index_ids`'

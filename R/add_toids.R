@@ -68,7 +68,9 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
       stop("To remove non dendritic paths, a divergence attribute is required.")
     }
 
-    x$fromnode[which(x$divergence == 2)] <- NA
+    x <- mutate(x,
+                orig_fromnode = fromnode,
+                fromnode = ifelse(.data$divergence == 2, NA, fromnode))
 
   }
 
@@ -95,6 +97,11 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   if(sf_t)
     x <- st_sf(x)
+
+  if(return_dendritic) {
+    x <- select(x, -fromnode)
+    x <- rename(x, fromnode = "orig_fromnode")
+  }
 
   x
 

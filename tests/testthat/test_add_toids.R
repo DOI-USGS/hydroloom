@@ -36,3 +36,11 @@ test_that("make toid", {
 
   expect_equal(which(y$toid == 0), which(z$toid == ""))
 })
+
+test_that("don't change fromnode", {
+  g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  x <- add_toids(g, return_dendritic = TRUE)
+
+  expect_equal(g$FromNode, x$FromNode)
+})

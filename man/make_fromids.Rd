@@ -4,13 +4,17 @@
 \alias{make_fromids}
 \title{Convert "to" index ids to "from" index ids}
 \usage{
-make_fromids(index_ids, return_list = FALSE)
+make_fromids(index_ids, return_list = FALSE, upmain = NULL)
 }
 \arguments{
 \item{index_ids}{data.frame as returned by \link{make_index_ids}}
 
 \item{return_list}{logical if TRUE, the returned list will include a
 "froms_list" element containing all from ids in a list form.}
+
+\item{upmain}{data.frame containing \code{id} and \code{upmain} columns. \code{upmain} should
+be a logical value indicating if the id is the upmain connection from its
+downstream neighbors.}
 }
 \value{
 list containing a "froms" matrix, "lengths" vector,
