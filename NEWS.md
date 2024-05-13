@@ -1,4 +1,4 @@
-hydroloom 1.0.3
+hydroloom 1.1.0
 ==========
 
 - Add new vignette for network navigation `vignette("network_navigation")`
