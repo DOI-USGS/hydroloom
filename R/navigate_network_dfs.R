@@ -89,17 +89,17 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
     g <- make_index_ids(x)
 
-    rm(x) # this can be huge
-
     if(grepl("up", direction)) {
 
-      upmain <- NULL
+      upmain_atts <- NULL
       if(direction == "upmain") {
-        upmain <- distinct(select(x, all_of(c(id, upmain))))
+        upmain_atts <- distinct(select(x, all_of(c(id, upmain))))
       }
 
-      g <- make_fromids(g, return_list = TRUE, upmain = upmain)
+      g <- make_fromids(g, return_list = TRUE, upmain = upmain_atts)
     }
+
+    rm(x) # this can be huge
 
   }
 

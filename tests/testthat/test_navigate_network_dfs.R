@@ -123,16 +123,30 @@ test_that("main", {
 
   upmain <- distinct(select(x, id, upmain))
 
-  x <- make_index_ids(x)
+  y <- make_index_ids(x)
 
-  navigate_network_dfs(x, 8891126, "downmain")
+  z <- make_fromids(y, return_list = TRUE, upmain = upmain)
 
-  y <- make_fromids(x, return_list = TRUE, upmain = upmain)
+  expect_error(navigate_network_dfs(y, 8897784, "upmain"), "must be 'down'")
+  expect_error(navigate_network_dfs(z, 8897784, "downmain"), "must be 'up'")
 
-  expect_error(navigate_network_dfs(x, 8897784, "upmain"), "must be 'down'")
-  expect_error(navigate_network_dfs(y, 8897784, "downmain"), "must be 'up'")
+  upmain_hy <- navigate_network_dfs(f, 8897784, "upmain")
 
-  navigate_network_dfs(y, 8897784, "upmain")
+  upmain_ids <- navigate_network_dfs(z, 8897784, "upmain")
 
-  navigate_network_dfs(f, 8891126, "downmain")
+  upmain_fn <- navigate_network_dfs(x, 8897784, "upmain")
+
+  expect_equal(upmain_hy, upmain_ids)
+
+  expect_equal(upmain_hy, upmain_fn)
+
+  downmain_hy <- navigate_network_dfs(f, 8891126, "downmain")
+
+  downmain_fn <- navigate_network_dfs(x, 8891126, "downmain")
+
+  downmain_ids <- navigate_network_dfs(y, 8891126, "downmain")
+
+  expect_equal(downmain_hy, downmain_ids)
+
+  expect_equal(downmain_hy, downmain_fn)
 })

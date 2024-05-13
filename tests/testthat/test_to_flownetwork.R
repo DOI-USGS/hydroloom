@@ -2,6 +2,12 @@ test_that("to_flownetwork", {
 
   f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
+  expect_error(to_flownetwork(select(f, -LevelPathI)), "must provide a levelpath attribute")
+
+  x <- add_toids(f, return_dendritic = TRUE)
+
+  expect_warning(to_flownetwork(x), "toid was provided and appears to be dendritic.")
+
   x <- to_flownetwork(f)
 
   dm <- x[x$downmain,]
