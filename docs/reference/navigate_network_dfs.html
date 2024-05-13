@@ -31,6 +31,7 @@ a node is marked as visited and will not take part in a future path."><meta prop
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
     <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
+    <a class="dropdown-item" href="../articles/network_navigation.html">Network Navigation</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -82,7 +83,9 @@ to navigate network dfs in the case that it needs to be called many times.</p></
 
 
 <dt>direction</dt>
-<dd><p>character "up or "down"</p></dd>
+<dd><p>character "up", "upmain", "down", or "downmain". If "upmain" or
+"downmain", x must contain sufficient information to construct an upmain and
+downmain network (see details).</p></dd>
 
 
 <dt>reset</dt>
@@ -96,11 +99,31 @@ will have overlapping results.</p></dd>
 
 <p>list containing dfs result for each start.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><code>navigate_network_dfs</code> offers two usage patterns. In the simple case,
+you can provide an <code>hy</code> in which case preprocessing is performed automatically,
+or you can do the preprocessing ahead of time and provide index ids. The latter
+is more complicated but can be much faster in certain circumstances.</p>
+<p><code>hy</code> object:</p>
+<p>If the function will only be called one or a few times, it can be called
+with x containing (at a minimum) <code>id</code> and <code>toid</code>. For "upmain" and "downmain"
+support, x also requires attributes for determination of the primary upstream
+and downstream connection across every junction.</p>
+<p>In this pattern, the <code>hy</code> object will be passed to  <a href="make_index_ids.html">make_index_ids</a>
+called for every call to <code>navigate_network_dfs</code> and the resulting index ids
+will be used for network navigation.</p>
+<p>Index ids:</p>
+<p>If the function will be called repeatedly or index_ids are available for
+other reasons, the index_id list as created by <a href="make_index_ids.html">make_index_ids</a> (for
+downstream) or <a href="make_fromids.html">make_fromids</a> (for upstream) can be used. For "upmain"
+and "downmain" support, the <code>main</code> element must be included.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="hy.html">hy</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/sf/man/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="hy.html">hy</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/new_hope.gpkg"</span>, package <span class="op">=</span> <span class="st">"hydroloom"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="add_toids.html">add_toids</a></span><span class="op">(</span><span class="va">x</span>, return_dendritic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

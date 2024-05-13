@@ -29,6 +29,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/advanced_network.html">Topological Sort Based Network Attributes</a>
     <a class="dropdown-item" href="../articles/flow-table.html">NHD Flow Table with Hydroloom</a>
+    <a class="dropdown-item" href="../articles/network_navigation.html">Network Navigation</a>
     <a class="dropdown-item" href="../articles/non-dendritic.html">Non-dendritic networks</a>
   </div>
 </li>
@@ -55,6 +56,17 @@
       <small>Source: <a href="https://github.com/DOI-USGS/hydroloom/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.3" id="hydroloom-103">hydroloom 1.0.3<a class="anchor" aria-label="anchor" href="#hydroloom-103"></a></h2>
+<ul><li>Add new vignette for network navigation <code><a href="../articles/network_navigation.html">vignette("network_navigation")</a></code>
+</li>
+<li>Add support for upmain and downmain navigation in <code><a href="../reference/navigate_network_dfs.html">navigate_network_dfs()</a></code>
+</li>
+<li>Add support for upmain and downmain in <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code> and <code><a href="../reference/make_fromids.html">make_fromids()</a></code>.</li>
+<li>Add function tp create a “flownetwork” representation of the network with a <code>to_flownetwork</code> function.</li>
+<li>Improved handling / fix bugs with edge cases in <code><a href="../reference/add_toids.html">add_toids()</a></code>
+</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="hydroloom-101-and-102">hydroloom 1.0.1 and 1.0.2<a class="anchor" aria-label="anchor" href="#hydroloom-101-and-102"></a></h2><p class="text-muted">CRAN release: 2024-01-09</p>
 <ul><li>Add checks if nhdplusTools is available.</li>

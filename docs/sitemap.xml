@@ -16,6 +16,9 @@
     <loc>https://doi-usgs.github.io/hydroloom/articles/index.html</loc>
   </url>
   <url>
+    <loc>https://doi-usgs.github.io/hydroloom/articles/network_navigation.html</loc>
+  </url>
+  <url>
     <loc>https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html</loc>
   </url>
   <url>
@@ -149,5 +152,8 @@
   </url>
   <url>
     <loc>https://doi-usgs.github.io/hydroloom/reference/st_compatibalize.html</loc>
+  </url>
+  <url>
+    <loc>https://doi-usgs.github.io/hydroloom/reference/to_flownetwork.html</loc>
   </url>
 </urlset>
