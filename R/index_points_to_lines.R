@@ -426,9 +426,9 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
 
   points <- suppressMessages(st_join(points, waterbodies))
 
-  wb_atts <- mutate(st_drop_geometry(waterbodies), index = seq_len(nrow(waterbodies)))
-
   waterbodies <- make_singlepart(waterbodies, "Converting to singlepart.")
+
+  wb_atts <- mutate(st_drop_geometry(waterbodies), index = seq_len(nrow(waterbodies)))
 
   waterbodies <- st_coordinates(waterbodies)
 
