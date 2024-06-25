@@ -63,7 +63,7 @@ match_crs <- function(x, y, warn_text = "") {
   x
 }
 
-make_singlepart <- function(x, warn_text = "") {
+make_singlepart <- function(x, warn_text = "", stop_on_real_multi = FALSE) {
   check <- nrow(x)
 
   gt <- st_geometry_type(x, by_geometry = FALSE)
@@ -75,6 +75,7 @@ make_singlepart <- function(x, warn_text = "") {
   }
 
   if (nrow(x) != check) {
+    if(stop_on_real_multi) stop("Multipart geometries not supported.")
     warning(warn_text)
   }
 
@@ -428,7 +429,9 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
 
   wb_atts <- mutate(st_drop_geometry(waterbodies), index = seq_len(nrow(waterbodies)))
 
-  waterbodies <- make_singlepart(waterbodies, "Converting to singlepart.")
+  waterbodies <- make_singlepart(waterbodies, stop_on_real_multi = TRUE)
+
+  if(nrow(waterbodies) != nrow(wb_atts)) stop("Multipart waterbody polygons not supported.")
 
   waterbodies <- st_coordinates(waterbodies)
 
