@@ -65,7 +65,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
     error_context <- "add_streamorder"
   }
 
-  if(!exists("net")) {
+  if(!exists("net", inherits = FALSE)) {
 
     check_names(x, required_atts, error_context)
 

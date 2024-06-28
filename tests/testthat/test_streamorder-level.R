@@ -66,3 +66,15 @@ test_that("get_streamlevel", {
   expect_equal(x$orig_streamlevel, add_streamlevel(x, coastal = "coastal")$stream_level)
 
 })
+
+test_that("exists bug #35", {
+
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
+     hydroloom::add_toids() |>
+    dplyr::select(-StreamOrde)
+
+  net = data.frame()
+
+  expect_true(is.data.frame(hydroloom::add_streamorder(x)))
+
+})
