@@ -233,7 +233,13 @@ add_topo_sort.data.frame <- function(x, outlets = NULL) {
 #'
 add_topo_sort.hy <- function(x, outlets = NULL) {
 
-  sort_network(x, outlets = outlets) |>
-    mutate(topo_sort = n():1)
+  out <- sort_network(x, outlets = outlets)
+
+  ids <- unique(out$id)
+
+  dplyr::left_join(out,
+                   data.frame(id = ids,
+                              topo_sort = seq(from = length(ids), to = 1, by = -1)),
+                   by = "id")
 
 }
