@@ -1,5 +1,8 @@
 #' Add Path Length
 #' @description Generates the main path length to a basin's terminal path.
+#'
+#' Requires id, toid, and length_km hydroloom compatible attributes.
+#'
 #' @inheritParams add_levelpaths
 #' @name add_pathlength
 #' @export
@@ -40,17 +43,23 @@ add_pathlength.hy <- function(x) {
 
   x <- sort_network(st_drop_geometry(x))[nrow(x):1, ]
 
-  x$pathlength_km <- rep(0, nrow(x))
+  pathlength_km <- rep(0, nrow(x))
+  length_km <- x$length_km
+  toid <- x$toid
 
   toids <- match(x$toid, x$id)
 
-  for(i in seq_len(length(x$id))) {
-    if((tid <- x$toid[i]) != get_outlet_value(x)) {
+  for(i in seq_len(length(toid))) {
+    tid <- toid[i]
+    if(tid != 0) {
 
-      x$pathlength_km[i] <- x$length_km[toids[i]] + x$pathlength_km[toids[i]]
+      pathlength_km[i] <- length_km[toids[i]] + pathlength_km[toids[i]]
 
     }
+    if(i %% 10000 == 0) message(i)
   }
+
+  x$pathlength_km <- pathlength_km
 
   left_join(orig_order, x, by = id)
 }
