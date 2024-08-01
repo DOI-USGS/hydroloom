@@ -208,6 +208,8 @@ test_that("add_topo_sort deals with diversions", {
 
   base_network <- hydroloom::add_topo_sort(base_network)
 
+  # this ensures that we get a downstream decreasing topo sort along a
+  # secondary and primary pathway.
   expect_equal(length(unique(base_network$topo_sort[base_network$id == 8317403])), 1)
 
   expect_true(

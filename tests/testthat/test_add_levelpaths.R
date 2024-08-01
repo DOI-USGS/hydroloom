@@ -17,6 +17,32 @@ test_that("add_levelpaths example", {
 
 })
 
+test_that("add_levelpaths non dendritic", {
+  g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  test_flowline <- add_toids(g, return_dendritic = FALSE)
+
+  test_flowline <- hy(test_flowline)
+
+  test_flowline <- dplyr::select(test_flowline, id, toid, divergence, GNIS_ID, arbolate_sum)
+
+  expect_error(add_levelpaths(dplyr::select(test_flowline, -divergence),
+                              "GNIS_ID", "arbolate_sum"),
+               "divergence attribute must be included")
+
+  lp1 <- add_levelpaths(test_flowline, "GNIS_ID", "arbolate_sum")
+
+  expect_equal(nrow(lp1), nrow(g))
+
+  test_flowline <- add_topo_sort(test_flowline) |>
+    filter(!toid %in% test_flowline$id[test_flowline$divergence > 1]) |>
+    select(-divergence)
+
+  lp2 <- add_levelpaths(test_flowline, "GNIS_ID", "arbolate_sum")
+
+  expect_equal(lp1, lp2)
+})
+
 test_that("reweight", {
   x <- readRDS(list.files(pattern = "reweight_test.rds",
                           full.names = TRUE, recursive = TRUE))

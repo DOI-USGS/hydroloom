@@ -6,6 +6,13 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' will match the behavior of NHDPlus. Any numeric value can be
 #' included in this column and the largest value will be followed when
 #' no nameid is available.
+#'
+#' x must include id, toid, and conditionally divergence attributes.
+#' If a "topo_sort" (hydrosequence in nhdplus terms) attribute is included,
+#' it will be used instead of recreation.
+#'
+#' If a future plan is set, it will be used for a preprocess step of the function.
+#'
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param name_attribute character attribute to be used as name identifiers.
 #' @param weight_attribute character attribute to be used as weight.
@@ -21,6 +28,11 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' path with the larger weight. If the `weight_attribute` is `override_factor`
 #' times larger on a path, it will be followed regardless of the name_attribute
 #' indication.
+#'
+#' If id and toid are non-dendritic so id:toid is many to one and id is
+#' non-unique, a divergence attribute must be included such that the dendritic
+#' network can be extracted after the network is sorted.
+#'
 #' @name add_levelpaths
 #' @export
 #' @examples
@@ -76,7 +88,15 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     on.exit(pboptions(pbopts), add = TRUE)
   }
 
-  check_names(x, required_atts_add_levelpaths, "add_levelpaths")
+  req_atts <- required_atts_add_levelpaths
+  check_names(x, req_atts, "add_levelpaths")
+
+  if(length(unique(x$id)) != nrow(x)) {
+    if(!divergence %in% names(x))
+      stop(paste("Non unique ids found. A divergence attribute must be included",
+                 "if id is non-unique"))
+    req_atts <- c(required_atts_add_levelpaths, divergence)
+  }
 
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
@@ -84,9 +104,13 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x <- st_drop_geometry(x)
 
-  extra <- select(x, all_of(c(id, names(x)[!names(x) %in% required_atts_add_levelpaths])))
+  if(topo_sort %in% names(x)) {
+    req_atts <- c(req_atts, topo_sort)
+  }
 
-  x <- select(x, all_of(c(required_atts_add_levelpaths,
+  extra <- distinct(select(x, all_of(c(id, names(x)[!names(x) %in% req_atts]))))
+
+  x <- select(x, all_of(c(req_atts,
                           "lp_name_attribute" = name_attribute,
                           "lp_weight_attribute" = weight_attribute))) |>
     distinct()
@@ -98,9 +122,17 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x[["lp_name_attribute"]] <- replace_na(x[["lp_name_attribute"]], " ") # NHDPlusHR uses NA for empty names.
   x[["lp_name_attribute"]][x[["lp_name_attribute"]] == "-1"] <- " "
 
-  x <- sort_network(x)
+  # don't think this is necessary
+  # x <- sort_network(x)
 
-  x <- add_topo_sort(x)
+  if(!topo_sort %in% names(x)) x <- add_topo_sort(x)
+
+  if(divergence %in% names(x)) {
+    divs <- x[[id]][x[[divergence]] > 1]
+
+    x <- filter(x, !.data$toid %in% divs)
+  }
+
   x$levelpath <- rep(0, nrow(x))
 
   x <- x |> # get downstream name id added
@@ -113,9 +145,13 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     group_by(.data$toid) |>
     group_split()
 
+  cl <- "future"
+  if(inherits(future::plan(), "sequential")) cl = NULL
+
   # reweight sets up ranked upstream paths
   x <- pblapply(x, reweight, override_factor = override_factor,
-                     nat = "lp_name_attribute", wat = "lp_weight_attribute", cl = "future")
+                     nat = "lp_name_attribute", wat = "lp_weight_attribute",
+                cl = cl)
 
   x <- x |>
     bind_rows() |>
@@ -145,12 +181,13 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   while(done < nrow(x) & checker < 10000000) {
 
     pathids <- if(nrow(outlet_ind) == 1) {
-      list(par_get_path(as.list(outlet_ind), x, from_ind, status, "lp_weight_attribute"))
+      list(par_get_path(as.list(outlet_ind), x[c("ind", "lp_weight_attribute")], from_ind, status, "lp_weight_attribute"))
     } else {
-      lapply(split(outlet_ind, seq_len(nrow(outlet_ind))),
-             par_get_path,
-             x_in = x, from_ind = from_ind,
-             status = status, wat = "lp_weight_attribute")
+      pblapply(split(outlet_ind, seq_len(nrow(outlet_ind))),
+              par_get_path,
+              x_in = x[c("ind", "lp_weight_attribute")], from_ind = from_ind,
+              status = status, wat = "lp_weight_attribute",
+              cl = cl)
     }
 
     pathids <- bind_rows(pathids)
