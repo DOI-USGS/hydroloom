@@ -52,6 +52,12 @@ NHD and NHDPlus. If arbolate sum is provided in the weight column, this
 will match the behavior of NHDPlus. Any numeric value can be
 included in this column and the largest value will be followed when
 no nameid is available.
+
+x must include id, toid, and conditionally divergence attributes.
+If a "topo_sort" (hydrosequence in nhdplus terms) attribute is included,
+it will be used instead of recreation.
+
+If a future plan is set, it will be used for a preprocess step of the function.
 }
 \details{
 The levelpath algorithm defines upstream mainstem paths through a network.
@@ -60,6 +66,10 @@ either 1) the path with the same name, 2) the path with any name, 3) or the
 path with the larger weight. If the \code{weight_attribute} is \code{override_factor}
 times larger on a path, it will be followed regardless of the name_attribute
 indication.
+
+If id and toid are non-dendritic so id:toid is many to one and id is
+non-unique, a divergence attribute must be included such that the dendritic
+network can be extracted after the network is sorted.
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
