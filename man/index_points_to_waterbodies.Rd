@@ -35,6 +35,8 @@ COMID of dominant artificial path
 }
 \examples{
 
+if(require(nhdplusTools)) {
+
 source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
 
 waterbodies <- sf::st_transform(
@@ -46,5 +48,7 @@ points <- sf::st_transform(
 
 index_points_to_waterbodies(waterbodies, points,
                     search_radius = units::set_units(500, "m"))
+
+}
 
 }
