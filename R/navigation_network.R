@@ -41,6 +41,13 @@ get_start_row <- function(x, id) {
 #' @param distance numeric distance in km to limit navigation. The first
 #' catchment that exceeds the provided distance is included.
 #' @details if only `mode` is supplied, require network attributes are displayed.
+#'
+#' NOTE: for "Upstream with tributaries" navigation, if a tributary emanates from
+#' a diversion and is the minor path downstream of that diversion, it is not
+#' followed. This can have a very large impact when a diversion between two
+#' large river systems. For non-dendritic upstream with tributaries
+#' network navigation, use \link{navigate_network_dfs}.
+#'
 #' @returns vector of identifiers found along navigation
 #' @name navigate_hydro_network
 #' @export

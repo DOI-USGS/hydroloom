@@ -39,6 +39,12 @@ network attributes.
 }
 \details{
 if only \code{mode} is supplied, require network attributes are displayed.
+
+NOTE: for "Upstream with tributaries" navigation, if a tributary emanates from
+a diversion and is the minor path downstream of that diversion, it is not
+followed. This can have a very large impact when a diversion between two
+large river systems. For non-dendritic upstream with tributaries
+network navigation, use \link{navigate_network_dfs}.
 }
 \examples{
 
