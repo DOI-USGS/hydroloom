@@ -3,7 +3,7 @@ required_atts_navigate <- function(mode, distance) {
                         DM = c(id, levelpath, dn_levelpath,
                                topo_sort, dn_topo_sort),
                         UT = c(id, levelpath,
-                               topo_sort, dn_topo_sort),
+                               topo_sort, dn_topo_sort, dn_minor_topo_sort),
                         DD = c(id, levelpath, dn_levelpath,
                                topo_sort, dn_topo_sort, dn_minor_topo_sort))
 
@@ -43,10 +43,10 @@ get_start_row <- function(x, id) {
 #' @details if only `mode` is supplied, require network attributes are displayed.
 #'
 #' NOTE: for "Upstream with tributaries" navigation, if a tributary emanates from
-#' a diversion and is the minor path downstream of that diversion, it is not
-#' followed. This can have a very large impact when a diversion between two
-#' large river systems. For non-dendritic upstream with tributaries
-#' network navigation, use \link{navigate_network_dfs}.
+#' a diversion and is the minor path downstream of that diversion, it will be
+#' included. This can have a very large impact when a diversion between two
+#' large river systems. To strictly follow the dendritic network, set the
+#' "dn_minor_topo_sort" attribute to all 0 in x.
 #'
 #' @returns vector of identifiers found along navigation
 #' @name navigate_hydro_network
@@ -138,10 +138,18 @@ get_UT <- function(x, id, distance) {
 
     x <- filter(x, .data$id %in% all)
 
-    filter(x, .data$pathlength_km <= stop_pathlength_km)$id
-  } else {
-    all
+    all <- filter(x, .data$pathlength_km <= stop_pathlength_km)$id
   }
+
+  incoming_div <- filter(x, !id %in% all &
+                           dn_minor_topo_sort %in% x$topo_sort[x$id %in% all])
+
+  extra <- lapply(incoming_div$id, \(i) get_UT(x, i, distance))
+
+  all <- c(all, unique(unlist(extra)))
+
+  return(all)
+
 }
 
 private_get_UT <- function(x, id) {
