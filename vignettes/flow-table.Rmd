@@ -12,6 +12,7 @@ vignette: >
 local <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE")
 
 if(!requireNamespace("nhdplusTools", quietly = TRUE)) local <- FALSE
+if(!requireNamespace("mapview", quietly = TRUE)) local <- FALSE
 
 if(local) {
   nhdplusTools::nhdplusTools_data_dir(tempdir())
