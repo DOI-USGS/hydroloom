@@ -1,6 +1,6 @@
 test_that("get_pfaf", {
 
-  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
+  if(!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
 
   work_dir <- nhdplusTools::nhdplusTools_data_dir()
 

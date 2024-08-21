@@ -77,7 +77,7 @@ make_attribute_topology.hy <- function(x, min_distance) {
       which(d == min(d, na.rm = TRUE))
     }
 
-  }, nodes = nodes, cl = "future")
+  }, nodes = nodes, cl = future_available())
 
   # Add resulting list as a list column
   nodes$torow <- closest

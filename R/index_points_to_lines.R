@@ -392,6 +392,8 @@ index_points_to_lines.hy <- function(x, points,
 #' @export
 #' @examples
 #'
+#' if(require(nhdplusTools)) {
+#'
 #' source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
 #'
 #' waterbodies <- sf::st_transform(
@@ -403,6 +405,8 @@ index_points_to_lines.hy <- function(x, points,
 #'
 #' index_points_to_waterbodies(waterbodies, points,
 #'                     search_radius = units::set_units(500, "m"))
+#'
+#' }
 #'
 index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
                                         search_radius = NULL) {

@@ -128,7 +128,7 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
     try(navigate_network_dfs(x = net, starts = i,
                              direction = "up",
                              reset = FALSE))
-  }, net = x, cl = "future")
+  }, net = x, cl = future_available())
 
   paths_df <- data.frame(id = unlist(term),
                          paths = I(unlist(paths,

@@ -1,5 +1,5 @@
 test_that("get location", {
-  if(!require(nhdplusTools)) skip("Missing nhdplusTools")
+  if(!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
 
   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
