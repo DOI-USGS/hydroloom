@@ -145,9 +145,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
     group_by(.data$toid) |>
     group_split()
 
-  cl <- "future"
-  if(!requireNamespace("future", quietly = TRUE) ||
-     inherits(future::plan(), "sequential")) cl = NULL
+  cl <- future_available()
 
   # reweight sets up ranked upstream paths
   x <- pblapply(x, reweight, override_factor = override_factor,

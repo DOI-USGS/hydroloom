@@ -1,3 +1,8 @@
+future_available <- function() {
+  if(!requireNamespace("future", quietly = TRUE) ||
+     inherits(future::plan(), "sequential")) NULL else "future"
+}
+
 get_outlet_value <- function(x) {
   if(inherits(x$id, "character")) {
     ""

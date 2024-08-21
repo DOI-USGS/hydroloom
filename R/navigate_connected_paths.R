@@ -78,7 +78,8 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   }
 
   pairs <- t(combn(length(id_match), 2))
-  paths <- pbapply(pairs, 1, get_path, all_dn = all_dn, cl = "future")
+
+  paths <- pbapply(pairs, 1, get_path, all_dn = all_dn, cl = future_available())
 
   connected_paths <- paths[lengths(paths) > 0]
 
