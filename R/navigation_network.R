@@ -3,7 +3,7 @@ required_atts_navigate <- function(mode, distance) {
                         DM = c(id, levelpath, dn_levelpath,
                                topo_sort, dn_topo_sort),
                         UT = c(id, levelpath,
-                               topo_sort, dn_topo_sort, dn_minor_topo_sort),
+                               topo_sort, dn_topo_sort),
                         DD = c(id, levelpath, dn_levelpath,
                                topo_sort, dn_topo_sort, dn_minor_topo_sort))
 
@@ -116,6 +116,15 @@ navigate_hydro_network.hy <- function(x, start, mode, distance = NULL) {
     "DD" = get_DD
   )
 
+  if(mode == "UT") {
+    if(dn_minor_topo_sort %in% names(x)) {
+      required_atts <- c(required_atts, dn_minor_topo_sort)
+    } else {
+      # TODO: for a future release, remove this and add dn_minor_topo_sort to required at top of this file
+      warning(dn_minor_topo_sort, " will be a required attribute for UT navigation in a future release.")
+    }
+  }
+
   fun(select(st_drop_geometry(x), all_of(required_atts)),
       start, distance)
 
@@ -141,12 +150,14 @@ get_UT <- function(x, id, distance) {
     all <- filter(x, .data$pathlength_km <= stop_pathlength_km)$id
   }
 
-  incoming_div <- filter(x, !id %in% all &
-                           dn_minor_topo_sort %in% x$topo_sort[x$id %in% all])
+  if(dn_minor_topo_sort %in% names(x)) {
+    incoming_div <- filter(x, !id %in% all &
+                             dn_minor_topo_sort %in% x$topo_sort[x$id %in% all])
 
-  extra <- lapply(incoming_div$id, \(i) get_UT(x, i, distance))
+    extra <- lapply(incoming_div$id, \(i) get_UT(x, i, distance))
 
-  all <- c(all, unique(unlist(extra)))
+    all <- c(all, unique(unlist(extra)))
+  }
 
   return(all)
 
