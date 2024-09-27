@@ -33,6 +33,41 @@ matcher <- function(coords, points, search_radius, max_matches = 1) {
   matched
 }
 
+matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
+
+  max_match_ <- ifelse(nrow(coords) < 1000, nrow(coords), 1000)
+
+  matched <- nn2(data = coords[, 1:2],
+                 query = matrix(points[, c("X", "Y")], ncol = 2),
+                 k = ifelse(max_matches > 1, max_match_, 1),
+                 searchtype = "radius",
+                 radius = search_radius)
+
+  matched <- data.table(nn.idx = as.integer(matched$nn.idx),
+                        nn.dists = as.numeric(matched$nn.dists),
+                        point_id = rep(1:nrow(points), ncol(matched$nn.idx)))
+
+  matched <- merge(matched,
+                   data.table(L1 = coords[, "L1"],
+                              index = seq_len(nrow(coords))),
+                   by.x = "nn.idx", by.y = "index", sort = FALSE)
+
+  matched <- matched[nn.dists <= search_radius]
+
+  # First get rid of duplicate nodes on the same line.
+  matched <- matched[, .SD[nn.dists == min(nn.dists)],
+                     by = .(L1, point_id)]
+
+  # Now limit to max matches per point
+  matched <- matched[, N := seq_len(.N), by = .(point_id)]
+
+  matched <- matched[N <= max_matches]
+
+  matched <- as.data.frame(matched[,!c("N")])
+
+  matched
+}
+
 check_search_radius <- function(search_radius, points) {
 
   if(is.null(search_radius)) {
@@ -318,7 +353,7 @@ index_points_to_lines.hy <- function(x, points,
     x <- st_coordinates(x)
 
 
-    matched <- matcher(x, points, search_radius, max_matches = max_matches) |>
+    matched <- matcher_dt(x, points, search_radius, max_matches = max_matches) |>
       left_join(select(fline_atts, id, "precision_index"),
                 by = c("L1" = "precision_index"))
 
@@ -329,7 +364,7 @@ index_points_to_lines.hy <- function(x, points,
     x <- st_coordinates(x)
 
 
-    matched <- matcher(x, points, search_radius, max_matches = max_matches) |>
+    matched <- matcher_dt(x, points, search_radius, max_matches = max_matches) |>
       left_join(select(fline_atts, id, "index"),
                 by = c("L1" = "index"))
 
@@ -441,7 +476,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
 
   if(ncol(waterbodies) == 4) waterbodies[ ,3] <- waterbodies[ ,4]
 
-  near_wb <- matcher(waterbodies,
+  near_wb <- matcher_dt(waterbodies,
                      st_coordinates(points), search_radius)
   near_wb <- left_join(near_wb, wb_atts, by = c("L1" = "index"))
   near_wb <- left_join(data.frame(point_id = c(1:nrow(points))), near_wb, by = point_id)

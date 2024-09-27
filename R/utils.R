@@ -112,6 +112,31 @@ get_node <- function(x, position = "end") {
 
   x <- x |>
     st_coordinates() |>
+    as.data.table()
+
+  if("L2" %in% names(x)) {
+    by <- "L2"
+  } else {
+    by <- "L1"
+  }
+
+  if(position == "end") {
+    x <- x[, .SD[.N], by = by]
+  } else if(position == "start") {
+    x <- x[, .SD[1], by = by]
+  }
+
+  x <- x[, c("X", "Y")]
+
+  st_as_sf(x, coords = c("X", "Y"), crs = in_crs)
+}
+
+
+get_node_dplyr <- function(x, position = "end") {
+  in_crs <- st_crs(x)
+
+  x <- x |>
+    st_coordinates() |>
     as.data.frame()
 
   if("L2" %in% names(x)) {
