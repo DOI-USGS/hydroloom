@@ -33,6 +33,8 @@ matcher <- function(coords, points, search_radius, max_matches = 1) {
   matched
 }
 
+utils::globalVariables(c("L1", "N", "nn.dists"))
+#' @importFrom data.table .N .SD
 matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
 
   max_match_ <- ifelse(nrow(coords) < 1000, nrow(coords), 1000)
@@ -56,10 +58,10 @@ matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
 
   # First get rid of duplicate nodes on the same line.
   matched <- matched[, .SD[nn.dists == min(nn.dists)],
-                     by = .(L1, point_id)]
+                     by = list(L1, point_id)]
 
   # Now limit to max matches per point
-  matched <- matched[, N := seq_len(.N), by = .(point_id)]
+  matched <- matched[, N := seq_len(.N), by = list(point_id)]
 
   matched <- matched[N <= max_matches]
 
@@ -166,6 +168,12 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #' @param precision numeric the resolution of measure precision in the output in meters.
 #' @param max_matches numeric the maximum number of matches to return if multiple are
 #' found in search_radius
+#' @param ids vector of ids corresponding to flowline ids from `x` of the same length
+#' as and order as `points`. If included, index searching will be constrained to one
+#' and only one flowline per point.
+#'
+#' `search radius` is still used with this option but `max_matches` is overridden.
+#'
 #' @returns data.frame with five columns, point_id, id, aggregate_id,
 #' aggregate_id_measure, and offset. point_id is the row or list element in the
 #' point input.
@@ -193,6 +201,9 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #' if(require(nhdplusTools)) {
 #' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #'
+#' if(!any(lengths(sf::st_geometry(sample_flines)) > 1))
+#'   sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
+#'
 #' point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
 #'                     crs = 4326)
 #'
@@ -205,13 +216,18 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #'
 #' index_points_to_lines(sample_flines, point, precision = 30)
 #'
-#' index_points_to_lines(sample_flines,
-#'                       sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
+#' points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
 #'                                       sf::st_point(c(-76.91711, 39.40884)),
 #'                                       sf::st_point(c(-76.88081, 39.36354))),
-#'                                  crs = 4326),
+#'                                  crs = 4326)
+#'
+#' index_points_to_lines(sample_flines, points,
 #'                       search_radius = units::set_units(0.2, "degrees"),
 #'                       max_matches = 10)
+#'
+#' index_points_to_lines(sample_flines, points,
+#'                       search_radius = units::set_units(0.2, "degrees"),
+#'                       ids = c(11689926, 11690110, 11688990))
 #'
 #'  }
 #'  }
@@ -219,7 +235,8 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 index_points_to_lines <- function(x, points,
                                   search_radius = NULL,
                                   precision = NA,
-                                  max_matches = 1) {
+                                  max_matches = 1,
+                                  ids = NULL) {
 
   UseMethod("index_points_to_lines")
 
@@ -230,14 +247,16 @@ index_points_to_lines <- function(x, points,
 index_points_to_lines.data.frame <- function(x, points,
                                   search_radius = NULL,
                                   precision = NA,
-                                  max_matches = 1) {
+                                  max_matches = 1,
+                                  ids = NULL) {
 
   x <- hy(x)
 
   matched <- index_points_to_lines(x, points,
                                    search_radius = search_radius,
                                    precision = precision,
-                                   max_matches = max_matches)
+                                   max_matches = max_matches,
+                                   ids = ids)
 
   rename_indexed(x, matched)
 
@@ -248,7 +267,8 @@ index_points_to_lines.data.frame <- function(x, points,
 index_points_to_lines.hy <- function(x, points,
                                      search_radius = NULL,
                                      precision = NA,
-                                     max_matches = 1) {
+                                     max_matches = 1,
+                                     ids = NULL) {
 
   # TODO: handle for aggregate or not?
   check_names(x, c(id), "index_points_to_lines")
@@ -266,12 +286,24 @@ index_points_to_lines.hy <- function(x, points,
     } else {
       point_buffer <- st_buffer(points, search_radius)
     }
+
   }
 
   if(units(search_radius) == units(as_units("degrees"))) {
     if(st_is_longlat(in_crs) & search_radius > set_units(1, "degree")) {
       warning("search radius is large for lat/lon input, are you sure?")
     }
+  }
+
+  # filter x to ids we need
+  if(!is.null(ids)) {
+    if(!all(ids %in% x$id)) stop("ids is not NULL and not all ids are in the id field of x")
+
+    if(!length(ids) == length(points)) stop("ids input must be 1:1 with points")
+
+    x <- filter(x, .data$id %in% ids)
+
+    max_matches <- 50
   }
 
   x <- match_crs(x, points,
@@ -352,7 +384,6 @@ index_points_to_lines.hy <- function(x, points,
     # downstream to upstream order
     x <- st_coordinates(x)
 
-
     matched <- matcher_dt(x, points, search_radius, max_matches = max_matches) |>
       left_join(select(fline_atts, id, "precision_index"),
                 by = c("L1" = "precision_index"))
@@ -363,7 +394,6 @@ index_points_to_lines.hy <- function(x, points,
 
     x <- st_coordinates(x)
 
-
     matched <- matcher_dt(x, points, search_radius, max_matches = max_matches) |>
       left_join(select(fline_atts, id, "index"),
                 by = c("L1" = "index"))
@@ -371,6 +401,14 @@ index_points_to_lines.hy <- function(x, points,
     matched <- mutate(matched, nn.dists = ifelse(.data$nn.dists > search_radius,
                                                  NA, .data$nn.dists))
 
+  }
+
+  if(!is.null(ids)) {
+    ids <- data.frame(point_id = seq_len(length(ids)), check_ids = ids)
+
+    matched <- left_join(matched, ids, by = "point_id") |>
+      filter(.data$id == .data$check_ids) |>
+      select(-all_of("check_ids"))
   }
 
   x <- x |>
