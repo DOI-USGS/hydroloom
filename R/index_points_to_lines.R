@@ -33,6 +33,8 @@ matcher <- function(coords, points, search_radius, max_matches = 1) {
   matched
 }
 
+utils::globalVariables(c("L1", "N", "nn.dists"))
+#' @importFrom data.table .N .SD
 matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
 
   max_match_ <- ifelse(nrow(coords) < 1000, nrow(coords), 1000)
@@ -56,10 +58,10 @@ matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
 
   # First get rid of duplicate nodes on the same line.
   matched <- matched[, .SD[nn.dists == min(nn.dists)],
-                     by = .(L1, point_id)]
+                     by = list(L1, point_id)]
 
   # Now limit to max matches per point
-  matched <- matched[, N := seq_len(.N), by = .(point_id)]
+  matched <- matched[, N := seq_len(.N), by = list(point_id)]
 
   matched <- matched[N <= max_matches]
 
@@ -219,7 +221,7 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #'                                       sf::st_point(c(-76.88081, 39.36354))),
 #'                                  crs = 4326)
 #'
-#' index_points_to_lines(sample_flines, points),
+#' index_points_to_lines(sample_flines, points,
 #'                       search_radius = units::set_units(0.2, "degrees"),
 #'                       max_matches = 10)
 #'

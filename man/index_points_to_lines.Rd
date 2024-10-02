@@ -108,7 +108,7 @@ points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
                                       sf::st_point(c(-76.88081, 39.36354))),
                                  crs = 4326)
 
-index_points_to_lines(sample_flines, points),
+index_points_to_lines(sample_flines, points,
                       search_radius = units::set_units(0.2, "degrees"),
                       max_matches = 10)
 
