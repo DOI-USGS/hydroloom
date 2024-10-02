@@ -177,6 +177,27 @@ test_that("point indexing to for multiple points works", {
 
   expect_true(all(matches2$REACHCODE %in% matches$REACHCODE))
 
+  expect_equal(index_points_to_lines(flines_in, point,
+                                     search_radius = units::set_units(0.2, "degrees"),
+                                     ids = c(11689926, 11690110, 11688990))$COMID,
+               c(11689926L, 11690110L, 11688990L))
+
+  # check that a large search radius still works
+  expect_equal(suppressWarnings(index_points_to_lines(flines_in, point,
+                                     search_radius = units::set_units(5, "degrees"),
+                                     ids = c(11689926, 11690110, 11688990))$COMID),
+               c(11689926L, 11690110L, 11688990L))
+
+  expect_error(index_points_to_lines(flines_in, point,
+                                     search_radius = units::set_units(0.2, "degrees"),
+                                     ids = c(11689926, 11690110, 11688992)),
+               "not all ids are in the id field of x")
+
+  expect_error(index_points_to_lines(flines_in, point,
+                                     search_radius = units::set_units(0.2, "degrees"),
+                                     ids = c(11689926, 11690110)),
+               "ids input must be 1:1 with points")
+
 })
 
 test_that("multipart indexing", {
@@ -232,11 +253,13 @@ test_that("disambiguate", {
 
   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
+  points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
+                            sf::st_point(c(-76.91711, 39.40884)),
+                            sf::st_point(c(-76.88081, 39.36354))),
+                       crs = 4326)
+
   hydro_location <- sf::st_sf(point_id = c(1, 2, 3),
-                              geom = sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
-                                                     sf::st_point(c(-76.91711, 39.40884)),
-                                                     sf::st_point(c(-76.88081, 39.36354))),
-                                                crs = 4326),
+                              geom = points,
                               totda = c(23.6, 7.3, 427.9),
                               nameid = c("Patapsco", "", "Falls Run River"))
 
