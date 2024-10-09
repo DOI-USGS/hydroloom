@@ -51,7 +51,6 @@
 #'
 navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
-
   # check if we to index ids or from index ids
   # should this be done with a class attribute?
 
@@ -60,10 +59,16 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
     if(!grepl("down", direction))
       stop("Direction must be 'down' if x contains to index ids")
 
+    if(grepl("main", direction) & !"main" %in% names(x))
+      stop("for downmain, index ids must include main element")
+
   } else if(all(c("froms", "lengths", "froms_list") %in% names(x))) {
 
     if(!grepl("up", direction))
       stop("Direction must be 'up' if x contains from index ids")
+
+    if(grepl("main", direction) & !"main" %in% names(x))
+      stop("for upmain, index ids must include main element")
 
   } else {
 
@@ -111,16 +116,10 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
   # if we are going upstream, we need to update names
   # the code below assumes the graph is directed where we are going
   if(grepl("up", direction)) {
-    g_names <- c("to", "lengths")
-    to_list_names <- c("indid", "id", "toindid")
+    names(g)[names(g) == "froms"] <- "to"
+    names(g)[names(g) == "froms_list"] <- "to_list"
 
-    if(grepl("main", direction)) {
-      g_names <- c(g_names, "main")
-      to_list_names <- c(to_list_names, "main")
-    }
-
-    names(g) <- c(g_names, "to_list")
-    names(g$to_list) <- to_list_names
+    names(g$to_list)[names(g$to_list) == "fromindid"] <- "toindid"
   }
 
   # if the above resulted in dat that won't work

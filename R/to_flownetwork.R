@@ -54,8 +54,8 @@ to_flownetwork <- function(x, warn_dendritic = TRUE) {
                      by = "toid") |>
     left_join(distinct(select(x, all_of(c(toid = id, toid_level = levelpath)))),
                      by = "toid") |>
-    mutate(downmain = .data$toid_divergence != 2) |>
-    mutate(upmain = .data$toid_level == levelpath) |> # friggin dplyr syntax
+    mutate(downmain = is.na(.data$toid_divergence) | .data$toid_divergence != 2) |>
+    mutate(upmain = !is.na(.data$toid_level) & .data$toid_level == levelpath) |> # friggin dplyr syntax
     select(id, toid, upmain, downmain) |>
     distinct()
 
