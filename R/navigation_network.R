@@ -85,6 +85,8 @@ navigate_hydro_network <- function(x, start, mode, distance = NULL) {
     stop("must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
   }
 
+  if(is.na(start)) stop("Must provide a value for start.")
+
   required_atts <- required_atts_navigate(mode, distance)
 
   if(missing(x)) {

@@ -12,13 +12,14 @@
 x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
 
 test_that("get_DM works normal", {
-  expect_error(navigate_hydro_network(dplyr::select(x, -COMID), mode = "DM"),
+  expect_error(navigate_hydro_network(dplyr::select(x, -COMID), 1234, mode = "DM"),
                "DM requires.*")
 
   expect_error(navigate_hydro_network(mode = "BK"),
                "must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
 
-  expect_error(navigate_hydro_network(mode = "DD"), "DD requires.*")
+  expect_error(navigate_hydro_network(dplyr::select(x, -COMID),
+                                      1234, mode = "DD"), "DD requires.*")
 
   result <- navigate_hydro_network(x, 11689050, "DM")
   expect_equal(length(result), 26)
@@ -155,5 +156,7 @@ test_that("get_DM works if missing the outlet", {
   x_borkd <- dplyr::filter(x, TerminalFl == 0)
   result <- navigate_hydro_network(x_borkd, 11688810, "DM")
   expect_equal(length(result), 34)
+
+  expect_error(navigate_hydro_network(x_borked, NA, "DM"), "Must provide a value for start.")
 })
 
