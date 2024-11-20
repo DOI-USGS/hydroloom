@@ -77,7 +77,7 @@
 
 	L.TileLayer.Provider.providers = {
 		OpenStreetMap: {
-			url: '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			url: '//tile.openstreetmap.org/{z}/{x}/{y}.png',
 			options: {
 				maxZoom: 19,
 				attribution:
