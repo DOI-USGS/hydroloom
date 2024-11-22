@@ -16,6 +16,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       _R_CHECK_TESTS_NLINES_: 0
       NOT_CRAN: true
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: true
     strategy:
       fail-fast: false
       matrix:
