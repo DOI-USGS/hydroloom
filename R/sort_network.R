@@ -64,6 +64,7 @@ sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
 #' @export
 #'
 sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
+
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
   x <- select(st_drop_geometry(x), id, toid, everything())

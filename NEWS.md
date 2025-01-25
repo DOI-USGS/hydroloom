@@ -1,3 +1,8 @@
+hydroloom 1.1.1
+==========
+
+- fix bug with sort_network when duplicate entries are in the extended attributes -- #52
+
 hydroloom 1.1.0
 ==========
 

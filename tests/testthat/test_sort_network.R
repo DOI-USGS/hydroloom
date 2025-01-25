@@ -217,3 +217,17 @@ test_that("add_topo_sort deals with diversions", {
       unique(base_network$topo_sort[base_network$id == 8317403]))
 
 })
+
+test_that("duplicated attributes", {
+  network <- readRDS("data/sort_network_dups.rds")
+
+  dedup <- dplyr::distinct(dplyr::select(network, id, toid))
+
+  sorted <- sort_network(network)
+
+  sorted_dedup <- sort_network(dedup)
+
+  sorted_dedup_2 <- dplyr::distinct(dplyr::select(sorted, id, toid))
+
+  expect_equal(sorted_dedup, sorted_dedup_2)
+})
