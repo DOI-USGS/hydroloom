@@ -53,6 +53,11 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
           Run check_hy_graph to identify issues.")
   }
 
+  vars <- c("id", "toid")
+  if("downmain" %in% names(x)) vars <- c(vars, "downmain")
+
+  x <- select(x, all_of(vars))
+
   x <- distinct(x)
 
   out_val <- get_outlet_value(x)
@@ -65,9 +70,6 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 
     out_rename <- copy(out)
     setnames(out_rename, old = "indid", new = "toindid")
-
-    vars <- c("id", "toid")
-    if("downmain" %in% names(x)) vars <- c(vars, "downmain")
 
     out <- merge(merge(as.data.table(x)[, vars, with = FALSE],
                        out, by = "id", all.x = TRUE, sort = FALSE),
