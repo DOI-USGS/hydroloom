@@ -2,6 +2,8 @@ hydroloom 1.1.1
 ==========
 
 - fix bug with sort_network when duplicate entries are in the extended attributes -- #52
+- add specific id search to index_points_to_lines for #24
+- error handling #49
 
 hydroloom 1.1.0
 ==========
