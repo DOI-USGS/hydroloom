@@ -1,4 +1,4 @@
-pandoc: '3.5'
+pandoc: 3.6.3
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
@@ -7,7 +7,7 @@ articles:
   hydroloom: hydroloom.html
   network_navigation: network_navigation.html
   non-dendritic: non-dendritic.html
-last_built: 2024-11-22T19:24Z
+last_built: 2025-10-01T19:41Z
 urls:
   reference: https://doi-usgs.github.io/hydroloom/reference
   article: https://doi-usgs.github.io/hydroloom/articles
