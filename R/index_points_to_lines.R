@@ -1,39 +1,5 @@
-
-matcher <- function(coords, points, search_radius, max_matches = 1) {
-
-  max_match_ <- ifelse(nrow(coords) < 1000, nrow(coords), 1000)
-
-  matched <- nn2(data = coords[, 1:2],
-                 query = matrix(points[, c("X", "Y")], ncol = 2),
-                 k = ifelse(max_matches > 1, max_match_, 1),
-                 searchtype = "radius",
-                 radius = search_radius)
-
-  matched <- data.frame(nn.idx = as.integer(matched$nn.idx),
-                        nn.dists = as.numeric(matched$nn.dists),
-                        point_id = rep(1:nrow(points), ncol(matched$nn.idx)))
-
-  matched <- left_join(matched, mutate(data.frame(L1 = coords[, "L1"]),
-                                       index = seq_len(nrow(coords))),
-                       by = c("nn.idx" = "index"))
-
-  matched <- filter(matched, .data$nn.dists <= search_radius)
-
-  # First get rid of duplicate nodes on the same line.
-  matched <- group_by(matched, .data$L1, .data$point_id) |>
-    filter(.data$nn.dists == min(.data$nn.dists)) |>
-    ungroup()
-
-  # Now limit to max matches per point
-  matched <- group_by(matched, .data$point_id) |>
-    filter(row_number() <= max_matches) |>
-    ungroup() |>
-    as.data.frame()
-
-  matched
-}
-
 utils::globalVariables(c("L1", "N", "nn.dists"))
+
 #' @importFrom data.table .N .SD
 matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
 
@@ -119,39 +85,13 @@ make_singlepart <- function(x, warn_text = "", stop_on_real_multi = FALSE) {
   x
 }
 
-# utility function
-get_fl <- function(hydro_location, net) {
-  if(hydro_location$aggregate_id_measure == 100) {
-    filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
-  } else {
-    filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
-             .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
-  }
-}
+rename_indexed <- function(x, matched) {
+  orig_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == id])
+  orig_aggregate_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == aggregate_id])
+  new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
 
-
-add_index <- function(x) {
-  x |>
-    as.data.frame() |>
-    mutate(index = seq_len(nrow(x)))
-}
-
-add_len <- function(x) {
-  x |>
-    mutate(len  = sqrt( ( (.data$X - (lag(.data$X))) ^ 2) +
-                          ( ( (.data$Y - (lag(.data$Y))) ^ 2)))) |>
-    mutate(len = replace_na(.data$len, 0)) |>
-    mutate(len = cumsum(.data$len)) |>
-    mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
-}
-
-interp_meas <- function(m, x1, y1, x2, y2) {
-  list(x1 + (m / 100) * (x2 - x1),
-       y1 + (m / 100) * (y2 - y1))
+  rename(matched, any_of(setNames(c(id, aggregate_id, aggregate_id_measure),
+                                  c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }
 
 #' @title Index Points to Lines
@@ -556,13 +496,4 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
   }
 
   out
-}
-
-rename_indexed <- function(x, matched) {
-  orig_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == id])
-  orig_aggregate_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == aggregate_id])
-  new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
-
-  rename(matched, any_of(setNames(c(id, aggregate_id, aggregate_id_measure),
-                                         c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }

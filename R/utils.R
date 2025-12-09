@@ -285,6 +285,21 @@ rescale_measures <- function(measure, from, to) {
   })
 }
 
+add_index <- function(x) {
+  x |>
+    as.data.frame() |>
+    mutate(index = seq_len(nrow(x)))
+}
+
+add_len <- function(x) {
+  x |>
+    mutate(len  = sqrt( ( (.data$X - (lag(.data$X))) ^ 2) +
+                          ( ( (.data$Y - (lag(.data$Y))) ^ 2)))) |>
+    mutate(len = replace_na(.data$len, 0)) |>
+    mutate(len = cumsum(.data$len)) |>
+    mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
+}
+
 # utility function
 get_fl <- function(hydro_location, net) {
   if(hydro_location$aggregate_id_measure == 100) {
