@@ -140,6 +140,7 @@ print.hydroloom_names <- function(x, ...) {
 
 # input names that should be changed to replacement names
 hydroloom_name_map <- c(
+  id3dhp = id,
   comid = id,
   nhdplusid = id,
   featureid = id,
@@ -192,6 +193,7 @@ hydroloom_name_map <- c(
   rpuid = raster_proc_unit,
 
   reachcode = aggregate_id,
+  mainstemid = aggregate_id,
   reach_meas = aggregate_id_measure,
   reachcode_measure = aggregate_id_measure,
   frommeas = aggregate_id_from_measure,

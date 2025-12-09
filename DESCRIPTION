@@ -1,6 +1,6 @@
 Package: hydroloom
 Title: Utilities to Weave Hydrologic Fabrics
-Version: 1.1.1
+Version: 1.1.2
 Authors@R: 
     person(given = "David", 
            family = "Blodgett", 
@@ -14,7 +14,7 @@ Suggests: testthat, nhdplusTools, future, lwgeom, future.apply, knitr, gifski, m
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/testthat/parallel: true
 Config/testthat/edition: 3
 VignetteBuilder: knitr

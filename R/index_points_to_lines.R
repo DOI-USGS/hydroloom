@@ -114,9 +114,12 @@ rename_indexed <- function(x, matched) {
 #'
 #' `search radius` is still used with this option but `max_matches` is overridden.
 #'
-#' @returns data.frame with five columns, point_id, id, aggregate_id,
+#' @returns data.frame with up to five columns, point_id, id, aggregate_id,
 #' aggregate_id_measure, and offset. point_id is the row or list element in the
-#' point input.
+#' point input. If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
+#' it will not be included in the output. If from and to measures are not included
+#' for each id in x, measures will not be included in the output.
+#'
 #' @details
 #' Note 1: Inputs are cast into LINESTRINGS. Because of this, the measure output
 #' of inputs that are true multipart lines may be in error.
@@ -133,6 +136,12 @@ rename_indexed <- function(x, matched) {
 #' handling of precision parameter.
 #'
 #' Note 5: "from" is downstream -- 0 is the outlet "to" is upstream -- 100 is the inlet
+#'
+#' Note 6: This function does not assume that it has access to the complete
+#' aggregate feature. From and to aggregate id measures must be included for each
+#' flowline in order to have aggregate id measures (reachcode or mainstem
+#' measures) in the output.
+#'
 #' @name index_points_to_lines
 #' @export
 #' @examples
@@ -359,7 +368,10 @@ index_points_to_lines.hy <- function(x, points,
 
   matched <- select(matched, point_id, node = "nn.idx", offset = "nn.dists", id)
 
-  if(aggregate_id_from_measure %in% names(fline_atts)) {
+  select_vec <- c("index")
+  select_vec2 <- c(point_id, id, offset)
+
+  if(all(c(aggregate_id_from_measure, aggregate_id) %in% names(fline_atts))) {
     x <- x |>
       group_by(.data$L1) |>
       add_len() |>
@@ -373,7 +385,7 @@ index_points_to_lines.hy <- function(x, points,
     select_vec <- c("index", aggregate_id, aggregate_id_measure)
     select_vec2 <- c(point_id, id, aggregate_id, aggregate_id_measure, offset)
 
-  } else {
+  } else if(aggregate_id %in% names(x)) {
 
     select_vec <- c("index", aggregate_id)
     select_vec2 <- c(point_id, id, aggregate_id, offset)

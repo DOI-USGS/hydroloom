@@ -101,6 +101,12 @@ test_that("point indexing to nearest existing node works as expected", {
                           REACHCODE_measure = 25.9,
                           offset = 0.0000959), tolerance = 0.001)
 
+  expect_equal(index_points_to_lines(dplyr::select(flines_in, -REACHCODE),
+                                     point),
+               data.frame(point_id = 1,
+                          COMID = 11688298,
+                          offset = 0.00034), tolerance = 0.001)
+
   point_w <- sf::st_sfc(sf::st_point(c(-76.86934, 39.49328)), crs = 4326)
 
   expect_warning(index_points_to_lines(flines_in, point_w,
