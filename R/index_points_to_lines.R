@@ -219,7 +219,6 @@ index_points_to_lines.hy <- function(x, points,
                                      max_matches = 1,
                                      ids = NULL) {
 
-  # TODO: handle for aggregate or not?
   check_names(x, c(id), "index_points_to_lines")
 
   in_crs <- st_crs(points)

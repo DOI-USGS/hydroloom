@@ -83,6 +83,13 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
 add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
                                  override_factor = NULL, status = FALSE) {
 
+  if(nrow(x) == 0) {
+    x[[levelpath_outlet_id]] <- NA_character_
+    x[[topo_sort]] <- NA_integer_
+    x[[levelpath]] <- NA_integer_
+    return(x)
+  }
+
   if(!status) {
     pbopts <- pboptions(type = "none")
     on.exit(pboptions(pbopts), add = TRUE)
