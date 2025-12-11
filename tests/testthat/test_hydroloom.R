@@ -19,17 +19,17 @@ test_that("s3 class creation", {
 
   expect_true(is.hy(y))
 
-  expect_false(is.hy(unclass(y)))
+  expect_message(expect_false(is.hy(unclass(y))), "no hy class attribute")
 
   y$toid[1] <- NA
 
-  expect_false(is.hy(y))
+  expect_message(expect_false(is.hy(y)), "some na toids")
 
   y <- hy(x)
 
   attr(y, "orig_names") <- NULL
 
-  expect_false(is.hy(y))
+  expect_message(expect_false(is.hy(y)), "no original names attribute")
 
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
@@ -39,7 +39,7 @@ test_that("s3 class creation", {
 
   expect_true(inherits(hy(x), "tbl"))
 
-  expect_error(x <- hy_reverse(x))
+  expect_message(expect_error(x <- hy_reverse(x)), "no hy class attribute")
 
   x <- sf::st_sf(dplyr::as_tibble(x))
 

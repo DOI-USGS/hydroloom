@@ -93,5 +93,9 @@ make_attribute_topology.hy <- function(x, min_distance) {
 
   nodes$toid <- replace_na(nodes$toid, get_outlet_value(nodes))
 
-  left_join(select(st_drop_geometry(x), -all_of("row")), select(nodes, id, toid), by = id)
+  out <- left_join(select(st_drop_geometry(x), -all_of("row")), select(nodes, id, toid), by = id)
+
+  out$toid <- replace_na(out$toid, get_outlet_value(out))
+
+  out
 }

@@ -197,7 +197,9 @@ hydroloom_name_map <- c(
   reach_meas = aggregate_id_measure,
   reachcode_measure = aggregate_id_measure,
   frommeas = aggregate_id_from_measure,
-  tomeas = aggregate_id_to_measure)
+  tomeas = aggregate_id_to_measure,
+  mainstemid_from_measure = aggregate_id_from_measure,
+  mainstemid_to_measure = aggregate_id_to_measure)
 
 hydroloom_env <- new.env()
 

@@ -272,16 +272,7 @@ index_points_to_lines.hy <- function(x, points,
 
   fline_atts <- st_drop_geometry(x)
 
-  if(st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
-    warning("converting to LINESTRING, this may be slow, check results")
-  }
-
-  suppressWarnings(x <- st_cast(x, "LINESTRING", warn = FALSE))
-
-  if(!"XY" %in% class(st_geometry(x)[[1]])) {
-    warning("dropping z coordinates, this may be slow")
-    x <- st_zm(x)
-  }
+  x <- force_linestring(x)
 
   if (nrow(x) != nrow(fline_atts)) {
 

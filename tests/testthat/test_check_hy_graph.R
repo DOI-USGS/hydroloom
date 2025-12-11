@@ -8,16 +8,20 @@ test_that("base check_hy_graph", {
 })
 
 test_that("loop check", {
+  old_opts <- pbapply::pboptions()
+  pbapply::pboptions(type = "none")
+
   # makes a loop of three features 3 -> 5 -> 4 -> 3
   test_data <- data.frame(id = c(1, 2, 3, 4, 5, 5, 6),
                         toid = c(3, 5, 5, 3, 4, 6, 0))
 
   g <- make_index_ids(test_data)
 
-  suppressWarnings(expect_warning(hydroloom:::check_hy_graph_internal(g, c(1, 2)),
-                                  "loop"))
+  suppressMessages(
+    expect_warning(expect_warning(expect_warning(hydroloom:::check_hy_graph_internal(g, c(1, 2)),
+                                  "loop"), "loop"), "loop"))
 
-  suppressWarnings(remove <- check_hy_graph(test_data, loop_check = TRUE))
+  suppressMessages(suppressWarnings(remove <- check_hy_graph(test_data, loop_check = TRUE)))
 
   expect_equal(remove,
                structure(list(id = c(3),
@@ -54,6 +58,8 @@ test_that("loop check", {
   expect_equal(check, numeric())
 
   expect_true(check_hy_graph(test_data, loop_check = TRUE))
+
+  pbapply::pboptions(old_opts)
 })
 
 test_that("more check", {

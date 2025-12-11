@@ -13,7 +13,7 @@ add_measures(x)
 \method{add_measures}{hy}(x)
 }
 \arguments{
-\item{x}{sf data.frame compatible with \link{hydroloom_names} with atleast an
+\item{x}{sf data.frame compatible with \link{hydroloom_names} with atleast
 id and aggregate_id attributes. A pre-populated toid attribute will be used
 if present.}
 }
@@ -32,4 +32,16 @@ of the top and bottom of each flowline along each aggregate line.
 If no "toid" attribute is included, \link{make_attribute_topology} is used to
 to create one. This is required to ensure the flowlines making up each
 aggregate line are sorted in a known upstream to downstream order.
+
+This function assumes that all flowlines that make up an aggregate feature
+are included. Returned measures will be incomplete and incorrect if aggregate
+features (mainstems of reaches) are truncated.
+}
+\examples{
+g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+d <- dplyr::select(g, COMID, REACHCODE) |>
+  sf::st_cast("LINESTRING")
+
+add_measures(d)
 }
