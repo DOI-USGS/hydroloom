@@ -41,6 +41,11 @@ get_hydro_location <- function(indexes, flowpath) {
 
 }
 
+interp_meas <- function(m, x1, y1, x2, y2) {
+  list(x1 + (m / 100) * (x2 - x1),
+       y1 + (m / 100) * (y2 - y1))
+}
+
 get_hydro_location_single <- function(x) {
 
   coords <- st_coordinates(x[[2]]) |>

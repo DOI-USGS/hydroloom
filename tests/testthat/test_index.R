@@ -93,13 +93,20 @@ test_that("point indexing to nearest existing node works as expected", {
                                        max_matches = 5)),
                5)
 
-  expect_equal(index_points_to_lines(flines_in, point, search_radius = sr,
-                                  precision = 30),
+  suppressMessages(
+    expect_equal(index_points_to_lines(flines_in, point, search_radius = sr,
+                                       precision = 30),
+                 data.frame(point_id = 1,
+                            COMID = 11688298,
+                            REACHCODE = "02060003000579",
+                            REACHCODE_measure = 25.9,
+                            offset = 0.0000959), tolerance = 0.001))
+
+  expect_equal(index_points_to_lines(dplyr::select(flines_in, -REACHCODE),
+                                     point),
                data.frame(point_id = 1,
                           COMID = 11688298,
-                          REACHCODE = "02060003000579",
-                          REACHCODE_measure = 25.9,
-                          offset = 0.0000959), tolerance = 0.001)
+                          offset = 0.00034), tolerance = 0.001)
 
   point_w <- sf::st_sfc(sf::st_point(c(-76.86934, 39.49328)), crs = 4326)
 
@@ -306,4 +313,30 @@ test_that("disambiguate", {
                                     dplyr::select(sample_flines, COMID, GNIS_NAME),
                                     dplyr::select(hydro_location, point_id, totda)),
                "flowpath and hydrolocation metrics must both be numeric or character")
+})
+
+test_that("3dhp", {
+  if(!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+
+  try(source(system.file("extdata", "3dhp_yahara_flowlines.R", package = "nhdplusTools")))
+
+  if(!grepl("geojson", sample_3dhp_data)) skip("data not available?")
+
+  threedhp_data <- sf::read_sf(sample_3dhp_data)
+
+  suppressWarnings(threedhp_data <- select(threedhp_data, id3dhp, mainstemid) |>
+                     sf::st_transform(5070) |>
+                     sf::st_cast("LINESTRING"))
+
+  expect_message(threedhp_data <- add_measures(threedhp_data), "no toid found")
+
+  point <- sf::st_as_sfc("POINT (-89.3525 43.20889)", crs = 4326) |>
+    sf::st_transform(5070)
+
+  expect_equal(index_points_to_lines(threedhp_data, point),
+               structure(list(point_id = 1L, id3dhp = "9Q1QM",
+                              mainstemid = "https://geoconnex.us/ref/mainstems/377002",
+                              mainstemid_measure = 80.7005, offset = 16.8252448503925),
+                         row.names = c(NA, -1L),
+                         class = "data.frame"))
 })

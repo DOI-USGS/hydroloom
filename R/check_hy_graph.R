@@ -106,8 +106,10 @@ check_hy_graph_internal <- function(g, all_starts) {
   # trigger for making a new path
   new_path <- FALSE
 
-  pb = txtProgressBar(0, ncol(g$to), style = 3)
-  on.exit(close(pb))
+  if(pbapply::dopb()) {
+    pb = txtProgressBar(0, ncol(g$to), style = 3)
+    on.exit(close(pb))
+  }
   n <- 0
 
   while(node > 0) {
@@ -118,7 +120,7 @@ check_hy_graph_internal <- function(g, all_starts) {
     # mark it as visited
     visited_tracker[node] <- TRUE
 
-    if(!n %% 100)
+    if(!n %% 100 & pbapply::dopb())
       setTxtProgressBar(pb, n)
 
 
@@ -184,8 +186,8 @@ check_hy_graph_internal <- function(g, all_starts) {
     }
 
   }
-
-  setTxtProgressBar(pb, n)
+  if(pbapply::dopb())
+    setTxtProgressBar(pb, n)
 
   # if we got this far, Cool!
   unique(g$to_list$id[as.integer(out_stack$as_list())])

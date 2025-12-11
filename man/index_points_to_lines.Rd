@@ -57,9 +57,11 @@ and only one flowline per point.
 \verb{search radius} is still used with this option but \code{max_matches} is overridden.}
 }
 \value{
-data.frame with five columns, point_id, id, aggregate_id,
+data.frame with up to five columns, point_id, id, aggregate_id,
 aggregate_id_measure, and offset. point_id is the row or list element in the
-point input.
+point input. If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
+it will not be included in the output. If from and to measures are not included
+for each id in x, measures will not be included in the output.
 }
 \description{
 given an sf point geometry column, return id, aggregate_id
@@ -81,6 +83,11 @@ Note 4: See \code{dfMaxLength} input to sf::st_segmentize() for details of
 handling of precision parameter.
 
 Note 5: "from" is downstream -- 0 is the outlet "to" is upstream -- 100 is the inlet
+
+Note 6: This function does not assume that it has access to the complete
+aggregate feature. From and to aggregate id measures must be included for each
+flowline in order to have aggregate id measures (reachcode or mainstem
+measures) in the output.
 }
 \examples{
 

@@ -1,6 +1,6 @@
 Package: hydroloom
 Title: Utilities to Weave Hydrologic Fabrics
-Version: 1.1.1
+Version: 1.1.2
 Authors@R: 
     person(given = "David", 
            family = "Blodgett", 
@@ -11,10 +11,11 @@ Description: A collection of utilities that support creation of network attribut
 Depends: R (>= 4.1.0)
 Imports: dplyr, data.table, sf, units, stats, methods, utils, pbapply, tidyr, RANN, rlang, fastmap
 Suggests: testthat, nhdplusTools, future, lwgeom, future.apply, knitr, gifski, mapview, geos
+Remotes: DOI-USGS/nhdplusTools
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/testthat/parallel: true
 Config/testthat/edition: 3
 VignetteBuilder: knitr

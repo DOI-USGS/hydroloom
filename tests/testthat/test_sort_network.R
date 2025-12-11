@@ -219,13 +219,19 @@ test_that("add_topo_sort deals with diversions", {
 })
 
 test_that("duplicated attributes", {
-  network <- readRDS("data/sort_network_dups.rds")
+  network <- readRDS(list.files(pattern = "sort_network_dups.rds", full.names = TRUE, recursive = TRUE))
 
   dedup <- dplyr::distinct(dplyr::select(network, id, toid))
 
-  sorted <- sort_network(network)
+  expect_warning(
+    expect_warning(
+      sorted <- sort_network(network), "Outlets don't follow hydroloom convention"),
+    "no outlet found")
 
-  sorted_dedup <- sort_network(dedup)
+  expect_warning(
+    expect_warning(
+      sorted_dedup <- sort_network(dedup), "Outlets don't follow hydroloom convention"),
+    "no outlet found")
 
   sorted_dedup_2 <- dplyr::distinct(dplyr::select(sorted, id, toid))
 

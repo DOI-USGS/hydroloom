@@ -1,39 +1,5 @@
-
-matcher <- function(coords, points, search_radius, max_matches = 1) {
-
-  max_match_ <- ifelse(nrow(coords) < 1000, nrow(coords), 1000)
-
-  matched <- nn2(data = coords[, 1:2],
-                 query = matrix(points[, c("X", "Y")], ncol = 2),
-                 k = ifelse(max_matches > 1, max_match_, 1),
-                 searchtype = "radius",
-                 radius = search_radius)
-
-  matched <- data.frame(nn.idx = as.integer(matched$nn.idx),
-                        nn.dists = as.numeric(matched$nn.dists),
-                        point_id = rep(1:nrow(points), ncol(matched$nn.idx)))
-
-  matched <- left_join(matched, mutate(data.frame(L1 = coords[, "L1"]),
-                                       index = seq_len(nrow(coords))),
-                       by = c("nn.idx" = "index"))
-
-  matched <- filter(matched, .data$nn.dists <= search_radius)
-
-  # First get rid of duplicate nodes on the same line.
-  matched <- group_by(matched, .data$L1, .data$point_id) |>
-    filter(.data$nn.dists == min(.data$nn.dists)) |>
-    ungroup()
-
-  # Now limit to max matches per point
-  matched <- group_by(matched, .data$point_id) |>
-    filter(row_number() <= max_matches) |>
-    ungroup() |>
-    as.data.frame()
-
-  matched
-}
-
 utils::globalVariables(c("L1", "N", "nn.dists"))
+
 #' @importFrom data.table .N .SD
 matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
 
@@ -119,39 +85,13 @@ make_singlepart <- function(x, warn_text = "", stop_on_real_multi = FALSE) {
   x
 }
 
-# utility function
-get_fl <- function(hydro_location, net) {
-  if(hydro_location$aggregate_id_measure == 100) {
-    filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
-  } else {
-    filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
-             .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
-  }
-}
+rename_indexed <- function(x, matched) {
+  orig_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == id])
+  orig_aggregate_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == aggregate_id])
+  new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
 
-
-add_index <- function(x) {
-  x |>
-    as.data.frame() |>
-    mutate(index = seq_len(nrow(x)))
-}
-
-add_len <- function(x) {
-  x |>
-    mutate(len  = sqrt( ( (.data$X - (lag(.data$X))) ^ 2) +
-                          ( ( (.data$Y - (lag(.data$Y))) ^ 2)))) |>
-    mutate(len = replace_na(.data$len, 0)) |>
-    mutate(len = cumsum(.data$len)) |>
-    mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
-}
-
-interp_meas <- function(m, x1, y1, x2, y2) {
-  list(x1 + (m / 100) * (x2 - x1),
-       y1 + (m / 100) * (y2 - y1))
+  rename(matched, any_of(setNames(c(id, aggregate_id, aggregate_id_measure),
+                                  c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }
 
 #' @title Index Points to Lines
@@ -174,9 +114,12 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #'
 #' `search radius` is still used with this option but `max_matches` is overridden.
 #'
-#' @returns data.frame with five columns, point_id, id, aggregate_id,
+#' @returns data.frame with up to five columns, point_id, id, aggregate_id,
 #' aggregate_id_measure, and offset. point_id is the row or list element in the
-#' point input.
+#' point input. If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
+#' it will not be included in the output. If from and to measures are not included
+#' for each id in x, measures will not be included in the output.
+#'
 #' @details
 #' Note 1: Inputs are cast into LINESTRINGS. Because of this, the measure output
 #' of inputs that are true multipart lines may be in error.
@@ -193,6 +136,12 @@ interp_meas <- function(m, x1, y1, x2, y2) {
 #' handling of precision parameter.
 #'
 #' Note 5: "from" is downstream -- 0 is the outlet "to" is upstream -- 100 is the inlet
+#'
+#' Note 6: This function does not assume that it has access to the complete
+#' aggregate feature. From and to aggregate id measures must be included for each
+#' flowline in order to have aggregate id measures (reachcode or mainstem
+#' measures) in the output.
+#'
 #' @name index_points_to_lines
 #' @export
 #' @examples
@@ -270,7 +219,6 @@ index_points_to_lines.hy <- function(x, points,
                                      max_matches = 1,
                                      ids = NULL) {
 
-  # TODO: handle for aggregate or not?
   check_names(x, c(id), "index_points_to_lines")
 
   in_crs <- st_crs(points)
@@ -324,16 +272,7 @@ index_points_to_lines.hy <- function(x, points,
 
   fline_atts <- st_drop_geometry(x)
 
-  if(st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
-    warning("converting to LINESTRING, this may be slow, check results")
-  }
-
-  suppressWarnings(x <- st_cast(x, "LINESTRING", warn = FALSE))
-
-  if(!"XY" %in% class(st_geometry(x)[[1]])) {
-    warning("dropping z coordinates, this may be slow")
-    x <- st_zm(x)
-  }
+  x <- force_linestring(x)
 
   if (nrow(x) != nrow(fline_atts)) {
 
@@ -419,7 +358,10 @@ index_points_to_lines.hy <- function(x, points,
 
   matched <- select(matched, point_id, node = "nn.idx", offset = "nn.dists", id)
 
-  if(aggregate_id_from_measure %in% names(fline_atts)) {
+  select_vec <- c("index")
+  select_vec2 <- c(point_id, id, offset)
+
+  if(all(c(aggregate_id_from_measure, aggregate_id) %in% names(fline_atts))) {
     x <- x |>
       group_by(.data$L1) |>
       add_len() |>
@@ -433,7 +375,7 @@ index_points_to_lines.hy <- function(x, points,
     select_vec <- c("index", aggregate_id, aggregate_id_measure)
     select_vec2 <- c(point_id, id, aggregate_id, aggregate_id_measure, offset)
 
-  } else {
+  } else if(aggregate_id %in% names(x)) {
 
     select_vec <- c("index", aggregate_id)
     select_vec2 <- c(point_id, id, aggregate_id, offset)
@@ -556,13 +498,4 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
   }
 
   out
-}
-
-rename_indexed <- function(x, matched) {
-  orig_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == id])
-  orig_aggregate_id <- names(attr(x, "orig_names")[attr(x, "orig_names") == aggregate_id])
-  new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
-
-  rename(matched, any_of(setNames(c(id, aggregate_id, aggregate_id_measure),
-                                         c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }

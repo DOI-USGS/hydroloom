@@ -31,6 +31,8 @@ accumulate_downstream.data.frame <- function(x, var) {
 #' @export
 accumulate_downstream.hy <- function(x, var) {
 
+  if(nrow(x) == 0) return(c())
+
   check_names(x, required_atts_accumulate, "accumulation")
 
   x <- st_drop_geometry(x)

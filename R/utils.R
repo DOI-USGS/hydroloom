@@ -131,31 +131,6 @@ get_node <- function(x, position = "end") {
   st_as_sf(x, coords = c("X", "Y"), crs = in_crs)
 }
 
-
-get_node_dplyr <- function(x, position = "end") {
-  in_crs <- st_crs(x)
-
-  x <- x |>
-    st_coordinates() |>
-    as.data.frame()
-
-  if("L2" %in% names(x)) {
-    x <- group_by(x, .data$L2)
-  } else {
-    x <- group_by(x, .data$L1)
-  }
-
-  if(position == "end") {
-    x <- filter(x, row_number() == n())
-  } else if(position == "start") {
-    x <- filter(x, row_number() == 1)
-  }
-
-  x <- select(ungroup(x), "X", "Y")
-
-  st_as_sf(x, coords = c("X", "Y"), crs = in_crs)
-}
-
 #' @title Fix Flow Direction
 #' @description If flowlines aren't digitized in the expected direction,
 #' this will reorder the nodes so they are.
@@ -285,6 +260,21 @@ rescale_measures <- function(measure, from, to) {
   })
 }
 
+add_index <- function(x) {
+  x |>
+    as.data.frame() |>
+    mutate(index = seq_len(nrow(x)))
+}
+
+add_len <- function(x) {
+  x |>
+    mutate(len  = sqrt( ( (.data$X - (lag(.data$X))) ^ 2) +
+                          ( ( (.data$Y - (lag(.data$Y))) ^ 2)))) |>
+    mutate(len = replace_na(.data$len, 0)) |>
+    mutate(len = cumsum(.data$len)) |>
+    mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
+}
+
 # utility function
 get_fl <- function(hydro_location, net) {
   if(hydro_location$aggregate_id_measure == 100) {
@@ -297,4 +287,20 @@ get_fl <- function(hydro_location, net) {
              .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
              .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
   }
+}
+
+
+force_linestring <- function(x) {
+  if(st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
+    warning("converting to LINESTRING, this may be slow, check results")
+  }
+
+  suppressWarnings(x <- st_cast(x, "LINESTRING", warn = FALSE))
+
+  if(!"XY" %in% class(st_geometry(x)[[1]])) {
+    warning("dropping z coordinates, this may be slow")
+    x <- st_zm(x)
+  }
+
+  x
 }
