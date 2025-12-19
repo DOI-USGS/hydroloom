@@ -47,29 +47,25 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
   if("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
 
-  if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &
-     !toid %in% names(x)) {
-    net <- select(st_drop_geometry(x), all_of(c(id, fromnode, tonode, divergence)))
-
-    net <- add_toids(net, return_dendritic = FALSE)
-  }
+  net <- add_toids_internal(x)
 
   # if there's any non-dendritic network we need a divergence marker
-  if(length(unique(x$id)) < nrow(x) | exists("net")) {
+  if(length(unique(net$id)) < nrow(net)) {
 
     required_atts <- c(id, toid, divergence)
     error_context <- "If id, fromnode, tonode, and divergence are not supplied, add_streamorder with non-dendritic"
 
   } else {
+
     required_atts <- c(id, toid)
     error_context <- "add_streamorder"
   }
 
   if(!exists("net", inherits = FALSE)) {
 
-    check_names(x, required_atts, error_context)
+    check_names(net, required_atts, error_context)
 
-    net <- select(st_drop_geometry(x), all_of(required_atts))
+    net <- select(net, all_of(required_atts))
 
   }
 
@@ -123,11 +119,16 @@ add_streamorder.hy <- function(x, status = TRUE) {
       # calc was set to zero already so can just move on if it's set
       cur_calc <- calc[i]
 
+      # only consider non calc-0 upstream flowlines!
+      # this means a large order flowline that is downstream of a
+      # diversion will be ignored
       if(any_calc_zero & !all_calc_zero) {
         orders <- orders[!calcs == 0]
       }
 
       # Need the max upstream order for this work
+      # note this is max upstream order that is not
+      # downstream of a diversion
       max_order <- max(orders)
 
       # the core stream order algorithm:

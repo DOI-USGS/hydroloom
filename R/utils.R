@@ -304,3 +304,21 @@ force_linestring <- function(x) {
 
   x
 }
+
+add_toids_internal <- function(x, var = NULL) {
+
+  if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &
+     !toid %in% names(x)) {
+
+    x |>
+      st_drop_geometry() |>
+      select(any_of(c(id, fromnode, tonode, divergence, as.character(var)))) |>
+      add_toids(return_dendritic = FALSE)
+
+  } else {
+
+    x
+
+  }
+
+}

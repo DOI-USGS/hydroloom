@@ -113,7 +113,7 @@ test_that("from vignette works", {
       dplyr::select(-ToNode, -FromNode, -Divergence, -FTYPE) |>
       sort_network(split = TRUE))
 
-  f[["arbolate_sum"]] <- accumulate_downstream(f, "LENGTHKM")
+  f[["arbolate_sum"]] <- accumulate_downstream(f, "LENGTHKM", quiet = TRUE)
 
   expect_error(
   add_levelpaths(f, "GNIS_NAME", "arbolate_sum", status = FALSE),

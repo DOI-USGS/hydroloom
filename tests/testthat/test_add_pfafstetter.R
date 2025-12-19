@@ -16,7 +16,7 @@ test_that("get_pfaf", {
 
   # level according to drainage area
   fl$name <- ""
-  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm")
+  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm", quiet = TRUE)
   fl <- add_levelpaths(fl, "name", "total_da_sqkm")
   pfaf <- add_pfafstetter(fl, max_level = 2)
 
@@ -47,7 +47,7 @@ test_that("get_pfaf", {
 
   # level according to drainage area
   fl$name <- ""
-  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm")
+  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm", quiet = TRUE)
   fl <- add_levelpaths(fl, "name", "total_da_sqkm")
 
   pfaf <- add_pfafstetter(fl, max_level = 2)

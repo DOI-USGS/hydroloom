@@ -32,6 +32,7 @@ toid <- "toid"
 tonode <- "tonode"
 fromnode <- "fromnode"
 divergence <- "divergence"
+divergence_fraction <- "divergence_fraction"
 wbid <- "wbid"
 total_da_sqkm <- "total_da_sqkm"
 da_sqkm <- "da_sqkm"
@@ -71,7 +72,7 @@ downmain <- "downmain"
 indid <- "indid"
 toindid <- "toindid"
 
-good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
+good_names <- c(id, toid, fromnode, tonode, divergence, divergence_fraction, wbid,
                 total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
                 topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
                 terminal_topo_sort, terminal_flag, terminal_id, start_flag,
@@ -90,6 +91,7 @@ hnd$toid <- "indicates to the downstream id. May or may not be dendritic"
 hnd$fromnode <- "indicates the node representing the nexus upstream of a catchment"
 hnd$tonode <- "indicates the node representing the nexus downstream of a catchment"
 hnd$divergence <- "indicates whether a catchment is not downstream of a diversion (0), the primary path downstream of a divergence (1), or a minor path downstream of a diversion (2)."
+hnd$divergence_fraction <- "Indicates the fraction of flow to be apportioned to a given diverted path. Should sum to 1 when considering all diverted flowlines downstream of a diversion."
 hnd$wbid <- "waterbody id"
 hnd$total_da_sqkm <- "total drainage area at the outlet of a catchment"
 hnd$da_sqkm <- "local drainage area of a catchment"
@@ -158,6 +160,7 @@ hydroloom_name_map <- c(
   tonode = tonode,
   fromnode = fromnode,
   divergence = divergence,
+  divergence_fraction = divergence_fraction,
   wbareacomi = wbid,
 
   totdasqkm = total_da_sqkm,

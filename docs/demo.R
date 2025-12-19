@@ -94,7 +94,7 @@ reprex::reprex({
                       name_attr = "GNIS_NAME", type_attr = "FTYPE",
                       major_types = "StreamRiver") |>
     add_toids()
-  x <- mutate(x, arbolate_sum = accumulate_downstream(x, "LENGTHKM"))
+  x <- mutate(x, arbolate_sum = accumulate_downstream(x, "LENGTHKM", quiet = TRUE))
 
   x <- add_levelpaths(x, name_attribute = "GNIS_NAME", weight_attribute = "arbolate_sum") |>
     st_sf() |> st_drop_geometry() |> select(-GNIS_NAME, -FTYPE, -LENGTHKM)
