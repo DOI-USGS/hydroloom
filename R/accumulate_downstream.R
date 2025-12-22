@@ -41,6 +41,9 @@
 #'
 #' # All default gives dendritic routing
 #' x$dend_totdasqkm <- accumulate_downstream(add_toids(x), "AreaSqKM")
+#' x$diff <- x$TotDASqKM - x$dend_totdasqkm
+#'
+#' mapview::mapview(x, zcol = "diff")
 #'
 #' # notice that diversions reset as if they were headwaters
 #' plot(x['dend_totdasqkm'], lwd = x$dend_totdasqkm / 50)
@@ -57,6 +60,16 @@
 #' # notice that diversions don't reset -- they carry a fraction of area
 #' plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 50)
 #'
+#' z <- x |>
+#'   dplyr::select(COMID, LevelPathI, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+#'
+#' z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", "LevelPathI", total = TRUE)
+#'
+#' z$diff <- z$tot_totdasqkm - z$TotDASqKM
+#'
+#' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 50)
+#'
+#' mapview::mapview(z, zcol = "diff")
 accumulate_downstream <- function(x, var, main_path = NULL, total = FALSE, quiet = FALSE) {
 
   if(!var %in% names(x)) stop(var, " must be in x")
@@ -79,6 +92,9 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
   if(nrow(x) == 0) return(c())
 
+  var <- as.character(var)
+  main_path <- as.character(main_path)
+
   if(total) {
     if(is.null(main_path) | length(main_path) == 0) stop("if 'total' parameter is TRUE, a main_path attribute is required.")
 
@@ -91,7 +107,7 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
   }
 
-  net <- add_toids_internal(x, c(var, divergence_fraction))
+  net <- add_toids_internal(x, c(var, divergence_fraction, required_atts))
 
   if(length(unique(net$id)) < nrow(net)) {
 
@@ -122,15 +138,16 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
   # if we got this far without a divergence attribute, it's dendritic so all are 0
   if(!divergence %in% names(net)) net[[divergence]] <- 0
 
-  # if no divergence fraction, we can set 1 for divergence = 1 and 0 for 2
-  if(!divergence_fraction %in% names(net)) {
+  # if no divergence fraction or total is true, we can set 1 for divergence = 1 and 0 for 2
+  if(!divergence_fraction %in% names(net) | total) {
     if(!total & !quiet)
       message("Dendritic routing will be applied. Diversions are assumed to have 0 flow fraction.")
     net[[divergence_fraction]] <- ifelse(net$divergence == 2, 0, 1)
+    required_atts <- unique(c(required_atts, divergence_fraction))
   }
 
   net <- net |>
-    select(all_of(c(id, toid, as.character(var), divergence, divergence_fraction))) |>
+    select(all_of(required_atts)) |>
     distinct() |>
     # First sort so we have upstream first and outlets last.
     sort_network()
@@ -143,12 +160,48 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
   stopifnot(all(froms$froms_list$id == unique(net[[id]])))
 
-  out <- select(net, all_of(c(id, as.character(var))), divergence_fraction) |>
+  out <- select(net, any_of(c(id, as.character(var), main_path, divergence_fraction, divergence))) |>
     distinct()
 
   stopifnot(all(froms$froms_list$id == out[[id]]))
 
+  if(total) {
+    # will use this list to hold the value passed to diverted paths
+    nodup <- rep(list(data.frame(node_id = integer(), val = numeric(), dup = logical())), nrow(out))
+
+    # add fromnode to node to track interactions if diversions and returns
+    nodes <- make_nondendritic_topology(net)
+
+    out <- left_join(out, nodes, by = id)
+  }
+
   for(i in seq_len(length(froms$lengths))) {
+    # # initial diversion
+    # if(out$id[i] == 8893210) browser()
+    # # initial main
+    # if(out$id[i] == 8893186) browser()
+    # # div = 0 below initial main
+    # if(out$id[i] == 8893184) browser()
+    #
+    # # # diversion downstream of a flowline with a dup = FALSE
+    # if(out$id[i] == 8893212) browser()
+    #
+    # # # diversion 2
+    # if(out$id[i] == 8893220) browser()
+
+    # diversion 3
+    # if(out$id[i] == 8893230) browser()
+
+    # # two up diversion
+    # if(out$id[i] == 8893530) browser()
+
+    ## single flowline diversion
+    # if(out$id[i] == 8893174) browser()
+
+    ## downstream of single flowline diversion
+    # if(out$id[i] == 8893172) browser()
+
+    if(out$id[i] == 8893188) browser()
 
     l <- froms$lengths[i]
 
@@ -157,14 +210,127 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
       ups <- froms$froms[1:l,i]
 
-      # this is the fraction of flow coming from upstream
-      # that goes to the current catchment
-      div_fractions <- out[[divergence_fraction]][i]
+      # 0 for normal, 1 for "main", 2 for "not main"
+      here_divergence <- out[[divergence]][i]
 
-      # sum the current value with the fraction of upstream flows coming in
-      out[[var]][i] <- sum(out[[var]][i], out[[var]][ups] * div_fractions)
+      if(total) {
+
+        # this is a list of data.frames -- one row per upstream diversion
+        # 0 rows means nothing from that path is tracked as duplicated
+        # or a duplicates match.
+        up_nodups <- nodup[ups]
+
+        up_vals <- out[[var]][ups]
+
+        here_fromnode <- out$fromnode[i]
+
+        node_contribution <- sum(up_vals)
+
+        node_contribution_nodup <- node_contribution
+
+        # need to track how much duplicate value needs to be removed from
+        # each incoming value and make sure we pass updated nodup values
+        # down through diversions.
+        pass_on_nodups <- data.frame(node_id = integer(), val = numeric(), dup = logical())
+
+        # TODO: pass_on_nodups here needs to respect the pass on logic below.
+        # pass_on_nodups is getting messed with here then different assumptions are used
+        # just below. Need to combine this logic with that of the loop below
+        if(any(sapply(up_nodups, nrow))) {
+          pass_on_nodups <- distinct(bind_rows(up_nodups))
+
+          dup_nodes <- pass_on_nodups[pass_on_nodups$node_id %in%
+                                        pass_on_nodups$node_id[duplicated(pass_on_nodups$node_id)],]
+
+          if(nrow(dup_nodes) > 0) {
+            dup_nodes <- group_by(dup_nodes, .data$node_id) |>
+              filter(any(.data$dup) & any(!.data$dup))
+
+            pass_on_nodups <- filter(pass_on_nodups, !.data$node_id %in% dup_nodes$node_id)
+
+            remove_values <- summarise(dup_nodes, val = val[1])
+
+            node_contribution <- node_contribution - sum(remove_values$val)
+          }
+        }
+
+        # v for values - loop over all upstream values
+        # some will be traces of duplicated area, others will be traces of duplicate matches
+        # duplicated area (dup TRUE) gets passed down diversions
+        # source area (dup FALSE) gets passed down primaries
+        for(v in 1:length(up_vals)) {
+
+          # if we have something to consider
+          if(nrow(up_nodups[[v]]) > 0) {
+
+            # n for nodes where diversions eminated from
+            for(n in 1:nrow(up_nodups[[v]])) {
+
+              # if the current catchment is below a diversion we have to track node stuff
+              if(here_divergence == 2) {
+                #  this is the secondary side of a divergence
+
+                # we need to track the portion that this is getting from here_node
+                # as dup == TRUE
+
+                pass_on_nodups <- bind_rows(pass_on_nodups, filter(up_nodups[[v]][n,], .data$dup))
+
+              } else if(here_divergence == 1) {
+                # This is the main side of a divergence
+
+                # We need to track the portion that this is getting from here_node
+                # as dup == FALSE
+
+                pass_on_nodups <- bind_rows(pass_on_nodups, up_nodups[[v]][n,])
+
+              }
+
+            }
+
+          }
+
+        }
+
+        # if we are on a diversion, we need to add information about duplication
+        # the value here is the sum of the total area upstream minus the
+        # portion of that area that is duplicate.
+        if(here_divergence == 2) {
+
+          nodup_here <- data.frame(
+            node_id = here_fromnode, # this is the path we are duplicating
+            val = node_contribution_nodup,
+            dup = TRUE)
+
+          # pass_on_nodups was created above from all upstream tracking nodup tables
+          nodup[[i]] <- distinct(bind_rows(pass_on_nodups, nodup_here))
+
+
+        } else if(here_divergence == 1) {
+          # this is the main side of a diversion
+          nodup_here <- data.frame(
+            node_id = here_fromnode, # this is the path we are duplicating
+            val = sum(up_vals),
+            dup = FALSE)
+
+          # pass_on_nodups was created above from all upstream tracking nodup tables
+          nodup[[i]] <- distinct(bind_rows(pass_on_nodups, nodup_here))
+
+        } else {
+          # we are not apportioning a diversion -- just pass downstream
+          nodup[[i]] <- pass_on_nodups
+        }
+
+        out[[var]][i] <- sum(out[[var]][i], node_contribution)
+
+      } else {
+
+        # sum the current value with the fraction of upstream flows coming in
+        out[[var]][i] <- sum(out[[var]][i], out[[var]][ups] * div_fraction)
+
+      }
 
     }
+
   }
 
   x <- left_join(x, out, by = "id")
