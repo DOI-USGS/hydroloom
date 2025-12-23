@@ -4,11 +4,6 @@
 #' @param var variable to accumulate.
 #' @param total logical if TRUE, accumulation will use "total" apportionment
 #' if FALSE, divergence or dendritic apportionment will apply ( see details).
-#' @param main_path character attribute name (required if total is TRUE.)
-#' The attribute should contain a unique path identifier such as levelpath
-#' or mainstem id. Used to avoid double counting accumulations through
-#' systems of diversions. When a diversion derives from a main path it
-#' will not be added back to the main path again when the diversion rejoins.
 #' @param quiet logical quiet messages?
 #' @details
 #'
@@ -16,9 +11,8 @@
 #'
 #'    Divergence apportioned (divergence routing): Where upstream values are passed with
 #'    fractional apportionment such that each downstream connection gets between
-#'    0 and 100 percent of the upstream value. This has also been referred to as
-#'    "divergence routing" Requires a "divergence_fraction" attribute and the
-#'    "total" parameter to be `FALSE`.
+#'    0 and 100 percent of the upstream value. Requires a "divergence_fraction"
+#'    attribute and the "total" parameter to be `FALSE`.
 #'
 #'    Dendritic apportionment (no divergence routing): Where upstream values are not passed to
 #'    secondary paths at all -- this is essentially a special case of divergence
@@ -30,8 +24,7 @@
 #'    apportioned such that each downstream connection gets the full upstream
 #'    value and there is special handling where diversions join back to the main
 #'    flow to avoid double counting. This is also referred to as
-#'    "total upstream routing". Set "total" to TRUE -- this method requires
-#'    a path attribute such as levelpath or mainstem identifier.
+#'    "total upstream routing". Set "total" to TRUE.
 #'
 #' @name accumulate_downstream
 #' @returns vector of the same length as `nrow(x)` containing values of `var` accumulated downstream
@@ -39,14 +32,16 @@
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #'
+#' net <- navigate_network_dfs(x, 8893236, "up")
+#'
+#' x <- x[x$COMID %in% unlist(net),]
+#'
 #' # All default gives dendritic routing
 #' x$dend_totdasqkm <- accumulate_downstream(add_toids(x), "AreaSqKM")
 #' x$diff <- x$TotDASqKM - x$dend_totdasqkm
 #'
-#' mapview::mapview(x, zcol = "diff")
-#'
 #' # notice that diversions reset as if they were headwaters
-#' plot(x['dend_totdasqkm'], lwd = x$dend_totdasqkm / 50)
+#' plot(x['dend_totdasqkm'], lwd = x$dend_totdasqkm / 20)
 #'
 #' # add a diversion_fraction that splits flow evenly
 #' # max(dplyr::n()) is the number of flowlines in a FromNode group.
@@ -58,19 +53,19 @@
 #' y$div_totdasqkm <- accumulate_downstream(y, "AreaSqKM")
 #'
 #' # notice that diversions don't reset -- they carry a fraction of area
-#' plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 50)
+#' plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 20)
 #'
 #' z <- x |>
-#'   dplyr::select(COMID, LevelPathI, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+#'   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 #'
-#' z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", "LevelPathI", total = TRUE)
+#' z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 #'
-#' z$diff <- z$tot_totdasqkm - z$TotDASqKM
+#' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 20)
 #'
-#' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 50)
+#' # equivalent values from the nhdplusv2 match!
+#' any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 #'
-#' mapview::mapview(z, zcol = "diff")
-accumulate_downstream <- function(x, var, main_path = NULL, total = FALSE, quiet = FALSE) {
+accumulate_downstream <- function(x, var, total = FALSE, quiet = FALSE) {
 
   if(!var %in% names(x)) stop(var, " must be in x")
 
@@ -80,32 +75,21 @@ accumulate_downstream <- function(x, var, main_path = NULL, total = FALSE, quiet
 
 #' @name accumulate_downstream
 #' @export
-accumulate_downstream.data.frame <- function(x, var, main_path = NULL, total = FALSE, quiet = FALSE) {
+accumulate_downstream.data.frame <- function(x, var, total = FALSE, quiet = FALSE) {
   x <- hy(x)
 
-  accumulate_downstream(x, attr(x, "orig_names")[var], attr(x, "orig_names")[main_path], total, quiet)
+  accumulate_downstream(x, var = attr(x, "orig_names")[var], total = total, quiet = quiet)
 }
 
 #' @name accumulate_downstream
 #' @export
-accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, quiet = FALSE) {
+accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
   if(nrow(x) == 0) return(c())
 
   var <- as.character(var)
-  main_path <- as.character(main_path)
 
-  if(total) {
-    if(is.null(main_path) | length(main_path) == 0) stop("if 'total' parameter is TRUE, a main_path attribute is required.")
-
-    if(!main_path %in% names(x)) stop("couldn't find specified'main_path' attribute in provided data.")
-
-    required_atts <- c(id, toid, main_path, var)
-  } else {
-
-    required_atts <- c(id, toid, var)
-
-  }
+  required_atts <- c(id, toid, var)
 
   net <- add_toids_internal(x, c(var, divergence_fraction, required_atts))
 
@@ -127,9 +111,7 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
   x <- select(st_drop_geometry(x), id)
 
-  out_val <- get_outlet_value(net)
-
-  net[["toid"]] <- replace_na(net[["toid"]], out_val)
+  net[["toid"]] <- replace_na(net[["toid"]], get_outlet_value(net))
 
   if(any(is.na(net[[var]]))) {
     warning("NA values found in accumulation variable, accumulation math may fail.")
@@ -156,14 +138,10 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
   # Find fromids from the working index.
   # columns of the included matrix correspond to the index ids.
   # rows of the matrix correspond to adjacent upstream ids
-  froms <- make_fromids(make_index_ids(net), return_list = TRUE)
+  froms <- make_fromids(make_index_ids(net))
 
-  stopifnot(all(froms$froms_list$id == unique(net[[id]])))
-
-  out <- select(net, any_of(c(id, as.character(var), main_path, divergence_fraction, divergence))) |>
+  out <- select(net, any_of(c(id, as.character(var), divergence_fraction, divergence))) |>
     distinct()
-
-  stopifnot(all(froms$froms_list$id == out[[id]]))
 
   if(total) {
     # will use this list to hold the value passed to diverted paths
@@ -191,21 +169,22 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
       if(total) {
 
-        if(out[[id]][i] == 8893218) browser()
+        updated_values <- reconcile_nodup(bind_rows(nodup[ups]),
+                                          sum(out[[var]][ups]))
 
-        upstream_nodups <- bind_rows(nodup[ups])
+        nodup[[i]] <- update_nodup(out[[fromnode]][i],
+                                   out[[divergence]][i],
+                                   updated_values$pass_on,
+                                   updated_values$value)
 
-        updated_values <- reconcile_nodup(upstream_nodups, sum(out[[var]][ups]))
-
-        nodup[[i]] <- update_nodup(out[[fromnode]][i], out[[divergence]][i],
-                                   updated_values$pass_on, updated_values$value)
-
-        out[[var]][i] <- sum(out[[var]][i], updated_values$value)
+        out[[var]][i] <- sum(out[[var]][i],
+                             updated_values$value)
 
       } else {
 
         # sum the current value with the fraction of upstream flows coming in
-        out[[var]][i] <- sum(out[[var]][i], out[[var]][ups] * out[[divergence_fraction]][i])
+        out[[var]][i] <- sum(out[[var]][i],
+                             out[[var]][ups] * out[[divergence_fraction]][i])
 
       }
 
@@ -253,27 +232,6 @@ reconcile_nodup <- function(pass_on_nodups, node_contribution) {
 
 }
 
-# dup_nodes_1 <- structure(list(node_id = c(48, 48, 48),
-#                               val = c(86.5719, 86.5719, 86.5719),
-#                               dup = c(TRUE, FALSE, FALSE)),
-#                          row.names = c(1L, 13L, 14L), class = "data.frame")
-#
-# dup_nodes_2 <- structure(list(node_id = c(2, 48, 60, 62, 2, 48, 60, 62, 65, 65),
-#                               val = c(1.7136, 86.5719, 86.6133, 86.6178, 1.7136, 86.5719, 86.6133, 86.6178, 86.6178, 86.6178),
-#                               dup = c(FALSE, FALSE, FALSE,TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE)),
-#                          class = "data.frame",
-#                          row.names = c(NA, -10L))
-#
-# dup_nodes_3 <- data.frame(
-#   node_id = c(2, 48, 2, 48, 62, 63, 2, 48, 60, 2, 48, 60, 2, 48, 63, 62, 62, 2, 48),
-#   val = c(
-#     1.7136, 86.5719, 1.7136, 86.5719, 86.61779999999999, 86.7096, 1.7136, 86.5719,
-#     86.6133, 1.7136, 86.5719, 86.6133, 1.7136, 86.5719, 86.7096,
-#     86.61779999999999, 86.61779999999999, 1.7136, 86.5719
-#   ),
-#   dup = rep(rep(c(FALSE, TRUE), 3), rep(c(14L, 1L), c(1L, 5L)))
-# )
-
 reconcile_dup_set <- function(dup_nodes) {
   dup_nodes |>
     # also group by TRUE/FALSE
@@ -294,13 +252,10 @@ update_nodup <- function(fromnode_value, div_value, pass_on_nodups, node_contrib
 
   } else {
 
-    here <- data.frame(node_id = fromnode_value,
-                       val = node_contribution,
-                       dup = div_value == 2)
-
-
-      bind_rows(pass_on_nodups,
-                here)
+    bind_rows(pass_on_nodups,
+              data.frame(node_id = fromnode_value,
+                         val = node_contribution,
+                         dup = div_value == 2))
 
   }
 }

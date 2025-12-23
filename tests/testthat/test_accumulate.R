@@ -47,7 +47,7 @@ test_that("divergences with total", {
 
   z <- z[!z$COMID %in% remove,]
 
-  z$dend_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM", main_path = "LevelPathI")
+  z$dend_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM", quiet = TRUE)
 
   # for dendritic, we shoud have the outlet be the sum of everything
   expect_equal(max(z$dend_totdasqkm), sum(z$AreaSqKM))
@@ -58,7 +58,7 @@ test_that("divergences with total", {
   z$divergence_fraction[z$Divergence == 2] <- 0.25
   z$divergence_fraction[z$Divergence == 1] <- 0.75
 
-  z$div_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM", main_path = "LevelPathI")
+  z$div_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM")
 
   # we shoud have the outlet be the sum of everything
   expect_equal(max(z$div_totdasqkm), sum(z$AreaSqKM))
@@ -98,7 +98,7 @@ test_that("divergences with total", {
   z <- x |>
     dplyr::select(COMID, LevelPathI, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 
-  z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", "LevelPathI", total = TRUE)
+  z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
   expect_equal(z$tot_totdasqkm, z$TotDASqKM)
 })
@@ -109,13 +109,19 @@ test_that("accumulate_utilities", {
   dup_nodes_1 <- structure(list(node_id = c(48, 48, 48),
                                 val = c(86.5719, 86.5719, 86.5719),
                                 dup = c(TRUE, FALSE, FALSE)),
-                           row.names = c(1L, 13L, 14L), class = "data.frame")
+                           row.names = c(1L, 13L, 14L), class = "data.frame") |>
+    group_by(.data$node_id) |>
+    filter(n() > 1) |>
+    filter(any(.data$dup) & any(!.data$dup))
 
   dup_nodes_2 <- structure(list(node_id = c(2, 48, 60, 62, 2, 48, 60, 62, 65, 65),
                                 val = c(1.7136, 86.5719, 86.6133, 86.6178, 1.7136, 86.5719, 86.6133, 86.6178, 86.6178, 86.6178),
                                 dup = c(FALSE, FALSE, FALSE,TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE)),
                            class = "data.frame",
-                           row.names = c(NA, -10L))
+                           row.names = c(NA, -10L)) |>
+    group_by(.data$node_id) |>
+    filter(n() > 1) |>
+    filter(any(.data$dup) & any(!.data$dup))
 
   dup_nodes_3 <- data.frame(
     node_id = c(2, 48, 2, 48, 62, 63, 2, 48, 60, 2, 48, 60, 2, 48, 63, 62, 62, 2, 48),
@@ -124,8 +130,10 @@ test_that("accumulate_utilities", {
       86.6133, 1.7136, 86.5719, 86.6133, 1.7136, 86.5719, 86.7096,
       86.61779999999999, 86.61779999999999, 1.7136, 86.5719
     ),
-    dup = rep(rep(c(FALSE, TRUE), 3), rep(c(14L, 1L), c(1L, 5L)))
-  )
+    dup = rep(rep(c(FALSE, TRUE), 3), rep(c(14L, 1L), c(1L, 5L)))) |>
+      group_by(.data$node_id) |>
+      filter(n() > 1) |>
+      filter(any(.data$dup) & any(!.data$dup))
 
   expect_equal(sum(reconcile_dup_set(dup_nodes_1)$cancel), 2)
 

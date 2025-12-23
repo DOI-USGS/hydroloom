@@ -6,22 +6,16 @@
 \alias{accumulate_downstream.hy}
 \title{Accumulate Variable Downstream}
 \usage{
-accumulate_downstream(x, var, main_path = NULL, total = FALSE, quiet = FALSE)
+accumulate_downstream(x, var, total = FALSE, quiet = FALSE)
 
-\method{accumulate_downstream}{data.frame}(x, var, main_path = NULL, total = FALSE, quiet = FALSE)
+\method{accumulate_downstream}{data.frame}(x, var, total = FALSE, quiet = FALSE)
 
-\method{accumulate_downstream}{hy}(x, var, main_path = NULL, total = FALSE, quiet = FALSE)
+\method{accumulate_downstream}{hy}(x, var, total = FALSE, quiet = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{var}{variable to accumulate.}
-
-\item{main_path}{character attribute name (required if total is TRUE.)
-The attribute should contain a unique path identifier such as levelpath
-or mainstem id. Used to avoid double counting accumulations through
-systems of diversions. When a diversion derives from a main path it
-will not be added back to the main path again when the diversion rejoins.}
 
 \item{total}{logical if TRUE, accumulation will use "total" apportionment
 if FALSE, divergence or dendritic apportionment will apply ( see details).}
@@ -39,9 +33,8 @@ Accumulation Methods:
 
 Divergence apportioned (divergence routing): Where upstream values are passed with
 fractional apportionment such that each downstream connection gets between
-0 and 100 percent of the upstream value. This has also been referred to as
-"divergence routing" Requires a "divergence_fraction" attribute and the
-"total" parameter to be \code{FALSE}.
+0 and 100 percent of the upstream value. Requires a "divergence_fraction"
+attribute and the "total" parameter to be \code{FALSE}.
 
 Dendritic apportionment (no divergence routing): Where upstream values are not passed to
 secondary paths at all -- this is essentially a special case of divergence
@@ -53,20 +46,21 @@ No apportionment (total upstream): where upstream values are passed without bein
 apportioned such that each downstream connection gets the full upstream
 value and there is special handling where diversions join back to the main
 flow to avoid double counting. This is also referred to as
-"total upstream routing". Set "total" to TRUE -- this method requires
-a path attribute such as levelpath or mainstem identifier.
+"total upstream routing". Set "total" to TRUE.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+net <- navigate_network_dfs(x, 8893236, "up")
+
+x <- x[x$COMID \%in\% unlist(net),]
 
 # All default gives dendritic routing
 x$dend_totdasqkm <- accumulate_downstream(add_toids(x), "AreaSqKM")
 x$diff <- x$TotDASqKM - x$dend_totdasqkm
 
-mapview::mapview(x, zcol = "diff")
-
 # notice that diversions reset as if they were headwaters
-plot(x['dend_totdasqkm'], lwd = x$dend_totdasqkm / 50)
+plot(x['dend_totdasqkm'], lwd = x$dend_totdasqkm / 20)
 
 # add a diversion_fraction that splits flow evenly
 # max(dplyr::n()) is the number of flowlines in a FromNode group.
@@ -78,16 +72,16 @@ y <- x |>
 y$div_totdasqkm <- accumulate_downstream(y, "AreaSqKM")
 
 # notice that diversions don't reset -- they carry a fraction of area
-plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 50)
+plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 20)
 
 z <- x |>
-  dplyr::select(COMID, LevelPathI, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+  dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 
-z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", "LevelPathI", total = TRUE)
+z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
-z$diff <- z$tot_totdasqkm - z$TotDASqKM
+plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 20)
 
-plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 50)
+# equivalent values from the nhdplusv2 match!
+any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 
-mapview::mapview(z, zcol = "diff")
 }
