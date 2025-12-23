@@ -139,7 +139,7 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
   if(!divergence %in% names(net)) net[[divergence]] <- 0
 
   # if no divergence fraction or total is true, we can set 1 for divergence = 1 and 0 for 2
-  if(!divergence_fraction %in% names(net) | total) {
+  if(!divergence_fraction %in% names(net)) {
     if(!total & !quiet)
       message("Dendritic routing will be applied. Diversions are assumed to have 0 flow fraction.")
     net[[divergence_fraction]] <- ifelse(net$divergence == 2, 0, 1)
@@ -167,7 +167,11 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
   if(total) {
     # will use this list to hold the value passed to diverted paths
-    nodup <- rep(list(data.frame(node_id = integer(), val = numeric(), dup = logical())), nrow(out))
+    nodup <- rep(list(data.frame(node_id = integer(), # tracks where val was duplicated
+                                 val = numeric(), # tracks how much was duplicated
+                                 dup = logical(), # tracks which side of the duplication is which
+                                 closed = logical())), # if TRUE, the node_id is upstream and is represented in val
+                 nrow(out))
 
     # add fromnode to node to track interactions if diversions and returns
     nodes <- make_nondendritic_topology(net)
@@ -177,31 +181,6 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
   for(i in seq_len(length(froms$lengths))) {
     # # initial diversion
-    # if(out$id[i] == 8893210) browser()
-    # # initial main
-    # if(out$id[i] == 8893186) browser()
-    # # div = 0 below initial main
-    # if(out$id[i] == 8893184) browser()
-    #
-    # # # diversion downstream of a flowline with a dup = FALSE
-    # if(out$id[i] == 8893212) browser()
-    #
-    # # # diversion 2
-    # if(out$id[i] == 8893220) browser()
-
-    # diversion 3
-    # if(out$id[i] == 8893230) browser()
-
-    # # two up diversion
-    # if(out$id[i] == 8893530) browser()
-
-    ## single flowline diversion
-    # if(out$id[i] == 8893174) browser()
-
-    ## downstream of single flowline diversion
-    # if(out$id[i] == 8893172) browser()
-
-    if(out$id[i] == 8893218) browser()
 
     l <- froms$lengths[i]
 
@@ -210,92 +189,23 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
 
       ups <- froms$froms[1:l,i]
 
-      # 0 for normal, 1 for "main", 2 for "not main"
-      here_divergence <- out[[divergence]][i]
-
       if(total) {
 
-        # nodup[ups] is a list of data.frames -- one row per upstream diversion
-        # 0 rows means nothing from that path is tracked as duplicated
-        # or a duplicates match.
-        pass_on_nodups <- bind_rows(nodup[ups])
+        if(out[[id]][i] == 8893218) browser()
 
-        up_vals <- out[[var]][ups]
+        upstream_nodups <- bind_rows(nodup[ups])
 
-        here_fromnode <- out$fromnode[i]
+        updated_values <- reconcile_nodup(upstream_nodups, sum(out[[var]][ups]))
 
-        node_contribution <- sum(up_vals)
+        nodup[[i]] <- update_nodup(out[[fromnode]][i], out[[divergence]][i],
+                                   updated_values$pass_on, updated_values$value)
 
-        # need to track how much duplicate value needs to be removed from
-        # each incoming value and make sure we pass updated nodup values
-        # down through diversions.
-
-        # at each diversion, we pass a dup TRUE record down the diversion
-        # and a dup FALSE record down the main path. Records of what diversions
-        # are coming in from upstream need to be passed downstream at every diversion.
-        # all incoming records get passed on in pairs. As they recombine, they
-        # get removed in pairs.
-
-        # the code below is reconciling this logic for a single flowline
-        # downstream of a node that has 0:many inflows and 1:many outflows.
-
-        if(nrow(pass_on_nodups) > 0) {
-          dup_nodes <- filter(pass_on_nodups,
-                              .data$node_id %in% .data$node_id[duplicated(.data$node_id)])
-
-          if(nrow(dup_nodes) > 0) {
-
-            dup_nodes <- reconcile_dup_set(dup_nodes)
-
-            pass_on_nodups <- filter(pass_on_nodups, !.data$node_id %in% dup_nodes$node_id) |>
-              bind_rows(filter(dup_nodes, !.data$cancel) |>
-                          select(-"cancel", -"group_size"))
-
-            remove_values <- dup_nodes |>
-              filter(.data$cancel) |>
-              group_by(.data$node_id) |>
-              summarise(val = val[1])
-
-            if(here_divergence < 2)
-              node_contribution <- node_contribution - sum(remove_values$val)
-          }
-        }
-
-        # if we are on a diversion, we need to add information about duplication
-        # the value here is the sum of the total area upstream minus the
-        # portion of that area that is duplicate.
-        if(here_divergence == 2) {
-
-          nodup_here <- data.frame(
-            node_id = here_fromnode, # this is the path we are duplicating
-            val = node_contribution,
-            dup = TRUE)
-
-          # pass_on_nodups was created above from all upstream tracking nodup tables
-          nodup[[i]] <- distinct(bind_rows(pass_on_nodups, nodup_here))
-
-
-        } else if(here_divergence == 1) {
-          # this is the main side of a diversion
-          nodup_here <- data.frame(
-            node_id = here_fromnode, # this is the path we are duplicating
-            val = node_contribution,
-            dup = FALSE)
-
-          # pass_on_nodups was created above from all upstream tracking nodup tables
-          nodup[[i]] <- bind_rows(pass_on_nodups, nodup_here)
-
-        } else {
-          # we are not apportioning a diversion -- just pass downstream
-          nodup[[i]] <- pass_on_nodups
-        }
-
-        out[[var]][i] <- sum(out[[var]][i], node_contribution)
+        out[[var]][i] <- sum(out[[var]][i], updated_values$value)
 
       } else {
 
         # sum the current value with the fraction of upstream flows coming in
-        out[[var]][i] <- sum(out[[var]][i], out[[var]][ups] * div_fraction)
+        out[[var]][i] <- sum(out[[var]][i], out[[var]][ups] * out[[divergence_fraction]][i])
 
       }
 
@@ -308,22 +218,41 @@ accumulate_downstream.hy <- function(x, var, main_path = NULL, total = FALSE, qu
   x[[var]]
 }
 
-reconcile_dup_set <- function(dup_nodes) {
-  group_by(dup_nodes, .data$node_id) |>
-    filter(any(.data$dup) & any(!.data$dup)) |>
-    # get the total per node
-    mutate(group_size = max(n())) |>
-    # group by true/false
-    group_by(.data$node_id, .data$dup) |>
-    # id this needed with grouping?
-    arrange(.data$dup) |>
-    mutate(r = row_number(), g = round(.data$group_size / 2)) |>
+reconcile_nodup <- function(pass_on_nodups, node_contribution) {
 
-    mutate(cancel = row_number() ==
-             round(.data$group_size / 2)) |>
-    ungroup()
+  if(nrow(pass_on_nodups) > 0) {
+    closed_out <- unique(filter(pass_on_nodups, pass_on_nodups$closed)$node_id)
+
+    # we need to check to see if anything is returning
+    dup_nodes <- group_by(pass_on_nodups, .data$node_id) |>
+      filter(n() > 1) |>
+      filter(any(.data$dup) & any(!.data$dup))
+
+    if(nrow(dup_nodes) > 0) {
+
+      dup_nodes <- reconcile_dup_set(dup_nodes)
+
+      pass_on_nodups <- filter(pass_on_nodups, !.data$node_id %in% dup_nodes$node_id) |>
+        bind_rows(filter(dup_nodes, !.data$cancel) |>
+                    select(-any_of("cancel")))
+
+      remove_values <- dup_nodes |>
+        filter(.data$cancel & !.data$node_id %in% closed_out) |>
+        group_by(.data$node_id) |>
+        summarise(val = val[1])
+
+      pass_on_nodups <- pass_on_nodups |>
+        bind_rows(data.frame(node_id = unique(remove_values$node_id), closed = TRUE))
+
+      node_contribution <- node_contribution - sum(remove_values$val)
+
+    }
+  }
+
+  return(list(pass_on = pass_on_nodups, value = node_contribution))
+
 }
-#
+
 # dup_nodes_1 <- structure(list(node_id = c(48, 48, 48),
 #                               val = c(86.5719, 86.5719, 86.5719),
 #                               dup = c(TRUE, FALSE, FALSE)),
@@ -334,3 +263,44 @@ reconcile_dup_set <- function(dup_nodes) {
 #                               dup = c(FALSE, FALSE, FALSE,TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE)),
 #                          class = "data.frame",
 #                          row.names = c(NA, -10L))
+#
+# dup_nodes_3 <- data.frame(
+#   node_id = c(2, 48, 2, 48, 62, 63, 2, 48, 60, 2, 48, 60, 2, 48, 63, 62, 62, 2, 48),
+#   val = c(
+#     1.7136, 86.5719, 1.7136, 86.5719, 86.61779999999999, 86.7096, 1.7136, 86.5719,
+#     86.6133, 1.7136, 86.5719, 86.6133, 1.7136, 86.5719, 86.7096,
+#     86.61779999999999, 86.61779999999999, 1.7136, 86.5719
+#   ),
+#   dup = rep(rep(c(FALSE, TRUE), 3), rep(c(14L, 1L), c(1L, 5L)))
+# )
+
+reconcile_dup_set <- function(dup_nodes) {
+  dup_nodes |>
+    # also group by TRUE/FALSE
+    group_by(.data$node_id, .data$dup) |>
+    mutate(subgroup_size = n()) |>
+    group_by(.data$node_id) |>
+    mutate(remove = min(subgroup_size)) |>
+    group_by(.data$node_id, .data$dup) |>
+    mutate(cancel = row_number() <= remove) |>
+    select(-"subgroup_size", -"remove")
+}
+
+update_nodup <- function(fromnode_value, div_value, pass_on_nodups, node_contribution) {
+
+  if(div_value == 0) {
+
+    pass_on_nodups
+
+  } else {
+
+    here <- data.frame(node_id = fromnode_value,
+                       val = node_contribution,
+                       dup = div_value == 2)
+
+
+      bind_rows(pass_on_nodups,
+                here)
+
+  }
+}

@@ -61,6 +61,9 @@ x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
 # All default gives dendritic routing
 x$dend_totdasqkm <- accumulate_downstream(add_toids(x), "AreaSqKM")
+x$diff <- x$TotDASqKM - x$dend_totdasqkm
+
+mapview::mapview(x, zcol = "diff")
 
 # notice that diversions reset as if they were headwaters
 plot(x['dend_totdasqkm'], lwd = x$dend_totdasqkm / 50)
@@ -77,4 +80,14 @@ y$div_totdasqkm <- accumulate_downstream(y, "AreaSqKM")
 # notice that diversions don't reset -- they carry a fraction of area
 plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 50)
 
+z <- x |>
+  dplyr::select(COMID, LevelPathI, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+
+z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", "LevelPathI", total = TRUE)
+
+z$diff <- z$tot_totdasqkm - z$TotDASqKM
+
+plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 50)
+
+mapview::mapview(z, zcol = "diff")
 }
