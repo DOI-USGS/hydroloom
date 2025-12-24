@@ -69,7 +69,7 @@ test_that("divergences with total", {
   expect_equal(z$div_totdasqkm[z$COMID == 8893182],
                z$AreaSqKM[z$COMID == 8893182] + 0.75 * z$div_totdasqkm[z$COMID == 8893184])
 
-  z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", "LevelPathI", total = TRUE)
+  z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
   # a diversion should have its own area plus everything from upstream
   expect_equal(z$tot_totdasqkm[z$COMID == 8893210],
@@ -142,5 +142,47 @@ test_that("accumulate_utilities", {
   check <- reconcile_dup_set(dup_nodes_3)
 
   expect_equal(sum(check[check$node_id == 48,]$cancel), 2)
+
+})
+
+test_that("complex diversions", {
+  net <- readr::read_csv(list.files(pattern = "diversions.csv", full.names = TRUE, recursive = TRUE))
+
+  net$tot_totareasqkm <- accumulate_downstream(net, "areasqkm", TRUE)
+
+  # these compare to NHDPlus with the addition of 184.3632 that was removed for testing
+  # this only holds on the path downstream of the main set of diversions in this example
+  net$diff <- net$tot_totareasqkm - (net$totdasqkm - 184.3632)
+
+  expect_equal(net$tot_totareasqkm[net$comid == 14702428], sum(
+    net$areasqkm[net$comid == 14702428],
+    net$areasqkm[net$comid == 14702926],
+    net$areasqkm[net$comid == 14702436],
+    net$areasqkm[net$comid == 14703168],
+    net$areasqkm[net$comid == 14702438]
+  ))
+
+  check_fun <- function(check_comid) {
+    up_net <- navigate_network_dfs(net, check_comid, "up")
+
+    expect_equal(net$tot_totareasqkm[net$comid == check_comid],
+                 sum(net$areasqkm[net$comid %in% unique(unlist(up_net))]))
+  }
+
+  check_fun(14702384)
+
+  check_fun(14702378)
+
+  check_fun(14702348)
+  check_fun(14702360)
+  check_fun(14702374)
+
+  check_fun(14702336)
+  check_fun(14702322)
+
+  check_fun(14702320)
+
+  check_fun(14702352)
+
 
 })
