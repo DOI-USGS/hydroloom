@@ -170,18 +170,17 @@ test_that("complex diversions", {
   }
 
   check_fun(14702384)
-
-  check_fun(14702378)
-
-  check_fun(14702348)
   check_fun(14702360)
+  check_fun(14702406)
+  check_fun(14702402)
+  check_fun(14702400)
   check_fun(14702374)
-
+  check_fun(14702378)
   check_fun(14702336)
-  check_fun(14702322)
+
+  check_fun(14702376)
 
   check_fun(14702320)
-
   check_fun(14702352)
 
 

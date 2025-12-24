@@ -147,8 +147,8 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     # will use this list to hold the value passed to diverted paths
     nodup <- rep(list(data.frame(node_id = integer(), # tracks where val was duplicated
                                  val = numeric(), # tracks how much was duplicated
-                                 dup = logical(), # tracks which side of the duplication is which
-                                 closed = logical())), # if TRUE, the node_id is upstream and is represented in val
+                                 dup = logical(),
+                                 req_close = integer())), # tracks which side of the duplication is which
                  nrow(out))
 
     closed <- rep(list(integer()), nrow(out))
@@ -161,6 +161,8 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     nodes <- nodes[, valence := .N, by = fromnode]
 
     out <- left_join(out, nodes, by = id)
+
+    rm(nodes)
   }
 
   for(i in seq_len(length(froms$lengths))) {
@@ -174,6 +176,14 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
       ups <- froms$froms[1:l,i]
 
       if(total) {
+
+        if(out$id[i] == 14702378) browser()
+
+        if(out$id[[i]] %in% c(14702336, 14702376)) {
+          message(out$id[[i]])
+          message(print(bind_rows(nodup[ups])))
+          message(print(unlist(c(closed[ups]))))
+        }
 
         updated_values <- reconcile_nodup(bind_rows(nodup[ups]),
                                           unlist(c(closed[ups])),
@@ -211,9 +221,6 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 reconcile_nodup <- function(pass_on_nodups, closed_out, node_contribution) {
 
   if(nrow(pass_on_nodups) > 0) {
-    # this "closed_out" is a clumsy implementation, but keeping everything in one "nodup" data frame
-    # avoids marsheling and unmarsheling lists.
-
     # we need to check to see if anything is returning here
     # look for cases where there is both TRUE and FALSE for a given node.
     dup_nodes <- group_by(pass_on_nodups, .data$node_id) |>
@@ -236,10 +243,30 @@ reconcile_nodup <- function(pass_on_nodups, closed_out, node_contribution) {
         # ones that are closed_out are nested above others and get removed here.
         filter(.data$cancel & !.data$node_id %in% closed_out) |>
         group_by(.data$node_id) |>
-        summarise(val = val[1])
+        summarise(val = val[1],
+                  req_close = max(req_close))
+
+      closed_add <- remove_values$node_id[remove_values$req_close == 1]
+
+      if(nrow(remove_values) > 0 & any(pass_on_nodups$node_id %in% remove_values$node_id)) {
+        pass_on_nodups$req_close[pass_on_nodups$req_close > 1 & pass_on_nodups$node_id %in% remove_values$node_id] <-
+          pass_on_nodups$req_close[pass_on_nodups$req_close > 1 & pass_on_nodups$node_id %in% remove_values$node_id] - 1
+      }
+
+      if(any(remove_values$req_close > 1)) {
+        pass_on_nodups <- bind_rows(pass_on_nodups,
+                                    select(mutate(filter(dup_nodes, .data$req_close > 1 & .data$cancel == FALSE),
+                                           req_close = req_close - 1),
+                                           -any_of("cancel")))
+
+        remove_values$req_close[remove_values$req_close > 1] <-
+          remove_values$req_close[remove_values$req_close > 1] - 1
+
+        remove_values <- filter(remove_values, req_close == 1)
+      }
 
       # add things that are being closed out for later.
-      closed_out <- unique(c(closed_out, remove_values$node_id))
+      closed_out <- unique(c(closed_out, closed_add))
 
       node_contribution <- node_contribution - sum(remove_values$val)
 
@@ -272,10 +299,20 @@ update_nodup <- function(fromnode_value, div_value, pass_on_nodups, node_contrib
 
   } else {
 
-    bind_rows(pass_on_nodups,
-              rep(list(data.frame(node_id = fromnode_value,
-                         val = node_contribution,
-                         dup = div_value == 2)), valence - 1))
+    rep_num <- 1
+    close_num <- 1
 
+    if(div_value == 1) {
+      rep_num <- valence - 1
+    } else {
+      close_num <- valence - 1
+    }
+
+      bind_rows(rep(list(pass_on_nodups), rep_num),
+                rep(list(data.frame(node_id = fromnode_value,
+                                    val = node_contribution,
+                                    dup = div_value == 2,
+                                    req_close = close_num)),
+                    rep_num))
   }
 }
