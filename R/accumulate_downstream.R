@@ -144,25 +144,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     distinct()
 
   if(total) {
-    # will use this list to hold the value passed to diverted paths
-    nodup <- rep(list(data.frame(node_id = integer(), # tracks where val was duplicated
-                                 val = numeric(), # tracks how much was duplicated
-                                 dup = logical(),
-                                 req_close = integer())), # tracks which side of the duplication is which
-                 nrow(out))
-
-    closed <- rep(list(integer()), nrow(out))
-
-    # add fromnode to node to track interactions if diversions and returns
-    nodes <- make_nondendritic_topology(net)
-
-    nodes <- as.data.table(nodes)
-
-    nodes <- nodes[, valence := .N, by = fromnode]
-
-    out <- left_join(out, nodes, by = id)
-
-    rm(nodes)
+    stop("not implemented")
   }
 
   for(i in seq_len(length(froms$lengths))) {
@@ -173,146 +155,15 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     # nothing to do if nothing upstream
     if(l > 0) {
 
-      ups <- froms$froms[1:l,i]
-
-      if(total) {
-
-        if(out$id[i] == 14702378) browser()
-
-        if(out$id[[i]] %in% c(14702336, 14702376)) {
-          message(out$id[[i]])
-          message(print(bind_rows(nodup[ups])))
-          message(print(unlist(c(closed[ups]))))
-        }
-
-        updated_values <- reconcile_nodup(bind_rows(nodup[ups]),
-                                          unlist(c(closed[ups])),
-                                          sum(out[[var]][ups]))
-
-        closed[[i]] <- updated_values$closed
-
-
-        nodup[[i]] <- update_nodup(out[[fromnode]][i],
-                                   out[[divergence]][i],
-                                   updated_values$pass_on,
-                                   updated_values$value,
-                                   out[["valence"]][i])
-
-        out[[var]][i] <- sum(out[[var]][i],
-                             updated_values$value)
-
-      } else {
-
-        # sum the current value with the fraction of upstream flows coming in
-        out[[var]][i] <- sum(out[[var]][i],
-                             out[[var]][ups] * out[[divergence_fraction]][i])
-
-      }
+      # sum the current value with the fraction of upstream flows coming in
+      out[[var]][i] <- sum(out[[var]][i],
+                           out[[var]][froms$froms[1:l,i]] *
+                             out[[divergence_fraction]][i])
 
     }
 
   }
 
-  x <- left_join(x, out, by = "id")
+  left_join(x, out, by = "id")[[var]]
 
-  x[[var]]
-}
-
-reconcile_nodup <- function(pass_on_nodups, closed_out, node_contribution) {
-
-  if(nrow(pass_on_nodups) > 0) {
-    # we need to check to see if anything is returning here
-    # look for cases where there is both TRUE and FALSE for a given node.
-    dup_nodes <- group_by(pass_on_nodups, .data$node_id) |>
-      filter(n() > 1) |>
-      filter(any(.data$dup) & any(!.data$dup))
-
-    # if we have stuff to investigate:
-    if(nrow(dup_nodes) > 0) {
-
-      # this is in a function to facilitate testing
-      dup_nodes <- reconcile_dup_set(dup_nodes)
-
-      # the stuff that's not being removed gets passed on downstream.
-      pass_on_nodups <- filter(pass_on_nodups, !.data$node_id %in% dup_nodes$node_id) |>
-        bind_rows(filter(dup_nodes, !.data$cancel) |>
-                    select(-any_of("cancel")))
-
-      # these need to be subtracted from the current value.
-      remove_values <- dup_nodes |>
-        # ones that are closed_out are nested above others and get removed here.
-        filter(.data$cancel & !.data$node_id %in% closed_out) |>
-        group_by(.data$node_id) |>
-        summarise(val = val[1],
-                  req_close = max(req_close))
-
-      closed_add <- remove_values$node_id[remove_values$req_close == 1]
-
-      if(nrow(remove_values) > 0 & any(pass_on_nodups$node_id %in% remove_values$node_id)) {
-        pass_on_nodups$req_close[pass_on_nodups$req_close > 1 & pass_on_nodups$node_id %in% remove_values$node_id] <-
-          pass_on_nodups$req_close[pass_on_nodups$req_close > 1 & pass_on_nodups$node_id %in% remove_values$node_id] - 1
-      }
-
-      if(any(remove_values$req_close > 1)) {
-        pass_on_nodups <- bind_rows(pass_on_nodups,
-                                    select(mutate(filter(dup_nodes, .data$req_close > 1 & .data$cancel == FALSE),
-                                           req_close = req_close - 1),
-                                           -any_of("cancel")))
-
-        remove_values$req_close[remove_values$req_close > 1] <-
-          remove_values$req_close[remove_values$req_close > 1] - 1
-
-        remove_values <- filter(remove_values, req_close == 1)
-      }
-
-      # add things that are being closed out for later.
-      closed_out <- unique(c(closed_out, closed_add))
-
-      node_contribution <- node_contribution - sum(remove_values$val)
-
-    }
-  }
-
-  return(list(pass_on = pass_on_nodups, value = node_contribution, closed = closed_out))
-
-}
-
-# finds pairs that cancel eachother out.
-# see tests for examples
-reconcile_dup_set <- function(dup_nodes) {
-  dup_nodes |>
-    # also group by TRUE/FALSE
-    group_by(.data$node_id, .data$dup) |>
-    mutate(subgroup_size = n()) |>
-    group_by(.data$node_id) |>
-    mutate(remove = min(subgroup_size)) |>
-    group_by(.data$node_id, .data$dup) |>
-    mutate(cancel = row_number() <= remove) |>
-    select(-"subgroup_size", -"remove")
-}
-
-update_nodup <- function(fromnode_value, div_value, pass_on_nodups, node_contribution, valence) {
-
-  if(div_value == 0) {
-
-    pass_on_nodups
-
-  } else {
-
-    rep_num <- 1
-    close_num <- 1
-
-    if(div_value == 1) {
-      rep_num <- valence - 1
-    } else {
-      close_num <- valence - 1
-    }
-
-      bind_rows(rep(list(pass_on_nodups), rep_num),
-                rep(list(data.frame(node_id = fromnode_value,
-                                    val = node_contribution,
-                                    dup = div_value == 2,
-                                    req_close = close_num)),
-                    rep_num))
-  }
 }
