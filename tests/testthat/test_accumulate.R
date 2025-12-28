@@ -163,23 +163,37 @@ Sys.unsetenv("accumulate_debug")
 test_that("accumulate_utilities", {
 
   dup_nodes_1 <- structure(list(node = c(48, 48, 48),
+                                catchment = c(123, 123, 123),
+                                local_id = c("48-123", "48-123", "48-123"),
                                 dup = c(TRUE, FALSE, FALSE)),
                            row.names = c(1L, 13L, 14L), class = "data.frame") |>
-    group_by(.data$node) |>
+    group_by(.data$local_id) |>
     filter(n() > 1) |>
     filter(any(.data$dup) & any(!.data$dup))
 
   dup_nodes_2 <- structure(list(node = c(2, 48, 60, 62, 2, 48, 60, 62, 65, 65),
+                                catchment = c("123", "456", "789", "012", "123", "456", "789", "012", "345", "345"),
                                 dup = c(FALSE, FALSE, FALSE,TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE)),
                            class = "data.frame",
                            row.names = c(NA, -10L)) |>
+    mutate(local_id = paste0(node, "-", catchment)) |>
     group_by(.data$node) |>
     filter(n() > 1) |>
     filter(any(.data$dup) & any(!.data$dup))
 
   dup_nodes_3 <- data.frame(
-    node = c(2, 48, 2, 48, 62, 63, 2, 48, 60, 2, 48, 60, 2, 48, 63, 62, 62, 2, 48),
+    node = c(2, 48, 2, 48,
+             62, 63, 2, 48,
+             60, 2, 48, 60,
+             2, 48, 63, 62,
+             62, 2, 48),
+    catchment = c("123", "456", "123", "456",
+                  "789", "012", "123", "456",
+                  "345", "123", "456", "345",
+                  "123", "456", "012", "789",
+                  "789", "123", "456"),
     dup = rep(rep(c(FALSE, TRUE), 3), rep(c(14L, 1L), c(1L, 5L)))) |>
+      mutate(local_id = paste0(node, "-", catchment)) |>
       group_by(.data$node) |>
       filter(n() > 1) |>
       filter(any(.data$dup) & any(!.data$dup))
@@ -227,7 +241,6 @@ test_that("complex diversions", {
   check_fun(14702374)
   check_fun(14702378)
   check_fun(14702336)
-
   check_fun(14702328)
   check_fun(14702352)
 
