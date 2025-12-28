@@ -1,5 +1,9 @@
 #' Accumulate Variable Downstream
 #' @description given a variable, accumulate according to network topology.
+#'
+#' `x` input requires a valid dendritic or non-dendritic network in either
+#' id/toid or fromnode/tonode form. See details for additional information.
+#'
 #' @inheritParams add_levelpaths
 #' @param var variable to accumulate.
 #' @param total logical if TRUE, accumulation will use "total" apportionment
@@ -25,6 +29,20 @@
 #'    value and there is special handling where diversions join back to the main
 #'    flow to avoid double counting. This is also referred to as
 #'    "total upstream routing". Set "total" to TRUE.
+#'
+#' "No apportionment" (total upstream) routing includes considerably more logic
+#' and requires a noteable amount more computation to avoid double counting
+#' through systems of diverted channels. The implementation has been tested
+#' to match the total drainage area calculations of NHDPlusV2.
+#'
+#' When flow splits at a diversion, the duplicated part is tracked until it
+#' recombines with the non-duplicated part. In this tracking, both nested
+#' diversions and diversions that have two or more flow splits in one place
+#' are supported. For this algorithm to work, it is critical that the supplied
+#' data be a directed acyclic graph and have a complete divergence attribute
+#' where 0 indicates no diversion, 1 indicates the main catchment downstream
+#' of a diversion and 2 indicates a secondary (one or more) downstram of a
+#' diversion.
 #'
 #' @name accumulate_downstream
 #' @returns vector of the same length as `nrow(x)` containing values of `var` accumulated downstream
@@ -150,8 +168,6 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
                      as.data.table(make_nondendritic_topology(net))[,down_valence := .N, by = fromnode],
                      by = id)
 
-    out$rep_num <- ifelse(out$divergence == 1, out$down_valence - 1, 1)
-
     # each node is going to hold a list of upstream nodes and the value associated
     # with each. At each diversion, a record of the split will be recorded.
     # once solved, the node will be marked solved so future visits can keep moving.
@@ -188,13 +204,8 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
         updated_node <- update_node(id = out[[id]][i],
                                     up_node <- nodes[out[[fromnode]][i],],
                                     down_node = nodes[out[[tonode]][i],],
-                                    fromnode_id = out[[fromnode]][i],
-                                    pass_on = nodes[fromnode_id,]$open[[1]],
-                                    closed = nodes[fromnode_id,]$closed[[1]],
-                                    part_closed = nodes[fromnode_id,]$part_closed[[1]],
                                     div_att = out[[divergence]][i],
-                                    rep_num = out$rep_num[i],
-                                    upnode_value = out[[var]][i],
+                                    current_value = out[[var]][i],
                                     node_values = nodes$val)
 
         nodes[out$tonode[i],] <- updated_node
@@ -232,8 +243,33 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
 }
 
-update_node <- function(id, up_node, down_node, fromnode_id, pass_on, closed, part_closed,
-                        div_att, rep_num, upnode_value, node_values) {
+#' update_node
+#' @description
+#' Works at a single catchment and updates the downstream node given
+#' information from the upstream node and current catchment.
+#'
+#' At a newly opened diversion, information about duplication is
+#' passed to the downstream node. Diversions are identified uniquely
+#' such that a given diversion can have many secondary paths.
+#'
+#' The downstream node is then inspected with a nested function,
+#' "reconcile_nodes" which tries to figure out if any diversions
+#' rejoin at the downstream node.
+#'
+#' @param id identifier of current catchment
+#' @param up_node node tracking object for fromnode of catchment
+#' @param down_node node tracking object for tonode of catchment
+#' @param div_att divergence attribute for current catchment
+#' @param current_value value of accumulation at the current catchment
+#' @param node_values values for all nodes to be used in deduplicating returning diversions
+#' @returns an updated copy of the down_node input with information passed
+#' to it from upstream.
+#' @noRd
+update_node <- function(id, up_node, down_node, div_att, current_value, node_values) {
+
+  pass_on <- up_node$open[[1]]
+  closed <- up_node$closed[[1]]
+  part_closed = up_node$part_closed[[1]]
 
   if(div_att == 0) {
     # we can just pass to the outlet node
@@ -251,14 +287,14 @@ update_node <- function(id, up_node, down_node, fromnode_id, pass_on, closed, pa
 
     down_node$open[[1]] <-
       bind_rows(down_node$open, pass_on,
-                list(data.frame(node = fromnode_id,
+                list(data.frame(node = up_node$node,
                                 catchment = divs,
-                                local_id = paste0(fromnode_id, "-", divs),
+                                local_id = paste0(up_node$node, "-", divs),
                                 dup = div_att == 2)))
 
   }
 
-  down_node$val <- down_node$val + upnode_value
+  down_node$val <- down_node$val + current_value
   down_node$closed[[1]] <- c(down_node$closed[[1]], closed)
   down_node$part_closed[[1]] <- c(down_node$part_closed[[1]], part_closed)
 
@@ -276,6 +312,23 @@ update_node <- function(id, up_node, down_node, fromnode_id, pass_on, closed, pa
   down_node
 }
 
+#' reconcile nodes
+#' @description
+#' works at a single node and considers a list of upstream diversions.
+#' If the duplicate TRUE and duplicate FALSE record from a diversion are present,
+#' the ammount that was duplicated in that diversion is removed from the current value
+#'
+#' There is special handling for partially closed diversions caused by nested
+#' diversions.
+#'
+#' See code comments for details of implementation.
+#'
+#' @param pass_on data.frame containing diversion records to be inspected
+#' @param value the current value, which may have duplication in it.
+#' @param node_values all node values for use in deduplication of values
+#' @param closed fully closed diversions
+#' @param part_closed partly closed diversions
+#' @noRd
 reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 
   if(nrow(pass_on) > 0) {
@@ -328,6 +381,14 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 
 }
 
+#' reconcile duplicate set
+#' @description
+#' given a set of duplicate records, determines
+#' which can be canceled and which should be passed on.
+#' @param dup_nodes data.frame containing potentially cancelable duplicate nodes
+#' @returns same data.fram as dup_nodes with an additional "cancel" logical column
+#' @noRd
+#'
 reconcile_dup_set <- function(dup_nodes) {
   dup_nodes |>
     group_by(.data$local_id, .data$dup) |>
