@@ -37,7 +37,7 @@ test_that("divergences with total", {
   x <- x[x$COMID %in% unlist(net),]
 
   z <- x |>
-    dplyr::select(COMID, LevelPathI, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+    dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 
   start <- c(8895516, 8893238, 8893180, 8893238, 8893216)
   remove <- navigate_network_dfs(z, start, "up")
@@ -46,6 +46,29 @@ test_that("divergences with total", {
   remove <- remove[!remove %in% start]
 
   z <- z[!z$COMID %in% remove,]
+
+  # d <- sf::st_transform(sf::st_simplify(sf::st_transform(z, 5070),
+  #                                       dTolerance = units::as_units(100, "m")),
+  #                       4326)
+  # d <- add_toids(d, return_dendritic = FALSE)
+  # d <- sort_network(d)
+  # d <- select(d, -toid) |> distinct()
+  # d$id <- 1:nrow(d)
+  #
+  # nodes <- 1:length(unique(c(d$FromNode, d$ToNode)))
+  # nodes <- data.frame(new_node = nodes,
+  #                     old_node = unique(c(d$FromNode, d$ToNode)))
+  #
+  # d <- left_join(d, rename(nodes, fromnode = "new_node"),
+  #                by = c("FromNode" = "old_node"))
+  # d <- left_join(d, rename(nodes, tonode = "new_node"),
+  #                by = c("ToNode" = "old_node"))
+  #
+  # d <- select(d, id, fromnode, tonode,
+  #             divergence = Divergence,
+  #             areasqkm = AreaSqKM)
+
+  # sf::write_sf(d, "tests/testthat/data/simple_diversions.geojson")
 
   z$dend_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM", quiet = TRUE)
 
@@ -103,35 +126,61 @@ test_that("divergences with total", {
   expect_equal(z$tot_totdasqkm, z$TotDASqKM)
 })
 
+test_that("simple diversions total", {
+
+x <- sf::read_sf(list.files(pattern = "simple_diversions.geojson", full.names = TRUE, recursive = TRUE))
+
+x$tot_totareasqkm <- accumulate_downstream(x, "areasqkm", total = TRUE)
+
+check_fun <- function(check_id) {
+  up_net <- navigate_network_dfs(x, check_id, "up")
+
+  expect_equal(x$tot_totareasqkm[x$id == check_id],
+               sum(x$areasqkm[x$id %in% unique(unlist(up_net))]))
+}
+
+# need all the stuff upstream but only reachable on a diversion in this goofy edge case
+check_fun(25)
+check_fun(27)
+check_fun(21)
+check_fun(29)
+
+# we shoud have the outlet be the sum of everything
+expect_equal(max(x$tot_totareasqkm), sum(x$areasqkm))
+
+Sys.setenv(accumulate_debug = "debug")
+
+node_record <- accumulate_downstream(x, "areasqkm", total = TRUE)
+
+outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 32]
+
+expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
+
+Sys.unsetenv("accumulate_debug")
+
+})
 
 test_that("accumulate_utilities", {
 
-  dup_nodes_1 <- structure(list(node_id = c(48, 48, 48),
-                                val = c(86.5719, 86.5719, 86.5719),
+  dup_nodes_1 <- structure(list(node = c(48, 48, 48),
                                 dup = c(TRUE, FALSE, FALSE)),
                            row.names = c(1L, 13L, 14L), class = "data.frame") |>
-    group_by(.data$node_id) |>
+    group_by(.data$node) |>
     filter(n() > 1) |>
     filter(any(.data$dup) & any(!.data$dup))
 
-  dup_nodes_2 <- structure(list(node_id = c(2, 48, 60, 62, 2, 48, 60, 62, 65, 65),
-                                val = c(1.7136, 86.5719, 86.6133, 86.6178, 1.7136, 86.5719, 86.6133, 86.6178, 86.6178, 86.6178),
+  dup_nodes_2 <- structure(list(node = c(2, 48, 60, 62, 2, 48, 60, 62, 65, 65),
                                 dup = c(FALSE, FALSE, FALSE,TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE)),
                            class = "data.frame",
                            row.names = c(NA, -10L)) |>
-    group_by(.data$node_id) |>
+    group_by(.data$node) |>
     filter(n() > 1) |>
     filter(any(.data$dup) & any(!.data$dup))
 
   dup_nodes_3 <- data.frame(
-    node_id = c(2, 48, 2, 48, 62, 63, 2, 48, 60, 2, 48, 60, 2, 48, 63, 62, 62, 2, 48),
-    val = c(
-      1.7136, 86.5719, 1.7136, 86.5719, 86.61779999999999, 86.7096, 1.7136, 86.5719,
-      86.6133, 1.7136, 86.5719, 86.6133, 1.7136, 86.5719, 86.7096,
-      86.61779999999999, 86.61779999999999, 1.7136, 86.5719
-    ),
+    node = c(2, 48, 2, 48, 62, 63, 2, 48, 60, 2, 48, 60, 2, 48, 63, 62, 62, 2, 48),
     dup = rep(rep(c(FALSE, TRUE), 3), rep(c(14L, 1L), c(1L, 5L)))) |>
-      group_by(.data$node_id) |>
+      group_by(.data$node) |>
       filter(n() > 1) |>
       filter(any(.data$dup) & any(!.data$dup))
 
@@ -141,7 +190,7 @@ test_that("accumulate_utilities", {
 
   check <- reconcile_dup_set(dup_nodes_3)
 
-  expect_equal(sum(check[check$node_id == 48,]$cancel), 2)
+  expect_equal(sum(check[check$node == 48,]$cancel), 2)
 
 })
 
@@ -174,14 +223,12 @@ test_that("complex diversions", {
   check_fun(14702406)
   check_fun(14702402)
   check_fun(14702400)
+  check_fun(14702376)
   check_fun(14702374)
   check_fun(14702378)
   check_fun(14702336)
 
-  check_fun(14702376)
-
-  check_fun(14702320)
+  check_fun(14702328)
   check_fun(14702352)
-
 
 })
