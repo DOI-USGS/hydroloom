@@ -161,6 +161,14 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
   out <- select(net, any_of(c(id, as.character(var), divergence_fraction, divergence))) |>
     distinct()
 
+
+  prog <- pbapply::dopb() & !quiet & length(froms$lengths) > 10000
+
+  if(prog) {
+    pb = txtProgressBar(0, length(froms$lengths), style = 3)
+    on.exit(close(pb))
+  }
+
   if(total) {
 
     # add node topology to x with valence indication
@@ -181,16 +189,21 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
     divs <- out[out[[divergence]] > 0,]
 
-    divs <- bind_cols(unique(divs["fromnode"]),
-                      data.frame(down_ids = group_by(divs, .data$fromnode) |>
-                                           select(fromnode, id, divergence) |>
-                                           group_split(.keep = FALSE)))
+    divs <- group_by(divs, .data$fromnode) |>
+      select(fromnode, id, divergence) |>
+      group_split(.keep = TRUE)
+
+    divs <- bind_cols(data.frame(fromnode = sapply(divs, \(x) x$fromnode[1])),
+                      data.frame(down_ids = divs))
 
     nodes <- left_join(nodes, divs, by = c("node" = "fromnode"))
 
     # we will work on the basis of a node table solving which nodes are open and
     # which are closed working from upstream to downstream.
     for(i in seq_len(length(froms$lengths))) {
+
+      if(!i %% 100 & prog)
+        setTxtProgressBar(pb, i)
 
       l <- froms$lengths[i]
 
@@ -223,6 +236,9 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
   } else {
     for(i in seq_len(length(froms$lengths))) {
 
+      if(!i %% 100 & prog)
+        setTxtProgressBar(pb, i)
+
       l <- froms$lengths[i]
 
       # nothing to do if nothing upstream
@@ -236,6 +252,9 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
       }
     }
   }
+
+  if(prog)
+    setTxtProgressBar(pb, i)
 
   if(Sys.getenv("accumulate_debug") == "debug") return(list(nodes, out))
 
@@ -270,6 +289,9 @@ update_node <- function(id, up_node, down_node, div_att, current_value, node_val
   pass_on <- up_node$open[[1]]
   closed <- up_node$closed[[1]]
   part_closed = up_node$part_closed[[1]]
+
+  if(nrow(pass_on) > 10000)
+    browser()
 
   if(div_att == 0) {
     # we can just pass to the outlet node
@@ -343,7 +365,7 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
       dup_nodes <- reconcile_dup_set(dup_nodes)
 
       # these partly canceled out but still have some open paths out there
-      still_open <- select(filter(dup_nodes, !.data$cancel), -any_of("cancel"))
+      still_open <- select(filter(dup_nodes, !.data$cancel & !.data$dup), -any_of("cancel"))
 
       # need to save this value because we are going to modify it
       part_closed_incoming <- part_closed
@@ -373,8 +395,10 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
       value <- value - sum(node_values[remove_nodes$node[!remove_nodes$local_id %in% part_closed_incoming]])
     }
 
-    # remove closed records
-    pass_on <- filter(pass_on, !.data$local_id %in% closed)
+    # real duplicates were removed above. Remaining duplicates will have the same dup value
+    pass_on <- distinct(pass_on) |>
+      # remove closed records
+      filter(!.data$local_id %in% closed)
   }
 
   return(list(pass_on = pass_on, value = value, closed = closed, part_closed = part_closed))

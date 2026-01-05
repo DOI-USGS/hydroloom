@@ -244,4 +244,69 @@ test_that("complex diversions", {
   check_fun(14702328)
   check_fun(14702352)
 
+  Sys.setenv(accumulate_debug = "debug")
+
+  node_record <- accumulate_downstream(net, "areasqkm", total = TRUE)
+
+  outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 14702352]
+
+  expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
+
+  Sys.unsetenv("accumulate_debug")
+
+})
+
+test_that("part closed test", {
+  net <- read.csv(text =
+  "id,toid,divergence
+  1,2,0
+  1,3,0
+  3,4,2
+  3,5,2
+  4,6,2
+  5,6,1
+  2,7,1
+  6,7,0
+  7,0,0")
+
+  net$val <- 1
+
+  expect_equal(accumulate_downstream(net, "val", TRUE), c(1,1,2,2,3,3,2,5,7))
+
+  Sys.setenv(accumulate_debug = "debug")
+
+  node_record <- accumulate_downstream(net, "val", total = TRUE)
+
+  outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 7]
+
+  expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
+
+  Sys.unsetenv("accumulate_debug")
+
+  net <- read.csv(text =
+                    "id,toid,divergence
+  1,2,0
+  1,3,0
+  3,4,1
+  3,5,1
+  4,6,2
+  5,6,1
+  2,7,2
+  6,7,0
+  7,0,0")
+
+  net$val <- 1
+
+  expect_equal(accumulate_downstream(net, "val", TRUE), c(1,1,2,2,3,3,2,5,7))
+
+  Sys.setenv(accumulate_debug = "debug")
+
+  node_record <- accumulate_downstream(net, "val", total = TRUE)
+
+  outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 7]
+
+  expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
+
+  Sys.unsetenv("accumulate_debug")
+
 })
