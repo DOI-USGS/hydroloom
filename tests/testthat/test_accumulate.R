@@ -169,7 +169,8 @@ test_that("accumulate_utilities", {
                            row.names = c(1L, 13L, 14L), class = "data.frame") |>
     group_by(.data$local_id) |>
     filter(n() > 1) |>
-    filter(any(.data$dup) & any(!.data$dup))
+    filter(any(.data$dup) & any(!.data$dup)) |>
+    data.table::as.data.table()
 
   dup_nodes_2 <- structure(list(node = c(2, 48, 60, 62, 2, 48, 60, 62, 65, 65),
                                 catchment = c("123", "456", "789", "012", "123", "456", "789", "012", "345", "345"),
@@ -179,7 +180,8 @@ test_that("accumulate_utilities", {
     mutate(local_id = paste0(node, "-", catchment)) |>
     group_by(.data$node) |>
     filter(n() > 1) |>
-    filter(any(.data$dup) & any(!.data$dup))
+    filter(any(.data$dup) & any(!.data$dup)) |>
+    data.table::as.data.table()
 
   dup_nodes_3 <- data.frame(
     node = c(2, 48, 2, 48,
@@ -196,7 +198,8 @@ test_that("accumulate_utilities", {
       mutate(local_id = paste0(node, "-", catchment)) |>
       group_by(.data$node) |>
       filter(n() > 1) |>
-      filter(any(.data$dup) & any(!.data$dup))
+      filter(any(.data$dup) & any(!.data$dup)) |>
+    data.table::as.data.table()
 
   expect_equal(sum(reconcile_dup_set(dup_nodes_1)$cancel), 2)
 
@@ -209,7 +212,7 @@ test_that("accumulate_utilities", {
 })
 
 test_that("complex diversions", {
-  net <- readr::read_csv(list.files(pattern = "diversions.csv", full.names = TRUE, recursive = TRUE))
+  net <- read.csv(list.files(pattern = "diversions.csv", full.names = TRUE, recursive = TRUE))
 
   net$tot_totareasqkm <- accumulate_downstream(net, "areasqkm", TRUE)
 

@@ -173,17 +173,20 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
     # add node topology to x with valence indication
     out <- left_join(out,
-                     as.data.table(make_nondendritic_topology(net))[,down_valence := .N, by = fromnode],
+                     as.data.table(make_nondendritic_topology(net))[,down_valence := .N, by = fromnode][,up_valence := .N, by = tonode],
                      by = id)
 
     # each node is going to hold a list of upstream nodes and the value associated
     # with each. At each diversion, a record of the split will be recorded.
     # once solved, the node will be marked solved so future visits can keep moving.
     nodes <- data.frame(node = seq(1:max(c(out$fromnode, out$tonode))))
-    nodes$open <- rep(list(data.frame(node = integer(), # the node the diversion came from
-                                      catchment = integer(), # the catchment the diversion went TO
-                                      dup = logical())), # true for duplicate false for original
-                      nrow(nodes))
+
+    template <- list(data.table(node = integer(), # the node the diversion came from
+                                catchment = integer(), # the catchment the diversion went TO
+                                local_id = character(),
+                                dup = logical()))  # true for duplicate false for original
+
+    nodes$open <- rep(template, nrow(nodes))
     nodes$val <- 0
     nodes$closed <- nodes$part_closed <- rep(list(character()), nrow(nodes))
 
@@ -196,7 +199,14 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     divs <- bind_cols(data.frame(fromnode = sapply(divs, \(x) x$fromnode[1])),
                       data.frame(down_ids = divs))
 
-    nodes <- left_join(nodes, divs, by = c("node" = "fromnode"))
+    # also add a "check_visit" attribute to track when we're done with a node
+    # down_valence is how many flowlines are downstream of a node
+    # once we've visited them, we can remove tracking information to save memory
+    nodes <- left_join(nodes, divs, by = c("node" = "fromnode")) |>
+      left_join(select(out, fromnode, check_visit = down_valence) |>
+                  distinct(), by = c("node" = "fromnode"))
+
+    nodes <- data.table::as.data.table(nodes)
 
     # we will work on the basis of a node table solving which nodes are open and
     # which are closed working from upstream to downstream.
@@ -209,25 +219,35 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
       if(l > 0) {
 
-        fromnode_id <- out[[fromnode]][i]
-
         out[[var]][i] <- sum(out[[var]][i],
-                             nodes[fromnode_id,]$val)
+                             nodes[out[[fromnode]][i],]$val)
 
         updated_node <- update_node(id = out[[id]][i],
-                                    up_node <- nodes[out[[fromnode]][i],],
+                                    up_node = nodes[out[[fromnode]][i],],
                                     down_node = nodes[out[[tonode]][i],],
                                     div_att = out[[divergence]][i],
                                     current_value = out[[var]][i],
                                     node_values = nodes$val)
 
-        nodes[out$tonode[i],] <- updated_node
+        nodes[out$tonode[i], (names(nodes)) := as.list(updated_node)]
 
+        if(nodes[out[[fromnode]][i], check_visit] == 1) {
+
+
+          nodes[out[[fromnode]][i],
+                `:=`(open        = list(NULL),
+                     closed      = list(NULL),
+                     part_closed = list(NULL))]
+
+
+        } else {
+
+          nodes[out[[fromnode]][i], check_visit := check_visit - 1]
+        }
 
       } else {
 
-        nodes$val[out[[tonode]][i]] <- nodes$val[out[[tonode]][i]] +
-          out[[var]][i]
+        nodes[out[[tonode]][i], val := val + out[[var]][i]]
 
       }
 
@@ -284,18 +304,14 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 #' @returns an updated copy of the down_node input with information passed
 #' to it from upstream.
 #' @noRd
+#' @importFrom data.table rbindlist
 update_node <- function(id, up_node, down_node, div_att, current_value, node_values) {
 
-  pass_on <- up_node$open[[1]]
-  closed <- up_node$closed[[1]]
-  part_closed = up_node$part_closed[[1]]
-
-  if(nrow(pass_on) > 10000)
-    browser()
-
   if(div_att == 0) {
-    # we can just pass to the outlet node
-    down_node$open[[1]] <- bind_rows(down_node$open, pass_on)
+      # we can just pass to the outlet node
+      # need to bind in case this is a confluence
+    down_node$open[[1]] <- rbindlist(list(down_node$open[[1]], up_node$open[[1]]),
+                                            use.names = FALSE, fill = FALSE)
 
   } else {
 
@@ -308,17 +324,16 @@ update_node <- function(id, up_node, down_node, div_att, current_value, node_val
     }
 
     down_node$open[[1]] <-
-      bind_rows(down_node$open, pass_on,
-                list(data.frame(node = up_node$node,
+      rbindlist(list(down_node$open[[1]], up_node$open[[1]],
+                     data.frame(node = up_node$node,
                                 catchment = divs,
                                 local_id = paste0(up_node$node, "-", divs),
                                 dup = div_att == 2)))
-
   }
 
   down_node$val <- down_node$val + current_value
-  down_node$closed[[1]] <- c(down_node$closed[[1]], closed)
-  down_node$part_closed[[1]] <- c(down_node$part_closed[[1]], part_closed)
+  down_node$closed[[1]] <- list(c(down_node$closed[[1]], up_node$closed[[1]]))
+  down_node$part_closed[[1]] <- list(c(down_node$part_closed[[1]], up_node$part_closed[[1]]))
 
   updated_node <- reconcile_nodes(pass_on = down_node$open[[1]],
                                   value = down_node$val[[1]],
@@ -326,8 +341,8 @@ update_node <- function(id, up_node, down_node, div_att, current_value, node_val
                                   closed = down_node$closed[[1]],
                                   part_closed = down_node$part_closed[[1]])
 
-  down_node$closed[[1]] <- updated_node$closed
-  down_node$open[[1]] <- updated_node$pass_on
+  down_node$closed[[1]] <- list(updated_node$closed)
+  down_node$open[[1]] <- list(updated_node$pass_on)
   down_node$val <- updated_node$value
   down_node$part_closed[[1]] <- updated_node$part_closed
 
@@ -351,21 +366,21 @@ update_node <- function(id, up_node, down_node, div_att, current_value, node_val
 #' @param closed fully closed diversions
 #' @param part_closed partly closed diversions
 #' @noRd
+#' @importFrom data.table setcolorder
 reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 
   if(nrow(pass_on) > 0) {
 
-    dup_nodes <- pass_on |>
-      group_by(.data$local_id) |>
-      filter(n() > 1) |>
-      filter(any(.data$dup) & any(!.data$dup))
+    dup_nodes <- setcolorder(pass_on[, .SD[(.N > 1 && any(dup) && any(!dup))], by = local_id],
+                             names(pass_on))
+
 
     if(nrow(dup_nodes) > 0) {
 
       dup_nodes <- reconcile_dup_set(dup_nodes)
 
       # these partly canceled out but still have some open paths out there
-      still_open <- select(filter(dup_nodes, !.data$cancel & !.data$dup), -any_of("cancel"))
+      still_open <- dup_nodes[!cancel & !dup][, !c("cancel")]
 
       # need to save this value because we are going to modify it
       part_closed_incoming <- part_closed
@@ -374,31 +389,30 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
       part_closed <- unique(c(part_closed, still_open$local_id))
 
       # we will pass on all the stuff in pass on that wasn't in dup nodes
-      pass_on <- filter(pass_on, !.data$local_id %in% dup_nodes$local_id) |>
+      pass_on <- rbindlist(list(pass_on[!local_id %in% dup_nodes$local_id],
         # and all the stuff that is in still_open.
-        bind_rows(still_open)
+        still_open))
 
       # We will remove all the dup nodes that cancel,
       # are the dup = TRUE record so we only get one per pair
       # and are not already in what's been closed.
-      remove_nodes <- filter(dup_nodes, .data$cancel &
-                               .data$dup &
-                               !.data$local_id %in% closed)
+      remove_nodes <- dup_nodes[cancel & dup & !local_id %in% closed]
 
       # Add what we are removing to closed
       closed <- unique(c(closed, remove_nodes$local_id[!remove_nodes$local_id %in% still_open]))
 
-      # don't pass on if closed
-      pass_on <- filter(pass_on, !.data$local_id %in% closed)
-
       # update value to remove values that are being canceled here.
       value <- value - sum(node_values[remove_nodes$node[!remove_nodes$local_id %in% part_closed_incoming]])
+
+      # real duplicates were removed above. Remaining duplicates will have the same dup value
+      pass_on <- unique(pass_on)
+
     }
 
-    # real duplicates were removed above. Remaining duplicates will have the same dup value
-    pass_on <- distinct(pass_on) |>
+    pass_on <- pass_on[
       # remove closed records
-      filter(!.data$local_id %in% closed)
+      !local_id %chin% closed]
+
   }
 
   return(list(pass_on = pass_on, value = value, closed = closed, part_closed = part_closed))
@@ -414,12 +428,13 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 #' @noRd
 #'
 reconcile_dup_set <- function(dup_nodes) {
-  dup_nodes |>
-    group_by(.data$local_id, .data$dup) |>
-    mutate(subgroup_size = n()) |>
-    group_by(.data$local_id) |>
-    mutate(remove = min(subgroup_size)) |>
-    group_by(.data$local_id, .data$dup) |>
-    mutate(cancel = row_number() <= remove) |>
-    select(-"subgroup_size", -"remove")
+  dup_nodes[
+    , subgroup_size := .N, by = .(local_id, dup)          # Step 1
+  ][
+    , remove := min(subgroup_size), by = local_id         # Step 2
+  ][
+    , cancel := seq_len(.N) <= remove, by = .(local_id, dup)  # Step 3
+  ][
+    , c("subgroup_size", "remove") := NULL                # Step 4
+  ]
 }
