@@ -76,9 +76,9 @@ st_compatibalize <- function(sf1, sf2) {
 #' rename_geometry(g, "geometry")
 #'
 rename_geometry <- function(g, name) {
-  current = attr(g, "sf_column")
+  current <- attr(g, "sf_column")
 
-  names(g)[names(g) == current] = name
+  names(g)[names(g) == current] <- name
 
   attr(g, "sf_column") <- name
 

@@ -181,8 +181,8 @@ x <- c(2, 2, 3, 2, 2)
 y <- c(5, 4, 3, 2, 1)
 a <- c(1.4, 3.5)
 b <- c(.9, 5.1)
-main_col = "darkblue"
-div_col = "purple"
+main_col <- "darkblue"
+div_col <- "purple"
 make_edges <- function() {
   arrows(x[1], y[1] - .1, x[2], y[2] + .1, length = .1, col = main_col)
   arrows(x[2] + .1, y[2] - .1, x[3] - .1, y[3] + .1, length = .1, col = div_col) # right

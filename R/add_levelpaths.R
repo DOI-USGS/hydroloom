@@ -167,7 +167,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   attr(x, "orig_names") <- orig_names
   class(x) <- c("hy", class(x))
 
-  diff = 1
+  diff <- 1
   checker <- 0
   done <- 0
 

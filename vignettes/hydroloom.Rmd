@@ -120,8 +120,8 @@ y <- c(5, 4, 3, 2, 1)
 a <- c(1.4, 3.5)
 b <- c(.9, 5.1)
 
-main_col = "darkblue"
-div_col = "purple"
+main_col <- "darkblue"
+div_col <- "purple"
 
 oldpar <- par(mar = c(0, 0, 0, 0))
 plot(a, b, col = NA)
