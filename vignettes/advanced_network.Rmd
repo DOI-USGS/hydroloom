@@ -18,8 +18,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
-  fig.width=6, 
-  fig.height=6, 
+  fig.width=6,
+  fig.height=6,
   fig.align="center",
   eval=local
 )
@@ -30,13 +30,13 @@ oldoption <- options(scipen = 9999)
 
 ### Terminology
 
-The terms used below are derived from concepts of [graph theory](https://en.wikipedia.org/wiki/Graph_theory), the [HY\_Features](http://opengeospatial.github.io/HY_Features/) conceptual data model, and the [NHDPlus](https://pubs.usgs.gov/publication/ofr20191096) data model. Many of the concepts here are also presented in: [Mainstems: A logical data model implementing *mainstem* and *drainage* basin feature types based on WaterML2 Part 3: HY Features concepts](https://pubs.usgs.gov/publication/70216698). This article formed an early draft of this paper: [Generating a reference flow network with improved connectivity to support durable data integration and reproducibility in the coterminous US](https://pubs.usgs.gov/publication/70243816). 
+The terms used below are derived from concepts of [graph theory](https://en.wikipedia.org/wiki/Graph_theory), the [HY\_Features](http://opengeospatial.github.io/HY_Features/) conceptual data model, and the [NHDPlus](https://pubs.usgs.gov/publication/ofr20191096) data model. Many of the concepts here are also presented in: [Mainstems: A logical data model implementing *mainstem* and *drainage* basin feature types based on WaterML2 Part 3: HY Features concepts](https://pubs.usgs.gov/publication/70216698). This article formed an early draft of this paper: [Generating a reference flow network with improved connectivity to support durable data integration and reproducibility in the coterminous US](https://pubs.usgs.gov/publication/70243816).
 
 # Introduction
 
-The NHDPlus data model, which the attributes described here are based on, includes many 'value added attributes' (VAA). This vignette discusses a core set of VAAs that `hydroloom` can create from readily available hydrographic inputs. The vignette begins with a background needed to understand what these attributes are, and then demonstrates how to create them based on some sample input data. These attributes are documented in the [NHDPlus manual](https://pubs.usgs.gov/publication/ofr20191096), and every effort has been made to faithfully implement their meaning. 
+The NHDPlus data model, which the attributes described here are based on, includes many 'value added attributes' (VAA). This vignette discusses a core set of VAAs that `hydroloom` can create from readily available hydrographic inputs. The vignette begins with a background needed to understand what these attributes are, and then demonstrates how to create them based on some sample input data. These attributes are documented in the [NHDPlus manual](https://pubs.usgs.gov/publication/ofr20191096), and every effort has been made to faithfully implement their meaning.
 
-While the `hydroloom` package contains other functions to generate network attributes, (e.g. `add_pfafstetter()` for Pfafstetter codes and `add_streamorder()` for stream orders) this vignette focuses on the network attributes from the NHDPlus data model that revolve around the **topo_sort** and **levelpath**. In the NHDPlus data model, **topo_sort** is referred to as **hydrosequence** but it is functionally equivalent to a topological sort and is referred to as topo_sort in `hydroloom`.   
+While the `hydroloom` package contains other functions to generate network attributes, (e.g. `add_pfafstetter()` for Pfafstetter codes and `add_streamorder()` for stream orders) this vignette focuses on the network attributes from the NHDPlus data model that revolve around the **topo_sort** and **levelpath**. In the NHDPlus data model, **topo_sort** is referred to as **hydrosequence** but it is functionally equivalent to a topological sort and is referred to as topo_sort in `hydroloom`.
 
 ## topo_sort
 
@@ -71,9 +71,9 @@ plot(x["lpid"], add = TRUE, lwd = 2)
 par(oldpar)
 ```
 
-A level path is derived from "stream level" which assigns an integer value to mainstem rivers from outlet up the network (see NHDPlus documentation for more). Rivers terminating to the ocean are given level 1 and this level extends all the way to the headwaters. Rivers terminating in level 1 rivers are given level 2, and so on.  
+A level path is derived from "stream level" which assigns an integer value to mainstem rivers from outlet up the network (see NHDPlus documentation for more). Rivers terminating to the ocean are given level 1 and this level extends all the way to the headwaters. Rivers terminating in level 1 rivers are given level 2, and so on.
 
-"Stream leveling" is the process of establishing uniquely identified "level paths" through a stream network. This is accomplished with a set of rules that determine which tributary should be considered dominant at every confluence to establish the "mainstem rivers" for each "drainage basin" in a network. `hydroloom` supports creation of stream level with the `add_streamlevel()` function, and the creation of level path with `add_levelpaths()`. `hydroloom` adopts the convention used in NHDPlus, to assign the levelpath as the topo_sort of the path's outlet. 
+"Stream leveling" is the process of establishing uniquely identified "level paths" through a stream network. This is accomplished with a set of rules that determine which tributary should be considered dominant at every confluence to establish the "mainstem rivers" for each "drainage basin" in a network. `hydroloom` supports creation of stream level with the `add_streamlevel()` function, and the creation of level path with `add_levelpaths()`. `hydroloom` adopts the convention used in NHDPlus, to assign the levelpath as the topo_sort of the path's outlet.
 
 See [Mainstems: A logical data model implementing *mainstem* and *drainage* basin feature types based on WaterML2 Part 3: HY Features concepts](https://pubs.usgs.gov/publication/70216698) for an in depth discussion of these concepts.
 
@@ -105,7 +105,7 @@ Creating levelpath and topo_sort identifiers requires a set of base attributes t
 
 5. **`name_attribute`:** Many times, it is preferable to follow a consistently named path rather than a strict physical weight when stream leveling. In these cases a `name_attribute` can be provided.
 
-6. **`divergence`:** in order to create a [many:1] upstream to downstream topology, diverted paths must be labeled as such. This attribute is 0 for normal (already [many:1]) connections, 1 for the main path through a divergence, and 2 for any diverted path. 
+6. **`divergence`:** in order to create a [many:1] upstream to downstream topology, diverted paths must be labeled as such. This attribute is 0 for normal (already [many:1]) connections, 1 for the main path through a divergence, and 2 for any diverted path.
 
 # A visual introduction to the advanced network attributes
 
@@ -122,7 +122,7 @@ fpath <- hydroloom::add_toids(
 )
 
 # Print
-head(fpath <- select(sf::st_cast(fpath, "LINESTRING"), 
+head(fpath <- select(sf::st_cast(fpath, "LINESTRING"),
                      -tonode, -fromnode, -divergence, -feature_type))
 ```
 
@@ -152,17 +152,17 @@ To generate a levelpath attribute, a "physical" weight is needed to determine th
 ```{r}
 # Rename and compute weight
 fpath$arbolatesum <- accumulate_downstream(
-  dplyr::select(fpath, 
+  dplyr::select(fpath,
                 id, toid, length_km), "length_km")
 
 plot(sf::st_geometry(fpath), lwd = fpath$arbolatesum / 10)
 ```
 
-A `name_attribute` identifier can also be provided to override the physical `weight_attribute` when a "smaller" river has the same name. There is an optional `override_factor` parameter that signifies if the physical weight is `override_factor` times (e.g. 5) larger on an unnamed or differently named upstream path, the physical weight will be used in favor of the named `id`. 
+A `name_attribute` identifier can also be provided to override the physical `weight_attribute` when a "smaller" river has the same name. There is an optional `override_factor` parameter that signifies if the physical weight is `override_factor` times (e.g. 5) larger on an unnamed or differently named upstream path, the physical weight will be used in favor of the named `id`.
 
 ```{r levelpath, fig.show="hold", out.width="45%"}
 # Get levelpaths
-fpath <- add_levelpaths(fpath, name_attribute = "GNIS_ID",weight_attribute = "arbolatesum", 
+fpath <- add_levelpaths(fpath, name_attribute = "GNIS_ID",weight_attribute = "arbolatesum",
   status = FALSE, override_factor = 5)
 
 # Print
@@ -172,22 +172,22 @@ plot(fpath["topo_sort"], key.pos = NULL, reset = FALSE)
 plot(fpath["levelpath"], key.pos = NULL)
 ```
 
-Finally, let's visualize these advanced VAAs! 
+Finally, let's visualize these advanced VAAs!
 
 In the below animation, each newly added level path is shown in blue, with the outlet flowline colored in red. Remembering that `sort_network()` sorts flowlines such that headwaters come first and the terminal flowlines last we invert the network so that level paths fill in from outlet to head waters.  For clarity, only levelpaths with more than 2 flowlines are shown.
 
 ```{r}
 # Invert plotting order
-fpath <- dplyr::arrange(fpath, topo_sort) 
+fpath <- dplyr::arrange(fpath, topo_sort)
 
 # Level Paths with more then 2 flowlines
 lp <- dplyr::group_by(fpath, levelpath) %>%
-dplyr::filter(n() > 2) 
+dplyr::filter(n() > 2)
 
 # Unique Level Path ID
 lp <-  unique(lp$levelpath)
 
-# Terminal flowline 
+# Terminal flowline
 terminal_fpath <- dplyr::filter(fpath, id %in% terminal_id)
 
 gif_file <- "levelpath.gif"
@@ -212,7 +212,7 @@ knitr::include_graphics(gif_file)
 
 # Summary
 
-This entire process of sorting the network and building topo_sort, levelpath, and derivative variables is wrapped in the nhdplusTools [`add_plus_network_attributes`](https://doi-usgs.github.io/nhdplusTools/reference/add_plus_network_attributes.html) function to provide performance and simplicity. It supports parallelization and will print status updates in the case when the input network is very large. `add_plus_network_attributes` returns NHDPlus attribute names (truncated per shapefile rules as is done in the NHDPlus database). 
+This entire process of sorting the network and building topo_sort, levelpath, and derivative variables is wrapped in the nhdplusTools [`add_plus_network_attributes`](https://doi-usgs.github.io/nhdplusTools/reference/add_plus_network_attributes.html) function to provide performance and simplicity. It supports parallelization and will print status updates in the case when the input network is very large. `add_plus_network_attributes` returns NHDPlus attribute names (truncated per shapefile rules as is done in the NHDPlus database).
 
 The attributes described in this vignette assume that diversions in the network have zero flow such that diversions are treated as if they were headwaters. See the `vignette("non-dendritic")` for information about attributes that include connected divergences.
 

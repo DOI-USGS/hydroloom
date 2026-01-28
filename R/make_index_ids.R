@@ -4,13 +4,23 @@
 #' @inheritParams add_levelpaths
 #' @param long_form logical if TRUE, return will be a long-form version of the
 #' `to_list`. This form can be converted to the default list format with
-#' \link{format_index_ids}.
-#' @returns list containing named elements: `to`: adjacency matrix `lengths`:
-#' vector indicating the number of connections from each node, and: `to_list`:
-#' a data.frame with an `id`, `indid` and a `toindid` list column. If long_form
-#' = TRUE, return will be a long form data.frame with no list column as in `to_list`.
-#' NOTE: the long_form output should be used with caution as indid may not
-#' correspond to row number.
+#' \link{format_index_ids}. "Long" refers to the fact that ids that connect
+#' to more than one `toid` will have multiple rows in the output.
+#' @param mode character indicating the mode of the graph. Choose from "to",
+#' "from", "both", or "none". Default is "to". Se Details for more information.
+#' @details mode determines the direction of the graph. If "to", the graph will
+#' be directed from the `id` to the `toid`. If "from", the graph will be
+#' directed from the `toid` to the `id`. If "both", the graph will be
+#' directed in both directions. If "none", the graph will be undirected.
+#' @returns list containing named elements:
+#' \describe{
+#'   \item{to}{adjacency matrix with columns that correspond to `unqiue(x$id)`}
+#'   \item{lengths}{vector indicating the number of connections from each node}
+#'   \item{to_list}{a data.frame with an `id`, `indid` and a `toindid` list column.}
+#' }
+#' If long_form = TRUE, return will be a long form data.frame with no list column as in `to_list`.
+#' NOTE: the long_form output is deprecated and will be removed in a future release.
+#'
 #' @name make_index_ids
 #' @export
 #' @examples
@@ -51,6 +61,10 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
   if(!isTRUE(check_hy_graph(x))) {
     stop("found one or more pairs of features that reference eachother.
           Run check_hy_graph to identify issues.")
+  }
+
+  if(!missing(long_form)) {
+    warning("long_form is deprecated and will be removed in a future release.")
   }
 
   vars <- c("id", "toid")
@@ -111,7 +125,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
 #' @param return_list logical if TRUE, the returned list will include a
 #' "froms_list" element containing all from ids in a list form.
 #' @returns list containing an adjacency matrix and a lengths vector indicating
-#' the number of connections from each node. If `complete` is `TRUE` return
+#' the number of connections from each node. If `return_list` is `TRUE`, return
 #' will also include a data.frame with an `indid` column and a `toindid` list
 #' column.
 #' @export
