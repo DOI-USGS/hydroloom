@@ -47,11 +47,13 @@ test_that("get_node", {
   start <- get_node(x, "start")
   end <- get_node(x, "end")
 
+  #nolint start
   # plot(sf::st_zm(x$geom[1]))
   # plot(sf::st_geometry(start)[1], add = TRUE)
   # plot(sf::st_geometry(end)[1], add = TRUE)
   # dput(sf::st_coordinates(sf::st_geometry(start)[1]))
   # dput(sf::st_coordinates(sf::st_geometry(end)[1]))
+  #nolint end
 
   expect_equal(sf::st_coordinates(sf::st_geometry(start)[1]),
     structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(

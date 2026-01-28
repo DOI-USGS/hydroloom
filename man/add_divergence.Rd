@@ -97,14 +97,13 @@ g <- g[g$FTYPE != "Coastline", ]
 outlets <- g$COMID[!g$ToNode \%in\% g$FromNode]
 
 g <- dplyr::select(g, COMID, gnis_id, FTYPE,
-                   FromNode, ToNode)
+  FromNode, ToNode)
 
 add_divergence(g,
-               coastal_outlet_ids = outlets,
-               inland_outlet_ids = c(),
-               name_attr = "gnis_id",
-               type_attr = "FTYPE",
-               major_types = c("StreamRiver", "ArtificialPath", "Connector"))
-
+  coastal_outlet_ids = outlets,
+  inland_outlet_ids = c(),
+  name_attr = "gnis_id",
+  type_attr = "FTYPE",
+  major_types = c("StreamRiver", "ArtificialPath", "Connector"))
 
 }

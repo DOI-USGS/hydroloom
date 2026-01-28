@@ -6,6 +6,7 @@ test_that("reproduce new_hope", {
 
   expect_message(d <- add_measures(d), "no toid found")
 
+  #nolint start
   # g[g$REACHCODE == "03030002000581",]
   #
   # g[g$COMID == 8893350, c("COMID", "REACHCODE", "FromMeas", "ToMeas"), drop = TRUE]
@@ -15,6 +16,7 @@ test_that("reproduce new_hope", {
   #
   # d[d$COMID == 8893350, c("COMID", "REACHCODE", "aggregate_id_from_measure", "aggregate_id_to_measure"), drop = TRUE]
   # d[d$COMID == 8894160, c("COMID", "REACHCODE", "aggregate_id_from_measure", "aggregate_id_to_measure"), drop = TRUE]
+  # nolint end
 
   d <- d[match(d$COMID, g$COMID), ]
 

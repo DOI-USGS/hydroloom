@@ -134,8 +134,6 @@ get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, stat
   t4_tribs <- left_join(t4_tribs, select(x, "id", ms_ts = "topo_sort"),
     by = c("toid" = "id")) |> arrange(.data$ms_ts)
 
-  # t4_tribs <- t4_tribs[t4_tribs$ms_ts < max(mainstem$topo_sort),]
-
   ms_inter <- lapply(seq_len(5), function(x, ms, ts) {
     if (x > (length(ts) + 1)) return(data.frame(id = NA_real_))
     if (x == 1) {

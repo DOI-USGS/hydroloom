@@ -1,3 +1,4 @@
+#nolint start
 # source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #
 # x <- sf::st_drop_geometry(sample_flines[, 1:40])
@@ -8,7 +9,7 @@
 #                    StreamCalc)
 #
 # saveRDS(x, "tests/testthat/data/network.rds")
-#
+# nolint end
 x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
 
 test_that("get_DM works normal", {

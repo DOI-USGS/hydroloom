@@ -140,8 +140,8 @@ In contrast to NHDPlus, where the terminal path is identified by the `topo_sort`
 We can visualize this sorting by assigning a temporary "topo_sort" value to the sorted network, row wise. Here, we assign the first rows in the sorted set to large values and the last rows to small values in line with the topo_sort order convention in NHDPlus.
 
 ```{r, echo = TRUE, fig.dim=c(3, 3)}
-fpath['topo_sort'] <- seq(nrow(fpath), 1)
-plot(fpath['topo_sort'], key.pos = NULL)
+fpath["topo_sort"] <- seq(nrow(fpath), 1)
+plot(fpath["topo_sort"], key.pos = NULL)
 ```
 
 ### Level Path and outlet ID
@@ -180,7 +180,7 @@ In the below animation, each newly added level path is shown in blue, with the o
 fpath <- dplyr::arrange(fpath, topo_sort)
 
 # Level Paths with more then 2 flowlines
-lp <- dplyr::group_by(fpath, levelpath) %>%
+lp <- dplyr::group_by(fpath, levelpath) |>
   dplyr::filter(n() > 2)
 
 # Unique Level Path ID

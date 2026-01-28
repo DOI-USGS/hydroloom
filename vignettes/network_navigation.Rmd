@@ -65,9 +65,11 @@ class(hy(hy_net, clean = TRUE))
 names(hy(hy_net, clean = TRUE))
 
 # map utilities
-map_prep <- \(x, tol = 100) sf::st_geometry(x) |> # no attributes
+map_prep <- \(x, tol = 100) {
+  sf::st_geometry(x) |> # no attributes
   sf::st_transform(3857) |> # basemap projection
   sf::st_simplify(dTolerance = tol) # sleaner rendering
+}
 
 pc <- list(flowline = list(col = NA)) # to hide flowlines in basemap
 

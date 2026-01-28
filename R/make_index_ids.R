@@ -92,6 +92,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
       as.data.frame() |>
       as_tibble()
 
+    #nolint start
     # dplyr method of the above hanges on large datasets
     # out2 <- data.frame(id = unique(x$id),
     #                   indid = seq(1, length(unique(x$id))))
@@ -100,6 +101,7 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
     #                            out2, by = "id"),
     #                  rename(out2, toindid = "indid"),
     #                  by = c("toid" = "id"))
+    #nolint end
 
     out$toindid <- replace_na(out$toindid, 0)
 
@@ -153,10 +155,10 @@ format_index_ids <- function(g, return_list = FALSE) {
   max_to <- max(to_l)
 
   # Convert list to matrix with NA fill
-  to_m <- as.matrix(sapply(g$toindid, '[', seq(max_to)))
+  to_m <- as.matrix(sapply(g$toindid, "[", seq(max_to)))
 
   if ("main" %in% names(g))
-    main <- as.matrix(sapply(g$main, '[', seq(max_to)))
+    main <- as.matrix(sapply(g$main, "[", seq(max_to)))
 
   if (max_to == 1) {
     to_m <- matrix(to_m, nrow = 1)

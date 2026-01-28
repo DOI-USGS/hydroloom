@@ -49,9 +49,9 @@ large river systems. To strictly follow the dendritic network, set the
 \examples{
 
 plot_fun <- function(x, s, n) {
-   plot(sf::st_geometry(x), col = "grey")
-   plot(sf::st_geometry(x[x$id \%in\% n, ]), add = TRUE)
-   plot(sf::st_geometry(x[x$id \%in\% s, ]), col = "red", lwd = 3, add = TRUE)
+  plot(sf::st_geometry(x), col = "grey")
+  plot(sf::st_geometry(x[x$id \%in\% n, ]), add = TRUE)
+  plot(sf::st_geometry(x[x$id \%in\% s, ]), col = "red", lwd = 3, add = TRUE)
 }
 
 x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))

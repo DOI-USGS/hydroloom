@@ -67,7 +67,8 @@ get_hydro_location_single <- function(x) {
     return(
       st_sfc(st_point(c(coords$X[nds], coords$Y[nds])),
         crs = st_crs(x[[2]]))
-    )}
+    )
+  }
 
   new_m <- rescale_measures(m, coords$id_measure[nds], coords$id_measure[nus])
 

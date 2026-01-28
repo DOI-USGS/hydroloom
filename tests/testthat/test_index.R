@@ -44,7 +44,8 @@ test_that("index to waterbodies", {
   # point near waterbody
   expect_equal(match[7, ]$outlet_fline_COMID, 13294312)
 
-  sf::st_geometry(wb_l)[[1]] <- sf::st_multipolygon(list(sf::st_geometry(wb_l)[[1]][[1]], sf::st_geometry(wb_l)[[1]][[1]]))
+  sf::st_geometry(wb_l)[[1]] <- sf::st_multipolygon(
+    list(sf::st_geometry(wb_l)[[1]][[1]], sf::st_geometry(wb_l)[[1]][[1]]))
 
   expect_error(match <- index_points_to_waterbodies(wb_l, gage_l, search_radius = units::set_units(50, "m")),
     "Multipart geometries not supported.")

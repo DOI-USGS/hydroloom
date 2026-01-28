@@ -61,7 +61,7 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
       data.table(toid = x$id,
         node = x$fromnode)[data.table(id = x$id,
         node = x$tonode),
-      on = 'node']
+      on = "node"]
     )[, c("id", "toid")]
   }
 

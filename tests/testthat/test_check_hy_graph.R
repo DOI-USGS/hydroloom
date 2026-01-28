@@ -111,7 +111,9 @@ test_that("recombine", {
   test_data <- data.frame(id = c(1, 2, 2, 3, 4, 4, 5, 6, 7, 9, 8, 10),
     toid = c(2, 3, 7, 4, 5, 8, 6, 0, 9, 5, 10, 6))
 
+  #nolint start
   # igraph::plot.igraph(igraph::graph_from_data_frame(test_data))
+  #nolint end
 
   g <- make_index_ids(test_data)
 

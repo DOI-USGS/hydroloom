@@ -41,9 +41,9 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   get_dwn <- function(indid, toindid) {
     next_dn <- toindid[indid]
     if (next_dn == 0) {
-      return(indid)
+      indid
     } else {
-      return(c(indid, get_dwn(next_dn, toindid)))
+      c(indid, get_dwn(next_dn, toindid))
     }
   }
 
@@ -94,8 +94,9 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   if (status)
     message("Summing length of all connected pairs.")
 
-  get_length <- function(p, length_km)
+  get_length <- function(p, length_km) {
     sum(length_km$length_km[p[[1]]], length_km$length_km[p[[2]]])
+  }
 
   path_lengths <- pblapply(connected_paths, get_length, length_km = length_km)
 

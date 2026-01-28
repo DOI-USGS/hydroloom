@@ -237,7 +237,7 @@ index_points_to_lines.hy <- function(x, points,
   }
 
   if (units(search_radius) == units(as_units("degrees"))) {
-    if (st_is_longlat(in_crs) & search_radius > set_units(1, "degree")) {
+    if (st_is_longlat(in_crs) && search_radius > set_units(1, "degree")) {
       warning("search radius is large for lat/lon input, are you sure?")
     }
   }
@@ -342,7 +342,7 @@ index_points_to_lines.hy <- function(x, points,
   }
 
   if (!is.null(ids)) {
-    ids <- data.frame(point_id = seq_len(length(ids)), check_ids = ids)
+    ids <- data.frame(point_id = seq_along(ids), check_ids = ids)
 
     matched <- left_join(matched, ids, by = "point_id") |>
       filter(.data$id == .data$check_ids) |>
@@ -369,7 +369,8 @@ index_points_to_lines.hy <- function(x, points,
           (.data$aggregate_id_to_measure - .data$aggregate_id_from_measure) *
             (.data$id_measure / 100),
         digits = 4)) |>
-      ungroup() |> distinct()
+      ungroup() |>
+      distinct()
 
     select_vec <- c("index", aggregate_id, aggregate_id_measure)
     select_vec2 <- c(point_id, id, aggregate_id, aggregate_id_measure, offset)
@@ -437,7 +438,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
 
   search_radius <- as.numeric(check_search_radius(search_radius, points))
 
-  points <- st_sf(id = seq_len(length(points)), geometry = points)
+  points <- st_sf(id = seq_along(points), geometry = points)
 
   waterbodies <- select(waterbodies, wbid)
 

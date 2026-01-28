@@ -26,11 +26,11 @@ start <- get_node(x, "start")
 end <- get_node(x, "end")
 
 plot(sf::st_zm(sf::st_geometry(x)),
-     lwd = x$StreamOrde, col = "blue")
+  lwd = x$StreamOrde, col = "blue")
 plot(sf::st_geometry(start), add = TRUE)
 
 plot(sf::st_zm(sf::st_geometry(x)),
-     lwd = x$StreamOrde, col = "blue")
+  lwd = x$StreamOrde, col = "blue")
 plot(sf::st_geometry(end), add = TRUE)
 
 }

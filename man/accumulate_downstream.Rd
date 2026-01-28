@@ -70,7 +70,7 @@ x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
 net <- navigate_network_dfs(x, 8893236, "up")
 
-x <- x[x$COMID \%in\% unlist(net),]
+x <- x[x$COMID \%in\% unlist(net), ]
 
 # All default gives dendritic routing
 x$dend_totdasqkm <- accumulate_downstream(add_toids(x), "AreaSqKM")
@@ -89,14 +89,14 @@ y <- x |>
 y$div_totdasqkm <- accumulate_downstream(y, "AreaSqKM")
 
 # notice that diversions don't reset -- they carry a fraction of area
-plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 20)
+plot(y['div_totdasqkm'], lwd = y$div_totdasqkm / 20)
 
 z <- x |>
   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 
 z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
-plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 20)
+plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
 
 # equivalent values from the nhdplusv2 match!
 any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)

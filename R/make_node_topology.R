@@ -100,8 +100,6 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
     if (!all(x$toid[x$toid != get_outlet_value(x)] %in% x$id)) stop("Not all non zero toids are in ids")
     if (any(c(fromnode, tonode) %in% names(x))) stop("fromnode or tonode already in data")
 
-    order <- data.frame(id = x$id)
-
     x <- sort_network(x)
 
     head_count <- nrow(x)

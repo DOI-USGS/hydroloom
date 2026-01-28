@@ -43,9 +43,9 @@ y <- make_node_topology(y)
 
 # just the divergences which have unique fromids in x but don't in new hope.
 div <- add_toids(dplyr::select(x, COMID, FromNode, ToNode),
-                 return_dendritic = FALSE)
+  return_dendritic = FALSE)
 div <- div[div$toid \%in\%
-           x$COMID[x$Divergence == 2],]
+  x$COMID[x$Divergence == 2], ]
 
 y <- dplyr::select(add_toids(x), -ToNode, -FromNode)
 

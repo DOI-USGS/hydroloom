@@ -17,24 +17,36 @@ make_index_ids(x, long_form = FALSE)
 
 \item{long_form}{logical if TRUE, return will be a long-form version of the
 \code{to_list}. This form can be converted to the default list format with
-\link{format_index_ids}.}
+\link{format_index_ids}. "Long" refers to the fact that ids that connect
+to more than one \code{toid} will have multiple rows in the output.}
+
+\item{mode}{character indicating the mode of the graph. Choose from "to",
+"from", "both", or "none". Default is "to". Se Details for more information.}
 }
 \value{
-list containing named elements: \code{to}: adjacency matrix \code{lengths}:
-vector indicating the number of connections from each node, and: \code{to_list}:
-a data.frame with an \code{id}, \code{indid} and a \code{toindid} list column. If long_form
-= TRUE, return will be a long form data.frame with no list column as in \code{to_list}.
-NOTE: the long_form output should be used with caution as indid may not
-correspond to row number.
+list containing named elements:
+\describe{
+\item{to}{adjacency matrix with columns that correspond to \code{unqiue(x$id)}}
+\item{lengths}{vector indicating the number of connections from each node}
+\item{to_list}{a data.frame with an \code{id}, \code{indid} and a \code{toindid} list column.}
+}
+If long_form = TRUE, return will be a long form data.frame with no list column as in \code{to_list}.
+NOTE: the long_form output is deprecated and will be removed in a future release.
 }
 \description{
 makes index ids for the provided hy object. These can be used
 for graph traversal algorithms such that the row number and id are equal.
 }
+\details{
+mode determines the direction of the graph. If "to", the graph will
+be directed from the \code{id} to the \code{toid}. If "from", the graph will be
+directed from the \code{toid} to the \code{id}. If "both", the graph will be
+directed in both directions. If "none", the graph will be undirected.
+}
 \examples{
 
 x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-              toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
+  toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
 
 make_index_ids(x)
 

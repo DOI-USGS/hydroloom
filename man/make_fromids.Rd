@@ -28,7 +28,7 @@ row of the matrix in question.
 \examples{
 
 x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-              toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
+  toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
 
 y <- make_index_ids(x)
 

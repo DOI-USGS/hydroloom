@@ -132,6 +132,7 @@ test_that("from vignette works", {
   expect_equal(length(unique(lp$levelpath)),
     length(unique(lp$levelpath_outlet_id)))
 
+  #nolint start
   # TODO:
   # plus <- add_plus_network_attributes(dplyr::select(fpath, comid, tocomid,
   #                                                   lengthkm, areasqkm,
@@ -139,6 +140,7 @@ test_that("from vignette works", {
   #                                     status = FALSE)
   #
   # expect_s3_class(plus, "sf")
+  #nolint end
 })
 
 test_that("degenerate", {

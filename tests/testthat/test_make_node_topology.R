@@ -28,7 +28,7 @@ test_that("make_node_topology", {
 
   y <- make_node_topology(x, add = FALSE)
 
-  expect_s3_class(y, 'tbl_df')
+  expect_s3_class(y, "tbl_df")
 
   expect_equal(names(y), c("COMID", "fromnode", "tonode"))
 

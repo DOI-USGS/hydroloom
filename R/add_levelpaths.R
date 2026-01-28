@@ -129,9 +129,6 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x[["lp_name_attribute"]] <- replace_na(x[["lp_name_attribute"]], " ") # NHDPlusHR uses NA for empty names.
   x[["lp_name_attribute"]][x[["lp_name_attribute"]] == "-1"] <- " "
 
-  # don't think this is necessary
-  # x <- sort_network(x)
-
   if (!topo_sort %in% names(x)) x <- add_topo_sort(x)
 
   if (divergence %in% names(x)) {
@@ -279,8 +276,6 @@ get_path <- function(x, tailid, from_ind, status, wat) {
         keep_going <- FALSE
 
       }
-
-      # if(tailid %in% tracker) stop(paste0("loop at", tailid))
 
       tracker[counter] <- tailid
 

@@ -98,7 +98,9 @@ disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
       ungroup() |>
       select(-"metric_hl", -"metric_fp", -"metric_diff")
 
-  } else stop("flowpath and hydrolocation metrics must both be numeric or character")
+  } else {
+    stop("flowpath and hydrolocation metrics must both be numeric or character")
+  }
 
   if (call_rename) {
     rename(indexes, any_of(renamer))

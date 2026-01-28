@@ -37,7 +37,7 @@ check_hy_graph <- function(x, loop_check = FALSE) {
 
   }
 
-  x <- merge(data.table(mutate(x, row = 1:n())),
+  x <- merge(data.table(mutate(x, row = seq_len(n()))),
     data.table(rename(st_drop_geometry(x), toid_check = toid)),
     by.x = "toid", by.y = "id", all.x = TRUE)
 

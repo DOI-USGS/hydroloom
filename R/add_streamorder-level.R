@@ -100,7 +100,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
   }
 
-  for (i in seq_len(length(froms$lengths))) {
+  for (i in seq_along(froms$lengths)) {
 
     l <- froms$lengths[i]
 
@@ -234,7 +234,7 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
     sort_network() |>
     distinct()
 
-  l <- l[nrow(l):1, ]
+  l <- l[rev(seq_len(nrow(l))), ]
 
   l$level <- rep(0, nrow(l))
 
@@ -251,7 +251,7 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
   toids <- match(toid, id)
 
   # walk the network from bottom path up
-  for (i in seq_len(length(id))) {
+  for (i in seq_along(id)) {
     if (!is.na(toids[i])) {
 
       level[i] <- # level at current

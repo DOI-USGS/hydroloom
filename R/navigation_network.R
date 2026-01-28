@@ -81,7 +81,7 @@ get_start_row <- function(x, id) {
 #' plot_fun(x, start, ut)
 #'
 navigate_hydro_network <- function(x, start, mode, distance = NULL) {
-  if (missing(mode) || !mode %in% c('UM', 'DM', 'UT', 'DD')) {
+  if (missing(mode) || !mode %in% c("UM", "DM", "UT", "DD")) {
     stop("must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
   }
 
@@ -160,7 +160,7 @@ get_UT <- function(x, id, distance) {
     all <- c(all, unique(unlist(extra)))
   }
 
-  return(all)
+  all
 
 }
 

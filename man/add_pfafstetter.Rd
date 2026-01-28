@@ -41,48 +41,48 @@ pfaf <- add_pfafstetter(x, max_level = 2)
 plot(pfaf["pf_level_2"], lwd = 2)
 
 \donttest{
-if(require(nhdplusTools)) {
+if (require(nhdplusTools)) {
 
-# uses tempdir for example
-work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
+  # uses tempdir for example
+  work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
 
-try(
-source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
-)
-if(exists("hr_data")) {
-x <- hy(hr_data$NHDFlowline)
+  try(
+    source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
+  )
+  if (exists("hr_data")) {
+    x <- hy(hr_data$NHDFlowline)
 
-x <- add_toids(x)
+    x <- add_toids(x)
 
-x <- dplyr::select(x, id, toid, da_sqkm)
+    x <- dplyr::select(x, id, toid, da_sqkm)
 
-#' add terminal_id -- add in function?
-x <- sort_network(x, split = TRUE)
+    #' add terminal_id -- add in function?
+    x <- sort_network(x, split = TRUE)
 
-x$total_da_sqkm <- accumulate_downstream(x, "da_sqkm")
-x$name <- ""
+    x$total_da_sqkm <- accumulate_downstream(x, "da_sqkm")
+    x$name <- ""
 
-x <- add_levelpaths(x, name_attribute = "name", weight_attribute = "total_da_sqkm")
+    x <- add_levelpaths(x, name_attribute = "name", weight_attribute = "total_da_sqkm")
 
-x <- add_pfafstetter(x, max_level = 3)
+    x <- add_pfafstetter(x, max_level = 3)
 
-plot(x["pf_level_3"], lwd = 2)
+    plot(x["pf_level_3"], lwd = 2)
 
-pfaf <- add_pfafstetter(x, max_level = 4)
+    pfaf <- add_pfafstetter(x, max_level = 4)
 
-hr_catchment <- dplyr::left_join(hr_data$NHDPlusCatchment,
-                                 sf::st_drop_geometry(pfaf), by = c("FEATUREID" = "id"))
+    hr_catchment <- dplyr::left_join(hr_data$NHDPlusCatchment,
+      sf::st_drop_geometry(pfaf), by = c("FEATUREID" = "id"))
 
-colors <- data.frame(pf_level_4 = unique(hr_catchment$pf_level_4),
-                     color = sample(terrain.colors(length(unique(hr_catchment$pf_level_4)))))
+    colors <- data.frame(pf_level_4 = unique(hr_catchment$pf_level_4),
+      color = sample(terrain.colors(length(unique(hr_catchment$pf_level_4)))))
 
-hr_catchment <- dplyr::left_join(hr_catchment, colors, by = "pf_level_4")
+    hr_catchment <- dplyr::left_join(hr_catchment, colors, by = "pf_level_4")
 
-plot(hr_catchment["color"], border = NA, reset = FALSE)
-plot(sf::st_geometry(x), col = "blue", add = TRUE)
-} else {
-  message("nhdplusTools > 1.0 required for this example")
-}
+    plot(hr_catchment["color"], border = NA, reset = FALSE)
+    plot(sf::st_geometry(x), col = "blue", add = TRUE)
+  } else {
+    message("nhdplusTools > 1.0 required for this example")
+  }
 }
 }
 }

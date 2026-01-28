@@ -149,7 +149,8 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
             ready[next_node] <- ready[next_node] - 1
           }
 
-        }}
+        }
+      }
 
       # go to the last element added in to_visit
       v <- v - 1
@@ -177,7 +178,8 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
   if (split && o - 1 != length(id_order)) stop("Are two or more outlets within the same network?")
 
-  if (is.null(outlets) && length(unique(x$id)) != length(out)) warning("some features missed in sort. Are there loops in the network?")
+  if (is.null(outlets) && length(unique(x$id)) != length(out))
+    warning("some features missed in sort. Are there loops in the network?")
 
   x <- filter(x, .data$id %in% id_order) |>
     left_join(tibble(id = id_order, sorter = out), by = "id") |>

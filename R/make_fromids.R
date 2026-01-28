@@ -26,12 +26,14 @@ make_fromids <- function(index_ids, return_list = FALSE, upmain = NULL) {
 
   index_ids <- select(index_ids, -any_of("main"))
 
+  #nolint start
   # froms <- left_join(select(index_ids, "indid"),
   #                    select(index_ids, indid = "toindid", fromindid = "indid"),
   #                    by = "indid")
   #
   # froms <- data.frame(indid = unique(froms$indid),
   #                     fromindid = I(split(froms$fromindid, froms$indid)))
+  # nolint end
 
   # slightly faster but requires data.table
   index_ids <- as.data.table(index_ids)
@@ -61,10 +63,10 @@ make_fromids <- function(index_ids, return_list = FALSE, upmain = NULL) {
   max_from <- max(froms_l)
 
   # Convert list to matrix with NA fill
-  froms_m <- matrix(sapply(froms$fromindid, '[', seq(max_from)),
+  froms_m <- matrix(sapply(froms$fromindid, "[", seq(max_from)),
     nrow = max_from, ncol = nrow(froms))
 
-  main_m <- matrix(sapply(froms$main, '[', seq(max_from)),
+  main_m <- matrix(sapply(froms$main, "[", seq(max_from)),
     nrow = max_from, ncol = nrow(froms))
 
   # NAs should be length 0
