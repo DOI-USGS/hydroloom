@@ -37,7 +37,7 @@ test_that("add indid", {
   z <- add_toids(x)
 
   expect_warning({
-  z <- make_index_ids(z, long_form = TRUE)
+    z <- make_index_ids(z, long_form = TRUE)
   }, "long_form is deprecated and will be removed in a future release.")
 
   expect_equal(names(z), c("id", "indid", "toindid"))
@@ -51,10 +51,10 @@ test_that("add indid", {
   expect_equal(z, y)
 
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
-                          toid = c(2, 3, 4, 9, 7, 8, 9, 4))
+    toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 
   expect_error(hydroloom:::make_index_ids(test_data),
-               "found one or more pairs of features that reference eachother.")
+    "found one or more pairs of features that reference eachother.")
 
   x$id <- as.character(x$id)
 
@@ -63,7 +63,7 @@ test_that("add indid", {
   y <- make_index_ids(y)
 
   expect_equal(class(y$to_list$toindid[[1]]), "integer")
-  })
+})
 
 test_that("with downmain", {
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -95,6 +95,6 @@ test_that("format toid", {
   expect_true(is.matrix(x$to))
 
   # manually verified
-  expect_equal(x$to[,8], c(7, 575, NA))
+  expect_equal(x$to[, 8], c(7, 575, NA))
   expect_equal(as.numeric(x$lengths[8]), 2)
 })

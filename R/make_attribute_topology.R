@@ -23,8 +23,8 @@
 #'
 #' x <- add_toids(hy(x), return_dendritic = FALSE)
 #'
-#' x[x$id == x$id[1],]$toid
-#' z[z$COMID == x$id[1],]$toid
+#' x[x$id == x$id[1], ]$toid
+#' z[z$COMID == x$id[1], ]$toid
 #'
 make_attribute_topology <- function(x, min_distance) {
   UseMethod("make_attribute_topology")
@@ -70,10 +70,10 @@ make_attribute_topology.hy <- function(x, min_distance) {
     d <- sqrt((nodes$ex[x] - nodes$sx)^2 + (nodes$ey[x] - nodes$sy)^2)
 
     # if nothing close, 0
-    if(min(d) > min_distance) {
+    if (min(d) > min_distance) {
       0
     } else {
-      #whichever is minimum but not na
+      # whichever is minimum but not na
       which(d == min(d, na.rm = TRUE))
     }
 
@@ -88,7 +88,7 @@ make_attribute_topology.hy <- function(x, min_distance) {
     filter(.data$row != .data$torow) |>
     left_join(st_drop_geometry(x), by = "row") |>
     left_join(select(st_drop_geometry(x), row, toid = id),
-                     by = c("torow" = "row")) |>
+      by = c("torow" = "row")) |>
     select(-all_of(c("row", "torow")))
 
   nodes$toid <- replace_na(nodes$toid, get_outlet_value(nodes))

@@ -73,15 +73,15 @@ indid <- "indid"
 toindid <- "toindid"
 
 good_names <- c(id, toid, fromnode, tonode, divergence, divergence_fraction, wbid,
-                total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
-                topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
-                terminal_topo_sort, terminal_flag, terminal_id, start_flag,
-                levelpath, up_levelpath, dn_levelpath, levelpath_outlet_id,
-                stream_level, dn_stream_level, stream_order, stream_calculator,
-                feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
-                id_measure, aggregate_id, aggregate_id_measure,
-                aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset,
-                upmain, downmain)
+  total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
+  topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
+  terminal_topo_sort, terminal_flag, terminal_id, start_flag,
+  levelpath, up_levelpath, dn_levelpath, levelpath_outlet_id,
+  stream_level, dn_stream_level, stream_order, stream_calculator,
+  feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
+  id_measure, aggregate_id, aggregate_id_measure,
+  aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset,
+  upmain, downmain)
 
 hnd <- as.list(rep("", length(good_names)))
 names(hnd) <- good_names
@@ -135,7 +135,7 @@ class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_d
 #' @export
 #' @noRd
 print.hydroloom_names <- function(x, ...) {
-  for(i in 1:length(x)) {
+  for (i in 1:length(x)) {
     cat(paste0(i, ' "', names(x)[i], '"', ": \n\t ", unname(x)[i], "\n"))
   }
 }
@@ -211,7 +211,7 @@ assign("hydroloom_name_map", hydroloom_name_map, envir = hydroloom_env)
 assign("good_names", good_names, envir = hydroloom_env)
 
 check_names <- function(x, req_names, context) {
-  if(!all(req_names %in% names(x)))
+  if (!all(req_names %in% names(x)))
     stop(paste(context, "requires", paste(req_names, collapse = ", "),
-               "hydroloom attributes."), call. = FALSE)
+      "hydroloom attributes."), call. = FALSE)
 }

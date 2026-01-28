@@ -7,7 +7,7 @@ test_that("s3 class creation", {
 
   expect_s3_class(y, "hy")
 
-  x <- dplyr::tibble(comid = c(1,2), tocomid = c(2, NA), fromnode = c(1, 2), tonode = c(2, 3))
+  x <- dplyr::tibble(comid = c(1, 2), tocomid = c(2, NA), fromnode = c(1, 2), tonode = c(2, 3))
 
   y <- hy(x)
 
@@ -15,7 +15,7 @@ test_that("s3 class creation", {
 
   expect_true(inherits(y, "tbl"))
 
-  expect_equal(y$toid, c(2,0))
+  expect_equal(y$toid, c(2, 0))
 
   expect_true(is.hy(y))
 

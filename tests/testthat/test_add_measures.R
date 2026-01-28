@@ -16,7 +16,7 @@ test_that("reproduce new_hope", {
   # d[d$COMID == 8893350, c("COMID", "REACHCODE", "aggregate_id_from_measure", "aggregate_id_to_measure"), drop = TRUE]
   # d[d$COMID == 8894160, c("COMID", "REACHCODE", "aggregate_id_from_measure", "aggregate_id_to_measure"), drop = TRUE]
 
-  d <- d[match(d$COMID, g$COMID),]
+  d <- d[match(d$COMID, g$COMID), ]
 
   expect_equal(d$REACHCODE_from_measure, g$FromMeas, tolerance = 0.1)
   expect_equal(d$REACHCODE_to_measure, g$ToMeas, tolerance = 0.1)
@@ -24,11 +24,11 @@ test_that("reproduce new_hope", {
 
 test_that("mainstem", {
 
-  if(!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
 
   try(source(system.file("extdata", "3dhp_yahara_flowlines.R", package = "nhdplusTools")))
 
-  if(!grepl("geojson", sample_3dhp_data)) skip("data not available?")
+  if (!grepl("geojson", sample_3dhp_data)) skip("data not available?")
 
   threedhp_data <- sf::read_sf(sample_3dhp_data)
 

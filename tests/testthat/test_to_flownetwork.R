@@ -10,7 +10,7 @@ test_that("to_flownetwork", {
 
   x <- to_flownetwork(f)
 
-  dm <- x[x$downmain,]
+  dm <- x[x$downmain, ]
   um <- x[x$upmain, ]
 
   expect_false(any(duplicated(dm$id)))

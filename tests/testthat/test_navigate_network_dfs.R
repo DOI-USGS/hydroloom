@@ -1,46 +1,46 @@
 test_that("super basic", {
   net <- data.frame(id = c(2, 3, 3, 4, 5, 6, 7, 8, 9),
-                toid = c(3, 4, 5, 6, 7, 8, 8, 9, 0))
+    toid = c(3, 4, 5, 6, 7, 8, 8, 9, 0))
 
   paths <- navigate_network_dfs(net, 2, direction = "down")
 
   expect_equal(paths,
-               list(list(`1` = c(2, 3, 5, 7, 8, 9),
-                         `2` = c(4, 6))))
+    list(list(`1` = c(2, 3, 5, 7, 8, 9),
+      `2` = c(4, 6))))
 
   path <- navigate_network_dfs(net, 9, direction = "up")
 
   expect_equal(path,
-               list(list(`1` = c(9, 8, 7, 5, 3, 2, 6, 4))))
+    list(list(`1` = c(9, 8, 7, 5, 3, 2, 6, 4))))
 })
 
 test_that("total div", {
   net <- data.frame(id = c(2, 3, 3, 4, 5, 6, 7, 8, 9, 10),
-                  toid = c(3, 4, 5, 6, 7, 8, 9, 10, 0, 0))
+    toid = c(3, 4, 5, 6, 7, 8, 9, 10, 0, 0))
 
   paths <- navigate_network_dfs(net, 2, direction = "down")
 
   expect_equal(paths,
-               list(list(`1` = c(2, 3, 5, 7, 9),
-                         `2` = c(4, 6, 8, 10))))
+    list(list(`1` = c(2, 3, 5, 7, 9),
+      `2` = c(4, 6, 8, 10))))
 
   paths <- navigate_network_dfs(net, c(2, 5), direction = "down")
 
   expect_equal(paths, list(list(`1` = c(2, 3, 5, 7, 9),
-                                `2` = c(4, 6, 8, 10)),
-                           list()))
+    `2` = c(4, 6, 8, 10)),
+  list()))
 
   paths <- navigate_network_dfs(net, c(2, 5), direction = "down", reset = TRUE)
 
   expect_equal(paths, list(list(`1` = c(2, 3, 5, 7, 9),
-                                `2` = c(4, 6, 8, 10)),
-                           list(`3` = c(5, 7, 9))))
+    `2` = c(4, 6, 8, 10)),
+  list(`3` = c(5, 7, 9))))
 
   paths <- navigate_network_dfs(net, c(9, 10), direction = "up")
 
   expect_equal(paths,
-               list(list(`1` = c(9, 7, 5, 3, 2)),
-                    list(`1` = c(10, 8, 6, 4))))
+    list(list(`1` = c(9, 7, 5, 3, 2)),
+      list(`1` = c(10, 8, 6, 4))))
 
 })
 
@@ -76,15 +76,15 @@ test_that("real data", {
   expect_error(navigate_network_dfs(g, 12345))
 
   expect_error(navigate_network_dfs(gg, 12345),
-               "all starts must be in x")
+    "all starts must be in x")
 
   expect_error(navigate_network_dfs(gg, 8891152, direction = "up"),
-               "'down' if x contains to index ids")
+    "'down' if x contains to index ids")
 
   ggg <- make_fromids(gg, return_list = FALSE)
 
   expect_error(navigate_network_dfs(ggg, 8891152, direction = "down"),
-               "make_index_ids or make_fromids")
+    "make_index_ids or make_fromids")
 
   ggg <- make_fromids(gg, return_list = TRUE)
 
@@ -123,7 +123,7 @@ test_that("main", {
 
   upmain_df <- distinct(select(x, id, upmain))
 
-  y <- make_index_ids(x[,c("id", "toid")])
+  y <- make_index_ids(x[, c("id", "toid")])
 
   z <- make_fromids(y, return_list = TRUE)
 

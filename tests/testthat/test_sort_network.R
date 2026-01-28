@@ -1,24 +1,24 @@
 test_that("get_sorted", {
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
-                          toid = c(2, 3, 4, 9, 7, 8, 9, 4))
+    toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 
   expect_error(sort_network(test_data), "found one or more pairs of features that reference eachother.")
 
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
-                          toid = c(2, 3, 4, 0, 7, 8, 9, 4))
+    toid = c(2, 3, 4, 0, 7, 8, 9, 4))
 
   expect_equal(nrow(sort_network(test_data)), nrow(test_data))
 
   test_data <- data.frame(id = c(1, 2, 3, 4),
-                          toid = c(2, 3, 4, 0))
+    toid = c(2, 3, 4, 0))
 
   expect_equal(nrow(sort_network(test_data)), nrow(test_data))
 
   expect_equal(c("id", "toid", "topo_sort"),
-               names(add_topo_sort(test_data)))
+    names(add_topo_sort(test_data)))
 
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
-                          toid = c(2, 3, 4, 0, 7, 8, 9, 0))
+    toid = c(2, 3, 4, 0, 7, 8, 9, 0))
 
   split_net <- sort_network(test_data, split = TRUE)
 
@@ -35,11 +35,11 @@ test_that("get_sorted", {
   x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
 
   expect_error(sort_network(add_toids(x, return_dendritic = TRUE),
-                            split = TRUE, outlets = c(11690196, 11689718)),
-               "Are two or more outlets within the same network?")
+    split = TRUE, outlets = c(11690196, 11689718)),
+  "Are two or more outlets within the same network?")
 
   x <- sort_network(add_toids(x, return_dendritic = TRUE),
-                    split = TRUE, outlets = c(11690186, 11689280))
+    split = TRUE, outlets = c(11690186, 11689280))
 
   expect_true(!x$toid[x$COMID == 11690186] %in% x$COMID)
   expect_true(!x$toid[x$COMID == 11689280] %in% x$COMID)
@@ -59,7 +59,7 @@ test_that("get_sorted", {
   y <- sort_network(x, split = TRUE)
 
   expect_true(which(y$comid == 2544325) <
-                which(y$comid == 2544321))
+    which(y$comid == 2544321))
 
   expect_equal(length(unique(y$terminal_id)), 32)
 
@@ -97,13 +97,13 @@ test_that("non-dendritic issues", {
   z <- sort_network(y)
 
   z <- dplyr::left_join(z,
-                        tibble(COMID = unique(z$COMID), topo_sort = rev(seq_along(unique(z$COMID)))),
-                        by = "COMID")
+    tibble(COMID = unique(z$COMID), topo_sort = rev(seq_along(unique(z$COMID)))),
+    by = "COMID")
 
   # the two non dendritic paths should have a smaller topo sort than the one upstream of them.
   expect_true(all(c(z$topo_sort[which(z$COMID == 8893472)],
-                    unique(z$topo_sort[which(z$COMID == 8893424)])) <
-                    z$topo_sort[which(z$COMID == 8893420)]))
+    unique(z$topo_sort[which(z$COMID == 8893424)])) <
+    z$topo_sort[which(z$COMID == 8893420)]))
 
   expect_equal(nrow(y), nrow(z))
 })
@@ -111,18 +111,18 @@ test_that("non-dendritic issues", {
 test_that("no stated outlet", {
 
   wbd <- structure(list(id = c("030300020608", "030300020702", "030300020610",
-                                  "030300020701", "030300020509", "030300020607", "030300020507",
-                                  "030300020604", "030300020603", "030300020606", "030202010801",
-                                  "030300020605", "030300020602", "030300020503", "030300020601",
-                                  "030202010502", "030202010504", "030202010403", "030202010302",
-                                  "030202010304", "030202010303"),
-                        toid = c("030300020610", "030300020704",
-                                  "030300020704", "030300020702", "030300020701", "030300020610",
-                                  "030300020509", "030300020610", "030300020604", "030300020607",
-                                  "030202010803", "030300020610", "030300020604", "030300020506",
-                                  "030300020604", "030202010504", "030202010602", "030202010404",
-                                  "030202010303", "030202010404", "030202010304")),
-                   row.names = c(NA, 21L), class = c("tbl_df", "tbl", "data.frame"))
+    "030300020701", "030300020509", "030300020607", "030300020507",
+    "030300020604", "030300020603", "030300020606", "030202010801",
+    "030300020605", "030300020602", "030300020503", "030300020601",
+    "030202010502", "030202010504", "030202010403", "030202010302",
+    "030202010304", "030202010303"),
+  toid = c("030300020610", "030300020704",
+    "030300020704", "030300020702", "030300020701", "030300020610",
+    "030300020509", "030300020610", "030300020604", "030300020607",
+    "030202010803", "030300020610", "030300020604", "030300020506",
+    "030300020604", "030202010504", "030202010602", "030202010404",
+    "030202010303", "030202010404", "030202010304")),
+  row.names = c(NA, 21L), class = c("tbl_df", "tbl", "data.frame"))
 
   expect_warning(expect_warning(net <- hydroloom::sort_network(wbd)))
 
@@ -165,7 +165,7 @@ test_that("custom outlet values aren't messed up", {
 
 test_that("loop warning", {
   test_data <- data.frame(id = c(1, 2, 3, 4, 5, 5, 6, 7),
-                          toid = c(3, 4, 4, 5, 6, 3, 7, 0))
+    toid = c(3, 4, 4, 5, 6, 3, 7, 0))
   expect_warning(sort_network(test_data), "loops")
 })
 

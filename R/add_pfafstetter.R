@@ -23,51 +23,50 @@ required_atts_pfafsetter <- c(id, toid, total_da_sqkm, topo_sort, levelpath)
 #' plot(pfaf["pf_level_2"], lwd = 2)
 #'
 #' \donttest{
-#' if(require(nhdplusTools)) {
+#' if (require(nhdplusTools)) {
 #'
-#' # uses tempdir for example
-#' work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
+#'   # uses tempdir for example
+#'   work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
 #'
-#' try(
-#' source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
-#' )
-#' if(exists("hr_data")) {
-#' x <- hy(hr_data$NHDFlowline)
+#'   try(
+#'     source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
+#'   )
+#'   if (exists("hr_data")) {
+#'     x <- hy(hr_data$NHDFlowline)
 #'
-#' x <- add_toids(x)
+#'     x <- add_toids(x)
 #'
-#' x <- dplyr::select(x, id, toid, da_sqkm)
+#'     x <- dplyr::select(x, id, toid, da_sqkm)
 #'
-#' #' add terminal_id -- add in function?
-#' x <- sort_network(x, split = TRUE)
+#'     #' add terminal_id -- add in function?
+#'     x <- sort_network(x, split = TRUE)
 #'
-#' x$total_da_sqkm <- accumulate_downstream(x, "da_sqkm")
-#' x$name <- ""
+#'     x$total_da_sqkm <- accumulate_downstream(x, "da_sqkm")
+#'     x$name <- ""
 #'
-#' x <- add_levelpaths(x, name_attribute = "name", weight_attribute = "total_da_sqkm")
+#'     x <- add_levelpaths(x, name_attribute = "name", weight_attribute = "total_da_sqkm")
 #'
-#' x <- add_pfafstetter(x, max_level = 3)
+#'     x <- add_pfafstetter(x, max_level = 3)
 #'
-#' plot(x["pf_level_3"], lwd = 2)
+#'     plot(x["pf_level_3"], lwd = 2)
 #'
-#' pfaf <- add_pfafstetter(x, max_level = 4)
+#'     pfaf <- add_pfafstetter(x, max_level = 4)
 #'
-#' hr_catchment <- dplyr::left_join(hr_data$NHDPlusCatchment,
-#'                                  sf::st_drop_geometry(pfaf), by = c("FEATUREID" = "id"))
+#'     hr_catchment <- dplyr::left_join(hr_data$NHDPlusCatchment,
+#'       sf::st_drop_geometry(pfaf), by = c("FEATUREID" = "id"))
 #'
-#' colors <- data.frame(pf_level_4 = unique(hr_catchment$pf_level_4),
-#'                      color = sample(terrain.colors(length(unique(hr_catchment$pf_level_4)))))
+#'     colors <- data.frame(pf_level_4 = unique(hr_catchment$pf_level_4),
+#'       color = sample(terrain.colors(length(unique(hr_catchment$pf_level_4)))))
 #'
-#' hr_catchment <- dplyr::left_join(hr_catchment, colors, by = "pf_level_4")
+#'     hr_catchment <- dplyr::left_join(hr_catchment, colors, by = "pf_level_4")
 #'
-#' plot(hr_catchment["color"], border = NA, reset = FALSE)
-#' plot(sf::st_geometry(x), col = "blue", add = TRUE)
-#' } else {
-#'   message("nhdplusTools > 1.0 required for this example")
+#'     plot(hr_catchment["color"], border = NA, reset = FALSE)
+#'     plot(sf::st_geometry(x), col = "blue", add = TRUE)
+#'   } else {
+#'     message("nhdplusTools > 1.0 required for this example")
+#'   }
 #' }
 #' }
-#' }
-
 add_pfafstetter <- function(x, max_level = 2, status = FALSE) {
   UseMethod("add_pfafstetter")
 }
@@ -95,80 +94,80 @@ add_pfafstetter.hy <- function(x, max_level = 2, status = FALSE) {
   mainstem <- st_drop_geometry(x)[x$levelpath == mainstem_levelpath, ]
 
   left_join(x,
-            bind_rows(get_pfaf_9(select(st_drop_geometry(x),
-                                        all_of(required_atts_pfafsetter)),
-                                 mainstem, max_level, status = status)) |>
+    bind_rows(get_pfaf_9(select(st_drop_geometry(x),
+      all_of(required_atts_pfafsetter)),
+    mainstem, max_level, status = status)) |>
 
-              cleanup_pfaf(), by = id)
+      cleanup_pfaf(), by = id)
 }
 
 #' @noRd
 get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, status = FALSE) {
 
-  if(!levelpath_outlet_id %in% names(x)) {
+  if (!levelpath_outlet_id %in% names(x)) {
     x <- add_levelpath_outlet_ids(x)
   }
 
-  if((pre_pfaf / 10^(max_level - 1)) > 1) return()
+  if ((pre_pfaf / 10^(max_level - 1)) > 1) return()
 
-  if(status && ((pre_pfaf - 1111) %% 1000) == 0) {
+  if (status && ((pre_pfaf - 1111) %% 1000) == 0) {
     message(paste("On level:", pre_pfaf - 1111))
   }
   # Get all tributary outlets that go to the passed mainstem.
   trib_outlets <- x[x$toid %in% mainstem$id &
-                      x$levelpath != mainstem$levelpath[1], ]
+    x$levelpath != mainstem$levelpath[1], ]
 
   # Exclude those that have already been defined as drainage basin outlets
-  if(inherits(assigned, "data.frame")) {
+  if (inherits(assigned, "data.frame")) {
     trib_outlets <- trib_outlets[!trib_outlets$id %in%
-                                   assigned$members[(assigned$pfaf %% 2) == 0], ]
+      assigned$members[(assigned$pfaf %% 2) == 0], ]
   }
 
-  if(length(mainstem$id) == 1 && nrow(trib_outlets) == 0) {
+  if (length(mainstem$id) == 1 && nrow(trib_outlets) == 0) {
     return()
   }
 
   # Get the top 4 tributaries (or less) by total drainage area and arrange along the mainstem
-  area_filter <- (if(nrow(trib_outlets) >= 4) 4 else nrow(trib_outlets))
+  area_filter <- (if (nrow(trib_outlets) >= 4) 4 else nrow(trib_outlets))
   area_filter <- sort(trib_outlets$total_da_sqkm, decreasing = TRUE)[area_filter]
   t4_tribs <- trib_outlets[trib_outlets$total_da_sqkm >= area_filter, ]
   t4_tribs <- left_join(t4_tribs, select(x, "id", ms_ts = "topo_sort"),
-                        by = c("toid" = "id")) |> arrange(.data$ms_ts)
+    by = c("toid" = "id")) |> arrange(.data$ms_ts)
 
   # t4_tribs <- t4_tribs[t4_tribs$ms_ts < max(mainstem$topo_sort),]
 
   ms_inter <- lapply(seq_len(5), function(x, ms, ts) {
-    if(x > (length(ts) + 1)) return(data.frame(id = NA_real_))
-    if(x == 1) {
+    if (x > (length(ts) + 1)) return(data.frame(id = NA_real_))
+    if (x == 1) {
       ms <- ms[ms$topo_sort <= ts[x], ]
-    } else if(x == 5 | x == (length(ts) + 1)) {
+    } else if (x == 5 | x == (length(ts) + 1)) {
       ms <- ms[ms$topo_sort > ts[x - 1], ]
     } else {
       ms <- ms[ms$topo_sort > ts[x - 1] & ms$topo_sort <= ts[x], ]
     }
-    if(nrow(ms) > 0) ms$p_id <- c(1, 3, 5, 7, 9)[x]
+    if (nrow(ms) > 0) ms$p_id <- c(1, 3, 5, 7, 9)[x]
     ms
   }, ms = mainstem, ts = t4_tribs$ms_ts)
 
   out <- data.frame(p_id = c(1:9))
   out[["members"]] <- list(ms_inter[[1]]$id, x$id[x$levelpath_outlet_id == t4_tribs$levelpath_outlet_id[1]],
-                           ms_inter[[2]]$id, x$id[x$levelpath_outlet_id == t4_tribs$levelpath_outlet_id[2]],
-                           ms_inter[[3]]$id, x$id[x$levelpath_outlet_id == t4_tribs$levelpath_outlet_id[3]],
-                           ms_inter[[4]]$id, x$id[x$levelpath_outlet_id == t4_tribs$levelpath_outlet_id[4]],
-                           ms_inter[[5]]$id)
+    ms_inter[[2]]$id, x$id[x$levelpath_outlet_id == t4_tribs$levelpath_outlet_id[2]],
+    ms_inter[[3]]$id, x$id[x$levelpath_outlet_id == t4_tribs$levelpath_outlet_id[3]],
+    ms_inter[[4]]$id, x$id[x$levelpath_outlet_id == t4_tribs$levelpath_outlet_id[4]],
+    ms_inter[[5]]$id)
   out[["pfaf"]] <- out$p_id + pre_pfaf * 10
 
-  if(all(sapply(out$members, function(x) all(is.na(x))))) out$members[[1]] <- mainstem$id
+  if (all(sapply(out$members, function(x) all(is.na(x))))) out$members[[1]] <- mainstem$id
   out <- unnest(out, "members")
   out <- list(out[!is.na(out$members), ])
 
-  if(nrow(out[[1]]) == 0 | all(out[[1]]$members %in% mainstem$id)) {
+  if (nrow(out[[1]]) == 0 | all(out[[1]]$members %in% mainstem$id)) {
     return(out)
   }
 
   c(out, unlist(lapply(c(1:9), apply_fun,
-                       p9 = out[[1]], x = x, max_level = max_level, status = status),
-                recursive = FALSE))
+    p9 = out[[1]], x = x, max_level = max_level, status = status),
+  recursive = FALSE))
 }
 
 apply_fun <- function(p, p9, x, max_level, status) {
@@ -177,7 +176,7 @@ apply_fun <- function(p, p9, x, max_level, status) {
   pre_pfaf <- unique(p_sub$pfaf)
   mainstem <- x[x$id %in% ms_ids, ]
 
-  if(length(pre_pfaf) > 0) {
+  if (length(pre_pfaf) > 0) {
     get_pfaf_9(x, mainstem, max_level, pre_pfaf = pre_pfaf, assigned = p9, status = status)
   } else {
     NULL
@@ -200,16 +199,16 @@ cleanup_pfaf <- function(pfaf) {
   }, pfaf = pfaf))
 
   pfaf <- pivot_wider(select(pfaf[!pfaf$uid %in% remove, ], -"uid"),
-                      id_cols = "id", names_from = "level",
-                      names_prefix = "pf_level_", values_from = "pfaf")
+    id_cols = "id", names_from = "level",
+    names_prefix = "pf_level_", values_from = "pfaf")
 
   # replace NAs with known values.
-  for(i in 3:ncol(pfaf)) {
+  for (i in 3:ncol(pfaf)) {
     pfaf[, i][is.na(pfaf[, i, drop = TRUE]) & !is.na(pfaf[, (i - 1), drop = TRUE]), ] <-
       1 + (pfaf[, (i - 1)][is.na(pfaf[, i, drop = TRUE]) & !is.na(pfaf[, (i - 1), drop = TRUE]), ] * 10)
   }
 
-  for(i in (ncol(pfaf) - 1):2) {
+  for (i in (ncol(pfaf) - 1):2) {
     pfaf[, i][is.na(pfaf[, i, drop = TRUE]), ] <-
       floor(pfaf[, (i + 1)][is.na(pfaf[, i, drop = TRUE]), ] / 10)
   }

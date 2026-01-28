@@ -3,7 +3,7 @@ test_that("make_node_topology", {
 
   d <- add_toids(
     dplyr::select(nhf, COMID, FromNode, ToNode, Divergence, FTYPE,
-                  AreaSqKM, LENGTHKM, GNIS_ID),
+      AreaSqKM, LENGTHKM, GNIS_ID),
   )
 
   expect_error(make_node_topology(d), "fromnode or tonode already in data")
@@ -23,8 +23,8 @@ test_that("make_node_topology", {
   expect_s3_class(y, "sf")
 
   expect_equal(names(y), c("COMID", "toid", "fromnode", "tonode",
-                           "Divergence", "FTYPE", "AreaSqKM", "LENGTHKM",
-                           "GNIS_ID", "geom"))
+    "Divergence", "FTYPE", "AreaSqKM", "LENGTHKM",
+    "GNIS_ID", "geom"))
 
   y <- make_node_topology(x, add = FALSE)
 
@@ -37,28 +37,28 @@ test_that("make_node_topology", {
 
   # we expect more tonodes because we lost divergences.
   expect_equal(length(unique(nhf$FromNode)) + sum(nhf$Divergence == 2),
-               length(unique(y$fromnode)))
+    length(unique(y$fromnode)))
 
   # just the divergences which have unique fromids in x but don't in new hope.
   add_div <- add_toids(st_drop_geometry(dplyr::select(nhf,
-                                                   COMID, FromNode, ToNode)),
-                       return_dendritic = FALSE)
+    COMID, FromNode, ToNode)),
+  return_dendritic = FALSE)
   add_div <- add_div[add_div$toid %in%
-                       nhf$COMID[nhf$Divergence == 2],]
+    nhf$COMID[nhf$Divergence == 2], ]
 
   y <- make_node_topology(x)
 
   # we need to get the node the divergences upstream neighbor goes to
   # first get the new outlet nodes for our old ids
   div <- dplyr::left_join(dplyr::select(add_div, COMID, toid),
-                          dplyr::select(y, COMID, tonode), by = "COMID")
+    dplyr::select(y, COMID, tonode), by = "COMID")
 
   # now join upstream renaming the tonode to fromnode
   y <- dplyr::left_join(y, dplyr::select(div, toid, new_fromnode = tonode),
-                        by = c("COMID" = "toid"))
+    by = c("COMID" = "toid"))
 
   y <- dplyr::mutate(y, fromnode = ifelse(!is.na(new_fromnode),
-                                          new_fromnode, fromnode))
+    new_fromnode, fromnode))
 
   y <- dplyr::select(y, -new_fromnode)
 
@@ -69,7 +69,7 @@ test_that("make_node_topology", {
 
   # we would now expect the same number of fromnodes in each network
   expect_equal(length(unique(nhf$FromNode)),
-               length(unique(y$fromnode)))
+    length(unique(y$fromnode)))
 
   z <- make_node_topology(dplyr::select(x, -Divergence), add_div = add_div)
 

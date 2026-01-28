@@ -49,14 +49,14 @@ add_pathlength.hy <- function(x) {
 
   toids <- match(x$toid, x$id)
 
-  for(i in seq_len(length(toid))) {
+  for (i in seq_len(length(toid))) {
     tid <- toid[i]
-    if(tid != 0) {
+    if (tid != 0) {
 
       pathlength_km[i] <- length_km[toids[i]] + pathlength_km[toids[i]]
 
     }
-    if(i %% 10000 == 0) message(i)
+    if (i %% 10000 == 0) message(i)
   }
 
   x$pathlength_km <- pathlength_km

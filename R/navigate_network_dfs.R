@@ -54,20 +54,20 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
   # check if we to index ids or from index ids
   # should this be done with a class attribute?
 
-  if(all(c("to", "lengths", "to_list") %in% names(x))) {
+  if (all(c("to", "lengths", "to_list") %in% names(x))) {
 
-    if(!grepl("down", direction))
+    if (!grepl("down", direction))
       stop("Direction must be 'down' if x contains to index ids")
 
-    if(grepl("main", direction) & !"main" %in% names(x))
+    if (grepl("main", direction) & !"main" %in% names(x))
       stop("for downmain, index ids must include main element")
 
-  } else if(all(c("froms", "lengths", "froms_list") %in% names(x))) {
+  } else if (all(c("froms", "lengths", "froms_list") %in% names(x))) {
 
-    if(!grepl("up", direction))
+    if (!grepl("up", direction))
       stop("Direction must be 'up' if x contains from index ids")
 
-    if(grepl("main", direction) && !"main" %in% names(x))
+    if (grepl("main", direction) && !"main" %in% names(x))
       stop("for upmain, index ids must include main element")
 
   } else {
@@ -75,7 +75,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
     # prepare the flownetwork for navigation
     # all of this has to be done seperately for the above two cases
 
-    if(!inherits(x, "data.frame"))
+    if (!inherits(x, "data.frame"))
       stop("if x is not a length three list as
             returned by make_index_ids or make_fromids
             it must be a data.frame that can be coerced
@@ -87,10 +87,10 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
     g <- make_index_ids(x)
 
-    if(grepl("up", direction)) {
+    if (grepl("up", direction)) {
 
       upmain_atts <- NULL
-      if(direction == "upmain") {
+      if (direction == "upmain") {
         upmain_atts <- distinct(select(x, all_of(c(id, upmain))))
       }
 
@@ -101,14 +101,14 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
   }
 
-  if(!exists("g", inherits = FALSE)) {
+  if (!exists("g", inherits = FALSE)) {
     g <- x
     rm(x)
   }
 
   # if we are going upstream, we need to update names
   # the code below assumes the graph is directed where we are going
-  if(grepl("up", direction)) {
+  if (grepl("up", direction)) {
     names(g)[names(g) == "froms"] <- "to"
     names(g)[names(g) == "froms_list"] <- "to_list"
 
@@ -116,11 +116,11 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
   }
 
   # if the above resulted in dat that won't work
-  if(grepl("main", direction) && !"main" %in% names(g))
+  if (grepl("main", direction) && !"main" %in% names(g))
     stop("main path must be provided for downmain navigation")
 
   # make sure this will actually work!
-  if(!all(starts %in% g$to_list$id)) stop("all starts must be in x")
+  if (!all(starts %in% g$to_list$id)) stop("all starts must be in x")
 
   main <- grepl("main", direction)
 
@@ -134,7 +134,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
   all_starts <- unique(g$to_list$indid[match(all_starts, g$to_list$id)])
 
   # if reset is TRUE, we keep all connections in subsequent starts runs
-  if(reset) save_to <- g$to
+  if (reset) save_to <- g$to
 
   # Some vectors to track results
   # indexes into the full set from all starts
@@ -158,7 +158,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
   set_id <- 1
   path_id <- 1
 
-  for(start in all_starts) {
+  for (start in all_starts) {
 
     # Set up the starting node we change node below so this just tracks for clarity
     node <- start
@@ -175,11 +175,11 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
     new_path <- FALSE
 
     # only reset if we are explicitely asking for overlapping paths
-    if(reset) visited_tracker <- rep(NA_integer_, ncol(g$to))
+    if (reset) visited_tracker <- rep(NA_integer_, ncol(g$to))
 
-    while(visit_index > 0) {
+    while (visit_index > 0) {
 
-      if(is.na(visited_tracker[node])) {
+      if (is.na(visited_tracker[node])) {
         # this is the first time we've seen this,
         # add it to the set in the current path.
         set_index[node_index] <- node
@@ -193,10 +193,10 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
       }
 
       # now look at what's downtream
-      if(main) {
+      if (main) {
 
-        for(to in seq_len(g$lengths[node])) {
-          if(g$to[to, node] != 0 && g$main[to, node]) {
+        for (to in seq_len(g$lengths[node])) {
+          if (g$to[to, node] != 0 && g$main[to, node]) {
             # Add the next node to visit to the tracking vector
             to_visit_pointer[visit_index] <- g$to[to, node]
 
@@ -209,7 +209,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
         }
 
       } else {
-        for(to in seq_len(g$lengths[node])) {
+        for (to in seq_len(g$lengths[node])) {
           # Add the next node to visit to the tracking vector
           to_visit_pointer[visit_index] <- g$to[to, node]
 
@@ -227,14 +227,14 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
 
       # if nothing there, just increment to the next visit position
       # this indicates we hit a new path
-      while(!node && visit_index > 0) {
+      while (!node && visit_index > 0) {
         visit_index <- visit_index - 1
         node <- to_visit_pointer[visit_index]
         new_path <- TRUE
       }
 
       # if we just hit a new path we need to do a little setup
-      if(new_path) {
+      if (new_path) {
         # increment the path id and set new_path back to FALSE
         path_id <- path_id + 1
         new_path <- FALSE
@@ -243,7 +243,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
 
     }
 
-    if(none_in_path) {
+    if (none_in_path) {
       out_list[[set_id]] <- list()
     } else {
       out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index - 1)])
@@ -252,10 +252,10 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
     set_id <- set_id + 1
 
     # for every start, we need to reset
-    if(reset) g$to <- save_to
+    if (reset) g$to <- save_to
 
   }
 
-out_list
+  out_list
 
 }

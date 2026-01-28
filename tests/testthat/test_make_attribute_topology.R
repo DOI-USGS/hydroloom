@@ -18,14 +18,14 @@ test_that("attribute topology basics", {
 
   # make sure that all are the same from scratch
   expect_true(all(sapply(unique(x$id), function(i) {
-    xtid <- order(x[x$id == i,]$toid)
-    ztid <- order(z[z$COMID == i,]$toid)
+    xtid <- order(x[x$id == i, ]$toid)
+    ztid <- order(z[z$COMID == i, ]$toid)
 
     all(xtid == ztid)
   })))
 
   expect_error(make_node_topology(z),
-               "duplicate identifiers found and 'add_div' is not TRUE")
+    "duplicate identifiers found and 'add_div' is not TRUE")
 
   # add nodes to network from geometry
   z <- make_node_topology(z, add_div = TRUE)

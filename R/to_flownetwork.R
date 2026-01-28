@@ -35,35 +35,35 @@ to_flownetwork <- function(x, warn_dendritic = TRUE) {
 
   x <- hy(x, clean = TRUE)
 
-  if("toid" %in% names(x) && warn_dendritic) {
-    if(!any(duplicated(x$id)))
+  if ("toid" %in% names(x) && warn_dendritic) {
+    if (!any(duplicated(x$id)))
       warning("toid was provided and appears to be dendritic.")
   }
 
-  if(fromnode %in% names(x) && !toid %in% names(x))
+  if (fromnode %in% names(x) && !toid %in% names(x))
     x <- add_toids(x, return_dendritic = FALSE)
 
-  if(!divergence %in% names(x)) stop("must provide a divergence attribute")
+  if (!divergence %in% names(x)) stop("must provide a divergence attribute")
 
-  if(!levelpath %in% names(x)) stop("must provide a levelpath attribute")
+  if (!levelpath %in% names(x)) stop("must provide a levelpath attribute")
 
   x <- select(x, all_of(c(id, toid, divergence, levelpath)))
 
   x <- x |>
     left_join(distinct(select(x, toid = id, toid_divergence = divergence)),
-                     by = "toid") |>
+      by = "toid") |>
     left_join(distinct(select(x, all_of(c(toid = id, toid_level = levelpath)))),
-                     by = "toid") |>
+      by = "toid") |>
     mutate(downmain = is.na(.data$toid_divergence) | .data$toid_divergence != 2) |>
     mutate(upmain = !is.na(.data$toid_level) & .data$toid_level == levelpath) |> # friggin dplyr syntax
     select(id, toid, upmain, downmain) |>
     distinct()
 
-  dm <- x[x$downmain,]
+  dm <- x[x$downmain, ]
   um <- x[x$upmain, ]
 
-  if(any(duplicated(dm$id))) stop("duplicated down mains?")
-  if(any(duplicated(um$toid))) stop("duplicated up mains?")
+  if (any(duplicated(dm$id))) stop("duplicated down mains?")
+  if (any(duplicated(um$toid))) stop("duplicated up mains?")
 
   x
 }

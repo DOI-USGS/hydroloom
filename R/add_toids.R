@@ -44,7 +44,7 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
 
-  if("toid" %in% names(x)) stop("network already contains a toid attribute")
+  if ("toid" %in% names(x)) stop("network already contains a toid attribute")
 
   # nolint start
   # joiner_fun <- function(x) {
@@ -59,20 +59,20 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
   joiner_fun <- function(x) {
     as.data.frame(
       data.table(toid = x$id,
-                 node = x$fromnode)[data.table(id = x$id,
-                                               node = x$tonode),
-                                    on = 'node']
+        node = x$fromnode)[data.table(id = x$id,
+        node = x$tonode),
+      on = 'node']
     )[, c("id", "toid")]
   }
 
-  if(return_dendritic) {
-    if(!"divergence" %in% names(x)) {
+  if (return_dendritic) {
+    if (!"divergence" %in% names(x)) {
       stop("To remove non dendritic paths, a divergence attribute is required.")
     }
 
     x <- mutate(x,
-                orig_fromnode = fromnode,
-                fromnode = ifelse(.data$divergence == 2, NA, fromnode))
+      orig_fromnode = fromnode,
+      fromnode = ifelse(.data$divergence == 2, NA, fromnode))
 
   }
 
@@ -93,14 +93,14 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
   sf_t <- inherits(x, "sf")
 
   as.data.frame(
-    x <- x[ , c("id", "toid",
-                names(x)[!names(x) %in% c("id", "toid")])]
+    x <- x[, c("id", "toid",
+      names(x)[!names(x) %in% c("id", "toid")])]
   )
 
-  if(sf_t)
+  if (sf_t)
     x <- st_sf(x)
 
-  if(return_dendritic) {
+  if (return_dendritic) {
     x <- select(x, -fromnode)
     x <- rename(x, fromnode = "orig_fromnode")
   }
@@ -116,11 +116,11 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 #' @return data.frame containing toid
 #' @noRd
 try_add_toids <- function(x, flownetwork = FALSE) {
-  if(!toid %in% names(x) & # if we can create a flow network
-  fromnode %in% names(x) &
-  flownetwork) { # and main is the goal
+  if (!toid %in% names(x) & # if we can create a flow network
+    fromnode %in% names(x) &
+    flownetwork) { # and main is the goal
     x <- to_flownetwork(x)
-  } else if(!toid %in% names(x) & fromnode %in% names(x)) {
+  } else if (!toid %in% names(x) & fromnode %in% names(x)) {
     # otherwise make sure we have toids
     x <- add_toids(x, return_dendritic = FALSE)
   }

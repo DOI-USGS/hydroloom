@@ -10,7 +10,7 @@
 #'
 #' hy(x)
 #'
-#' hy(x, clean = TRUE)[1:10,]
+#' hy(x, clean = TRUE)[1:10, ]
 #'
 #' attr(hy(x), "orig_names")
 #'
@@ -20,7 +20,7 @@ hy <- function(x, clean = FALSE) {
 
   g <- NULL
   geom_name <- NULL
-  if(inherits(x, "sf")) {
+  if (inherits(x, "sf")) {
     geom_name <- attr(x, "sf_column")
     g <- st_geometry(x)
     x <- st_drop_geometry(x)
@@ -30,16 +30,16 @@ hy <- function(x, clean = FALSE) {
 
   keep_names <- orig_names
 
-  if(clean) {
+  if (clean) {
 
     keep_names <- orig_names[which(names(x) %in% good_names)]
 
     x <- select(x, all_of(names(x)[names(x) %in% good_names]))
 
-    if(!is.null(geom_name))
+    if (!is.null(geom_name))
       orig_names <- orig_names[!orig_names %in% geom_name]
 
-  } else if(!is.null(g)) {
+  } else if (!is.null(g)) {
 
     keep_names <- keep_names[c(which(keep_names != geom_name), which(keep_names == geom_name))]
 
@@ -47,14 +47,14 @@ hy <- function(x, clean = FALSE) {
 
   }
 
-  if("toid" %in% names(x)) {
+  if ("toid" %in% names(x)) {
     out_val <- get_outlet_value(x)
 
     x$toid <- replace_na(x$toid, out_val)
   }
 
   # strip tbl
-  if(inherits(x, "sf")) {
+  if (inherits(x, "sf")) {
     x <- st_sf(as_tibble(x))
   } else {
     x <- as_tibble(x)
@@ -76,20 +76,20 @@ hy <- function(x, clean = FALSE) {
 #'
 is.hy <- function(x, silent = FALSE) {
 
-  if(!inherits(x, "hy")) {
-    if(!silent)
+  if (!inherits(x, "hy")) {
+    if (!silent)
       message("no hy class attribute")
     return(FALSE)
   }
 
-  if("toid" %in% names(x) && any(is.na(x$toid))) {
-    if(!silent)
+  if ("toid" %in% names(x) && any(is.na(x$toid))) {
+    if (!silent)
       message("some na toids")
     return(FALSE)
   }
 
-  if(!"orig_names" %in% names(attributes(x))) {
-    if(!silent)
+  if (!"orig_names" %in% names(attributes(x))) {
+    if (!silent)
       message("no original names attribute")
     return(FALSE)
   }
@@ -111,7 +111,7 @@ is.hy <- function(x, silent = FALSE) {
 #'
 hy_reverse <- function(x) {
 
-  if(!is.hy(x)) stop("must be an hy object")
+  if (!is.hy(x)) stop("must be an hy object")
 
   orig_names <- attr(x, "orig_names")
 
@@ -123,7 +123,7 @@ hy_reverse <- function(x) {
 
   class(x) <- class(x)[!class(x) == "hy"]
 
-  if(inherits(x, "sf")) {
+  if (inherits(x, "sf")) {
     attr(x, "sf_column") <- names(orig_names)[orig_names == attr(x, "sf_column")]
     x <- st_sf(x)
   }

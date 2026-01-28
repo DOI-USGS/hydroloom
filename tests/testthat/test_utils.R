@@ -54,12 +54,12 @@ test_that("get_node", {
   # dput(sf::st_coordinates(sf::st_geometry(end)[1]))
 
   expect_equal(sf::st_coordinates(sf::st_geometry(start)[1]),
-               structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
-                 "1", c("X", "Y"))), ignore_attr = TRUE)
+    structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
+      "1", c("X", "Y"))), ignore_attr = TRUE)
 
   expect_equal(sf::st_coordinates(sf::st_geometry(end)[1]),
-               structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
-                 "1", c("X", "Y"))), ignore_attr = TRUE)
+    structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
+      "1", c("X", "Y"))), ignore_attr = TRUE)
 
   x <- suppressWarnings(sf::st_cast(x, "LINESTRING"))
 
@@ -67,12 +67,12 @@ test_that("get_node", {
   end <- get_node(x, "end")
 
   expect_equal(sf::st_coordinates(sf::st_geometry(start)[1]),
-               structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
-                 "1", c("X", "Y"))), ignore_attr = TRUE)
+    structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
+      "1", c("X", "Y"))), ignore_attr = TRUE)
 
   expect_equal(sf::st_coordinates(sf::st_geometry(end)[1]),
-               structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
-                 "1", c("X", "Y"))), ignore_attr = TRUE)
+    structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
+      "1", c("X", "Y"))), ignore_attr = TRUE)
 })
 
 test_that("fix_flowdir", {
@@ -109,8 +109,8 @@ test_that("fix_flowdir", {
   expect_equal(n1, get_node(x[707, ], position = "end"))
 
   fn_list <- list(flowline = x[707, ],
-                  network = x[x$toid == x$id[707],],
-                  check_end = "start")
+    network = x[x$toid == x$id[707], ],
+    check_end = "start")
 
   sf::st_geometry(x)[707] <- sf::st_reverse(sf::st_geometry(x)[707])
   sf::st_geometry(x)[707] <- fix_flowdir(x$id[707], fn_list = fn_list)
@@ -125,4 +125,3 @@ test_that("rescale", {
   expect_equal(rescale_measures(25, 0, 50), 50)
   expect_error(rescale_measures(75, 0, 50), "measure must be between from and to")
 })
-

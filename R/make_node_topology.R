@@ -25,9 +25,9 @@
 #'
 #' # just the divergences which have unique fromids in x but don't in new hope.
 #' div <- add_toids(dplyr::select(x, COMID, FromNode, ToNode),
-#'                  return_dendritic = FALSE)
+#'   return_dendritic = FALSE)
 #' div <- div[div$toid %in%
-#'            x$COMID[x$Divergence == 2],]
+#'   x$COMID[x$Divergence == 2], ]
 #'
 #' y <- dplyr::select(add_toids(x), -ToNode, -FromNode)
 #'
@@ -45,7 +45,7 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 
   x <- make_node_topology(x, add_div, add)
 
-  if(inherits(x, "hy")) {
+  if (inherits(x, "hy")) {
     hy_reverse(x)
   } else {
     x
@@ -63,13 +63,13 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
   x <- st_drop_geometry(x)
 
-  if(length(unique(x$id)) != nrow(x) | isTRUE(add_div)) {
-    if(!isTRUE(add_div))
+  if (length(unique(x$id)) != nrow(x) | isTRUE(add_div)) {
+    if (!isTRUE(add_div))
       stop("duplicate identifiers found and 'add_div' is not TRUE")
 
     out <- make_nondendritic_topology(x)
 
-    if(add) {
+    if (add) {
 
       x <- select(x, -all_of(toid)) |>
         distinct()
@@ -78,16 +78,16 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
       rm(out)
 
-      if(!is.null(hy_g)) {
+      if (!is.null(hy_g)) {
         x <- sf::st_sf(left_join(x, hy_g, by = id))
       }
 
-      if(inherits(x, "hy")) {
+      if (inherits(x, "hy")) {
         orig_names <- attributes(x)$orig_names
       }
 
-      x <- x[ , c(id, fromnode, tonode,
-                  names(x)[!names(x) %in% c(id, fromnode, tonode)])]
+      x <- x[, c(id, fromnode, tonode,
+        names(x)[!names(x) %in% c(id, fromnode, tonode)])]
 
       attr(x, "orig_names") <- orig_names
 
@@ -96,9 +96,9 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
   } else {
 
-    if(any(is.na(x$toid))) stop("NA toids found -- must be 0")
-    if(!all(x$toid[x$toid != get_outlet_value(x)] %in% x$id)) stop("Not all non zero toids are in ids")
-    if(any(c(fromnode, tonode) %in% names(x))) stop("fromnode or tonode already in data")
+    if (any(is.na(x$toid))) stop("NA toids found -- must be 0")
+    if (!all(x$toid[x$toid != get_outlet_value(x)] %in% x$id)) stop("Not all non zero toids are in ids")
+    if (any(c(fromnode, tonode) %in% names(x))) stop("fromnode or tonode already in data")
 
     order <- data.frame(id = x$id)
 
@@ -110,30 +110,30 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
     x$fromnode <- head_nodes
 
     x <- left_join(x, select(x, all_of(c(id = id, tonode = fromnode))),
-                   by = c(toid = id))
+      by = c(toid = id))
 
     outlets <- x$toid == get_outlet_value(x)
 
     x$tonode[outlets] <- seq(max(x$tonode, na.rm = TRUE) + 1,
-                             max(x$tonode, na.rm = TRUE) + sum(outlets))
+      max(x$tonode, na.rm = TRUE) + sum(outlets))
 
-    if(!is.null(add_div)) {
+    if (!is.null(add_div)) {
       # we need to get the node the divergences upstream neighbor goes to
       # first get the new outlet nodes for our old ids
       add_div <- st_drop_geometry(add_div[, 1:2])
       names(add_div)[1:2] <- c(id, toid)
       add_div <- left_join(select(add_div, all_of(c(id, toid))),
-                           select(x, all_of(c(id, tonode))), by = id)
+        select(x, all_of(c(id, tonode))), by = id)
 
       div2 <- add_div$toid
       div1 <- x$toid[x$id %in% add_div$id]
 
       # now join upstream renaming the tonode to fromnode
       x <- left_join(x, select(add_div, all_of(c(toid = toid, new_fromnode = tonode))),
-                     by = c(id = toid))
+        by = c(id = toid))
 
       x <- mutate(x, fromnode = ifelse(!is.na(.data$new_fromnode),
-                                       .data$new_fromnode, .data$fromnode))
+        .data$new_fromnode, .data$fromnode))
 
       x <- select(x, -all_of("new_fromnode"))
 
@@ -142,14 +142,14 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
       x <- mutate(x, divergence = ifelse(id %in% div2, 2, ifelse(id %in% div1, 1, 0)))
     }
   }
-  if(add & !isTRUE(add_div)) {
+  if (add & !isTRUE(add_div)) {
 
-    if(!is.null(hy_g)) {
+    if (!is.null(hy_g)) {
       x <- sf::st_sf(left_join(x, hy_g, by = id))
     }
 
-    x <- x[ , c(id, toid, fromnode, tonode,
-                names(x)[!names(x) %in% c(id, toid, fromnode, tonode)])]
+    x <- x[, c(id, toid, fromnode, tonode,
+      names(x)[!names(x) %in% c(id, toid, fromnode, tonode)])]
 
     x
 
@@ -176,7 +176,7 @@ make_nondendritic_topology <- function(x) {
 
   # now get an integer for the nodes
   node <- data.frame(node = seq(1, length(unique(n$node_id))),
-                     node_id = unique(n$node_id))
+    node_id = unique(n$node_id))
 
   # join the integer id in.
   n <- left_join(n, node, by = "node_id")
@@ -200,7 +200,7 @@ make_nondendritic_topology <- function(x) {
     select(all_of(c(id, fromnode, tonode))) |>
     filter(!id == get_outlet_value(x))
 
-  if(inherits(x, "hy")) {
+  if (inherits(x, "hy")) {
     class(out) <- c("hy", class(out))
     attr(out, "orig_names") <- attr(x, "orig_names")
   }

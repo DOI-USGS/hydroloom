@@ -11,7 +11,7 @@
 #' @param quiet logical quiet messages?
 #' @details
 #'
-#'Accumulation Methods:
+#' Accumulation Methods:
 #'
 #'    Divergence apportioned (divergence routing): Where upstream values are passed with
 #'    fractional apportionment such that each downstream connection gets between
@@ -52,7 +52,7 @@
 #'
 #' net <- navigate_network_dfs(x, 8893236, "up")
 #'
-#' x <- x[x$COMID %in% unlist(net),]
+#' x <- x[x$COMID %in% unlist(net), ]
 #'
 #' # All default gives dendritic routing
 #' x$dend_totdasqkm <- accumulate_downstream(add_toids(x), "AreaSqKM")
@@ -71,21 +71,21 @@
 #' y$div_totdasqkm <- accumulate_downstream(y, "AreaSqKM")
 #'
 #' # notice that diversions don't reset -- they carry a fraction of area
-#' plot(y['div_totdasqkm'], lwd = y$div_totdasqkm  / 20)
+#' plot(y['div_totdasqkm'], lwd = y$div_totdasqkm / 20)
 #'
 #' z <- x |>
 #'   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 #'
 #' z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 #'
-#' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm  / 20)
+#' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
 #'
 #' # equivalent values from the nhdplusv2 match!
 #' any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 #'
 accumulate_downstream <- function(x, var, total = FALSE, quiet = FALSE) {
 
-  if(!var %in% names(x)) stop(var, " must be in x")
+  if (!var %in% names(x)) stop(var, " must be in x")
 
   UseMethod("accumulate_downstream")
 
@@ -103,7 +103,7 @@ accumulate_downstream.data.frame <- function(x, var, total = FALSE, quiet = FALS
 #' @export
 accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
-  if(nrow(x) == 0) return(c())
+  if (nrow(x) == 0) return(c())
 
   var <- as.character(var)
 
@@ -111,12 +111,12 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
   net <- add_toids_internal(x, c(var, divergence_fraction, required_atts))
 
-  if(length(unique(net$id)) < nrow(net)) {
+  if (length(unique(net$id)) < nrow(net)) {
 
     required_atts <- c(required_atts, divergence)
     error_context <- "accumulate_downstream for a non-dendritic network"
 
-    if(divergence_fraction %in% names(net)) required_atts <- c(required_atts, divergence_fraction)
+    if (divergence_fraction %in% names(net)) required_atts <- c(required_atts, divergence_fraction)
 
   } else {
 
@@ -131,16 +131,16 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
   net[["toid"]] <- replace_na(net[["toid"]], get_outlet_value(net))
 
-  if(any(is.na(net[[var]]))) {
+  if (any(is.na(net[[var]]))) {
     warning("NA values found in accumulation variable, accumulation math may fail.")
   }
 
   # if we got this far without a divergence attribute, it's dendritic so all are 0
-  if(!divergence %in% names(net)) net[[divergence]] <- 0
+  if (!divergence %in% names(net)) net[[divergence]] <- 0
 
   # if no divergence fraction or total is true, we can set 1 for divergence = 1 and 0 for 2
-  if(!divergence_fraction %in% names(net)) {
-    if(!total & !quiet)
+  if (!divergence_fraction %in% names(net)) {
+    if (!total & !quiet)
       message("Dendritic routing will be applied. Diversions are assumed to have 0 flow fraction.")
     net[[divergence_fraction]] <- ifelse(net$divergence == 2, 0, 1)
     required_atts <- unique(c(required_atts, divergence_fraction))
@@ -163,17 +163,17 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
   prog <- pbapply::dopb() & !quiet & length(froms$lengths) > 10000
 
-  if(prog) {
+  if (prog) {
     pb = txtProgressBar(0, length(froms$lengths), style = 3)
     on.exit(close(pb))
   }
 
-  if(total) {
+  if (total) {
 
     # add node topology to x with valence indication
     out <- left_join(out,
-                     as.data.table(make_nondendritic_topology(net))[,down_valence := .N, by = fromnode][,up_valence := .N, by = tonode],
-                     by = id)
+      as.data.table(make_nondendritic_topology(net))[, down_valence := .N, by = fromnode][, up_valence := .N, by = tonode],
+      by = id)
 
     # each node is going to hold a list of upstream nodes and the value associated
     # with each. At each diversion, a record of the split will be recorded.
@@ -181,61 +181,61 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     nodes <- data.frame(node = seq(1:max(c(out$fromnode, out$tonode))))
 
     template <- list(data.table(node = integer(), # the node the diversion came from
-                                catchment = integer(), # the catchment the diversion went TO
-                                local_id = character(),
-                                dup = logical()))  # true for duplicate false for original
+      catchment = integer(), # the catchment the diversion went TO
+      local_id = character(),
+      dup = logical())) # true for duplicate false for original
 
     nodes$open <- rep(template, nrow(nodes))
     nodes$val <- 0
     nodes$closed <- nodes$part_closed <- rep(list(character()), nrow(nodes))
 
-    divs <- out[out[[divergence]] > 0,]
+    divs <- out[out[[divergence]] > 0, ]
 
     divs <- group_by(divs, .data$fromnode) |>
       select(fromnode, id, divergence) |>
       group_split(.keep = TRUE)
 
     divs <- bind_cols(data.frame(fromnode = sapply(divs, \(x) x$fromnode[1])),
-                      data.frame(down_ids = divs))
+      data.frame(down_ids = divs))
 
     # also add a "check_visit" attribute to track when we're done with a node
     # down_valence is how many flowlines are downstream of a node
     # once we've visited them, we can remove tracking information to save memory
     nodes <- left_join(nodes, divs, by = c("node" = "fromnode")) |>
       left_join(select(out, fromnode, check_visit = down_valence) |>
-                  distinct(), by = c("node" = "fromnode"))
+        distinct(), by = c("node" = "fromnode"))
 
     nodes <- data.table::as.data.table(nodes)
 
     # we will work on the basis of a node table solving which nodes are open and
     # which are closed working from upstream to downstream.
-    for(i in seq_len(length(froms$lengths))) {
+    for (i in seq_len(length(froms$lengths))) {
 
-      if(!i %% 100 & prog)
+      if (!i %% 100 & prog)
         setTxtProgressBar(pb, i)
 
       l <- froms$lengths[i]
 
-      if(l > 0) {
+      if (l > 0) {
 
         out[[var]][i] <- sum(out[[var]][i],
-                             nodes[out[[fromnode]][i],]$val)
+          nodes[out[[fromnode]][i], ]$val)
 
         updated_node <- update_node(id = out[[id]][i],
-                                    up_node = nodes[out[[fromnode]][i],],
-                                    down_node = nodes[out[[tonode]][i],],
-                                    div_att = out[[divergence]][i],
-                                    current_value = out[[var]][i],
-                                    node_values = nodes$val)
+          up_node = nodes[out[[fromnode]][i], ],
+          down_node = nodes[out[[tonode]][i], ],
+          div_att = out[[divergence]][i],
+          current_value = out[[var]][i],
+          node_values = nodes$val)
 
         nodes[out$tonode[i], (names(nodes)) := as.list(updated_node)]
 
-        if(nodes[out[[fromnode]][i], check_visit] == 1) {
+        if (nodes[out[[fromnode]][i], check_visit] == 1) {
 
           nodes[out[[fromnode]][i],
-                `:=`(open        = list(NULL),
-                     closed      = list(NULL),
-                     part_closed = list(NULL))]
+            `:=`(open = list(NULL),
+              closed = list(NULL),
+              part_closed = list(NULL))]
 
         } else {
 
@@ -251,29 +251,29 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     }
 
   } else {
-    for(i in seq_len(length(froms$lengths))) {
+    for (i in seq_len(length(froms$lengths))) {
 
-      if(!i %% 100 & prog)
+      if (!i %% 100 & prog)
         setTxtProgressBar(pb, i)
 
       l <- froms$lengths[i]
 
       # nothing to do if nothing upstream
-      if(l > 0) {
+      if (l > 0) {
 
         # sum the current value with the fraction of upstream flows coming in
         out[[var]][i] <- sum(out[[var]][i],
-                             out[[var]][froms$froms[1:l,i]] *
-                               out[[divergence_fraction]][i])
+          out[[var]][froms$froms[1:l, i]] *
+            out[[divergence_fraction]][i])
 
       }
     }
   }
 
-  if(prog)
+  if (prog)
     setTxtProgressBar(pb, i)
 
-  if(Sys.getenv("accumulate_debug") == "debug") return(list(nodes, out))
+  if (Sys.getenv("accumulate_debug") == "debug") return(list(nodes, out))
 
   left_join(x, out, by = "id")[[var]]
 
@@ -304,15 +304,15 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 #' @importFrom data.table rbindlist
 update_node <- function(id, up_node, down_node, div_att, current_value, node_values) {
 
-  if(div_att == 0) {
-      # we can just pass to the outlet node
-      # need to bind in case this is a confluence
+  if (div_att == 0) {
+    # we can just pass to the outlet node
+    # need to bind in case this is a confluence
     down_node$open[[1]] <- rbindlist(list(down_node$open[[1]], up_node$open[[1]]),
-                                            use.names = FALSE, fill = FALSE)
+      use.names = FALSE, fill = FALSE)
 
   } else {
 
-    if(div_att == 1) {
+    if (div_att == 1) {
       # each main path below a divergence can have more than one duplicate pair
       divs <- filter(up_node$down_ids[[1]], .data$divergence == 2) |> pull(id)
     } else {
@@ -322,10 +322,10 @@ update_node <- function(id, up_node, down_node, div_att, current_value, node_val
 
     down_node$open[[1]] <-
       rbindlist(list(down_node$open[[1]], up_node$open[[1]],
-                     data.frame(node = up_node$node,
-                                catchment = divs,
-                                local_id = paste0(up_node$node, "-", divs),
-                                dup = div_att == 2)))
+        data.frame(node = up_node$node,
+          catchment = divs,
+          local_id = paste0(up_node$node, "-", divs),
+          dup = div_att == 2)))
   }
 
   down_node$val <- down_node$val + current_value
@@ -333,10 +333,10 @@ update_node <- function(id, up_node, down_node, div_att, current_value, node_val
   down_node$part_closed[[1]] <- list(c(down_node$part_closed[[1]], up_node$part_closed[[1]]))
 
   updated_node <- reconcile_nodes(pass_on = down_node$open[[1]],
-                                  value = down_node$val[[1]],
-                                  node_values = node_values,
-                                  closed = down_node$closed[[1]],
-                                  part_closed = down_node$part_closed[[1]])
+    value = down_node$val[[1]],
+    node_values = node_values,
+    closed = down_node$closed[[1]],
+    part_closed = down_node$part_closed[[1]])
 
   down_node$closed[[1]] <- list(updated_node$closed)
   down_node$open[[1]] <- list(updated_node$pass_on)
@@ -366,12 +366,12 @@ update_node <- function(id, up_node, down_node, div_att, current_value, node_val
 #' @importFrom data.table setcolorder
 reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 
-  if(nrow(pass_on) > 0) {
+  if (nrow(pass_on) > 0) {
 
     dup_nodes <- setcolorder(pass_on[, .SD[(.N > 1 && any(dup) && any(!dup))], by = local_id],
-                             names(pass_on))
+      names(pass_on))
 
-    if(nrow(dup_nodes) > 0) {
+    if (nrow(dup_nodes) > 0) {
 
       dup_nodes <- reconcile_dup_set(dup_nodes)
 
@@ -425,12 +425,12 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 #'
 reconcile_dup_set <- function(dup_nodes) {
   dup_nodes[
-    , subgroup_size := .N, by = .(local_id, dup)          # Step 1
+    , subgroup_size := .N, by = .(local_id, dup) # Step 1
   ][
-    , remove := min(subgroup_size), by = local_id         # Step 2
+    , remove := min(subgroup_size), by = local_id # Step 2
   ][
-    , cancel := seq_len(.N) <= remove, by = .(local_id, dup)  # Step 3
+    , cancel := seq_len(.N) <= remove, by = .(local_id, dup) # Step 3
   ][
-    , c("subgroup_size", "remove") := NULL                # Step 4
+    , c("subgroup_size", "remove") := NULL # Step 4
   ]
 }

@@ -59,10 +59,9 @@ library(hydroloom)
 hy_net <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
   dplyr::select(COMID, REACHCODE, FromNode, ToNode, Hydroseq, TerminalFl, Divergence)
 
-hy(hy_net[1:3,])
+hy(hy_net[1:3, ])
 
 attr(hy(hy_net), "orig_names")
-
 ```
 # Network Representation
 
@@ -72,10 +71,10 @@ A network of flowlines can be represented as an edge-to-edge (e.g. edge list) or
 
 ```{r, echo=FALSE, eval=TRUE, fig.dim=c(6, 4)}
 print.data.frame(data.frame(id = c(1, 2, 3),
-                            toid = c(3, 3, NA),
-                            fromnode = c("N1", "N2", "N3"),
-                            tonode = c("N3", "N3", "N4")),
-                 row.names = FALSE)
+  toid = c(3, 3, NA),
+  fromnode = c("N1", "N2", "N3"),
+  tonode = c("N3", "N3", "N4")),
+row.names = FALSE)
 ```
 
 ```{r node, fig.show="hold", out.width="45%", echo=FALSE, eval=TRUE, fig.cap="In an edge-node topology, edges are directed to nodes which are then directed to other edges. An edge-to-edge toplogy does not include intervening nodes."}
@@ -84,16 +83,16 @@ y <- c(5, 5, 3, 1)
 
 oldpar <- par(mar = c(0, 0, 0, 0))
 plot(x, y, col = NA)
-arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
-arrows(x[2] - 0.1, y[2] - 0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
-arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
+arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y[3] + 0.1, 0.1)
+arrows(x[2] - 0.1, y[2] - 0.1, x[3] + 0.1, y[3] + 0.1, 0.1)
+arrows(x[3], y[3] - 0.1, x[4], y[4] + 0.1, 0.1)
 text(c(2, 4, 3.15), c(4.2, 4.2, 2), c("1", "2", "3"))
 
 par(mar = c(0, 0, 0, 0))
 plot(x, y)
-arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
-arrows(x[2] - 0.1, y[2] - 0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
-arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
+arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y[3] + 0.1, 0.1)
+arrows(x[2] - 0.1, y[2] - 0.1, x[3] + 0.1, y[3] + 0.1, 0.1)
+arrows(x[3], y[3] - 0.1, x[4], y[4] + 0.1, 0.1)
 text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
 text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
 par(oldpar)
@@ -147,7 +146,6 @@ par(oldpar)
 <div class = "column">
 
 ```{r node2, fig.show="hold", fig.width=3, out.width="45%", echo=FALSE, eval=TRUE}
-
 oldpar <- par(mar = c(0, 0, 0, 0))
 plot(a, b, col = NA)
 
@@ -213,7 +211,6 @@ sapply(ind_id, class)
 Now we'll look at the same thing but for a non dendritic set of toids. Notice that the `to` element of `ind_id` now has three rows. This indicates that one or more of the connections in the matrix has three downstream neighbors. The `lengths` element indicates how many non `NA` values are in each column of the matrix in the `to` element.
 
 ```{r}
-
 y <- add_toids(st_drop_geometry(hy_net), return_dendritic = FALSE)
 
 ind_id <- make_index_ids(y)

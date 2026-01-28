@@ -5,7 +5,7 @@ test_that("add_levelpaths example", {
   test_flowline <- add_toids(g)
 
   expect_error(add_levelpaths(test_flowline, "borked", "ArbolateSu"),
-               "name and weight attribute must be in x")
+    "name and weight attribute must be in x")
 
   lp1 <- add_levelpaths(test_flowline, "GNIS_ID", "ArbolateSu")
 
@@ -27,8 +27,8 @@ test_that("add_levelpaths non dendritic", {
   test_flowline <- dplyr::select(test_flowline, id, toid, divergence, GNIS_ID, arbolate_sum)
 
   expect_error(add_levelpaths(dplyr::select(test_flowline, -divergence),
-                              "GNIS_ID", "arbolate_sum"),
-               "divergence attribute must be included")
+    "GNIS_ID", "arbolate_sum"),
+  "divergence attribute must be included")
 
   lp1 <- add_levelpaths(test_flowline, "GNIS_ID", "arbolate_sum")
 
@@ -45,13 +45,13 @@ test_that("add_levelpaths non dendritic", {
 
 test_that("reweight", {
   x <- readRDS(list.files(pattern = "reweight_test.rds",
-                          full.names = TRUE, recursive = TRUE))
+    full.names = TRUE, recursive = TRUE))
   w <- hydroloom:::reweight(x, nat = "nameid", wat = "weight",
-                            override_factor = 5)
+    override_factor = 5)
   expect_equal(w$weight[w$nameid == w$ds_nameid], 2)
 
   w <- hydroloom:::reweight(x, nat = "nameid", wat = "weight",
-                            override_factor = 2)
+    override_factor = 2)
   expect_equal(w$weight[w$nameid == w$ds_nameid], 1)
 })
 
@@ -61,41 +61,41 @@ test_that("calculate level path", {
   x <- add_toids(x)
 
   y <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
-                      "GNIS_ID", "ArbolateSu", status = TRUE)
+    "GNIS_ID", "ArbolateSu", status = TRUE)
 
   nhdp_lp <- sort(unique(x$LevelPathI))
   nhdt_lp <- sort(unique(y$levelpath))
 
   expect_true(length(nhdp_lp) == length(nhdt_lp))
 
-  for(lp in seq_along(nhdp_lp)) {
+  for (lp in seq_along(nhdp_lp)) {
     nhdp <- dplyr::filter(x, LevelPathI == nhdp_lp[lp])
     outlet_comid <- dplyr::filter(nhdp, Hydroseq == min(Hydroseq))$COMID
     nhdt <- dplyr::filter(y, levelpath_outlet_id == outlet_comid)
     expect(all(nhdp$COMID %in% nhdt$COMID), paste("Mismatch in", nhdp_lp[lp],
-                                               "level path from NHDPlus."))
+      "level path from NHDPlus."))
   }
 
   # break the data
   x$GNIS_ID[x$COMID == 5329293] <- " "
   x$GNIS_ID[x$COMID == 5329295] <- "255208"
   z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
-                      "GNIS_ID", "ArbolateSu", status = TRUE)
+    "GNIS_ID", "ArbolateSu", status = TRUE)
 
   expect_equal(z$levelpath[z$COMID == 5329295], 1)
 
   z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
-                      "GNIS_ID", "ArbolateSu", override_factor = 10, status = TRUE)
+    "GNIS_ID", "ArbolateSu", override_factor = 10, status = TRUE)
 
   expect_equal(z$levelpath, y$levelpath)
 })
 
 test_that("degenerate levelpath", {
   x <- structure(list(ID = c(203071, 202863, 202883, 205509, 203069, 202875, 942110034),
-                      toID = c(202863, 202883, 205509, 203069, 202875, 942110034, 0),
-                      nameID = c(630020286, 630020286, 630020286, 630020286, 630020286, 630020286, 630020286),
-                      weight = c(14.962, 19.843, 33.047, 35.101, 44.702, 47.595, 58.583)),
-                      row.names = c(NA, 7L), class = "data.frame")
+    toID = c(202863, 202883, 205509, 203069, 202875, 942110034, 0),
+    nameID = c(630020286, 630020286, 630020286, 630020286, 630020286, 630020286, 630020286),
+    weight = c(14.962, 19.843, 33.047, 35.101, 44.702, 47.595, 58.583)),
+  row.names = c(NA, 7L), class = "data.frame")
 
   names(x) <- tolower(names(x))
 
@@ -108,29 +108,29 @@ test_that("from vignette works", {
   g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
   suppressWarnings(
-  f <- add_toids(g) |>
-    sf::st_cast("LINESTRING") |>
+    f <- add_toids(g) |>
+      sf::st_cast("LINESTRING") |>
       dplyr::select(-ToNode, -FromNode, -Divergence, -FTYPE) |>
       sort_network(split = TRUE))
 
   f[["arbolate_sum"]] <- accumulate_downstream(f, "LENGTHKM", quiet = TRUE)
 
   expect_error(
-  add_levelpaths(f, "GNIS_NAME", "arbolate_sum", status = FALSE),
-  "Problem aligning names")
+    add_levelpaths(f, "GNIS_NAME", "arbolate_sum", status = FALSE),
+    "Problem aligning names")
 
   lp <- add_levelpaths(dplyr::select(f, "COMID", "toid", "GNIS_NAME", "arbolate_sum"),
-                      "GNIS_NAME", "arbolate_sum", status = FALSE)
+    "GNIS_NAME", "arbolate_sum", status = FALSE)
 
   expect_equal(names(lp),
-               c("COMID", "toid", "levelpath_outlet_id", "topo_sort", "levelpath",
-                 "geom", "GNIS_NAME", "arbolate_sum"))
+    c("COMID", "toid", "levelpath_outlet_id", "topo_sort", "levelpath",
+      "geom", "GNIS_NAME", "arbolate_sum"))
 
   expect_equal(length(unique(lp$levelpath)),
-               length(unique(g$LevelPathI)))
+    length(unique(g$LevelPathI)))
 
   expect_equal(length(unique(lp$levelpath)),
-               length(unique(lp$levelpath_outlet_id)))
+    length(unique(lp$levelpath_outlet_id)))
 
   # TODO:
   # plus <- add_plus_network_attributes(dplyr::select(fpath, comid, tocomid,
@@ -143,9 +143,9 @@ test_that("from vignette works", {
 
 test_that("degenerate", {
   net <- structure(list(ID = 11000020, toID = 0, nameID = "constant",
-                        lengthkm = 12.2243026760847, areasqkm = 54.2851667150928,
-                        weight = 12.2243026760847, terminalID = 11000020),
-                   row.names = 2938080L, class = "data.frame")
+    lengthkm = 12.2243026760847, areasqkm = 54.2851667150928,
+    weight = 12.2243026760847, terminalID = 11000020),
+  row.names = 2938080L, class = "data.frame")
 
   er <- add_levelpaths(net, "nameID", "weight", 5)
 

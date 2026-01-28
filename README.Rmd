@@ -46,8 +46,8 @@ hydroloom::hydroloom_name_definitions
   <summary>Click to See Definitions</summary>
 
 ```{r, echo=FALSE, eval=TRUE}
-  knitr::kable(data.frame(Name = names(hydroloom::hydroloom_name_definitions),
-                          Definition = unname(hydroloom::hydroloom_name_definitions)))
+knitr::kable(data.frame(Name = names(hydroloom::hydroloom_name_definitions),
+  Definition = unname(hydroloom::hydroloom_name_definitions)))
 ```
 
 </details>
@@ -124,7 +124,6 @@ Terms for rivers:
 - names are plural when referring to identifiers and singular when referring to a numerical attribute.
 
 ```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
-
 ```
 
  [

@@ -25,7 +25,6 @@ knitr::opts_chunk$set(
 )
 
 oldoption <- options(scipen = 9999)
-
 ```
 
 # Introduction
@@ -67,9 +66,8 @@ The example below shows how we can recreate the non-dendritic attributes and use
 We'll start with the small sample watershed that's included in `hydroloom` and select only the attributes required to recreate the non-dendritic network.
 
 ```{r}
-
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg",
-                             package = "hydroloom"))
+  package = "hydroloom"))
 
 # First we select only an id, a name, and a feature type.
 flow_net <- x |>
@@ -93,11 +91,11 @@ unique(flow_net$FTYPE)
 
 # now we run the add_divergence, add_toids, and add_streamorder
 flow_net <- add_divergence(flow_net,
-                           coastal_outlet_ids = c(),
-                           inland_outlet_ids = outlets$COMID,
-                           name_attr = "GNIS_ID",
-                           type_attr = "FTYPE",
-                           major_types = unique(flow_net$FTYPE)) |>
+  coastal_outlet_ids = c(),
+  inland_outlet_ids = outlets$COMID,
+  name_attr = "GNIS_ID",
+  type_attr = "FTYPE",
+  major_types = unique(flow_net$FTYPE)) |>
   add_toids() |>
   add_streamorder() |>
   add_return_divergence()
