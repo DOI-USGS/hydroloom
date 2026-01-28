@@ -312,4 +312,22 @@ test_that("part closed test", {
 
   Sys.unsetenv("accumulate_debug")
 
+  net <- read.csv(text =
+                    "id, toid, divergence
+                  1,2,0
+                  1,3,0
+                  1,4,0
+                  5,6,0
+                  2,6,1
+                  3,7,2
+                  4,7,2
+                  6,8,0
+                  7,8,0
+                  8,0,0")
+
+  net$val <- 1
+
+  expect_equal(accumulate_downstream(net, "val", total = TRUE), c(1, 1, 1, 1, 2, 2, 2, 4, 4, 8))
+
 })
+
