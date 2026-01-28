@@ -184,7 +184,8 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   while (done < nrow(x) && checker < 10000000) {
 
     pathids <- if (nrow(outlet_ind) == 1) {
-      list(par_get_path(as.list(outlet_ind), x[c("ind", "lp_weight_attribute")], from_ind, status, "lp_weight_attribute"))
+      list(par_get_path(as.list(outlet_ind), x[c("ind", "lp_weight_attribute")],
+        from_ind, status, "lp_weight_attribute"))
     } else {
       pblapply(split(outlet_ind, seq_len(nrow(outlet_ind))),
         par_get_path,

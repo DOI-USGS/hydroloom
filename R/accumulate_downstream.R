@@ -172,7 +172,8 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
     # add node topology to x with valence indication
     out <- left_join(out,
-      as.data.table(make_nondendritic_topology(net))[, down_valence := .N, by = fromnode][, up_valence := .N, by = tonode],
+      as.data.table(make_nondendritic_topology(net))[
+        , down_valence := .N, by = fromnode][, up_valence := .N, by = tonode],
       by = id)
 
     # each node is going to hold a list of upstream nodes and the value associated
@@ -209,7 +210,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
     # we will work on the basis of a node table solving which nodes are open and
     # which are closed working from upstream to downstream.
-    for (i in seq_len(length(froms$lengths))) {
+    for (i in seq_along(froms$lengths)) {
 
       if (!i %% 100 && prog)
         setTxtProgressBar(pb, i)
@@ -251,7 +252,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     }
 
   } else {
-    for (i in seq_len(length(froms$lengths))) {
+    for (i in seq_along(froms$lengths)) {
 
       if (!i %% 100 && prog)
         setTxtProgressBar(pb, i)
@@ -411,7 +412,7 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 
   }
 
-  return(list(pass_on = pass_on, value = value, closed = closed, part_closed = part_closed))
+  list(pass_on = pass_on, value = value, closed = closed, part_closed = part_closed)
 
 }
 

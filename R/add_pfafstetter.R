@@ -190,7 +190,7 @@ cleanup_pfaf <- function(pfaf) {
   pfaf$uid <- seq_len(nrow(pfaf))
 
   # Deduplicate problem tributaries
-  remove <- do.call(c, lapply(1:length(unique(pfaf$level)), function(l, pfaf) {
+  remove <- do.call(c, lapply(seq_along(unique(pfaf$level)), function(l, pfaf) {
     check <- pfaf[pfaf$level == l, ]
     check <- group_by(check, .data$id)
     check <- filter(check, n() > 1 & .data$pfaf < max(.data$pfaf))$uid

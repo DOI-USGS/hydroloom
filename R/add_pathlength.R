@@ -41,7 +41,7 @@ add_pathlength.hy <- function(x) {
 
   orig_order <- select(x, id)
 
-  x <- sort_network(st_drop_geometry(x))[nrow(x):1, ]
+  x <- sort_network(st_drop_geometry(x))[rev(seq_len(nrow(x))), ]
 
   pathlength_km <- rep(0, nrow(x))
   length_km <- x$length_km
@@ -49,7 +49,7 @@ add_pathlength.hy <- function(x) {
 
   toids <- match(x$toid, x$id)
 
-  for (i in seq_len(length(toid))) {
+  for (i in seq_along(toid)) {
     tid <- toid[i]
     if (tid != 0) {
 
