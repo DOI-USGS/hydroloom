@@ -66,7 +66,7 @@ disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
   flowpath <- st_drop_geometry(flowpath)
   hydro_location <- st_drop_geometry(hydro_location)
 
-  if (ncol(flowpath) != 2 | ncol(hydro_location) != 2) {
+  if (ncol(flowpath) != 2 || ncol(hydro_location) != 2) {
     stop("flowpath and hydrolocation must be two-column data.frames")
   }
 
@@ -74,7 +74,7 @@ disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
 
   names(hydro_location) <- c(point_id, "metric_hl")
 
-  if (is.numeric(flowpath$metric_fp) & is.numeric(hydro_location$metric_hl)) {
+  if (is.numeric(flowpath$metric_fp) && is.numeric(hydro_location$metric_hl)) {
 
     indexes <- indexes |>
       left_join(flowpath, by = id) |>
@@ -85,7 +85,7 @@ disambiguate_indexes <- function(indexes, flowpath, hydro_location) {
       ungroup() |>
       select(-"metric_hl", -"metric_fp", -"metric_diff")
 
-  } else if (is.character(flowpath$metric_fp) & is.character(hydro_location$metric_hl)) {
+  } else if (is.character(flowpath$metric_fp) && is.character(hydro_location$metric_hl)) {
 
     indexes <- indexes |>
       left_join(flowpath, by = id) |>

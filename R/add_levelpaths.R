@@ -184,7 +184,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   outlet_ind <- x[which(x$toid == get_outlet_value(x)), ]
 
-  while (done < nrow(x) & checker < 10000000) {
+  while (done < nrow(x) && checker < 10000000) {
 
     pathids <- if (nrow(outlet_ind) == 1) {
       list(par_get_path(as.list(outlet_ind), x[c("ind", "lp_weight_attribute")], from_ind, status, "lp_weight_attribute"))
@@ -314,7 +314,7 @@ reweight <- function(x, ..., override_factor, nat, wat) {
     out <- x
 
     if (any(x[[nat]] != " ")) { # If any of the candidates are named.
-      if (cur_name != " " & cur_name %in% x[[nat]]) {
+      if (cur_name != " " && cur_name %in% x[[nat]]) {
         sub <- arrange(x[x[[nat]] == cur_name, ], desc(.data[[wat]]))
 
         out[seq_len(nrow(sub)), ] <- sub

@@ -140,7 +140,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
   # if no divergence fraction or total is true, we can set 1 for divergence = 1 and 0 for 2
   if (!divergence_fraction %in% names(net)) {
-    if (!total & !quiet)
+    if (!total && !quiet)
       message("Dendritic routing will be applied. Diversions are assumed to have 0 flow fraction.")
     net[[divergence_fraction]] <- ifelse(net$divergence == 2, 0, 1)
     required_atts <- unique(c(required_atts, divergence_fraction))
@@ -211,7 +211,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     # which are closed working from upstream to downstream.
     for (i in seq_len(length(froms$lengths))) {
 
-      if (!i %% 100 & prog)
+      if (!i %% 100 && prog)
         setTxtProgressBar(pb, i)
 
       l <- froms$lengths[i]
@@ -253,7 +253,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
   } else {
     for (i in seq_len(length(froms$lengths))) {
 
-      if (!i %% 100 & prog)
+      if (!i %% 100 && prog)
         setTxtProgressBar(pb, i)
 
       l <- froms$lengths[i]

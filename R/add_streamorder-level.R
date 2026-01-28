@@ -122,7 +122,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
       # only consider non calc-0 upstream flowlines!
       # this means a large order flowline that is downstream of a
       # diversion will be ignored
-      if (any_calc_zero & !all_calc_zero) {
+      if (any_calc_zero && !all_calc_zero) {
         orders <- orders[!calcs == 0]
       }
 
@@ -141,7 +141,7 @@ add_streamorder.hy <- function(x, status = TRUE) {
       if (cur_calc == 0) {
         order[i] <- max_order
         # If combining two of the same max order AND we are not below a minor path
-      } else if (length(orders[orders == max_order]) > 1 & !any_calc_zero) {
+      } else if (length(orders[orders == max_order]) > 1 && !any_calc_zero) {
         order[i] <- max_order + 1
         calc[i] <- order[i]
         # If we are not on a minor path

@@ -63,7 +63,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
   x <- st_drop_geometry(x)
 
-  if (length(unique(x$id)) != nrow(x) | isTRUE(add_div)) {
+  if (length(unique(x$id)) != nrow(x) || isTRUE(add_div)) {
     if (!isTRUE(add_div))
       stop("duplicate identifiers found and 'add_div' is not TRUE")
 
@@ -142,7 +142,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
       x <- mutate(x, divergence = ifelse(id %in% div2, 2, ifelse(id %in% div1, 1, 0)))
     }
   }
-  if (add & !isTRUE(add_div)) {
+  if (add && !isTRUE(add_div)) {
 
     if (!is.null(hy_g)) {
       x <- sf::st_sf(left_join(x, hy_g, by = id))

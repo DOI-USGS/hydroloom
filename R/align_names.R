@@ -119,7 +119,7 @@ hydroloom_names <- function(x = NULL, clear = FALSE) {
 
   hl <- get("hydroloom_name_map", envir = hydroloom_env)
 
-  if (!is.null(x) & is.null(names(x))) stop("input must be named")
+  if (!is.null(x) && is.null(names(x))) stop("input must be named")
 
   if (clear) {
     hl <- c()

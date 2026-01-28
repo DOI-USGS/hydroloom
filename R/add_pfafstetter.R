@@ -161,7 +161,7 @@ get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, stat
   out <- unnest(out, "members")
   out <- list(out[!is.na(out$members), ])
 
-  if (nrow(out[[1]]) == 0 | all(out[[1]]$members %in% mainstem$id)) {
+  if (nrow(out[[1]]) == 0 || all(out[[1]]$members %in% mainstem$id)) {
     return(out)
   }
 

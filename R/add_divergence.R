@@ -180,21 +180,21 @@ winnow_upstream <- function(n, x_orig, major_types, name_count) {
   ups <- filter(x_orig, tonode == n)
   dns <- filter(x_orig, fromnode == n)
 
-  if (nrow(ups) > 1 &
+  if (nrow(ups) > 1 &&
     any(sum(!is.na(ups$name_att)) == 1)) {
     # use the one that is named.
     ups <- filter(ups, !is.na(.data$name_att))
   }
 
   # if that didn't get us there,
-  if (nrow(ups) > 1 &
+  if (nrow(ups) > 1 &&
     # if one name matches
     sum(ups$name_att %in% dns$name_att) == 1) {
     ups <- filter(ups, .data$name_att %in% dns$name_att)
   }
 
   # if one major type and one not
-  if (nrow(ups) > 1 &
+  if (nrow(ups) > 1 &&
     sum(ups$type_att %in% major_types) == 1) {
     ups <- filter(ups, .data$type_att %in% major_types)
   }
@@ -274,7 +274,7 @@ down_level <- function(x) {
   }
 
   # if any of the downs are named and a major type is in the mix we can check 4
-  if (any(!is.na(x$dn_name_att)) & any(x$major_type) & any(x$coastal)) {
+  if (any(!is.na(x$dn_name_att)) && any(x$major_type) && any(x$coastal)) {
 
     pick <- which(!is.na(x$dn_name_att) & x$major_type & x$coastal)
 
@@ -283,7 +283,7 @@ down_level <- function(x) {
   }
 
   # if all downs are unnamed and a major type and coastal are in the mix we can check 5
-  if (all(is.na(x$dn_name_att)) & any(x$major_type) & any(x$coastal)) {
+  if (all(is.na(x$dn_name_att)) && any(x$major_type) && any(x$coastal)) {
 
     pick <- which(x$major_type & x$coastal)
 
@@ -291,7 +291,7 @@ down_level <- function(x) {
   }
 
   # if any of the downs are named and one goes coastal we can check 6
-  if (any(!is.na(x$dn_name_att)) & any(x$coastal)) {
+  if (any(!is.na(x$dn_name_att)) && any(x$coastal)) {
 
     pick <- which(!is.na(x$dn_name_att) & x$coastal)
 
@@ -308,7 +308,7 @@ down_level <- function(x) {
   }
 
   # if any of the downs are named and none are coastal we can check 8
-  if (any(!is.na(x$dn_name_att)) & !any(x$coastal) & any(x$major_type)) {
+  if (any(!is.na(x$dn_name_att)) && !any(x$coastal) && any(x$major_type)) {
 
     pick <- which(!is.na(x$dn_name_att))
 
@@ -326,7 +326,7 @@ down_level <- function(x) {
   }
 
   # if any of the downs are named we can check 10
-  if (any(!is.na(x$dn_name_att)) & !any(x$coastal)) {
+  if (any(!is.na(x$dn_name_att)) && !any(x$coastal)) {
 
     pick <- which(!is.na(x$dn_name_att))
 

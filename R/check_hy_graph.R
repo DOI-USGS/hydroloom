@@ -119,7 +119,7 @@ check_hy_graph_internal <- function(g, all_starts) {
     # mark it as visited
     visited_tracker[node] <- TRUE
 
-    if (!n %% 100 & pbapply::dopb())
+    if (!n %% 100 && pbapply::dopb())
       setTxtProgressBar(pb, n)
 
     # now look at what's downtream and add to a queue
@@ -140,7 +140,7 @@ check_hy_graph_internal <- function(g, all_starts) {
 
     # if nothing there, just increment to the next visit position
     # this indicates we hit a new path
-    while ((node == 0 && to_visit_queue$size() > 0) |
+    while ((node == 0 && to_visit_queue$size() > 0) ||
       # or if we are at a node that's already been visited, skip it.
       (node != 0 && visited_tracker[node])) {
 

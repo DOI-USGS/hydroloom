@@ -59,7 +59,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
     if (!grepl("down", direction))
       stop("Direction must be 'down' if x contains to index ids")
 
-    if (grepl("main", direction) & !"main" %in% names(x))
+    if (grepl("main", direction) && !"main" %in% names(x))
       stop("for downmain, index ids must include main element")
 
   } else if (all(c("froms", "lengths", "froms_list") %in% names(x))) {

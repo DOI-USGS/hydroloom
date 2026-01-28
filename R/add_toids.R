@@ -116,11 +116,11 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 #' @return data.frame containing toid
 #' @noRd
 try_add_toids <- function(x, flownetwork = FALSE) {
-  if (!toid %in% names(x) & # if we can create a flow network
-    fromnode %in% names(x) &
+  if (!toid %in% names(x) && # if we can create a flow network
+    fromnode %in% names(x) &&
     flownetwork) { # and main is the goal
     x <- to_flownetwork(x)
-  } else if (!toid %in% names(x) & fromnode %in% names(x)) {
+  } else if (!toid %in% names(x) && fromnode %in% names(x)) {
     # otherwise make sure we have toids
     x <- add_toids(x, return_dendritic = FALSE)
   }
