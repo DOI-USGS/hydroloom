@@ -80,6 +80,7 @@ test_that("make_node_topology", {
   z <- dplyr::left_join(dplyr::select(st_drop_geometry(x), COMID), z, by = "COMID")
   expect_equal(z$divergence, x$Divergence)
 
+  # nolint start
   # the below was used for testing
   # check <- sf::st_drop_geometry(dplyr::left_join(new_hope_flowline, x, by = c("COMID" = "id")))
   # check <- select(check, COMID, FromNode, ToNode, fromnode, tonode)
@@ -111,6 +112,7 @@ test_that("make_node_topology", {
   # matches <- as.logical(matches)
   #
   # any(!matches, na.rm = TRUE)
+  # nolint end
 
 })
 

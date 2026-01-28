@@ -23,10 +23,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
-  fig.width=4,
-  fig.height=4,
+  fig.width = 4,
+  fig.height = 4,
   fig.align = "center",
-  eval=eval
+  eval = eval
 )
 
 library(sf)

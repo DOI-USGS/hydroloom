@@ -18,10 +18,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
-  fig.width=6,
-  fig.height=6,
-  fig.align="center",
-  eval=local
+  fig.width = 6,
+  fig.height = 6,
+  fig.align = "center",
+  eval = local
 )
 
 oldoption <- options(scipen = 9999)
@@ -193,7 +193,7 @@ terminal_fpath <- dplyr::filter(fpath, id %in% terminal_id)
 gif_file <- "levelpath.gif"
 try({
 gifski::save_gif({
-  for(i in 1:length(lp)) {
+  for(i in seq_along(lp)) {
     lp_plot <- dplyr::filter(fpath, levelpath == lp[i])
 
     outlet_plot <- dplyr::filter(lp_plot, id %in% terminal_id)

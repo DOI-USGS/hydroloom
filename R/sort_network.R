@@ -175,7 +175,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   id_order <- unique(x$id)[which(out != 0)]
   out <- out[out != 0]
 
-  if(split & o - 1 != length(id_order)) stop("Are two or more outlets within the same network?")
+  if(split && o - 1 != length(id_order)) stop("Are two or more outlets within the same network?")
 
   if(is.null(outlets) && length(unique(x$id)) != length(out)) warning("some features missed in sort. Are there loops in the network?")
 

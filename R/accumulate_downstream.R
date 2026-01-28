@@ -161,7 +161,6 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
   out <- select(net, any_of(c(id, as.character(var), divergence_fraction, divergence))) |>
     distinct()
 
-
   prog <- pbapply::dopb() & !quiet & length(froms$lengths) > 10000
 
   if(prog) {
@@ -233,12 +232,10 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
         if(nodes[out[[fromnode]][i], check_visit] == 1) {
 
-
           nodes[out[[fromnode]][i],
                 `:=`(open        = list(NULL),
                      closed      = list(NULL),
                      part_closed = list(NULL))]
-
 
         } else {
 
@@ -373,7 +370,6 @@ reconcile_nodes <- function(pass_on, value, node_values, closed, part_closed) {
 
     dup_nodes <- setcolorder(pass_on[, .SD[(.N > 1 && any(dup) && any(!dup))], by = local_id],
                              names(pass_on))
-
 
     if(nrow(dup_nodes) > 0) {
 

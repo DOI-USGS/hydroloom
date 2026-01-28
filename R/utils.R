@@ -78,7 +78,7 @@ st_compatibalize <- function(sf1, sf2) {
 rename_geometry <- function(g, name){
   current = attr(g, "sf_column")
 
-  names(g)[names(g)==current] = name
+  names(g)[names(g) == current] = name
 
   attr(g, "sf_column") <- name
 
@@ -289,7 +289,6 @@ get_fl <- function(hydro_location, net) {
   }
 }
 
-
 force_linestring <- function(x) {
   if(st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
     warning("converting to LINESTRING, this may be slow, check results")
@@ -307,7 +306,7 @@ force_linestring <- function(x) {
 
 add_toids_internal <- function(x, var = NULL) {
 
-  if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &
+  if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &&
      !toid %in% names(x)) {
 
     x |>

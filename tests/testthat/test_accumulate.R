@@ -7,7 +7,6 @@ test_that("accumulate downstream", {
   expect_equal(accumulate_downstream(test_data, "a"),
                c(1, 3, 6, 20, 1, 3, 6, 10)), "Dendritic routing will be applied")
 
-
   expect_error(accumulate_downstream(test_data, "b"), "b must be in x")
 
   expect_error(accumulate_downstream(dplyr::rename(test_data, borked = toid), "a"),
@@ -46,7 +45,7 @@ test_that("divergences with total", {
   remove <- remove[!remove %in% start]
 
   z <- z[!z$COMID %in% remove,]
-
+  # nolint start
   # d <- sf::st_transform(sf::st_simplify(sf::st_transform(z, 5070),
   #                                       dTolerance = units::as_units(100, "m")),
   #                       4326)
@@ -69,6 +68,7 @@ test_that("divergences with total", {
   #             areasqkm = AreaSqKM)
 
   # sf::write_sf(d, "tests/testthat/data/simple_diversions.geojson")
+  # nolint end
 
   z$dend_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM", quiet = TRUE)
 

@@ -109,7 +109,7 @@ get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, stat
     x <- add_levelpath_outlet_ids(x)
   }
 
-  if((pre_pfaf / 10^(max_level-1)) > 1) return()
+  if((pre_pfaf / 10^(max_level - 1)) > 1) return()
 
   if(status && ((pre_pfaf - 1111) %% 1000) == 0) {
     message(paste("On level:", pre_pfaf - 1111))
@@ -190,7 +190,7 @@ cleanup_pfaf <- function(pfaf) {
   pfaf$level <- ceiling(log10(pfaf$pfaf + 0.01))
   pfaf <- select(pfaf, -"p_id", id = "members")
 
-  pfaf$uid <- 1:nrow(pfaf)
+  pfaf$uid <- seq_len(nrow(pfaf))
 
   # Deduplicate problem tributaries
   remove <- do.call(c, lapply(1:length(unique(pfaf$level)), function(l, pfaf) {

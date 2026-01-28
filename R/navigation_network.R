@@ -81,7 +81,7 @@ get_start_row <- function(x, id) {
 #' plot_fun(x, start, ut)
 #'
 navigate_hydro_network <- function(x, start, mode, distance = NULL) {
-  if(missing(mode) | !mode %in% c('UM', 'DM', 'UT', 'DD')) {
+  if(missing(mode) || !mode %in% c('UM', 'DM', 'UT', 'DD')) {
     stop("must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
   }
 
@@ -95,7 +95,6 @@ navigate_hydro_network <- function(x, start, mode, distance = NULL) {
 
   UseMethod("navigate_hydro_network")
 }
-
 
 #' @name navigate_hydro_network
 #' @export
@@ -241,7 +240,6 @@ get_DM <- function(x, id, distance = NULL) {
   main_ds$id
 }
 
-
 private_get_DM <- function(x, id) {
 
   main <- ds_main <- x[x$id %in% id, ]
@@ -342,5 +340,4 @@ private_get_DD <- function(x, id, stop_pathlength_km = 0) {
     ds_main$id
   }
 }
-
 

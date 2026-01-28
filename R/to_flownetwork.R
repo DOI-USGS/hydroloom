@@ -35,12 +35,12 @@ to_flownetwork <- function(x, warn_dendritic = TRUE) {
 
   x <- hy(x, clean = TRUE)
 
-  if("toid" %in% names(x) & warn_dendritic) {
+  if("toid" %in% names(x) && warn_dendritic) {
     if(!any(duplicated(x$id)))
       warning("toid was provided and appears to be dendritic.")
   }
 
-  if(fromnode %in% names(x) & !toid %in% names(x))
+  if(fromnode %in% names(x) && !toid %in% names(x))
     x <- add_toids(x, return_dendritic = FALSE)
 
   if(!divergence %in% names(x)) stop("must provide a divergence attribute")

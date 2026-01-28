@@ -47,7 +47,6 @@ test_that("loop check", {
                                  row.names = c(NA, -1L),
                                  orig_names = c(id = "id", toid = "toid")))
 
-
   test_data <- data.frame(id = c(1, 1, 3, 2, 4, 5),
                           toid = c(3, 2, 4, 4, 5, 0))
 

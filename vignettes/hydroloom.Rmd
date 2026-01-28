@@ -21,10 +21,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
-  fig.width=4,
-  fig.height=4,
+  fig.width = 4,
+  fig.height = 4,
   fig.align = "center",
-  eval=local
+  eval = local
 )
 
 library(sf)
@@ -52,7 +52,6 @@ Hydroloom implements an `hy` S3 class designed to simplify integration of `hydro
 Most `hydroloom` functions will work with either a `hy` object or a `data.frame` containing names registered with `hydroloom_names()`. Any attributes added to the `data.frame` will contain names from `hydroloom` and must be renamed in the calling environment.
 
 Internally, the `hy` S3 class has an attribute `orig_names` as shown below. The `orig_names` attribute is used to convert original attribute names back to their original values. Using the `hydroloom` names and the `hy` S3 object are note required but adopting `hydroloom_names_definitions()` may be helpful for people aiming for consistent, simple, and accurate attribute names.
-
 
 ```{r}
 library(hydroloom)
@@ -86,14 +85,14 @@ y <- c(5, 5, 3, 1)
 oldpar <- par(mar = c(0, 0, 0, 0))
 plot(x, y, col = NA)
 arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
-arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
+arrows(x[2] - 0.1, y[2] - 0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
 arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
 text(c(2, 4, 3.15), c(4.2, 4.2, 2), c("1", "2", "3"))
 
 par(mar = c(0, 0, 0, 0))
 plot(x, y)
 arrows(x[1] + 0.1, y[1] - 0.1, x[3] - 0.1, y [3] + 0.1, 0.1)
-arrows(x[2] - 0.1, y[2] -0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
+arrows(x[2] - 0.1, y[2] - 0.1, x[3] + 0.1, y [3] + 0.1, 0.1)
 arrows(x[3], y[3] - 0.1, x[4], y [4] + 0.1, 0.1)
 text(c(2, 4, 3.1), c(4.2, 4.2, 2), c("1", "2", "3"))
 text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
@@ -212,7 +211,6 @@ sapply(ind_id, class)
 ```
 
 Now we'll look at the same thing but for a non dendritic set of toids. Notice that the `to` element of `ind_id` now has three rows. This indicates that one or more of the connections in the matrix has three downstream neighbors. The `lengths` element indicates how many non `NA` values are in each column of the matrix in the `to` element.
-
 
 ```{r}
 

@@ -61,7 +61,7 @@ make_attribute_topology.hy <- function(x, min_distance) {
   nodes$row <- seq_len(nrow(nodes))
   x$row <- seq_len(nrow(nodes))
 
-  xs <- 1:nrow(nodes)
+  xs <- seq_len(nrow(nodes))
 
   # apply over allnodes
   closest <- pblapply(xs, function(x, nodes) {

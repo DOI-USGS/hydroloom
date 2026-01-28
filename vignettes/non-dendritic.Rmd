@@ -18,10 +18,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
-  fig.width=6,
-  fig.height=6,
+  fig.width = 6,
+  fig.height = 6,
   fig.align = "center",
-  eval=local
+  eval = local
 )
 
 oldoption <- options(scipen = 9999)
@@ -109,6 +109,5 @@ all(flow_net$divergence == x$Divergence)
 sum(flow_net$return_divergence == x$RtnDiv)
 
 names(flow_net)
-
 ```
 With the above code, we removed all attributes other than an ID, a name and a feature type and recreated both a dendritic (toid) and non-dendritic (fromnode tonode) topology. We added `divergence` attribute, `stream_order`, `stream_calculator`, and `return_divergence` attributes.

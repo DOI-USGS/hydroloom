@@ -26,7 +26,7 @@ test_that("get location", {
   locations <- get_hydro_location(indexes, sample_flines)
 
   expect_equal(sf::st_coordinates(locations),
-               sf::st_coordinates(sf::st_sfc(sf::st_point(c(-76.8694, 39.49326)), crs= 4326)),
+               sf::st_coordinates(sf::st_sfc(sf::st_point(c(-76.8694, 39.49326)), crs = 4326)),
                tolerance = 0.001)
 
 })

@@ -27,7 +27,6 @@ reprex::reprex({
   as.tbl(make_node_topology(x, add_div = TRUE))
 }, venue = "rtf")
 
-
 reprex::reprex({
   library(hydroloom)
   library(dplyr)
@@ -115,7 +114,6 @@ plot(x["levelpath"], reset = FALSE, lwd = 2)
 plot(sf::st_geometry(x), lwd = x$stream_order, col = "darkblue", add = TRUE)
 plot(sf::st_geometry(x), lwd = x$stream_calculator, col = "magenta", add = TRUE)
 plot(sf::st_geometry(filter(x, divergence == 2)), col = "magenta", add = TRUE, lwd = 2)
-
 
 plot(sf::st_geometry(get_node(x, "start")), pch = "O", cex = .8, add = TRUE)
 plot(sf::st_geometry(get_node(x, "end")), pch = "x", cex = .7, add = TRUE)

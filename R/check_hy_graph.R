@@ -85,7 +85,6 @@ check_hy_outlets <- function(x, fix = FALSE) {
 
 }
 
-
 check_hy_graph_internal <- function(g, all_starts) {
 
   f <- make_fromids(g)
@@ -123,12 +122,11 @@ check_hy_graph_internal <- function(g, all_starts) {
     if(!n %% 100 & pbapply::dopb())
       setTxtProgressBar(pb, n)
 
-
     # now look at what's downtream and add to a queue
     for(to in seq_len(g$lengths[node])) {
 
       # Add the next node to visit to the tracking vector
-      if(g$to[to, node]!= 0 && !visited_tracker[g$to[to, node]])
+      if(g$to[to, node] != 0 && !visited_tracker[g$to[to, node]])
         to_visit_queue$add(g$to[to, node])
 
       # stops us from visiting a node again when we revisit

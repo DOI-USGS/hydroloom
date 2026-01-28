@@ -304,7 +304,7 @@ down_level <- function(x) {
 
     pick <- which(x$coastal)
 
-    if(length(pick)== 1) return(x$toid[pick])
+    if(length(pick) == 1) return(x$toid[pick])
 
   }
 
@@ -313,7 +313,7 @@ down_level <- function(x) {
 
     pick <- which(!is.na(x$dn_name_att))
 
-    if(length(pick)== 1) return(x$toid[pick])
+    if(length(pick) == 1) return(x$toid[pick])
 
   }
 

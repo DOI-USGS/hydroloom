@@ -85,7 +85,7 @@ test_that("non-dendritic issues", {
 
   z <- sort_network(y)
 
-  z$topo_sort <- nrow(z):1
+  z$topo_sort <- rev(seq_len(nrow(z)))
 
   # this is a case upstream of a divergence that was complicated.
   expect_true(z$topo_sort[which(z$COMID == 8893296)] > z$topo_sort[which(z$COMID == 8893378)])
@@ -97,7 +97,7 @@ test_that("non-dendritic issues", {
   z <- sort_network(y)
 
   z <- dplyr::left_join(z,
-                        tibble(COMID = unique(z$COMID), topo_sort = length(unique(z$COMID)):1),
+                        tibble(COMID = unique(z$COMID), topo_sort = rev(seq_along(unique(z$COMID)))),
                         by = "COMID")
 
   # the two non dendritic paths should have a smaller topo sort than the one upstream of them.

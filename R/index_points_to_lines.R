@@ -13,7 +13,7 @@ matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
 
   matched <- data.table(nn.idx = as.integer(matched$nn.idx),
                         nn.dists = as.numeric(matched$nn.dists),
-                        point_id = rep(1:nrow(points), ncol(matched$nn.idx)))
+                        point_id = rep(seq_len(nrow(points)), ncol(matched$nn.idx)))
 
   matched <- merge(matched,
                    data.table(L1 = coords[, "L1"],
@@ -459,7 +459,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
   near_wb <- matcher_dt(waterbodies,
                      st_coordinates(points), search_radius)
   near_wb <- left_join(near_wb, wb_atts, by = c("L1" = "index"))
-  near_wb <- left_join(data.frame(point_id = c(1:nrow(points))), near_wb, by = point_id)
+  near_wb <- left_join(data.frame(point_id = seq_len(nrow(points))), near_wb, by = point_id)
   near_wb <- mutate(near_wb, nn.dists = ifelse(.data$nn.dists > search_radius,
                                                NA, .data$nn.dists))
 

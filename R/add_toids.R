@@ -46,12 +46,14 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 
   if("toid" %in% names(x)) stop("network already contains a toid attribute")
 
+  # nolint start
   # joiner_fun <- function(x) {
   #   select(
   #     left_join(select(st_drop_geometry(x), "id", "tonode"),
   #               select(st_drop_geometry(x), toid = "id", "fromnode"),
   #               by = c("tonode" = "fromnode")), -"tonode")
   # }
+  # nolint end
 
   # slightly faster data.table
   joiner_fun <- function(x) {

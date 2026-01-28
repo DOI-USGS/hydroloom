@@ -24,10 +24,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
-  fig.width=4,
-  fig.height=4,
+  fig.width = 4,
+  fig.height = 4,
   fig.align = "center",
-  eval=local
+  eval = local
 )
 
 ```
@@ -84,7 +84,7 @@ remove <- hydroloom::check_hy_graph(flow_table)
 
 # this is naive and these removals would normally be reviewed.
 flow_table <- flow_table |>
-  mutate(row = 1:n()) |>
+  mutate(row = seq_len(n())) |>
   filter(!row %in% remove$row)
 
 down <- navigate_network_dfs(flow_table, sub$permanent_identifier, direction = "down")

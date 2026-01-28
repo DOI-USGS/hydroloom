@@ -317,7 +317,7 @@ reweight <- function(x, ..., override_factor, nat, wat) {
       if(cur_name != " " & cur_name %in% x[[nat]]) {
         sub <- arrange(x[x[[nat]] == cur_name, ], desc(.data[[wat]]))
 
-        out[1:nrow(sub), ] <- sub
+        out[seq_len(nrow(sub)), ] <- sub
 
         rank <- rank + nrow(sub)
 

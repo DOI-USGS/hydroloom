@@ -14,7 +14,7 @@ test_that("add indid", {
 
   expect_equal(z$to_list, y$to_list)
 
-  expect_equal(y$to_list$indid, 1:nrow(x))
+  expect_equal(y$to_list$indid, seq_len(nrow(x)))
 
   expect_true(all(unlist(y$to_list$toindid) %in% c(y$to_list$indid, 0)))
 
@@ -22,7 +22,7 @@ test_that("add indid", {
 
   y <- make_index_ids(y)
 
-  expect_true(all(y$to_list$indid %in% 1:nrow(x)))
+  expect_true(all(y$to_list$indid %in% seq_len(nrow(x))))
 
   expect_true(all(unlist(y$to_list$toindid) %in% c(y$to_list$indid, 0)))
 

@@ -67,7 +67,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
     if(!grepl("up", direction))
       stop("Direction must be 'up' if x contains from index ids")
 
-    if(grepl("main", direction) & !"main" %in% names(x))
+    if(grepl("main", direction) && !"main" %in% names(x))
       stop("for upmain, index ids must include main element")
 
   } else {
@@ -116,7 +116,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
   }
 
   # if the above resulted in dat that won't work
-  if(grepl("main", direction) & !"main" %in% names(g))
+  if(grepl("main", direction) && !"main" %in% names(g))
     stop("main path must be provided for downmain navigation")
 
   # make sure this will actually work!
@@ -157,9 +157,6 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
   # output set and path ids used to populate out_list
   set_id <- 1
   path_id <- 1
-
-  # path start sort position used to find loops
-  path_start_position <- 1
 
   for(start in all_starts) {
 
@@ -249,7 +246,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
     if(none_in_path) {
       out_list[[set_id]] <- list()
     } else {
-      out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index-1)])
+      out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index - 1)])
     }
 
     set_id <- set_id + 1

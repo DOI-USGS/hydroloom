@@ -76,7 +76,6 @@ test_that("point indexing to nearest existing node works as expected", {
                           REACHCODE_measure = 34.6,
                           offset = 0.000348), tolerance = 0.01)
 
-
   expect_equal(index_points_to_lines(flines_in, point)$REACHCODE,
                index_points_to_lines(sf::st_transform(flines_in, 5070),
                                      sf::st_transform(point, 5070))$REACHCODE)
@@ -245,7 +244,7 @@ test_that("no duplicates when using precision", {
   flines <- sf::read_sf(list.files(pattern = "index_precision.gpkg",
                                    full.names = TRUE, recursive = TRUE))
 
-  check <-index_points_to_lines(x = flines, points = points,
+  check <- index_points_to_lines(x = flines, points = points,
                         search_radius = search_rad,
                         max_matches = max_match,
                         precision = precision) |>
