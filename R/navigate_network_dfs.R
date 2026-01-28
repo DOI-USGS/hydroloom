@@ -83,14 +83,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
     x <- hy(x, clean = TRUE)
 
-    if(!toid %in% names(x) & # if we can create a flow network
-       fromnode %in% names(x) &
-       grepl("main", direction)) { # and main is the goal
-      x <- to_flownetwork(x)
-    } else if(!toid %in% names(x) & fromnode %in% names(x)) {
-      # otherwise make sure we have toids
-      x <- add_toids(x, return_dendritic = FALSE)
-    }
+    x <- try_add_toids(x, flownetwork = grepl("main", direction))
 
     g <- make_index_ids(x)
 

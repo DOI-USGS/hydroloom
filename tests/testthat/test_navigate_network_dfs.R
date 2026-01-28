@@ -121,7 +121,7 @@ test_that("main", {
 
   x <- to_flownetwork(f)
 
-  upmain <- distinct(select(x, id, upmain))
+  upmain_df <- distinct(select(x, id, upmain))
 
   y <- make_index_ids(x[,c("id", "toid")])
 
@@ -132,7 +132,7 @@ test_that("main", {
 
   y <- make_index_ids(x)
 
-  z <- make_fromids(y, return_list = TRUE, upmain = upmain)
+  z <- make_fromids(y, return_list = TRUE, upmain = upmain_df)
 
   expect_error(navigate_network_dfs(y, 8897784, "upmain"), "must be 'down'")
   expect_error(navigate_network_dfs(z, 8897784, "downmain"), "must be 'up'")

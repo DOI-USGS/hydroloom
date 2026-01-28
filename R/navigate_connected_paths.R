@@ -33,8 +33,11 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 
   x <- st_drop_geometry(x)
 
-  index <- make_index_ids(select(x, id, toid), long_form = TRUE)
+  if(any(duplicated(x$id)))
+    stop("x contains duplicate ids. Please remove duplicates before proceeding.")
 
+  index <- make_index_ids(distinct(select(x, id, toid)), long_form = TRUE)
+  
   get_dwn <- function(indid, toindid) {
     next_dn <- toindid[indid]
     if(next_dn == 0) {

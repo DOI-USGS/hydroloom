@@ -36,7 +36,9 @@ test_that("add indid", {
 
   z <- add_toids(x)
 
+  expect_warning({
   z <- make_index_ids(z, long_form = TRUE)
+  }, "long_form is deprecated and will be removed in a future release.")
 
   expect_equal(names(z), c("id", "indid", "toindid"))
 
@@ -61,7 +63,7 @@ test_that("add indid", {
   y <- make_index_ids(y)
 
   expect_equal(class(y$to_list$toindid[[1]]), "integer")
-})
+  })
 
 test_that("with downmain", {
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
