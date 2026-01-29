@@ -6,12 +6,12 @@
 #' `to_list`. This form can be converted to the default list format with
 #' \link{format_index_ids}. "Long" refers to the fact that ids that connect
 #' to more than one `toid` will have multiple rows in the output.
-#' @param mode character indicating the mode of the graph. Choose from "to",
-#' "from", "both", or "none". Default is "to". Se Details for more information.
-#' @details mode determines the direction of the graph. If "to", the graph will
-#' be directed from the `id` to the `toid`. If "from", the graph will be
-#' directed from the `toid` to the `id`. If "both", the graph will be
-#' directed in both directions. If "none", the graph will be undirected.
+# @param mode character indicating the mode of the graph. Choose from "to",
+# "from", "both", or "none". Default is "to". Se Details for more information.
+# @details mode determines the direction of the graph. If "to", the graph will
+# be directed from the `id` to the `toid`. If "from", the graph will be
+# directed from the `toid` to the `id`. If "both", the graph will be
+# directed in both directions. If "none", the graph will be undirected.
 #' @returns list containing named elements:
 #' \describe{
 #'   \item{to}{adjacency matrix with columns that correspond to `unqiue(x$id)`}

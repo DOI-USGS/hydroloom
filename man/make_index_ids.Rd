@@ -19,9 +19,6 @@ make_index_ids(x, long_form = FALSE)
 \code{to_list}. This form can be converted to the default list format with
 \link{format_index_ids}. "Long" refers to the fact that ids that connect
 to more than one \code{toid} will have multiple rows in the output.}
-
-\item{mode}{character indicating the mode of the graph. Choose from "to",
-"from", "both", or "none". Default is "to". Se Details for more information.}
 }
 \value{
 list containing named elements:
@@ -36,12 +33,6 @@ NOTE: the long_form output is deprecated and will be removed in a future release
 \description{
 makes index ids for the provided hy object. These can be used
 for graph traversal algorithms such that the row number and id are equal.
-}
-\details{
-mode determines the direction of the graph. If "to", the graph will
-be directed from the \code{id} to the \code{toid}. If "from", the graph will be
-directed from the \code{toid} to the \code{id}. If "both", the graph will be
-directed in both directions. If "none", the graph will be undirected.
 }
 \examples{
 
