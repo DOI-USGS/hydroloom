@@ -6,40 +6,40 @@ matcher_dt <- function(coords, points, search_radius, max_matches = 1) {
   max_match_ <- ifelse(nrow(coords) < 1000, nrow(coords), 1000)
 
   matched <- nn2(data = coords[, 1:2],
-                 query = matrix(points[, c("X", "Y")], ncol = 2),
-                 k = ifelse(max_matches > 1, max_match_, 1),
-                 searchtype = "radius",
-                 radius = search_radius)
+    query = matrix(points[, c("X", "Y")], ncol = 2),
+    k = ifelse(max_matches > 1, max_match_, 1),
+    searchtype = "radius",
+    radius = search_radius)
 
   matched <- data.table(nn.idx = as.integer(matched$nn.idx),
-                        nn.dists = as.numeric(matched$nn.dists),
-                        point_id = rep(1:nrow(points), ncol(matched$nn.idx)))
+    nn.dists = as.numeric(matched$nn.dists),
+    point_id = rep(seq_len(nrow(points)), ncol(matched$nn.idx)))
 
   matched <- merge(matched,
-                   data.table(L1 = coords[, "L1"],
-                              index = seq_len(nrow(coords))),
-                   by.x = "nn.idx", by.y = "index", sort = FALSE)
+    data.table(L1 = coords[, "L1"],
+      index = seq_len(nrow(coords))),
+    by.x = "nn.idx", by.y = "index", sort = FALSE)
 
   matched <- matched[nn.dists <= search_radius]
 
   # First get rid of duplicate nodes on the same line.
   matched <- matched[, .SD[nn.dists == min(nn.dists)],
-                     by = list(L1, point_id)]
+    by = list(L1, point_id)]
 
   # Now limit to max matches per point
   matched <- matched[, N := seq_len(.N), by = list(point_id)]
 
   matched <- matched[N <= max_matches]
 
-  matched <- as.data.frame(matched[,!c("N")])
+  matched <- as.data.frame(matched[, !c("N")])
 
   matched
 }
 
 check_search_radius <- function(search_radius, points) {
 
-  if(is.null(search_radius)) {
-    if(st_is_longlat(points)) {
+  if (is.null(search_radius)) {
+    if (st_is_longlat(points)) {
       search_radius <- set_units(0.01, "degrees")
     } else {
       search_radius <- set_units(200, "m")
@@ -49,7 +49,7 @@ check_search_radius <- function(search_radius, points) {
     }
   }
 
-  if(!inherits(search_radius, "units")) {
+  if (!inherits(search_radius, "units")) {
     warning("search_radius units not set, trying units of points CRS.")
     units(search_radius) <- as_units(
       st_crs(points, parameters = TRUE)$ud_unit)
@@ -73,12 +73,12 @@ make_singlepart <- function(x, warn_text = "", stop_on_real_multi = FALSE) {
 
   x <- st_zm(x)
 
-  if(grepl("^MULTI", gt)) {
+  if (grepl("^MULTI", gt)) {
     x <- st_cast(x, gsub("^MULTI", "", gt), warn = FALSE)
   }
 
   if (nrow(x) != check) {
-    if(stop_on_real_multi) stop("Multipart geometries not supported.")
+    if (stop_on_real_multi) stop("Multipart geometries not supported.")
     warning(warn_text)
   }
 
@@ -91,7 +91,7 @@ rename_indexed <- function(x, matched) {
   new_aggregate_measure <- paste0(orig_aggregate_id, "_measure")
 
   rename(matched, any_of(setNames(c(id, aggregate_id, aggregate_id_measure),
-                                  c(orig_id, orig_aggregate_id, new_aggregate_measure))))
+    c(orig_id, orig_aggregate_id, new_aggregate_measure))))
 }
 
 #' @title Index Points to Lines
@@ -145,41 +145,40 @@ rename_indexed <- function(x, matched) {
 #' @name index_points_to_lines
 #' @export
 #' @examples
-#'
 #' \donttest{
-#' if(require(nhdplusTools)) {
-#' source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+#' if (require(nhdplusTools)) {
+#'   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #'
-#' if(!any(lengths(sf::st_geometry(sample_flines)) > 1))
-#'   sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
+#'   if (!any(lengths(sf::st_geometry(sample_flines)) > 1))
+#'     sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
 #'
-#' point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
-#'                     crs = 4326)
+#'   point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
+#'     crs = 4326)
 #'
-#' index_points_to_lines(sample_flines, point)
+#'   index_points_to_lines(sample_flines, point)
 #'
-#' point <- sf::st_transform(point, 5070)
+#'   point <- sf::st_transform(point, 5070)
 #'
-#' index_points_to_lines(sample_flines, point,
-#'                       search_radius = units::set_units(200, "m"))
+#'   index_points_to_lines(sample_flines, point,
+#'     search_radius = units::set_units(200, "m"))
 #'
-#' index_points_to_lines(sample_flines, point, precision = 30)
+#'   index_points_to_lines(sample_flines, point, precision = 30)
 #'
-#' points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
-#'                                       sf::st_point(c(-76.91711, 39.40884)),
-#'                                       sf::st_point(c(-76.88081, 39.36354))),
-#'                                  crs = 4326)
+#'   points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
+#'     sf::st_point(c(-76.91711, 39.40884)),
+#'     sf::st_point(c(-76.88081, 39.36354))),
+#'   crs = 4326)
 #'
-#' index_points_to_lines(sample_flines, points,
-#'                       search_radius = units::set_units(0.2, "degrees"),
-#'                       max_matches = 10)
+#'   index_points_to_lines(sample_flines, points,
+#'     search_radius = units::set_units(0.2, "degrees"),
+#'     max_matches = 10)
 #'
-#' index_points_to_lines(sample_flines, points,
-#'                       search_radius = units::set_units(0.2, "degrees"),
-#'                       ids = c(11689926, 11690110, 11688990))
+#'   index_points_to_lines(sample_flines, points,
+#'     search_radius = units::set_units(0.2, "degrees"),
+#'     ids = c(11689926, 11690110, 11688990))
 #'
-#'  }
-#'  }
+#' }
+#' }
 #'
 index_points_to_lines <- function(x, points,
                                   search_radius = NULL,
@@ -194,18 +193,18 @@ index_points_to_lines <- function(x, points,
 #' @name index_points_to_lines
 #' @export
 index_points_to_lines.data.frame <- function(x, points,
-                                  search_radius = NULL,
-                                  precision = NA,
-                                  max_matches = 1,
-                                  ids = NULL) {
+                                             search_radius = NULL,
+                                             precision = NA,
+                                             max_matches = 1,
+                                             ids = NULL) {
 
   x <- hy(x)
 
   matched <- index_points_to_lines(x, points,
-                                   search_radius = search_radius,
-                                   precision = precision,
-                                   max_matches = max_matches,
-                                   ids = ids)
+    search_radius = search_radius,
+    precision = precision,
+    max_matches = max_matches,
+    ids = ids)
 
   rename_indexed(x, matched)
 
@@ -225,10 +224,10 @@ index_points_to_lines.hy <- function(x, points,
 
   search_radius <- check_search_radius(search_radius, points)
 
-  if(!is.na(precision)) {
-    if(requireNamespace("geos", quietly = TRUE)) {
+  if (!is.na(precision)) {
+    if (requireNamespace("geos", quietly = TRUE)) {
       point_buffer <- geos::geos_buffer(geos::as_geos_geometry(sf::st_geometry(points)),
-                                        distance = search_radius)
+        distance = search_radius)
 
       point_buffer <- sf::st_as_sfc(point_buffer)
     } else {
@@ -237,17 +236,17 @@ index_points_to_lines.hy <- function(x, points,
 
   }
 
-  if(units(search_radius) == units(as_units("degrees"))) {
-    if(st_is_longlat(in_crs) & search_radius > set_units(1, "degree")) {
+  if (units(search_radius) == units(as_units("degrees"))) {
+    if (st_is_longlat(in_crs) && search_radius > set_units(1, "degree")) {
       warning("search radius is large for lat/lon input, are you sure?")
     }
   }
 
   # filter x to ids we need
-  if(!is.null(ids)) {
-    if(!all(ids %in% x$id)) stop("ids is not NULL and not all ids are in the id field of x")
+  if (!is.null(ids)) {
+    if (!all(ids %in% x$id)) stop("ids is not NULL and not all ids are in the id field of x")
 
-    if(!length(ids) == length(points)) stop("ids input must be 1:1 with points")
+    if (!length(ids) == length(points)) stop("ids input must be 1:1 with points")
 
     x <- filter(x, .data$id %in% ids)
 
@@ -255,19 +254,19 @@ index_points_to_lines.hy <- function(x, points,
   }
 
   x <- match_crs(x, points,
-                 paste("crs of lines and points don't match.",
-                       "attempting st_transform of lines"))
+    paste("crs of lines and points don't match.",
+      "attempting st_transform of lines"))
 
   search_radius <- as.numeric(search_radius) # everything in same units now
 
-  if(!is.na(precision)) {
+  if (!is.na(precision)) {
 
     x <- x[lengths(st_intersects(x, point_buffer, sparse = TRUE)) > 0, ]
 
   }
 
   x <- select(x, any_of(c(id, aggregate_id,
-                        aggregate_id_from_measure, aggregate_id_to_measure))) |>
+    aggregate_id_from_measure, aggregate_id_to_measure))) |>
     mutate(index = seq_len(nrow(x)))
 
   fline_atts <- st_drop_geometry(x)
@@ -277,28 +276,28 @@ index_points_to_lines.hy <- function(x, points,
   if (nrow(x) != nrow(fline_atts)) {
 
     x <- summarise(group_by(select(x, "index"),
-                            .data$index),
-                   do_union = FALSE)
+      .data$index),
+    do_union = FALSE)
 
     x <- left_join(x, fline_atts, by = "index")
 
     multi <- lengths(st_geometry(x)) > 1
 
-    if(any(multi)) {
+    if (any(multi)) {
       warning(paste0("Attempting to combine multipart lines into single ",
-                     "part lines. Check results!!"))
+        "part lines. Check results!!"))
 
       st_geometry(x)[multi] <- lapply(st_geometry(x)[multi], function(x) {
         st_linestring(do.call(rbind, x))
       })
 
-      x  <- st_zm(st_cast(x, "LINESTRING", warn = FALSE))
+      x <- st_zm(st_cast(x, "LINESTRING", warn = FALSE))
     }
   }
 
   points <- st_coordinates(points)
 
-  if(!is.na(precision)) {
+  if (!is.na(precision)) {
 
     # upstream to downstream order.
     x <- st_coordinates(x)
@@ -306,7 +305,7 @@ index_points_to_lines.hy <- function(x, points,
     # Geometry nodes are in downstream to upstream order.
     x <- as.data.frame(x) |>
       st_as_sf(coords = c("X", "Y"),
-                   crs = in_crs) |>
+        crs = in_crs) |>
       group_by(.data$L1) |>
       summarise(do_union = FALSE)
 
@@ -316,34 +315,34 @@ index_points_to_lines.hy <- function(x, points,
       st_segmentize(dfMaxLength = as_units(precision, "m"))
 
     fline_atts <- right_join(fline_atts,
-                             select(st_drop_geometry(x),
-                                    "L1", precision_index = "index"),
-                             by = c("index" = "L1"))
+      select(st_drop_geometry(x),
+        "L1", precision_index = "index"),
+      by = c("index" = "L1"))
 
     # downstream to upstream order
     x <- st_coordinates(x)
 
     matched <- matcher_dt(x, points, search_radius, max_matches = max_matches) |>
       left_join(select(fline_atts, id, "precision_index"),
-                by = c("L1" = "precision_index"))
+        by = c("L1" = "precision_index"))
 
     matched <- mutate(matched, nn.dists = ifelse(.data$nn.dists > search_radius,
-                                                 NA, .data$nn.dists))
+      NA, .data$nn.dists))
   } else {
 
     x <- st_coordinates(x)
 
     matched <- matcher_dt(x, points, search_radius, max_matches = max_matches) |>
       left_join(select(fline_atts, id, "index"),
-                by = c("L1" = "index"))
+        by = c("L1" = "index"))
 
     matched <- mutate(matched, nn.dists = ifelse(.data$nn.dists > search_radius,
-                                                 NA, .data$nn.dists))
+      NA, .data$nn.dists))
 
   }
 
-  if(!is.null(ids)) {
-    ids <- data.frame(point_id = seq_len(length(ids)), check_ids = ids)
+  if (!is.null(ids)) {
+    ids <- data.frame(point_id = seq_along(ids), check_ids = ids)
 
     matched <- left_join(matched, ids, by = "point_id") |>
       filter(.data$id == .data$check_ids) |>
@@ -361,21 +360,22 @@ index_points_to_lines.hy <- function(x, points,
   select_vec <- c("index")
   select_vec2 <- c(point_id, id, offset)
 
-  if(all(c(aggregate_id_from_measure, aggregate_id) %in% names(fline_atts))) {
+  if (all(c(aggregate_id_from_measure, aggregate_id) %in% names(fline_atts))) {
     x <- x |>
       group_by(.data$L1) |>
       add_len() |>
       mutate(aggregate_id_measure = round(
         .data$aggregate_id_from_measure +
           (.data$aggregate_id_to_measure - .data$aggregate_id_from_measure) *
-          (.data$id_measure / 100),
+            (.data$id_measure / 100),
         digits = 4)) |>
-      ungroup() |> distinct()
+      ungroup() |>
+      distinct()
 
     select_vec <- c("index", aggregate_id, aggregate_id_measure)
     select_vec2 <- c(point_id, id, aggregate_id, aggregate_id_measure, offset)
 
-  } else if(aggregate_id %in% names(x)) {
+  } else if (aggregate_id %in% names(x)) {
 
     select_vec <- c("index", aggregate_id)
     select_vec2 <- c(point_id, id, aggregate_id, offset)
@@ -383,8 +383,8 @@ index_points_to_lines.hy <- function(x, points,
   }
 
   matched <- left_join(matched,
-                       distinct(select(x, all_of(select_vec))),
-                       by = c("node" = "index")) |>
+    distinct(select(x, all_of(select_vec))),
+    by = c("node" = "index")) |>
     select(all_of(select_vec2))
 
   matched
@@ -407,19 +407,19 @@ index_points_to_lines.hy <- function(x, points,
 #' @export
 #' @examples
 #'
-#' if(require(nhdplusTools)) {
+#' if (require(nhdplusTools)) {
 #'
-#' source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
+#'   source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
 #'
-#' waterbodies <- sf::st_transform(
-#'   sf::read_sf(sample_data, "NHDWaterbody"), 5070)
+#'   waterbodies <- sf::st_transform(
+#'     sf::read_sf(sample_data, "NHDWaterbody"), 5070)
 #'
-#' points <- sf::st_transform(
-#'   sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
-#'              crs = 4326), 5070)
+#'   points <- sf::st_transform(
+#'     sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
+#'       crs = 4326), 5070)
 #'
-#' index_points_to_waterbodies(waterbodies, points,
-#'                     search_radius = units::set_units(500, "m"))
+#'   index_points_to_waterbodies(waterbodies, points,
+#'     search_radius = units::set_units(500, "m"))
 #'
 #' }
 #'
@@ -427,7 +427,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
                                         search_radius = NULL) {
 
   rename_comid <- FALSE
-  if("COMID" %in% names(waterbodies)) {
+  if ("COMID" %in% names(waterbodies)) {
     waterbodies <- rename(waterbodies, any_of(c(wbid = "COMID")))
     rename_comid <- TRUE
   }
@@ -438,7 +438,7 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
 
   search_radius <- as.numeric(check_search_radius(search_radius, points))
 
-  points <- st_sf(id = seq_len(length(points)), geometry = points)
+  points <- st_sf(id = seq_along(points), geometry = points)
 
   waterbodies <- select(waterbodies, wbid)
 
@@ -450,51 +450,51 @@ index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,
 
   waterbodies <- make_singlepart(waterbodies, stop_on_real_multi = TRUE)
 
-  if(nrow(waterbodies) != nrow(wb_atts)) stop("Multipart waterbody polygons not supported.")
+  if (nrow(waterbodies) != nrow(wb_atts)) stop("Multipart waterbody polygons not supported.")
 
   waterbodies <- st_coordinates(waterbodies)
 
-  if(ncol(waterbodies) == 4) waterbodies[ ,3] <- waterbodies[ ,4]
+  if (ncol(waterbodies) == 4) waterbodies[, 3] <- waterbodies[, 4]
 
   near_wb <- matcher_dt(waterbodies,
-                     st_coordinates(points), search_radius)
+    st_coordinates(points), search_radius)
   near_wb <- left_join(near_wb, wb_atts, by = c("L1" = "index"))
-  near_wb <- left_join(data.frame(point_id = c(1:nrow(points))), near_wb, by = point_id)
+  near_wb <- left_join(data.frame(point_id = seq_len(nrow(points))), near_wb, by = point_id)
   near_wb <- mutate(near_wb, nn.dists = ifelse(.data$nn.dists > search_radius,
-                                               NA, .data$nn.dists))
+    NA, .data$nn.dists))
 
   out <- st_drop_geometry(st_as_sf(bind_cols(select(near_wb, near_wbid = wbid,
-                                                 near_wb_dist = "nn.dists"),
-                                          select(points, in_wbid = wbid))))
+    near_wb_dist = "nn.dists"),
+  select(points, in_wbid = wbid))))
 
-  if(!is.null(flines)) {
+  if (!is.null(flines)) {
 
     flines <- hy(flines)
 
     check_names(flines, c(id, wbid, topo_sort), "index_points_to_waterbodies flowlines")
 
     out <- mutate(out, joiner = ifelse(!is.na(.data$in_wbid),
-                                       .data$in_wbid, .data$near_wbid),
-                  id = seq_len(nrow(out)))
+      .data$in_wbid, .data$near_wbid),
+    id = seq_len(nrow(out)))
 
     flines <- st_drop_geometry(flines)
 
     out <- left_join(out, select(flines,
-                                 wb_outlet_id = id,
-                                 wbid, topo_sort),
-                     by = c("joiner" = wbid), relationship = "many-to-many")
+      wb_outlet_id = id,
+      wbid, topo_sort),
+    by = c("joiner" = wbid), relationship = "many-to-many")
 
     out <- ungroup(filter(group_by(out, .data$id),
-                          is.na(topo_sort) | topo_sort == min(topo_sort)))
+      is.na(topo_sort) | topo_sort == min(topo_sort)))
 
     out <- select(out, -all_of(c(id, topo_sort, "joiner")))
 
   }
 
-  if(rename_comid) {
+  if (rename_comid) {
     out <- rename(out, any_of(c(near_wb_COMID = "near_wbid",
-                                in_wb_COMID = "in_wbid",
-                                outlet_fline_COMID = "wb_outlet_id")))
+      in_wb_COMID = "in_wbid",
+      outlet_fline_COMID = "wb_outlet_id")))
   }
 
   out

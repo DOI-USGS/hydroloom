@@ -1,3 +1,8 @@
+hydroloom 1.1.2
+==========
+
+- `accumulate_downstream()` now supports "total upstream" and "divergence routed" accumulation. -- #17
+
 hydroloom 1.1.1
 ==========
 

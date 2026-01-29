@@ -1,6 +1,6 @@
 align_name_char <- function(x) {
 
-  if(tolower(x) %in% names(hydroloom_name_map))
+  if (tolower(x) %in% names(hydroloom_name_map))
     return(hydroloom_name_map[[tolower(x)]])
 
   x
@@ -42,17 +42,17 @@ align_names <- function(x) {
 
   change_names <- change_names[which(change_names %in% names(x))]
 
-  if(length(change_names) > 0) {
+  if (length(change_names) > 0) {
     names(change_names) <- orig_names[which(tolower(orig_names) == names(change_names))]
 
     stop(paste("Problem aligning names.", paste(names(change_names), collapse = ", "),
-               "conflicts with hydroloom name", paste(unname(change_names), collapse = ", "),
-               "can't proceed converting to hy object."))
+      "conflicts with hydroloom name", paste(unname(change_names), collapse = ", "),
+      "can't proceed converting to hy object."))
   }
 
-  if(any(duplicated(replace_names))) {
+  if (any(duplicated(replace_names))) {
 
-    if("permanent_identifier" %in% names(replace_names)) {
+    if ("permanent_identifier" %in% names(replace_names)) {
 
       replace_names <- replace_names[!names(replace_names) == "permanent_identifier"]
 
@@ -62,12 +62,12 @@ align_names <- function(x) {
 
   }
 
-  if(any(duplicated(replace_names))) {
+  if (any(duplicated(replace_names))) {
 
     doop <- replace_names[duplicated(replace_names)]
     all_doop <- replace_names[replace_names %in% doop]
     warning(paste0("Duplicate names found when aligning with hydroloom conventions \n using ",
-                   names(doop), " from ", paste(names(all_doop), collapse = ", ")))
+      names(doop), " from ", paste(names(all_doop), collapse = ", ")))
 
     remove <- all_doop[!names(all_doop) %in% names(doop)]
     replace_names <- replace_names[!names(replace_names) %in% names(remove)]
@@ -119,14 +119,14 @@ hydroloom_names <- function(x = NULL, clear = FALSE) {
 
   hl <- get("hydroloom_name_map", envir = hydroloom_env)
 
-  if(!is.null(x) & is.null(names(x))) stop("input must be named")
+  if (!is.null(x) && is.null(names(x))) stop("input must be named")
 
-  if(clear) {
+  if (clear) {
     hl <- c()
     assign("hydroloom_name_map", hl, envir = hydroloom_env)
   }
 
-  if(is.null(x)) {
+  if (is.null(x)) {
     return(hl)
   }
 

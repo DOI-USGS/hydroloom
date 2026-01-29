@@ -78,12 +78,12 @@ test_flowline <- add_toids(g)
 
 # use NHDPlus attributes directly
 add_levelpaths(test_flowline,
-               name_attribute = "GNIS_ID",
-               weight_attribute = "ArbolateSu")
+  name_attribute = "GNIS_ID",
+  weight_attribute = "ArbolateSu")
 
 # use hy attributes where they can be mapped
 add_levelpaths(hy(test_flowline),
-               name_attribute = "GNIS_ID",
-               weight_attribute = "arbolate_sum")
+  name_attribute = "GNIS_ID",
+  weight_attribute = "arbolate_sum")
 
 }

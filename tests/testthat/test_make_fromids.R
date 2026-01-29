@@ -15,24 +15,24 @@ test_that("make fromid", {
   expect_equal(names(z), c("froms", "lengths", "froms_list"))
 
   # manually verified
-  expect_equal(z$froms[,10], c(12, 558, NA))
+  expect_equal(z$froms[, 10], c(12, 558, NA))
   expect_equal(as.numeric(z$lengths[10]), 2)
 
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
-                          toid = c(2, 3, 4, 0, 7, 8, 9, 4))
+    toid = c(2, 3, 4, 0, 7, 8, 9, 4))
 
   test_data <- make_index_ids(test_data)
 
   expect_equal(ncol(make_fromids(test_data)$froms),
-               nrow(test_data$to_list))
+    nrow(test_data$to_list))
 
   test_data <- data.frame(id = c(1, 2, 3, 4),
-                          toid = c(2, 3, 4, 0))
+    toid = c(2, 3, 4, 0))
 
   test_data <- make_index_ids(test_data)
 
   expect_equal(ncol(make_fromids(test_data)$froms),
-               nrow(test_data$to_list))
+    nrow(test_data$to_list))
 
   y <- add_toids(x, return_dendritic = FALSE)
 

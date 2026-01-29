@@ -13,16 +13,16 @@
 #' @examples
 #' # notice that row 4 (id = 4, toid = 9) and row 8 (id = 9, toid = 4) is a loop.
 #' test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
-#'                       toid = c(2, 3, 4, 9, 7, 8, 9, 4))
+#'   toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 #' check_hy_graph(test_data)
 #'
 check_hy_graph <- function(x, loop_check = FALSE) {
 
-  if(!inherits(x, "hy")) {
+  if (!inherits(x, "hy")) {
     x <- hy(x)
   }
 
-  if(loop_check) {
+  if (loop_check) {
     index_ids <- make_index_ids(x)
 
     starts <- index_ids$to_list$indid[index_ids$to_list$id %in% x$id[!x$id %in% x$toid]]
@@ -31,21 +31,21 @@ check_hy_graph <- function(x, loop_check = FALSE) {
 
     check <- unlist(check)
 
-    if(any(!is.na(check))) {
+    if (any(!is.na(check))) {
       return(filter(x, id %in% check))
     }
 
   }
 
-  x <- merge(data.table(mutate(x, row = 1:n())),
-             data.table(rename(st_drop_geometry(x), toid_check = toid)),
-             by.x = "toid", by.y = "id", all.x = TRUE)
+  x <- merge(data.table(mutate(x, row = seq_len(n()))),
+    data.table(rename(st_drop_geometry(x), toid_check = toid)),
+    by.x = "toid", by.y = "id", all.x = TRUE)
 
   x <- as_tibble(x)
 
   check <- x$id == x$toid_check
 
-  if(any(check, na.rm = TRUE)) {
+  if (any(check, na.rm = TRUE)) {
 
     filter(x, check)
 
@@ -59,15 +59,15 @@ check_hy_graph <- function(x, loop_check = FALSE) {
 
 check_hy_outlets <- function(x, fix = FALSE) {
 
-  if(!inherits(x, "hy")) {
+  if (!inherits(x, "hy")) {
     x <- hy(x)
   }
 
   check <- !x$toid %in% x$id
 
-  if(any(x$toid[check] != get_outlet_value(x))) {
+  if (any(x$toid[check] != get_outlet_value(x))) {
 
-    if(fix) {
+    if (fix) {
 
       warning("Outlets don't follow hydroloom convention of 0 or '', fixing.")
 
@@ -84,7 +84,6 @@ check_hy_outlets <- function(x, fix = FALSE) {
   x
 
 }
-
 
 check_hy_graph_internal <- function(g, all_starts) {
 
@@ -106,29 +105,28 @@ check_hy_graph_internal <- function(g, all_starts) {
   # trigger for making a new path
   new_path <- FALSE
 
-  if(pbapply::dopb()) {
+  if (pbapply::dopb()) {
     pb = txtProgressBar(0, ncol(g$to), style = 3)
     on.exit(close(pb))
   }
   n <- 0
 
-  while(node > 0) {
+  while (node > 0) {
 
-    if(!visited_tracker[node])
+    if (!visited_tracker[node])
       n <- n + 1
 
     # mark it as visited
     visited_tracker[node] <- TRUE
 
-    if(!n %% 100 & pbapply::dopb())
+    if (!n %% 100 && pbapply::dopb())
       setTxtProgressBar(pb, n)
 
-
     # now look at what's downtream and add to a queue
-    for(to in seq_len(g$lengths[node])) {
+    for (to in seq_len(g$lengths[node])) {
 
       # Add the next node to visit to the tracking vector
-      if(g$to[to, node]!= 0 && !visited_tracker[g$to[to, node]])
+      if (g$to[to, node] != 0 && !visited_tracker[g$to[to, node]])
         to_visit_queue$add(g$to[to, node])
 
       # stops us from visiting a node again when we revisit
@@ -142,9 +140,9 @@ check_hy_graph_internal <- function(g, all_starts) {
 
     # if nothing there, just increment to the next visit position
     # this indicates we hit a new path
-    while((node == 0 && to_visit_queue$size() > 0) |
-          # or if we are at a node that's already been visited, skip it.
-          (node != 0 && visited_tracker[node])) {
+    while ((node == 0 && to_visit_queue$size() > 0) ||
+      # or if we are at a node that's already been visited, skip it.
+      (node != 0 && visited_tracker[node])) {
 
       node <- to_visit_queue$remove()
 
@@ -153,16 +151,16 @@ check_hy_graph_internal <- function(g, all_starts) {
     node_temp <- node
 
     track <- 0
-    while(node != 0 &&
-          f$lengths[node] != 0 &&
-          any(!visited_tracker[
-      f$froms[seq(1, f$lengths[node]), node]])) {
+    while (node != 0 &&
+      f$lengths[node] != 0 &&
+      any(!visited_tracker[
+        f$froms[seq(1, f$lengths[node]), node]])) {
 
       to_visit_queue$add(node)
       node <- to_visit_queue$remove()
 
       track <- track + 1
-      if(track > to_visit_queue$size()) {
+      if (track > to_visit_queue$size()) {
         warning("stuck in a loop at ", g$to_list$id[node_temp])
         out_stack$push(node_temp)
 
@@ -176,17 +174,17 @@ check_hy_graph_internal <- function(g, all_starts) {
 
     check <- NULL
 
-    if(node != 0 && !visited_tracker[node])
+    if (node != 0 && !visited_tracker[node])
       check <- loop_search_dfs(g, node, visited_tracker)
 
-    if(!is.null(check)) {
+    if (!is.null(check)) {
       message("found loop at ", g$to_list$id[check])
       warning("found a loop at ", g$to_list$id[check])
       out_stack$push(check)
     }
 
   }
-  if(pbapply::dopb())
+  if (pbapply::dopb())
     setTxtProgressBar(pb, n)
 
   # if we got this far, Cool!
@@ -200,14 +198,14 @@ loop_search_dfs <- function(g, node, visited_tracker) {
   to_visit_stack <- faststack(missing_default = 0)
 
   # while we still have nodes to check
-  while(node != 0) {
+  while (node != 0) {
 
     # means we hit a node that we already visited
-    if(visited_tracker[node]) {
+    if (visited_tracker[node]) {
       return(node)
     }
 
-    for(to in seq_len(g$lengths[node])) {
+    for (to in seq_len(g$lengths[node])) {
       to_visit_stack$push(g$to[to, node])
       g$to[to, node] <- 0
     }
@@ -216,7 +214,7 @@ loop_search_dfs <- function(g, node, visited_tracker) {
     node <- to_visit_stack$pop()
 
     # if it's 0 grab the next node unless it's empty
-    while(!node && to_visit_stack$size() > 0) {
+    while (!node && to_visit_stack$size() > 0) {
       node <- to_visit_stack$pop()
     }
 

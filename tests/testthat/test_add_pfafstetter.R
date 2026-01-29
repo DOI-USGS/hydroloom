@@ -1,6 +1,6 @@
 test_that("get_pfaf", {
 
-  if(!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
 
   work_dir <- nhdplusTools::nhdplusTools_data_dir()
 
@@ -16,12 +16,12 @@ test_that("get_pfaf", {
 
   # level according to drainage area
   fl$name <- ""
-  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm")
+  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm", quiet = TRUE)
   fl <- add_levelpaths(fl, "name", "total_da_sqkm")
   pfaf <- add_pfafstetter(fl, max_level = 2)
 
-  expect_equal(pfaf[pfaf$id == 15000500028335,	]$pf_level_1, 5)
-  expect_equal(pfaf[pfaf$id == 15000500028335,	]$pf_level_2, 51)
+  expect_equal(pfaf[pfaf$id == 15000500028335, ]$pf_level_1, 5)
+  expect_equal(pfaf[pfaf$id == 15000500028335, ]$pf_level_2, 51)
 
   pfaf <- add_pfafstetter(fl, max_level = 4)
 
@@ -47,7 +47,7 @@ test_that("get_pfaf", {
 
   # level according to drainage area
   fl$name <- ""
-  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm")
+  fl$total_da_sqkm <- accumulate_downstream(fl, "da_sqkm", quiet = TRUE)
   fl <- add_levelpaths(fl, "name", "total_da_sqkm")
 
   pfaf <- add_pfafstetter(fl, max_level = 2)

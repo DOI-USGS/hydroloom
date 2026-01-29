@@ -45,31 +45,27 @@ add_streamorder.data.frame <- function(x, status = TRUE) {
 #' @export
 add_streamorder.hy <- function(x, status = TRUE) {
 
-  if("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
+  if ("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
 
-  if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &
-     !toid %in% names(x)) {
-    net <- select(st_drop_geometry(x), all_of(c(id, fromnode, tonode, divergence)))
-
-    net <- add_toids(net, return_dendritic = FALSE)
-  }
+  net <- add_toids_internal(x)
 
   # if there's any non-dendritic network we need a divergence marker
-  if(length(unique(x$id)) < nrow(x) | exists("net")) {
+  if (length(unique(net$id)) < nrow(net)) {
 
     required_atts <- c(id, toid, divergence)
     error_context <- "If id, fromnode, tonode, and divergence are not supplied, add_streamorder with non-dendritic"
 
   } else {
+
     required_atts <- c(id, toid)
     error_context <- "add_streamorder"
   }
 
-  if(!exists("net", inherits = FALSE)) {
+  if (!exists("net", inherits = FALSE)) {
 
-    check_names(x, required_atts, error_context)
+    check_names(net, required_atts, error_context)
 
-    net <- select(st_drop_geometry(x), all_of(required_atts))
+    net <- select(net, all_of(required_atts))
 
   }
 
@@ -92,24 +88,24 @@ add_streamorder.hy <- function(x, status = TRUE) {
   order <- rep(1, length(froms$lengths))
   calc <- rep(1, length(order))
 
-  if(divergence %in% names(x)) {
+  if (divergence %in% names(x)) {
     # get a divergence marker as logical
     div <- left_join(tibble(id = index_ids$to_list$id),
-                     distinct(select(st_drop_geometry(x),
-                                     all_of(c(id, divergence)))),
-                     by = id)
+      distinct(select(st_drop_geometry(x),
+        all_of(c(id, divergence)))),
+      by = id)
 
     # set divergences to stream calc 0 to be propagated through minor paths
     calc[div$divergence == 2] <- 0
 
   }
 
-  for(i in seq_len(length(froms$lengths))) {
+  for (i in seq_along(froms$lengths)) {
 
     l <- froms$lengths[i]
 
     # nothing to do if nothing upstream
-    if(l > 0) {
+    if (l > 0) {
 
       # these are the upstream orders
       orders <- order[froms$froms[1:l, i]]
@@ -123,11 +119,16 @@ add_streamorder.hy <- function(x, status = TRUE) {
       # calc was set to zero already so can just move on if it's set
       cur_calc <- calc[i]
 
-      if(any_calc_zero & !all_calc_zero) {
+      # only consider non calc-0 upstream flowlines!
+      # this means a large order flowline that is downstream of a
+      # diversion will be ignored
+      if (any_calc_zero && !all_calc_zero) {
         orders <- orders[!calcs == 0]
       }
 
       # Need the max upstream order for this work
+      # note this is max upstream order that is not
+      # downstream of a diversion
       max_order <- max(orders)
 
       # the core stream order algorithm:
@@ -137,17 +138,17 @@ add_streamorder.hy <- function(x, status = TRUE) {
       # do not increment if one or more calcs are 0
       #
       # if current catchment is set as calc 0, we won't mess with incoming order
-      if(cur_calc == 0) {
+      if (cur_calc == 0) {
         order[i] <- max_order
-      # If combining two of the same max order AND we are not below a minor path
-      } else if(length(orders[orders == max_order]) > 1 & !any_calc_zero) {
+        # If combining two of the same max order AND we are not below a minor path
+      } else if (length(orders[orders == max_order]) > 1 && !any_calc_zero) {
         order[i] <- max_order + 1
         calc[i] <- order[i]
-      # If we are not on a minor path
-      } else if(!all_calc_zero) {
+        # If we are not on a minor path
+      } else if (!all_calc_zero) {
         order[i] <- max_order
         calc[i] <- order[i]
-      # if we are on a minor path just pass downstream
+        # if we are on a minor path just pass downstream
       } else {
         order[i] <- max_order
         calc[i] <- 0
@@ -157,9 +158,9 @@ add_streamorder.hy <- function(x, status = TRUE) {
   }
 
   left_join(x,
-            bind_cols(id = unique(net$id), tibble(stream_order = order,
-                                                  stream_calculator = calc)),
-            by = "id")
+    bind_cols(id = unique(net$id), tibble(stream_order = order,
+      stream_calculator = calc)),
+    by = "id")
 
 }
 
@@ -229,17 +230,17 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
   l <- net |>
     filter(.data$levelpath != .data$dn_levelpath) |>
     rename(id = "levelpath",
-           toid = "dn_levelpath") |>
+      toid = "dn_levelpath") |>
     sort_network() |>
     distinct()
 
-  l <- l[nrow(l):1, ]
+  l <- l[rev(seq_len(nrow(l))), ]
 
   l$level <- rep(0, nrow(l))
 
   l$level[!l$toid %in% l$id] <- 1
 
-  if(!is.null(coastal) && coastal %in% names(l)) {
+  if (!is.null(coastal) && coastal %in% names(l)) {
     l$level[l$level == 1 & !l[[coastal]]] <- 4
   }
 
@@ -250,8 +251,8 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
   toids <- match(toid, id)
 
   # walk the network from bottom path up
-  for(i in seq_len(length(id))) {
-    if(!is.na(toids[i])) {
+  for (i in seq_along(id)) {
+    if (!is.na(toids[i])) {
 
       level[i] <- # level at current
         level[toids[i]] + 1 # level of downstream + 1

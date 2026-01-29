@@ -12,59 +12,59 @@ test_that("complex split", {
   # these test if junctions with more than on upstream are handled.
   # base case
   x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
-            fromnode = c(1, 2, 3, 3, 4, 5, 6),
-              tonode = c(3, 3, 4, 5, 6, 6, 7),
-            name = c("", "", "", "", "", "", ""),
-            type = c(1, 1, 1, 1, 1, 1, 1))
+    fromnode = c(1, 2, 3, 3, 4, 5, 6),
+    tonode = c(3, 3, 4, 5, 6, 6, 7),
+    name = c("", "", "", "", "", "", ""),
+    type = c(1, 1, 1, 1, 1, 1, 1))
 
   x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
 
-  expect_equal(x$divergence[c(3,4)], c(1,2))
+  expect_equal(x$divergence[c(3, 4)], c(1, 2))
 
   # the rest of these switch from the base case
   # one matching name use it.
   x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
-                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
-                  tonode = c(3, 3, 4, 5, 6, 6, 7),
-                  name = c("test", "test2", "bbb", "test2", "", "", ""),
-                  type = c(1, 1, 1, 1, 1, 1, 1))
+    fromnode = c(1, 2, 3, 3, 4, 5, 6),
+    tonode = c(3, 3, 4, 5, 6, 6, 7),
+    name = c("test", "test2", "bbb", "test2", "", "", ""),
+    type = c(1, 1, 1, 1, 1, 1, 1))
 
   x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
 
-  expect_equal(x$divergence[c(3,4)], c(2, 1))
+  expect_equal(x$divergence[c(3, 4)], c(2, 1))
 
   # one name at all
   x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
-                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
-                  tonode = c(3, 3, 4, 5, 6, 6, 7),
-                  name = c("test2", "", "", "test2", "", "", ""),
-                  type = c(1, 1, 1, 1, 1, 1, 1))
+    fromnode = c(1, 2, 3, 3, 4, 5, 6),
+    tonode = c(3, 3, 4, 5, 6, 6, 7),
+    name = c("test2", "", "", "test2", "", "", ""),
+    type = c(1, 1, 1, 1, 1, 1, 1))
 
   x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
 
-  expect_equal(x$divergence[c(3,4)], c(2, 1))
+  expect_equal(x$divergence[c(3, 4)], c(2, 1))
 
   # major type name override
   x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
-                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
-                  tonode = c(3, 3, 4, 5, 6, 6, 7),
-                  name = c("test1", "test2", "test1", "test2", "", "", ""),
-                  type = c(1, 2, 2, 1, 1, 1, 1))
+    fromnode = c(1, 2, 3, 3, 4, 5, 6),
+    tonode = c(3, 3, 4, 5, 6, 6, 7),
+    name = c("test1", "test2", "test1", "test2", "", "", ""),
+    type = c(1, 2, 2, 1, 1, 1, 1))
 
   x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
 
-  expect_equal(x$divergence[c(3,4)], c(1, 2))
+  expect_equal(x$divergence[c(3, 4)], c(1, 2))
 
   # major type
   x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7),
-                  fromnode = c(1, 2, 3, 3, 4, 5, 6),
-                  tonode = c(3, 3, 4, 5, 6, 6, 7),
-                  name = c("test1", "test2", "test3", "test4", "", "", ""),
-                  type = c(1, 2, 2, 1, 1, 1, 1))
+    fromnode = c(1, 2, 3, 3, 4, 5, 6),
+    tonode = c(3, 3, 4, 5, 6, 6, 7),
+    name = c("test1", "test2", "test3", "test4", "", "", ""),
+    type = c(1, 2, 2, 1, 1, 1, 1))
 
   x <- add_divergence(x, 7, c(), name_attr = "name", type_attr = "type", major_types = 1)
 
-  expect_equal(x$divergence[c(3,4)], c(2, 1))
+  expect_equal(x$divergence[c(3, 4)], c(2, 1))
 })
 
 test_that("add down main", {
@@ -77,14 +77,14 @@ test_that("add down main", {
   outlets <- g$COMID[!g$ToNode %in% g$FromNode]
 
   d <- dplyr::select(g, COMID, gnis_id, FTYPE,
-                     FromNode, ToNode)
+    FromNode, ToNode)
 
   d <- add_divergence(d,
-                      coastal_outlet_ids = outlets,
-                      inland_outlet_ids = c(),
-                      name_attr = "gnis_id",
-                      type_attr = "FTYPE",
-                      major_types = c("StreamRiver", "ArtificialPath", "Connector"))
+    coastal_outlet_ids = outlets,
+    inland_outlet_ids = c(),
+    name_attr = "gnis_id",
+    type_attr = "FTYPE",
+    major_types = c("StreamRiver", "ArtificialPath", "Connector"))
 
   expect_equal(d$COMID, g$COMID)
   expect_equal(d$divergence, g$Divergence)
@@ -284,7 +284,7 @@ test_that("winnow works with name count", {
     )
 
   expect_equal(hydroloom:::winnow_upstream(n, x_orig, major_types, name_count)$name_att[1],
-               "00881819")
+    "00881819")
 
   unlink("divergence_checks.txt")
 })

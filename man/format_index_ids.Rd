@@ -15,7 +15,7 @@ with \code{long_form}=TRUE.}
 }
 \value{
 list containing an adjacency matrix and a lengths vector indicating
-the number of connections from each node. If \code{complete} is \code{TRUE} return
+the number of connections from each node. If \code{return_list} is \code{TRUE}, return
 will also include a data.frame with an \code{indid} column and a \code{toindid} list
 column.
 }

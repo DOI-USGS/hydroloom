@@ -5,12 +5,12 @@ rename_measures <- function(x) {
   new_aggregate_to_measure <- paste0(orig_aggregate_id, "_to_measure")
 
   rename(x, any_of(setNames(c(aggregate_id_from_measure, aggregate_id_to_measure),
-                            c(new_aggregate_from_measure, new_aggregate_to_measure))))
+    c(new_aggregate_from_measure, new_aggregate_to_measure))))
 }
 
 #' Add aggregate id measures to flowlines
 #' @description
-#'given a set of connected flowlines that have ids and aggregate ids, adds
+#' given a set of connected flowlines that have ids and aggregate ids, adds
 #' from_aggregate_id_measure and to_aggregate_id_measure for use with
 #' \link{index_points_to_lines}
 #'
@@ -40,7 +40,7 @@ rename_measures <- function(x) {
 #' add_measures(d)
 #' @export
 add_measures <- function(x) {
- UseMethod("add_measures")
+  UseMethod("add_measures")
 }
 
 #' @name add_measures
@@ -61,7 +61,7 @@ add_measures.hy <- function(x) {
 
   remove_names <- c()
 
-  if(!toid %in% names(x)) {
+  if (!toid %in% names(x)) {
     message("no toid found, attempting to add one from geometry.")
 
     x <- left_join(x, make_attribute_topology(x, 0.0001), by = id)
@@ -93,13 +93,13 @@ add_measures.hy <- function(x) {
         add_len() |>
         group_by(id) |>
         summarise(aggregate_id_from_measure = min(id_measure),
-                  aggregate_id_to_measure = max(id_measure))
+          aggregate_id_to_measure = max(id_measure))
     }) |>
     bind_rows()
 
   remove_names <- c(remove_names, "index")
 
-  x <- x[match(id_order, x$id),]
+  x <- x[match(id_order, x$id), ]
 
   select(x, -all_of(remove_names)) |>
     distinct() |>

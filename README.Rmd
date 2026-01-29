@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 [![codecov](https://codecov.io/gh/doi-usgs/hydroloom/branch/main/graph/badge.svg)](https://app.codecov.io/gh/doi-usgs/hydroloom)
 [![CRAN](https://www.r-pkg.org/badges/version/hydroloom)](https://cran.r-project.org/package=hydroloom)
 
-## hydroloom: 
+## hydroloom:
 
 **Install:** `install.packages("hydroloom")`
 
@@ -32,7 +32,7 @@ Or for latest development: `remotes::install_github("doi-usgs/hydroloom")`
 ## Citation:
 
 ```
-Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics, 
+Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics,
 https://doi.org/10.5066/P9AQCUY0
 ```
 
@@ -44,12 +44,12 @@ hydroloom::hydroloom_name_definitions
 
 <details>
   <summary>Click to See Definitions</summary>
-  
+
 ```{r, echo=FALSE, eval=TRUE}
-  knitr::kable(data.frame(Name = names(hydroloom::hydroloom_name_definitions), 
-                          Definition = unname(hydroloom::hydroloom_name_definitions)))
+knitr::kable(data.frame(Name = names(hydroloom::hydroloom_name_definitions),
+  Definition = unname(hydroloom::hydroloom_name_definitions)))
 ```
-    
+
 </details>
 
 <br/>
@@ -69,8 +69,8 @@ Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
 `hydroloom` will support some key functionality of `nhdplusTools`. Some components
 of `nhdplusTools` will be deprecated in a future version of the package in favor
 of the `hydroloom` implementation. In general, `nhdplusTools` will continue to
-support web service functionality and particulars of the NHDPlus data model. 
-In contrast, `hydroloom` is intended to be more general and focused specifically 
+support web service functionality and particulars of the NHDPlus data model.
+In contrast, `hydroloom` is intended to be more general and focused specifically
 on hydro fabric data functionality.
 
 `hydroloom` implements algorithms documented in:
@@ -78,41 +78,41 @@ on hydro fabric data functionality.
 NHDPlus Attributes:
 
 ```
-Moore, R.B., McKay, L.D., Rea, A.H., Bondelid, T.R., Price, C.V., Dewald, T.G., 
-  and Johnston, C.M., 2019, User's guide for the national hydrography dataset 
-  plus (NHDPlus) high resolution: U.S. Geological Survey Open-File Report 2019–1096, 
+Moore, R.B., McKay, L.D., Rea, A.H., Bondelid, T.R., Price, C.V., Dewald, T.G.,
+  and Johnston, C.M., 2019, User's guide for the national hydrography dataset
+  plus (NHDPlus) high resolution: U.S. Geological Survey Open-File Report 2019–1096,
   66 p., https://doi.org/10.3133/ofr20191096.
 ```
 
 Graph Concepts:
 
 ```
-Cormen, T. H., & Leiserson, C. E. (2022). Introduction to 
+Cormen, T. H., & Leiserson, C. E. (2022). Introduction to
   Algorithms, fourth edition. MIT Press.
 ```
 
 Pfafstetter Attributes:
 
 ```
-Verdin, K. L., & Verdin, J. P. (1999). A topological system for 
-  delineation and codification of the Earth's river basins. 
-  Journal of Hydrology, 218(1–2), 1–12. 
+Verdin, K. L., & Verdin, J. P. (1999). A topological system for
+  delineation and codification of the Earth's river basins.
+  Journal of Hydrology, 218(1–2), 1–12.
   https://doi.org/10.1016/S0022-1694(99)00011-6
 ```
 
-### Terminology: 
+### Terminology:
 
-The following definitions have been used as much as possible throughout the package.  
-Terms for rivers:  
-**Flowline:** A flowline is an linear geometry that represents a segment of a 
-              flowing body of water. Some flowlines have no local drainage area 
-              and are never aggregate features.  
-**Flowpath:** A flowpath is a linear geometry that represents the connection 
-              between a catchment's inlet and its outlet. All flowpaths have a 
-              local drainage area and may be aggregates of flowlines.  
-**Catchment:** A physiographic unit with zero or one inlets and one outlet. 
+The following definitions have been used as much as possible throughout the package.
+Terms for rivers:
+**Flowline:** A flowline is an linear geometry that represents a segment of a
+              flowing body of water. Some flowlines have no local drainage area
+              and are never aggregate features.
+**Flowpath:** A flowpath is a linear geometry that represents the connection
+              between a catchment's inlet and its outlet. All flowpaths have a
+              local drainage area and may be aggregates of flowlines.
+**Catchment:** A physiographic unit with zero or one inlets and one outlet.
                A catchment is represented by one or more partial realizations;
-               flowpath, divide, and networks of flowpaths and divides.  
+               flowpath, divide, and networks of flowpaths and divides.
 **Catchment Divide:** The polygon boundary that encompasses a catchment.
 
 ### Design Notes:
@@ -124,7 +124,6 @@ Terms for rivers:
 - names are plural when referring to identifiers and singular when referring to a numerical attribute.
 
 ```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
-
 ```
 
  [

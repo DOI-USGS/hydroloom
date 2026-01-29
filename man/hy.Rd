@@ -23,7 +23,7 @@ x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
 hy(x)
 
-hy(x, clean = TRUE)[1:10,]
+hy(x, clean = TRUE)[1:10, ]
 
 attr(hy(x), "orig_names")
 

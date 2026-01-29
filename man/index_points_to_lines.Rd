@@ -90,40 +90,39 @@ flowline in order to have aggregate id measures (reachcode or mainstem
 measures) in the output.
 }
 \examples{
-
 \donttest{
-if(require(nhdplusTools)) {
-source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+if (require(nhdplusTools)) {
+  source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 
-if(!any(lengths(sf::st_geometry(sample_flines)) > 1))
-  sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
+  if (!any(lengths(sf::st_geometry(sample_flines)) > 1))
+    sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
 
-point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
-                    crs = 4326)
+  point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
+    crs = 4326)
 
-index_points_to_lines(sample_flines, point)
+  index_points_to_lines(sample_flines, point)
 
-point <- sf::st_transform(point, 5070)
+  point <- sf::st_transform(point, 5070)
 
-index_points_to_lines(sample_flines, point,
-                      search_radius = units::set_units(200, "m"))
+  index_points_to_lines(sample_flines, point,
+    search_radius = units::set_units(200, "m"))
 
-index_points_to_lines(sample_flines, point, precision = 30)
+  index_points_to_lines(sample_flines, point, precision = 30)
 
-points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
-                                      sf::st_point(c(-76.91711, 39.40884)),
-                                      sf::st_point(c(-76.88081, 39.36354))),
-                                 crs = 4326)
+  points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
+    sf::st_point(c(-76.91711, 39.40884)),
+    sf::st_point(c(-76.88081, 39.36354))),
+  crs = 4326)
 
-index_points_to_lines(sample_flines, points,
-                      search_radius = units::set_units(0.2, "degrees"),
-                      max_matches = 10)
+  index_points_to_lines(sample_flines, points,
+    search_radius = units::set_units(0.2, "degrees"),
+    max_matches = 10)
 
-index_points_to_lines(sample_flines, points,
-                      search_radius = units::set_units(0.2, "degrees"),
-                      ids = c(11689926, 11690110, 11688990))
+  index_points_to_lines(sample_flines, points,
+    search_radius = units::set_units(0.2, "degrees"),
+    ids = c(11689926, 11690110, 11688990))
 
- }
- }
+}
+}
 
 }
