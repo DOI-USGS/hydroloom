@@ -1,7 +1,7 @@
 #' @title Navigate Connected Paths
-#' @description Given a network and set of ids, finds paths or lengths between all
-#' identified flowpath outlets. This algorithm finds paths between outlets
-#' regardless of flow direction.
+#' @description Given a dendritic network and set of ids, finds paths or 
+#' lengths between all identified flowpath outlets. This algorithm finds 
+#' paths between outlets regardless of flow direction.
 #' @inheritParams add_levelpaths
 #' @param outlets vector of ids from data.frame
 #' @param status logical print status and progress bars?
@@ -36,10 +36,12 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   if (any(duplicated(x$id)))
     stop("x contains duplicate ids. Please remove duplicates before proceeding.")
 
-  index <- make_index_ids(distinct(select(x, id, toid)), long_form = TRUE)
+  index <- make_index_ids(distinct(select(x, id, toid)))
+
+  if(dim(index$to)[1] != 1) stop("network must be dendritic")
 
   get_dwn <- function(indid, toindid) {
-    next_dn <- toindid[indid]
+    next_dn <- toindid[1, indid]
     if (next_dn == 0) {
       indid
     } else {
@@ -47,19 +49,19 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
     }
   }
 
-  id_match <- match(outlets, index$id)
+  id_match <- match(outlets, index$to_list$id)
 
   if (status)
     message("Finding all downstream paths.")
 
-  all_dn <- pblapply(index$indid[id_match], function(indid, toindid) {
+  all_dn <- pblapply(id_match, function(indid, toindid) {
     out <- get_dwn(indid, toindid)
     if ((lo <- length(out)) > 1) {
       out[2:lo] # don't want to include the starting flowpath
     } else {
       out[1]
     }
-  }, toindid = index$toindid)
+  }, toindid = index$to)
 
   if (status)
     message("Finding all connected pairs.")
@@ -86,7 +88,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 
   connected_paths <- paths[lengths(paths) > 0]
 
-  length_km <- select(left_join(index,
+  length_km <- select(left_join(index$to_list,
     select(x, id, "length_km"),
     by = id),
   id, "length_km")
@@ -118,9 +120,9 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   path_lengths <- left_join(path_lengths, paths, by = c("indid_1", "indid_2"))
 
   path_lengths <- left_join(path_lengths,
-    select(index, id_1 = id, indid),
+    select(index$to_list, id_1 = id, indid),
     by = c("indid_1" = "indid")) |>
-    left_join(select(index, id_2 = id, indid),
+    left_join(select(index$to_list, id_2 = id, indid),
       by = c("indid_2" = "indid")) |>
     select(-"indid_1", -"indid_2")
 

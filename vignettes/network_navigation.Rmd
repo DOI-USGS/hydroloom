@@ -225,7 +225,7 @@ base_net <- dplyr::select(hy_net, id, GNIS_NAME, feature_type)
 
 # create a geometric network -- this includes divergences
 base_net <- dplyr::left_join(make_attribute_topology(base_net, min_distance = 10),
-  dplyr::select(base_net, id), by = "id") |>
+  base_net, by = "id") |>
   sf::st_sf()
 
 names(base_net)
