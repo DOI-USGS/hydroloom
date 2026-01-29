@@ -6,12 +6,12 @@
 #' `to_list`. This form can be converted to the default list format with
 #' \link{format_index_ids}. "Long" refers to the fact that ids that connect
 #' to more than one `toid` will have multiple rows in the output.
-# @param mode character indicating the mode of the graph. Choose from "to",
-# "from", "both", or "none". Default is "to". Se Details for more information.
-# @details mode determines the direction of the graph. If "to", the graph will
-# be directed from the `id` to the `toid`. If "from", the graph will be
-# directed from the `toid` to the `id`. If "both", the graph will be
-# directed in both directions. If "none", the graph will be undirected.
+#' @param mode character indicating the mode of the graph. Choose from "to",
+#' "from", "both", or "none". Default is "to". Se Details for more information.
+#' @details mode determines the direction of the graph. If "to", the graph will
+#' be directed from the `id` to the `toid`. If "from", the graph will be
+#' directed from the `toid` to the `id`. If "both", the graph will be
+#' directed in both directions. If "none", the graph will be undirected.
 #' @returns list containing named elements:
 #' \describe{
 #'   \item{to}{adjacency matrix with columns that correspond to `unqiue(x$id)`}
@@ -70,46 +70,34 @@ make_index_ids.hy <- function(x, long_form = FALSE) {
   vars <- c("id", "toid")
   if ("downmain" %in% names(x)) vars <- c(vars, "downmain")
 
-  x <- select(x, all_of(vars))
-
-  x <- distinct(x)
+  x <- distinct(select(x, all_of(vars)))
 
   out_val <- get_outlet_value(x)
 
-  if (any(duplicated(x$id))) {
+  if (any(duplicated(x$id))) { # we have a nondedritic network
+
+    # start table with id and row id
     out <- data.table(id = unique(x$id),
       indid = seq(1, length(unique(x$id))))
-
-    out <- unique(out)
 
     out_rename <- copy(out)
     setnames(out_rename, old = "indid", new = "toindid")
 
-    out <- merge(merge(as.data.table(x)[, vars, with = FALSE],
-      out, by = "id", all.x = TRUE, sort = FALSE),
-    out_rename,
-    by.x = "toid", by.y = "id", all.x = TRUE, sort = FALSE) |>
-      as.data.frame() |>
-      as_tibble()
-
-    #nolint start
-    # dplyr method of the above hanges on large datasets
-    # out2 <- data.frame(id = unique(x$id),
-    #                   indid = seq(1, length(unique(x$id))))
-    #
-    # out2 <- left_join(left_join(select(x, "id", "toid"),
-    #                            out2, by = "id"),
-    #                  rename(out2, toindid = "indid"),
-    #                  by = c("toid" = "id"))
-    #nolint end
+    # merge the original table to the indid table by id then again by toid
+    out <- 
+      as.data.table(x)[, vars, with = FALSE] |> # only vars we need
+      merge(out, by = "id", all.x = TRUE, sort = FALSE) |> # merge to get indid
+      merge(out_rename, by.x = "toid", by.y = "id", all.x = TRUE, sort = FALSE) |> # merge to get toindid
+        as.data.frame() |>
+        as_tibble()
 
     out$toindid <- replace_na(out$toindid, 0)
 
     out <- select(out, -"toid")
 
   } else {
-    out <- data.frame(id = x$id,
-      indid = seq(1, nrow(x)))
+    # we have a dendritic network, so we can just use the id and toid
+    out <- data.frame(id = x$id, indid = seq(1, nrow(x)))
 
     out$toindid <- match(x$toid, x$id, nomatch = out_val)
   }
@@ -180,3 +168,91 @@ format_index_ids <- function(g, return_list = FALSE) {
   out
 
 }
+
+#' @title Convert "to" index ids to "from" index ids
+#' @description given a set of index ids as retrieved from \link{make_index_ids}
+#' return an adjacency matrix with pointers to identifiers that flow to the
+#' row of the matrix in question.
+#' @param index_ids data.frame as returned by \link{make_index_ids}
+#' @param return_list logical if TRUE, the returned list will include a
+#' "froms_list" element containing all from ids in a list form.
+#' @param upmain data.frame containing `id` and `upmain` columns. `upmain` should
+#' be a logical value indicating if the id is the upmain connection from its
+#' downstream neighbors.
+#' @returns list containing a "froms" matrix, "lengths" vector,
+#' and optionally "froms_list" elements.
+#' @export
+#' @examples
+#'
+#' x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+#'   toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
+#'
+#' y <- make_index_ids(x)
+#'
+#' make_fromids(y)
+#'
+make_fromids <- function(index_ids, return_list = FALSE, upmain = NULL) {
+
+  index_ids <- unnest(index_ids$to_list, "toindid")
+
+  index_ids <- select(index_ids, -any_of("main"))
+
+  #nolint start
+  # froms <- left_join(select(index_ids, "indid"),
+  #                    select(index_ids, indid = "toindid", fromindid = "indid"),
+  #                    by = "indid")
+  #
+  # froms <- data.frame(indid = unique(froms$indid),
+  #                     fromindid = I(split(froms$fromindid, froms$indid)))
+  # nolint end
+
+  # slightly faster but requires data.table
+  index_ids <- as.data.table(index_ids)
+
+  if (!is.null(upmain)) {
+    index_ids <- merge(index_ids, as.data.table(upmain), by = "id", all.x = TRUE, sort = FALSE)
+  }
+
+  ids <- unique(index_ids[, c("indid", "id")])
+
+  froms <- unique(merge(
+    index_ids[, list(indid)],
+    setnames(index_ids, c("toindid", "indid"), c("indid", "fromindid")),
+    by = "indid", all.x = TRUE
+  ))
+
+  if (!is.null(upmain)) {
+    froms <- froms[, list(fromindid = list(c(fromindid)),
+      main = list(c(upmain))), by = indid]
+  } else {
+    froms <- froms[, list(fromindid = list(c(fromindid))), by = indid]
+  }
+
+  froms <- merge(ids, froms, by = "indid", all.x = TRUE)
+
+  froms_l <- lengths(froms$fromindid, use.names = FALSE)
+  max_from <- max(froms_l)
+
+  # Convert list to matrix with NA fill
+  froms_m <- matrix(sapply(froms$fromindid, "[", seq(max_from)),
+    nrow = max_from, ncol = nrow(froms))
+
+  main_m <- matrix(sapply(froms$main, "[", seq(max_from)),
+    nrow = max_from, ncol = nrow(froms))
+
+  # NAs should be length 0
+  froms_l[is.na(froms_m[1, ])] <- 0
+
+  out <- list(froms = froms_m, lengths = froms_l)
+
+  if (!is.null(upmain)) {
+    out <- c(out, list(main = main_m))
+  }
+
+  if (return_list) return(c(out, list(froms_list = froms)))
+
+  out
+
+}
+
+fromindid <- NULL
