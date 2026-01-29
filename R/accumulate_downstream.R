@@ -6,7 +6,7 @@
 #'
 #' @inheritParams add_levelpaths
 #' @param var variable to accumulate.
-#' @param total logical if TRUE, accumulation will use "total" apportionment
+#' @param total logical [NOT IMPLEMENTED] if TRUE, accumulation will use "total" apportionment
 #' if FALSE, divergence or dendritic apportionment will apply ( see details).
 #' @param quiet logical quiet messages?
 #' @details
@@ -73,15 +73,16 @@
 #' # notice that diversions don't reset -- they carry a fraction of area
 #' plot(y['div_totdasqkm'], lwd = y$div_totdasqkm / 20)
 #'
-#' z <- x |>
-#'   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+#' # total not implemented yet, but will be soon
+#' # z <- x |>
+#' #   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 #'
-#' z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
+#' # z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 #'
-#' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
+#' # plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
 #'
 #' # equivalent values from the nhdplusv2 match!
-#' any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
+#' # any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 #'
 accumulate_downstream <- function(x, var, total = FALSE, quiet = FALSE) {
 
@@ -169,7 +170,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
   }
 
   if (total) {
-
+    stop("not implemented")
     # add node topology to x with valence indication
     out <- left_join(out,
       as.data.table(make_nondendritic_topology(net))[
