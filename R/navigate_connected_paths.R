@@ -1,6 +1,6 @@
 #' @title Navigate Connected Paths
-#' @description Given a dendritic network and set of ids, finds paths or 
-#' lengths between all identified flowpath outlets. This algorithm finds 
+#' @description Given a dendritic network and set of ids, finds paths or
+#' lengths between all identified flowpath outlets. This algorithm finds
 #' paths between outlets regardless of flow direction.
 #' @inheritParams add_levelpaths
 #' @param outlets vector of ids from data.frame
@@ -38,7 +38,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 
   index <- make_index_ids(distinct(select(x, id, toid)))
 
-  if(dim(index$to)[1] != 1) stop("network must be dendritic")
+  if (dim(index$to)[1] != 1) stop("network must be dendritic")
 
   get_dwn <- function(indid, toindid) {
     next_dn <- toindid[1, indid]
