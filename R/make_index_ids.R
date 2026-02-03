@@ -172,20 +172,14 @@ setnames_list <- function(l, old, new) {
 # see format_index_ids for documentation
 format_index_ids_internal <- function(g, return_list = FALSE) {
   if (!is.list(g$toindid)) {
-    if ("downmain" %in% names(g)) {
-      g <- data.frame(
-        id = unique(g$id),
-        indid = unique(g$indid),
-        toindid = I(split(g$toindid, g$indid)),
-        main = I(split(g$downmain, g$indid))
-      )
-    } else {
-      g <- data.frame(
-        id = unique(g$id),
-        indid = unique(g$indid),
-        toindid = I(split(g$toindid, g$indid))
-      )
-    }
+    base <- data.frame(
+      id = unique(g$id),
+      indid = unique(g$indid),
+      toindid = I(split(g$toindid, g$indid))
+    )
+    if ("downmain" %in% names(g)) base$main <- I(split(g$downmain, g$indid))
+    if ("edge_id" %in% names(g)) base$edge_id <- I(split(g$edge_id, g$indid))
+    g <- base
   }
 
   to_l <- lengths(g$toindid)
@@ -198,11 +192,19 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
     main <- as.matrix(sapply(g$main, "[", seq(max_to)))
   }
 
+  if ("edge_id" %in% names(g)) {
+    edge_id_m <- as.matrix(sapply(g$edge_id, "[", seq(max_to)))
+  }
+
   if (max_to == 1) {
     to_m <- matrix(to_m, nrow = 1)
 
     if ("main" %in% names(g)) {
       main <- matrix(main, nrow = 1)
+    }
+
+    if ("edge_id" %in% names(g)) {
+      edge_id_m <- matrix(edge_id_m, nrow = 1)
     }
   }
 
@@ -213,6 +215,10 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
 
   if ("main" %in% names(g)) {
     out <- c(out, list(main = main))
+  }
+
+  if ("edge_id" %in% names(g)) {
+    out <- c(out, list(edge_id = edge_id_m))
   }
 
   if (return_list) {
@@ -271,6 +277,55 @@ make_from_dt <- function(index_ids, upmain, convert_list = FALSE) {
   } else {
     setcolorder(froms, c("id", "indid", "fromindid"))
   }
+}
+
+#' @title Create undirected node adjacency table
+#' @description Internal helper that builds a long-form undirected adjacency
+#' data.table from a node topology table. Each flowline (edge) produces two rows,
+#' one per endpoint, so the result can be passed directly to
+#' format_index_ids_internal. Nodes are remapped to contiguous integer indices
+#' using the same merge pattern as make_to_dt.
+#' @param node_topo data.frame with columns id (flowline id), fromnode, tonode
+#' as returned by make_nondendritic_topology.
+#' @returns data.table with columns: id (original node value), indid (contiguous
+#' node index), toindid (neighbor node's contiguous index), edge_id (row position
+#' in node_topo, i.e. flowline index).
+#' @importFrom data.table rbindlist
+#' @importFrom data.table setorder
+#' @noRd
+make_adj_dt <- function(node_topo) {
+  edge_id <- seq_len(nrow(node_topo))
+
+  # Each flowline is an undirected edge: two rows per edge, one per endpoint
+  fwd <- data.table(
+    id = node_topo$fromnode,
+    toid = node_topo$tonode,
+    edge_id = edge_id
+  )
+  rev <- data.table(
+    id = node_topo$tonode,
+    toid = node_topo$fromnode,
+    edge_id = edge_id
+  )
+  combined <- rbindlist(list(fwd, rev))
+
+  # Remap nodes to contiguous 1..n (same merge pattern as make_to_dt non-dendritic)
+  all_nodes <- sort(unique(c(node_topo$fromnode, node_topo$tonode)))
+  node_map <- data.table(id = all_nodes, indid = seq_along(all_nodes))
+  node_map_to <- copy(node_map)
+  setnames(node_map_to, c("id", "indid"), c("toid", "toindid"))
+
+  combined <- merge(
+    combined, node_map, by = "id", all.x = TRUE, sort = FALSE
+  )
+  combined <- merge(
+    combined, node_map_to, by = "toid", all.x = TRUE, sort = FALSE
+  )
+
+  # Sort by indid so unique(id) and split(..., indid) align in format_index_ids_internal
+  setorder(combined, "indid")
+
+  select(combined, all_of(c("id", "indid", "toindid", "edge_id")))
 }
 
 #' @title Create "to" direction index table
