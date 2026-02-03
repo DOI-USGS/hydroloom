@@ -15,8 +15,28 @@ test_that("get_articulation_flowlines with sf object", {
   expect_true(all(c(8893722, 8893780) %in% result))
 
   # within system of diversions
-  expect_false(all(c(8893532, 8893534) %in% result))
+  expect_false(all(c(8893532, 8893534, 8893222) %in% result))
 
+  net <- navigate_network_dfs(x, 8893236, "up")
+
+  x <- x[x$id %in% unlist(net), ]
+
+  result <- get_articulation_flowlines(x)
+
+  expect_false(all(c(8893222, 8893228) %in% result))
+})
+
+test_that("get_articulation near an outlet", {
+  # a trib joins a diversion near the outlet of a network
+
+  x <- data.frame(
+    id =   c(1, 2, 3, 4, 1, 6, 7, 5),
+    toid = c(2, 4, 4, 5, 6, 7, 5, 0)
+  )
+
+  result <- get_articulation_flowlines(x)
+
+  result
 })
 
 test_that("get_articulation_flowlines with data.frame", {

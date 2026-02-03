@@ -128,10 +128,14 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
 }
 
-navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
+#' @param ind_id_mode logical if TRUE, no id transformations are applied. all_starts is assumed to be in index_id space
+#' @noRd
+navigate_network_dfs_internal <- function(g, all_starts, reset, main, ind_id_mode = FALSE) {
 
-  # these are in indid space
-  all_starts <- unique(g$to_list$indid[match(all_starts, g$to_list$id)])
+  if(!ind_id_mode) {
+    # these are in indid space
+    all_starts <- unique(g$to_list$indid[match(all_starts, g$to_list$id)])
+  }
 
   # if reset is TRUE, we keep all connections in subsequent starts runs
   if (reset) save_to <- g$to
@@ -246,7 +250,11 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main) {
     if (none_in_path) {
       out_list[[set_id]] <- list()
     } else {
-      out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index - 1)])
+      if(!ind_id_mode) {
+        out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index - 1)])
+      } else {
+        out_list[[set_id]] <- split(set_index[1:(node_index - 1)], path_index[1:(node_index - 1)])
+      }
     }
 
     set_id <- set_id + 1
