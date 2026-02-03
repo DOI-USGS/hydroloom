@@ -170,10 +170,11 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x <- arrange(x, .data$topo_sort)
 
-  to_ind <- make_index_ids(x)
+  to_ind <- make_index_ids(x, mode = "both")
 
-  from_ind <- make_fromids(to_ind, return_list = TRUE)
-
+  from_ind <- to_ind$from
+  to_ind <- to_ind$to
+  
   x$done <- rep(FALSE, nrow(x))
 
   x$ind <- seq_len(nrow(x))

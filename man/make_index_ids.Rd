@@ -39,8 +39,8 @@ for graph traversal algorithms such that the row number and id are equal.
 \details{
 mode determines the direction of the graph. If "to", the graph will
 be directed from the \code{id} to the \code{toid}. If "from", the graph will be
-directed from the \code{toid} to the \code{id}. If "both", the graph will be
-directed in both directions.
+directed from the \code{toid} to the \code{id}. If "both", the list will contain both
+a "from" and a "to" element containing each version of the graph.
 }
 \examples{
 

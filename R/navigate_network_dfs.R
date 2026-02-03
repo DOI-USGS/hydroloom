@@ -2,8 +2,8 @@
 #' @description given a starting node, return all reachable paths. Once visited,
 #' a node is marked as visited and will not take part in a future path.
 #' @param x data.frame containing hydroloom compatible network or list
-#' as returned by \link{make_index_ids} (for down) or \link{make_fromids}
-#' (for up). The list formats avoids recreating the index ids for every call
+#' as returned by \link{make_index_ids} ("to" mode for downstream or "from" mode
+#' for upstream). The index list format avoids recreating the index ids for every call
 #' to navigate network dfs in the case that it needs to be called many times.
 #' @param starts vector with ids from x to start at.
 #' @param direction character "up", "upmain", "down", or "downmain". If "upmain" or
@@ -32,10 +32,9 @@
 #' Index ids:
 #'
 #' If the function will be called repeatedly or index_ids are available for
-#' other reasons, the index_id list as created by \link{make_index_ids} (for
-#' downstream) or \link{make_fromids} (for upstream) can be used. For "upmain"
+#' other reasons, the index_id list as created by \link{make_index_ids} ("to" 
+#' mode for downstream or "from" mode for upstream). For "upmain"
 #' and "downmain" support, the `main` element must be included.
-#'
 #'
 #' @returns list containing dfs result for each start.
 #' @export
@@ -77,7 +76,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
     if (!inherits(x, "data.frame"))
       stop("if x is not a length three list as
-            returned by make_index_ids or make_fromids
+            returned by make_index_ids
             it must be a data.frame that can be coerced
             to an hy object.")
 
@@ -85,16 +84,10 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
     x <- try_add_toids(x, flownetwork = grepl("main", direction))
 
-    g <- make_index_ids(x)
-
     if (grepl("up", direction)) {
-
-      upmain_atts <- NULL
-      if (direction == "upmain") {
-        upmain_atts <- distinct(select(x, all_of(c(id, upmain))))
-      }
-
-      g <- make_fromids(g, return_list = TRUE, upmain = upmain_atts)
+      g <- make_index_ids(x, mode = "from")
+    } else {
+      g <- make_index_ids(x, mode = "to")
     }
 
     rm(x) # this can be huge

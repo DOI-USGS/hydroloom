@@ -27,8 +27,8 @@
 #' "from", or "both". Default is "to". Se Details for more information.
 #' @details mode determines the direction of the graph. If "to", the graph will
 #' be directed from the `id` to the `toid`. If "from", the graph will be
-#' directed from the `toid` to the `id`. If "both", the graph will be
-#' directed in both directions.
+#' directed from the `toid` to the `id`. If "both", the list will contain both
+#' a "from" and a "to" element containing each version of the graph.
 #' @returns list containing named elements:
 #' \describe{
 #'   \item{to}{adjacency matrix with columns that correspond to `unqiue(x$id)`}
