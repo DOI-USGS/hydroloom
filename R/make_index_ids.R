@@ -2,7 +2,7 @@
 #
 # This file creates index IDs for graph traversal algorithms, mapping network
 # IDs to sequential row indices. Functions support four graph modes: "to"
-# (downstream), "from" (upstream), "both" (bidirectional), and "none" (undirected).
+# (downstream), "from" (upstream), and "both" (bidirectional).
 #
 # Main exported function:
 #   - make_index_ids(): Creates adjacency matrices with S3 methods for data.frame/hy
@@ -24,17 +24,19 @@
 #' @inheritParams add_levelpaths
 #' @param long_form logical DEPRECATED
 #' @param mode character indicating the mode of the graph. Choose from "to",
-#' "from", "both", or "none". Default is "to". Se Details for more information.
+#' "from", or "both". Default is "to". Se Details for more information.
 #' @details mode determines the direction of the graph. If "to", the graph will
 #' be directed from the `id` to the `toid`. If "from", the graph will be
 #' directed from the `toid` to the `id`. If "both", the graph will be
-#' directed in both directions. If "none", the graph will be undirected.
+#' directed in both directions.
 #' @returns list containing named elements:
 #' \describe{
 #'   \item{to}{adjacency matrix with columns that correspond to `unqiue(x$id)`}
 #'   \item{lengths}{vector indicating the number of connections from each node}
 #'   \item{to_list}{a data.frame with an `id`, `indid` and a `toindid` list column.}
 #' }
+#' 
+#' List will have names `froms`, `lengths`, and `froms_list` for mode "from".
 #'
 #' NOTE: the long_form output is deprecated and will be removed in a future release.
 #'
@@ -52,8 +54,6 @@
 #' make_index_ids(x, mode = "from")
 #'
 #' make_index_ids(x, mode = "both")
-#'
-#' make_index_ids(x, mode = "none")
 #'
 #' x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 #'
@@ -80,8 +80,8 @@ make_index_ids.data.frame <- function(x, mode = "to", long_form = NULL) {
 #' @name make_index_ids
 #' @export
 make_index_ids.hy <- function(x, mode = "to", long_form = NULL) {
-  if (!mode %in% c("to", "from", "both", "none")) {
-    stop("mode must be one of 'to', 'from', 'both', or 'none'.")
+  if (!mode %in% c("to", "from", "both")) {
+    stop("mode must be one of 'to', 'from', or 'both'.")
   }
 
   x <- check_hy_outlets(x, fix = FALSE)
@@ -110,14 +110,6 @@ make_index_ids.hy <- function(x, mode = "to", long_form = NULL) {
       to = call_format_index_ids(out, return_list = TRUE, mode = "to"),
       from = make_from(x, out)
     )
-  } else if (mode == "none") {
-    from <- make_from_dt(out, upmain = NULL, convert_list = FALSE)
-    from <- setnames(from, old = "fromindid", new = "link")
-    to <- copy(out)
-    to <- setnames(to, old = "toindid", new = "link")
-
-    data.table::rbindlist(list(to, from[!is.na(from$id), ])) |>
-      call_format_index_ids(return_list = TRUE, mode = "link")
   } else if (mode == "from") {
     # return the from format with a list column
     make_from(x, out)
@@ -161,20 +153,11 @@ call_format_index_ids <- function(g, return_list = FALSE, mode = "to") {
     setnames(g, old = "fromindid", new = "toindid")
   }
 
-  if (mode == "link") {
-    setnames(g, old = "link", new = "toindid")
-  }
-
   g <- format_index_ids_internal(g, return_list = return_list)
 
   if (mode == "from") {
     g <- setnames_list(g, c("to", "to_list"), c("froms", "froms_list"))
     g$froms_list <- setnames_list(g$froms_list, c("toindid"), c("fromindid"))
-  }
-
-  if (mode == "link") {
-    g <- setnames_list(g, c("to", "to_list"), c("link", "link_list"))
-    g$link_list <- setnames_list(g$link_list, "toindid", "linkindid")
   }
 
   g
@@ -254,6 +237,7 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
 #' @returns data.frame with columns: id, indid, and fromindid (list column
 #' containing upstream index ids). If upmain is provided, also includes a main
 #' list column.
+#' @importFrom data.table setcolorder
 #' @noRd
 make_from_dt <- function(index_ids, upmain, convert_list = FALSE) {
   index_ids <- select(index_ids, -any_of(c("upmain", "main")))

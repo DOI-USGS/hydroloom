@@ -66,7 +66,7 @@ test_that("add indid", {
 
   expect_equal(class(z$to_list$toindid[[1]]), "integer")
 
-  expect_error(make_index_ids(y, mode = "borked"), "mode must be one of 'to', 'from', 'both', or 'none'.")
+  expect_error(make_index_ids(y, mode = "borked"), "mode must be one of 'to', 'from', or 'both'")
 
 })
 
@@ -89,24 +89,6 @@ test_that("both option", {
   expect_equal(dim(y$to$to), c(1, 746))
 
   expect_equal(dim(y$from$froms), c(3, 746))
-
-})
-
-test_that("none option", {
-
-  g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-
-  x <- hy(g)
-
-  y <- add_toids(x)
-
-  y <- make_index_ids(y, mode = "none")
-
-  expect_equal(names(y), c("link", "lengths", "link_list"))
-
-  expect_true(is.matrix(y$link))
-
-  expect_equal(dim(y$link), c(4, 746))
 
 })
 

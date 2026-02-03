@@ -16,7 +16,7 @@ make_index_ids(x, mode = "to", long_form = NULL)
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{mode}{character indicating the mode of the graph. Choose from "to",
-"from", "both", or "none". Default is "to". Se Details for more information.}
+"from", or "both". Default is "to". Se Details for more information.}
 
 \item{long_form}{logical DEPRECATED}
 }
@@ -28,6 +28,8 @@ list containing named elements:
 \item{to_list}{a data.frame with an \code{id}, \code{indid} and a \code{toindid} list column.}
 }
 
+List will have names \code{froms}, \code{lengths}, and \code{froms_list} for mode "from".
+
 NOTE: the long_form output is deprecated and will be removed in a future release.
 }
 \description{
@@ -38,7 +40,7 @@ for graph traversal algorithms such that the row number and id are equal.
 mode determines the direction of the graph. If "to", the graph will
 be directed from the \code{id} to the \code{toid}. If "from", the graph will be
 directed from the \code{toid} to the \code{id}. If "both", the graph will be
-directed in both directions. If "none", the graph will be undirected.
+directed in both directions.
 }
 \examples{
 
@@ -52,8 +54,6 @@ make_index_ids(x, mode = "to")
 make_index_ids(x, mode = "from")
 
 make_index_ids(x, mode = "both")
-
-make_index_ids(x, mode = "none")
 
 x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 
