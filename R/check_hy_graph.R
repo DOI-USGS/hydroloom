@@ -23,9 +23,9 @@ check_hy_graph <- function(x, loop_check = FALSE) {
   }
 
   if (loop_check) {
-    index_ids <- make_index_ids(x)
+    index_ids <- make_index_ids(x, mode = "both")
 
-    starts <- index_ids$to_list$indid[index_ids$to_list$id %in% x$id[!x$id %in% x$toid]]
+    starts <- index_ids$to$to_list$indid[index_ids$to$to_list$id %in% x$id[!x$id %in% x$toid]]
 
     check <- check_hy_graph_internal(index_ids, starts)
 
@@ -87,8 +87,6 @@ check_hy_outlets <- function(x, fix = FALSE) {
 
 check_hy_graph_internal <- function(g, all_starts) {
 
-  f <- make_fromids(g)
-
   # used to track which path tops we need to go back to
   to_visit_queue <- fastqueue(missing_default = 0)
 
@@ -97,7 +95,7 @@ check_hy_graph_internal <- function(g, all_starts) {
   out_stack <- faststack()
 
   # to track where we've been
-  visited_tracker <- rep(FALSE, ncol(g$to))
+  visited_tracker <- rep(FALSE, ncol(g$to$to))
 
   # Set up the starting node we change node below so this just tracks for clarity
   node <- to_visit_queue$remove()
@@ -106,7 +104,7 @@ check_hy_graph_internal <- function(g, all_starts) {
   new_path <- FALSE
 
   if (pbapply::dopb()) {
-    pb = txtProgressBar(0, ncol(g$to), style = 3)
+    pb = txtProgressBar(0, ncol(g$to$to), style = 3)
     on.exit(close(pb))
   }
   n <- 0
@@ -123,15 +121,15 @@ check_hy_graph_internal <- function(g, all_starts) {
       setTxtProgressBar(pb, n)
 
     # now look at what's downtream and add to a queue
-    for (to in seq_len(g$lengths[node])) {
+    for (to in seq_len(g$to$lengths[node])) {
 
       # Add the next node to visit to the tracking vector
-      if (g$to[to, node] != 0 && !visited_tracker[g$to[to, node]])
-        to_visit_queue$add(g$to[to, node])
+      if (g$to$to[to, node] != 0 && !visited_tracker[g$to$to[to, node]])
+        to_visit_queue$add(g$to$to[to, node])
 
       # stops us from visiting a node again when we revisit
       # from another upstream path.
-      g$to[to, node] <- 0
+      g$to$to[to, node] <- 0
 
     }
 
@@ -152,16 +150,16 @@ check_hy_graph_internal <- function(g, all_starts) {
 
     track <- 0
     while (node != 0 &&
-      f$lengths[node] != 0 &&
+      g$from$lengths[node] != 0 &&
       any(!visited_tracker[
-        f$froms[seq(1, f$lengths[node]), node]])) {
+        g$from$froms[seq(1, g$from$lengths[node]), node]])) {
 
       to_visit_queue$add(node)
       node <- to_visit_queue$remove()
 
       track <- track + 1
       if (track > to_visit_queue$size()) {
-        warning("stuck in a loop at ", g$to_list$id[node_temp])
+        warning("stuck in a loop at ", g$to$to_list$id[node_temp])
         out_stack$push(node_temp)
 
         visited_tracker[node] <- TRUE
@@ -178,8 +176,8 @@ check_hy_graph_internal <- function(g, all_starts) {
       check <- loop_search_dfs(g, node, visited_tracker)
 
     if (!is.null(check)) {
-      message("found loop at ", g$to_list$id[check])
-      warning("found a loop at ", g$to_list$id[check])
+      message("found loop at ", g$to$to_list$id[check])
+      warning("found a loop at ", g$to$to_list$id[check])
       out_stack$push(check)
     }
 
@@ -188,7 +186,7 @@ check_hy_graph_internal <- function(g, all_starts) {
     setTxtProgressBar(pb, n)
 
   # if we got this far, Cool!
-  unique(g$to_list$id[as.integer(out_stack$as_list())])
+  unique(g$to$to_list$id[as.integer(out_stack$as_list())])
 
 }
 
@@ -205,9 +203,9 @@ loop_search_dfs <- function(g, node, visited_tracker) {
       return(node)
     }
 
-    for (to in seq_len(g$lengths[node])) {
-      to_visit_stack$push(g$to[to, node])
-      g$to[to, node] <- 0
+    for (to in seq_len(g$to$lengths[node])) {
+      to_visit_stack$push(g$to$to[to, node])
+      g$to$to[to, node] <- 0
     }
 
     # grab the next node

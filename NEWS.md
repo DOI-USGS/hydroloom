@@ -6,7 +6,7 @@ and deprecates `make_fromids()` and `format_index_ids()` for clarity of package 
 will be removed in the next major version release.
 
 - `accumulate_downstream()` now supports "total upstream" and "divergence routed" accumulation. -- #17
-- `make_index_ids()` has been rewritten. It now uses four modes ("to", "from", "both", and "none"). 
+- `make_index_ids()` has been rewritten. It now uses four modes ("to", "from", and "both"). 
 - `make_fromids()` is deprecated in favor of `make_index_ids()` with mode = "from".
 - `format_index_ids()` is deprecated. The *_list element of `make_index_ids()` can be unnested instead.
 

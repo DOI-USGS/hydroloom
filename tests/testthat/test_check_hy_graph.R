@@ -15,7 +15,7 @@ test_that("loop check", {
   test_data <- data.frame(id = c(1, 2, 3, 4, 5, 5, 6),
     toid = c(3, 5, 5, 3, 4, 6, 0))
 
-  g <- make_index_ids(test_data)
+  g <- make_index_ids(test_data, mode = "both")
 
   suppressMessages(
     expect_warning(expect_warning(expect_warning(hydroloom:::check_hy_graph_internal(g, c(1, 2)),
@@ -34,7 +34,7 @@ test_that("loop check", {
   test_data <- data.frame(id = c(1, 1, 2, 3, 4, 5, 6, 6, 7, 8),
     toid = c(2, 3, 4, 7, 5, 6, 2, 7, 8, 0))
 
-  g <- make_index_ids(test_data)
+  g <- make_index_ids(test_data, mode = "both")
 
   suppressWarnings(expect_warning(hydroloom:::check_hy_graph_internal(g, 1),
     "loop"))
@@ -50,7 +50,7 @@ test_that("loop check", {
   test_data <- data.frame(id = c(1, 1, 3, 2, 4, 5),
     toid = c(3, 2, 4, 4, 5, 0))
 
-  g <- make_index_ids(test_data)
+  g <- make_index_ids(test_data, mode = "both")
 
   check <- hydroloom:::check_hy_graph_internal(g, 1)
 
@@ -115,8 +115,8 @@ test_that("recombine", {
   # igraph::plot.igraph(igraph::graph_from_data_frame(test_data))
   #nolint end
 
-  g <- make_index_ids(test_data)
+  g <- make_index_ids(test_data, mode = "both")
 
-  expect_equal(hydroloom:::check_hy_graph_internal(g, which(g$to_list$id == 1)),
+  expect_equal(hydroloom:::check_hy_graph_internal(g, which(g$to$to_list$id == 1)),
     numeric())
 })

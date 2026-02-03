@@ -52,7 +52,7 @@ test_that("real data", {
 
   g <- dplyr::select(sf::st_drop_geometry(g), id, toid)
 
-  gg <- make_index_ids(g)
+  gg <- make_index_ids(g, mode = "to")
 
   paths <- navigate_network_dfs(g, 8893402, direction = "down")
 
@@ -81,12 +81,10 @@ test_that("real data", {
   expect_error(navigate_network_dfs(gg, 8891152, direction = "up"),
     "'down' if x contains to index ids")
 
-  ggg <- make_fromids(gg, return_list = FALSE)
+  expect_error(navigate_network_dfs(list(), 8891152, direction = "down"),
+    "make_index_ids")
 
-  expect_error(navigate_network_dfs(ggg, 8891152, direction = "down"),
-    "make_index_ids or make_fromids")
-
-  ggg <- make_fromids(gg, return_list = TRUE)
+  ggg <- make_index_ids(g, mode = "from")
 
   paths <- navigate_network_dfs(g, 8897784, direction = "up")
 

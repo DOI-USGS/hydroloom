@@ -92,14 +92,15 @@ y$div_totdasqkm <- accumulate_downstream(y, "AreaSqKM")
 plot(y['div_totdasqkm'], lwd = y$div_totdasqkm / 20)
 
 # total not implemented yet, but will be soon
-# z <- x |>
-#   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+z <- x |>
+  dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 
-# z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
+z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
-# plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
+plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
 
 # equivalent values from the nhdplusv2 match!
-# any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
+
+any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 
 }

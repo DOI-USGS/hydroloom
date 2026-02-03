@@ -8,8 +8,8 @@ navigate_network_dfs(x, starts, direction = "down", reset = FALSE)
 }
 \arguments{
 \item{x}{data.frame containing hydroloom compatible network or list
-as returned by \link{make_index_ids} (for down) or \link{make_fromids}
-(for up). The list formats avoids recreating the index ids for every call
+as returned by \link{make_index_ids} ("to" mode for downstream or "from" mode
+for upstream). The index list format avoids recreating the index ids for every call
 to navigate network dfs in the case that it needs to be called many times.}
 
 \item{starts}{vector with ids from x to start at.}
@@ -48,8 +48,8 @@ will be used for network navigation.
 Index ids:
 
 If the function will be called repeatedly or index_ids are available for
-other reasons, the index_id list as created by \link{make_index_ids} (for
-downstream) or \link{make_fromids} (for upstream) can be used. For "upmain"
+other reasons, the index_id list as created by \link{make_index_ids} ("to"
+mode for downstream or "from" mode for upstream). For "upmain"
 and "downmain" support, the \code{main} element must be included.
 }
 \examples{

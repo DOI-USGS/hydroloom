@@ -2,13 +2,12 @@
 % Please edit documentation in R/make_index_ids.R
 \name{format_index_ids}
 \alias{format_index_ids}
-\title{Format Index ids}
+\title{DEPRECATED: Format Index ids}
 \usage{
 format_index_ids(g, return_list = FALSE)
 }
 \arguments{
-\item{g}{data.frame graph with \code{id}, \code{inid} and \code{toindid} as returned by \link{make_index_ids}
-with \code{long_form}=TRUE.}
+\item{g}{data.frame graph with \code{id}, \code{inid} and \code{toindid} as returned by \link{make_index_ids}}
 
 \item{return_list}{logical if TRUE, the returned list will include a
 "froms_list" element containing all from ids in a list form.}
@@ -20,13 +19,5 @@ will also include a data.frame with an \code{indid} column and a \code{toindid} 
 column.
 }
 \description{
-Format Index ids
-}
-\examples{
-x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-
-y <- add_toids(x) |>
-  make_index_ids(long_form = TRUE) |>
-  format_index_ids()
-
+format_index_ids is deprecated and will be removed in a future release.
 }

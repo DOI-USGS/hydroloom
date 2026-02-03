@@ -2,7 +2,7 @@
 #
 # This file creates index IDs for graph traversal algorithms, mapping network
 # IDs to sequential row indices. Functions support four graph modes: "to"
-# (downstream), "from" (upstream), "both" (bidirectional), and "none" (undirected).
+# (downstream), "from" (upstream), and "both" (bidirectional).
 #
 # Main exported function:
 #   - make_index_ids(): Creates adjacency matrices with S3 methods for data.frame/hy
@@ -24,17 +24,19 @@
 #' @inheritParams add_levelpaths
 #' @param long_form logical DEPRECATED
 #' @param mode character indicating the mode of the graph. Choose from "to",
-#' "from", "both", or "none". Default is "to". Se Details for more information.
+#' "from", or "both". Default is "to". Se Details for more information.
 #' @details mode determines the direction of the graph. If "to", the graph will
 #' be directed from the `id` to the `toid`. If "from", the graph will be
-#' directed from the `toid` to the `id`. If "both", the graph will be
-#' directed in both directions. If "none", the graph will be undirected.
+#' directed from the `toid` to the `id`. If "both", the list will contain both
+#' a "from" and a "to" element containing each version of the graph.
 #' @returns list containing named elements:
 #' \describe{
 #'   \item{to}{adjacency matrix with columns that correspond to `unqiue(x$id)`}
 #'   \item{lengths}{vector indicating the number of connections from each node}
 #'   \item{to_list}{a data.frame with an `id`, `indid` and a `toindid` list column.}
 #' }
+#'
+#' List will have names `froms`, `lengths`, and `froms_list` for mode "from".
 #'
 #' NOTE: the long_form output is deprecated and will be removed in a future release.
 #'
@@ -52,8 +54,6 @@
 #' make_index_ids(x, mode = "from")
 #'
 #' make_index_ids(x, mode = "both")
-#'
-#' make_index_ids(x, mode = "none")
 #'
 #' x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 #'
@@ -80,8 +80,8 @@ make_index_ids.data.frame <- function(x, mode = "to", long_form = NULL) {
 #' @name make_index_ids
 #' @export
 make_index_ids.hy <- function(x, mode = "to", long_form = NULL) {
-  if (!mode %in% c("to", "from", "both", "none")) {
-    stop("mode must be one of 'to', 'from', 'both', or 'none'.")
+  if (!mode %in% c("to", "from", "both")) {
+    stop("mode must be one of 'to', 'from', or 'both'.")
   }
 
   x <- check_hy_outlets(x, fix = FALSE)
@@ -110,14 +110,6 @@ make_index_ids.hy <- function(x, mode = "to", long_form = NULL) {
       to = call_format_index_ids(out, return_list = TRUE, mode = "to"),
       from = make_from(x, out)
     )
-  } else if (mode == "none") {
-    from <- make_from_dt(out, upmain = NULL, convert_list = FALSE)
-    from <- setnames(from, old = "fromindid", new = "link")
-    to <- copy(out)
-    to <- setnames(to, old = "toindid", new = "link")
-
-    data.table::rbindlist(list(to, from[!is.na(from$id), ])) |>
-      call_format_index_ids(return_list = TRUE, mode = "link")
   } else if (mode == "from") {
     # return the from format with a list column
     make_from(x, out)
@@ -161,20 +153,11 @@ call_format_index_ids <- function(g, return_list = FALSE, mode = "to") {
     setnames(g, old = "fromindid", new = "toindid")
   }
 
-  if (mode == "link") {
-    setnames(g, old = "link", new = "toindid")
-  }
-
   g <- format_index_ids_internal(g, return_list = return_list)
 
   if (mode == "from") {
     g <- setnames_list(g, c("to", "to_list"), c("froms", "froms_list"))
     g$froms_list <- setnames_list(g$froms_list, c("toindid"), c("fromindid"))
-  }
-
-  if (mode == "link") {
-    g <- setnames_list(g, c("to", "to_list"), c("link", "link_list"))
-    g$link_list <- setnames_list(g$link_list, "toindid", "linkindid")
   }
 
   g
@@ -189,20 +172,14 @@ setnames_list <- function(l, old, new) {
 # see format_index_ids for documentation
 format_index_ids_internal <- function(g, return_list = FALSE) {
   if (!is.list(g$toindid)) {
-    if ("downmain" %in% names(g)) {
-      g <- data.frame(
-        id = unique(g$id),
-        indid = unique(g$indid),
-        toindid = I(split(g$toindid, g$indid)),
-        main = I(split(g$downmain, g$indid))
-      )
-    } else {
-      g <- data.frame(
-        id = unique(g$id),
-        indid = unique(g$indid),
-        toindid = I(split(g$toindid, g$indid))
-      )
-    }
+    base <- data.frame(
+      id = unique(g$id),
+      indid = unique(g$indid),
+      toindid = I(split(g$toindid, g$indid))
+    )
+    if ("downmain" %in% names(g)) base$main <- I(split(g$downmain, g$indid))
+    if ("edge_id" %in% names(g)) base$edge_id <- I(split(g$edge_id, g$indid))
+    g <- base
   }
 
   to_l <- lengths(g$toindid)
@@ -215,11 +192,19 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
     main <- as.matrix(sapply(g$main, "[", seq(max_to)))
   }
 
+  if ("edge_id" %in% names(g)) {
+    edge_id_m <- as.matrix(sapply(g$edge_id, "[", seq(max_to)))
+  }
+
   if (max_to == 1) {
     to_m <- matrix(to_m, nrow = 1)
 
     if ("main" %in% names(g)) {
       main <- matrix(main, nrow = 1)
+    }
+
+    if ("edge_id" %in% names(g)) {
+      edge_id_m <- matrix(edge_id_m, nrow = 1)
     }
   }
 
@@ -230,6 +215,10 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
 
   if ("main" %in% names(g)) {
     out <- c(out, list(main = main))
+  }
+
+  if ("edge_id" %in% names(g)) {
+    out <- c(out, list(edge_id = edge_id_m))
   }
 
   if (return_list) {
@@ -254,6 +243,7 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
 #' @returns data.frame with columns: id, indid, and fromindid (list column
 #' containing upstream index ids). If upmain is provided, also includes a main
 #' list column.
+#' @importFrom data.table setcolorder
 #' @noRd
 make_from_dt <- function(index_ids, upmain, convert_list = FALSE) {
   index_ids <- select(index_ids, -any_of(c("upmain", "main")))
@@ -287,6 +277,55 @@ make_from_dt <- function(index_ids, upmain, convert_list = FALSE) {
   } else {
     setcolorder(froms, c("id", "indid", "fromindid"))
   }
+}
+
+#' @title Create undirected node adjacency table
+#' @description Internal helper that builds a long-form undirected adjacency
+#' data.table from a node topology table. Each flowline (edge) produces two rows,
+#' one per endpoint, so the result can be passed directly to
+#' format_index_ids_internal. Nodes are remapped to contiguous integer indices
+#' using the same merge pattern as make_to_dt.
+#' @param node_topo data.frame with columns id (flowline id), fromnode, tonode
+#' as returned by make_nondendritic_topology.
+#' @returns data.table with columns: id (original node value), indid (contiguous
+#' node index), toindid (neighbor node's contiguous index), edge_id (row position
+#' in node_topo, i.e. flowline index).
+#' @importFrom data.table rbindlist
+#' @importFrom data.table setorder
+#' @noRd
+make_adj_dt <- function(node_topo) {
+  edge_id <- seq_len(nrow(node_topo))
+
+  # Each flowline is an undirected edge: two rows per edge, one per endpoint
+  fwd <- data.table(
+    id = node_topo$fromnode,
+    toid = node_topo$tonode,
+    edge_id = edge_id
+  )
+  rev <- data.table(
+    id = node_topo$tonode,
+    toid = node_topo$fromnode,
+    edge_id = edge_id
+  )
+  combined <- rbindlist(list(fwd, rev))
+
+  # Remap nodes to contiguous 1..n (same merge pattern as make_to_dt non-dendritic)
+  all_nodes <- sort(unique(c(node_topo$fromnode, node_topo$tonode)))
+  node_map <- data.table(id = all_nodes, indid = seq_along(all_nodes))
+  node_map_to <- copy(node_map)
+  setnames(node_map_to, c("id", "indid"), c("toid", "toindid"))
+
+  combined <- merge(
+    combined, node_map, by = "id", all.x = TRUE, sort = FALSE
+  )
+  combined <- merge(
+    combined, node_map_to, by = "toid", all.x = TRUE, sort = FALSE
+  )
+
+  # Sort by indid so unique(id) and split(..., indid) align in format_index_ids_internal
+  setorder(combined, "indid")
+
+  select(combined, all_of(c("id", "indid", "toindid", "edge_id")))
 }
 
 #' @title Create "to" direction index table

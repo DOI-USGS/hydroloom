@@ -77,20 +77,15 @@ add_streamorder.hy <- function(x, status = TRUE) {
   net <- sort_network(net)
 
   # Now generate a working index against the sorted data.
-  index_ids <- make_index_ids(net)
-
-  # Find fromids from the working index.
-  # columns of the included matrix correspond to the index ids.
-  # rows of the matrix correspond to adjacent upstream ids
-  froms <- make_fromids(index_ids)
+  index_ids <- make_index_ids(net, mode = "both")
 
   # will fill in order as we go in this
-  order <- rep(1, length(froms$lengths))
+  order <- rep(1, length(index_ids$from$lengths))
   calc <- rep(1, length(order))
 
   if (divergence %in% names(x)) {
     # get a divergence marker as logical
-    div <- left_join(tibble(id = index_ids$to_list$id),
+    div <- left_join(tibble(id = index_ids$to$to_list$id),
       distinct(select(st_drop_geometry(x),
         all_of(c(id, divergence)))),
       by = id)
@@ -100,16 +95,16 @@ add_streamorder.hy <- function(x, status = TRUE) {
 
   }
 
-  for (i in seq_along(froms$lengths)) {
+  for (i in seq_along(index_ids$from$lengths)) {
 
-    l <- froms$lengths[i]
+    l <- index_ids$from$lengths[i]
 
     # nothing to do if nothing upstream
     if (l > 0) {
 
       # these are the upstream orders
-      orders <- order[froms$froms[1:l, i]]
-      calcs <- calc[froms$froms[1:l, i]]
+      orders <- order[index_ids$from$froms[1:l, i]]
+      calcs <- calc[index_ids$from$froms[1:l, i]]
 
       # need to know if all upstream catchments are on a minor path
       # all used to reset calc to order downstream of a confluence with a minor path
