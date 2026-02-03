@@ -178,7 +178,7 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     net$toid <- replace_na(net$toid, 0)
 
     # get bridge flowlines
-    bridge_ids <- get_bridge_flowlines(net)
+    bridge_ids <- get_bridge_flowlines(net, quiet = quiet)
 
     # logical vector for which rows are bridge flowlines
     bridge_indices <- rep(FALSE, nrow(out))

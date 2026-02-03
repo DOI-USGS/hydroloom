@@ -8,6 +8,7 @@
 #' network -- including flowlines within diversion systems that do not rejoin.
 #'
 #' @inheritParams add_levelpaths
+#' @param quiet logical quiet messages?
 #' @returns vector of flowline ids that are bridge flowlines in the network
 #' @name get_bridge_flowlines
 #' @export
@@ -26,19 +27,19 @@
 #' # Dendritic tree: all flowlines are bridges
 #' get_bridge_flowlines(x)
 #'
-get_bridge_flowlines <- function(x) {
+get_bridge_flowlines <- function(x, quiet = FALSE) {
   UseMethod("get_bridge_flowlines")
 }
 
 #' @name get_bridge_flowlines
 #' @export
-get_bridge_flowlines.data.frame <- function(x) {
-  get_bridge_flowlines(hy(x))
+get_bridge_flowlines.data.frame <- function(x, quiet = FALSE) {
+  get_bridge_flowlines(hy(x), quiet = quiet)
 }
 
 #' @name get_bridge_flowlines
 #' @export
-get_bridge_flowlines.hy <- function(x) {
+get_bridge_flowlines.hy <- function(x, quiet = FALSE) {
 
   node_topo <- make_nondendritic_topology(x)
 
@@ -56,7 +57,9 @@ get_bridge_flowlines.hy <- function(x) {
   edge_id_matrix <- result$edge_id
   edge_id_matrix[is.na(edge_id_matrix)] <- 0L
 
-  bridge_indices <- find_bridges(adj_matrix, result$lengths, edge_id_matrix, n_flowlines)
+  bridge_indices <- find_bridges(
+    adj_matrix, result$lengths, edge_id_matrix, n_flowlines, quiet = quiet
+  )
 
   if (length(bridge_indices) == 0) {
     return(vector(mode = class(x$id), length = 0))
@@ -98,8 +101,15 @@ get_bridge_flowlines.hy <- function(x) {
 #' @seealso [fastmap::faststack()] for the stack implementation used internally.
 #'
 #' @noRd
-find_bridges <- function(adj_matrix, lens, edge_id_matrix, n_edges) {
+find_bridges <- function(adj_matrix, lens, edge_id_matrix, n_edges, quiet = FALSE) {
   n <- ncol(adj_matrix)
+
+  prog <- pbapply::dopb() & !quiet & n > 10000
+
+  if (prog) {
+    pb <- txtProgressBar(0, n, style = 3)
+    on.exit(close(pb))
+  }
 
   visited <- logical(n)
   disc <- integer(n)
@@ -130,6 +140,10 @@ find_bridges <- function(adj_matrix, lens, edge_id_matrix, n_edges) {
         # first visit
         visited[node] <- TRUE
         time <- time + 1L
+
+        if (!time %% 100 && prog)
+          setTxtProgressBar(pb, time)
+
         disc[node] <- time
         low[node] <- time
 
@@ -176,6 +190,9 @@ find_bridges <- function(adj_matrix, lens, edge_id_matrix, n_edges) {
       }
     }
   }
+
+  if (prog)
+    setTxtProgressBar(pb, n)
 
   which(is_bridge)
 }
