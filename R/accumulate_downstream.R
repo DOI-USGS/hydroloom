@@ -74,15 +74,15 @@
 #' plot(y['div_totdasqkm'], lwd = y$div_totdasqkm / 20)
 #'
 #' # total not implemented yet, but will be soon
-#' # z <- x |>
-#' #   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
+#' z <- x |>
+#'   dplyr::select(COMID, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 #'
-#' # z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
+#' z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 #'
-#' # plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
+#' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
 #'
-#' # equivalent values from the nhdplusv2 match!
-#' # any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
+#' # equivalent values from the nhdplusv2 match!#' 
+#' any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 #'
 accumulate_downstream <- function(x, var, total = FALSE, quiet = FALSE) {
 
@@ -170,59 +170,59 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
   }
 
   if (total) {
-    stop("not implemented")
     # replace ids to avoid row lookups
     id_lookup <- data.frame(indid = seq_len(nrow(out)), id = out$id)
     net$id <- id_lookup$indid[match(net$id, id_lookup$id)]
     net$toid <- id_lookup$indid[match(net$toid, id_lookup$id)]
     net$toid <- replace_na(net$toid, 0)
 
-    # get articulation flowlines
-    artic_ids <- get_articulation_flowlines(net)
+    # get bridge flowlines
+    bridge_ids <- get_bridge_flowlines(net)
 
-    # logical vector for which rows are articulation flowlines
-    artic_indices <- rep(FALSE, nrow(out))
-    artic_indices[artic_ids] <- TRUE
+    # logical vector for which rows are bridge flowlines
+    bridge_indices <- rep(FALSE, nrow(out))
+    bridge_indices[bridge_ids] <- TRUE
     
-    # we need to treat the outlets as if they are articulation flowlines
-    artic_indices[net$id[net$toid == 0]] <- TRUE
-    
+    # flowlines downstream of non-bridges need to be treated as non-bridges
+    non_bridge <- id_lookup$indid[!bridge_indices] # features that are part of a diversion
+    add_non_bridge <- net$toid[net$id %in% non_bridge] # features downstream of non_bridges
+    bridge_indices[id_lookup$indid %in% add_non_bridge] <- FALSE # set these slots to false 
+
     # flip naming for use in dfs
     names(froms)[names(froms) == "froms"] <- "to"
 
-    # make a copy of the values where we will update only the articulation flowlines
+    # make a copy of the values where we will update only the bridge flowlines
     working_vals <- out[[var]]
     
-    # traverse the network doing normal accumulation for articulation flowlines
-    # and upstream dfs for non-articulation
+    # traverse the network doing normal accumulation for bridge flowlines
+    # and upstream dfs for non-bridge
     
     for (i in seq_along(froms$lengths)) {
-      
       if (!i %% 100 && prog)
         setTxtProgressBar(pb, i)
            
       l <- froms$lengths[i]
       
       if (l > 0) {
-         if (artic_indices[i]) {
+         if (bridge_indices[i]) {
            
-          # articulation: normal accumulation
+          # bridge: normal accumulation
           out[[var]][i] <- sum(out[[var]][i], out[[var]][froms$to[seq_len(l), i]])
 
-          # we can break the network here since this is an articulation flowline
+          # we can break the network here since this is an bridge flowline
           froms$to[seq_len(l), i] <- 0
 
-          # update working_vals so the articulation flowline's total gets used with dfs results
+          # update working_vals so the bridge flowline's total gets used with dfs results
           working_vals[i] <- out[[var]][i]
            
          } else {
-          # non-articulation: upstream dfs to get all contributing area
-          # froms has been broken where we already visited an articulation flowline
+          # non-bridge: upstream dfs to get all contributing area
+          # froms has been broken where we already visited an bridge flowline
           upstream_ids <- navigate_network_dfs_internal(
             g = froms, all_starts = i, reset = FALSE, main = FALSE, ind_id_mode = TRUE
           )
           
-          out[[var]][i] <- sum(working_vals[c(i, unlist(upstream_ids))])
+          out[[var]][i] <- sum(working_vals[unlist(upstream_ids)])
                                
          }
       }
@@ -251,8 +251,6 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
   if (prog)
     setTxtProgressBar(pb, i)
-
-  if (Sys.getenv("accumulate_debug") == "debug") return(list(nodes, out))
 
   left_join(x, out, by = "id")[[var]]
 
