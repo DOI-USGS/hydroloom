@@ -35,7 +35,7 @@
 #'   \item{lengths}{vector indicating the number of connections from each node}
 #'   \item{to_list}{a data.frame with an `id`, `indid` and a `toindid` list column.}
 #' }
-#' 
+#'
 #' List will have names `froms`, `lengths`, and `froms_list` for mode "from".
 #'
 #' NOTE: the long_form output is deprecated and will be removed in a future release.

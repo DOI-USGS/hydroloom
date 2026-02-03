@@ -174,7 +174,7 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   from_ind <- to_ind$from
   to_ind <- to_ind$to
-  
+
   x$done <- rep(FALSE, nrow(x))
 
   x$ind <- seq_len(nrow(x))

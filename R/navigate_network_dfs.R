@@ -32,7 +32,7 @@
 #' Index ids:
 #'
 #' If the function will be called repeatedly or index_ids are available for
-#' other reasons, the index_id list as created by \link{make_index_ids} ("to" 
+#' other reasons, the index_id list as created by \link{make_index_ids} ("to"
 #' mode for downstream or "from" mode for upstream). For "upmain"
 #' and "downmain" support, the `main` element must be included.
 #'
@@ -125,7 +125,7 @@ navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 #' @noRd
 navigate_network_dfs_internal <- function(g, all_starts, reset, main, ind_id_mode = FALSE) {
 
-  if(!ind_id_mode) {
+  if (!ind_id_mode) {
     # these are in indid space
     all_starts <- unique(g$to_list$indid[match(all_starts, g$to_list$id)])
   }
@@ -243,8 +243,11 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main, ind_id_mod
     if (none_in_path) {
       out_list[[set_id]] <- list()
     } else {
-      if(!ind_id_mode) {
-        out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index - 1)])
+      if (!ind_id_mode) {
+        out_list[[set_id]] <- split(
+          pull(g$to_list, "id")[set_index[1:(node_index - 1)]],
+          path_index[1:(node_index - 1)]
+        )
       } else {
         out_list[[set_id]] <- split(set_index[1:(node_index - 1)], path_index[1:(node_index - 1)])
       }

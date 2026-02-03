@@ -28,7 +28,7 @@ test_that("get_bridge_flowlines divergence near outlet", {
   #
   # 3 ---------+
   #            v
-  # 1 -> 2 -> 4 -> 5 -> 0
+  # 1 -> 2 -> 4 -> 5 -> 0  # nolint
   # |              ^
   # v              |
   # 6 ----> 7 -----+
@@ -46,10 +46,10 @@ test_that("get_bridge_flowlines divergence near outlet", {
 
 test_that("get_bridge_flowlines dendritic tree", {
   # Two branches joining:
-  # 1 -> 2 -> 3 -> 4 -> 5
+  # 1 -> 2 -> 3 -> 4 -> 5  # nolint
   #               ^
   #               |
-  # 6 -> 7 -> 8 -> 9
+  # 6 -> 7 -> 8 -> 9  # nolint
   x <- data.frame(
     id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
     toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4)

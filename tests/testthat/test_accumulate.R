@@ -150,7 +150,7 @@ test_that("simple diversions total", {
 })
 
 test_that("complex diversions", {
-  
+
   net <- read.csv(list.files(pattern = "diversions.csv", full.names = TRUE, recursive = TRUE))
 
   net$tot_totareasqkm <- accumulate_downstream(net, "areasqkm", TRUE)

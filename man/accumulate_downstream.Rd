@@ -99,7 +99,8 @@ z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
 plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
 
-# equivalent values from the nhdplusv2 match!#' 
+# equivalent values from the nhdplusv2 match!
+
 any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 
 }

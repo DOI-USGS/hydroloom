@@ -132,17 +132,17 @@ test_that("with downmain", {
 
 test_that("with upmain", {
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-  
+
   x <- to_flownetwork(x)
-  
+
   i <- make_index_ids(x)
-  
+
   expect_equal(names(i), c("to", "lengths", "main", "to_list"))
-  
-  expect_equal(class(i$main[1,1]), "logical")
-  
+
+  expect_equal(class(i$main[1, 1]), "logical")
+
   expect_equal(dim(i$main), dim(i$to))
-  
+
 })
 
 test_that("format toid", {

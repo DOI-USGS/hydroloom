@@ -81,7 +81,8 @@
 #'
 #' plot(z['tot_totdasqkm'], lwd = z$tot_totdasqkm / 20)
 #'
-#' # equivalent values from the nhdplusv2 match!#' 
+#' # equivalent values from the nhdplusv2 match!
+#'
 #' any(abs(z$tot_totdasqkm - z$TotDASqKM) > 0.001)
 #'
 accumulate_downstream <- function(x, var, total = FALSE, quiet = FALSE) {
@@ -182,30 +183,30 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
     # logical vector for which rows are bridge flowlines
     bridge_indices <- rep(FALSE, nrow(out))
     bridge_indices[bridge_ids] <- TRUE
-    
+
     # flowlines downstream of non-bridges need to be treated as non-bridges
     non_bridge <- id_lookup$indid[!bridge_indices] # features that are part of a diversion
     add_non_bridge <- net$toid[net$id %in% non_bridge] # features downstream of non_bridges
-    bridge_indices[id_lookup$indid %in% add_non_bridge] <- FALSE # set these slots to false 
+    bridge_indices[id_lookup$indid %in% add_non_bridge] <- FALSE # set these slots to false
 
     # flip naming for use in dfs
     names(froms)[names(froms) == "froms"] <- "to"
 
     # make a copy of the values where we will update only the bridge flowlines
     working_vals <- out[[var]]
-    
+
     # traverse the network doing normal accumulation for bridge flowlines
     # and upstream dfs for non-bridge
-    
+
     for (i in seq_along(froms$lengths)) {
       if (!i %% 100 && prog)
         setTxtProgressBar(pb, i)
-           
+
       l <- froms$lengths[i]
-      
+
       if (l > 0) {
          if (bridge_indices[i]) {
-           
+
           # bridge: normal accumulation
           out[[var]][i] <- sum(out[[var]][i], out[[var]][froms$to[seq_len(l), i]])
 
@@ -214,22 +215,22 @@ accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
           # update working_vals so the bridge flowline's total gets used with dfs results
           working_vals[i] <- out[[var]][i]
-           
+
          } else {
           # non-bridge: upstream dfs to get all contributing area
           # froms has been broken where we already visited an bridge flowline
           upstream_ids <- navigate_network_dfs_internal(
             g = froms, all_starts = i, reset = FALSE, main = FALSE, ind_id_mode = TRUE
           )
-          
+
           out[[var]][i] <- sum(working_vals[unlist(upstream_ids)])
-                               
+
          }
       }
     }
-      
+
     } else {
-    
+
     for (i in seq_along(froms$lengths)) {
 
       if (!i %% 100 && prog)
