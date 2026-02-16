@@ -34,6 +34,9 @@ are assigned value 0.
 \description{
 creates a node topology table from an edge topology
 }
+\details{
+Required attributes: \code{id}, \code{toid}
+}
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 

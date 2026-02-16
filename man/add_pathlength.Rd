@@ -20,8 +20,9 @@ data.frame containing pathlength_km
 }
 \description{
 Generates the main path length to a basin's terminal path.
-
-Requires id, toid, and length_km hydroloom compatible attributes.
+}
+\details{
+Required attributes: \code{id}, \code{toid}, \code{length_km}
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

@@ -1,15 +1,18 @@
 #' Accumulate Variable Downstream
 #' @description given a variable, accumulate according to network topology.
+#' See details for required attributes and additional information.
 #'
-#' `x` input requires a valid dendritic or non-dendritic network in either
-#' id/toid or fromnode/tonode form. See details for additional information.
-#'
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param var variable to accumulate.
 #' @param total logical !!NOT IMPLEMENTED!! if TRUE, accumulation will use "total" apportionment
 #' if FALSE, divergence or dendritic apportionment will apply ( see details).
 #' @param quiet logical quiet messages?
 #' @details
+#'
+#' Required attributes: `id` and `toid` or `fromnode`, `tonode`, and `divergence`
+#'
+#' Conditionally: `divergence_fraction`
+#' (if divergence apportioned routing is desired).
 #'
 #' Accumulation Methods:
 #'

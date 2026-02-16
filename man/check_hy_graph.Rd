@@ -23,6 +23,9 @@ loops are found, problem rows with a row number added.
 \description{
 check that a id toid graph doesn't contain localized loops.
 }
+\details{
+Required attributes: \code{id}, \code{toid}
+}
 \examples{
 # notice that row 4 (id = 4, toid = 9) and row 8 (id = 9, toid = 4) is a loop.
 test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),

@@ -7,8 +7,12 @@
 #' correctly identifies the sole-path flowlines that separate parts of the
 #' network -- including flowlines within diversion systems that do not rejoin.
 #'
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param quiet logical quiet messages?
+#' @details
+#'
+#' Required attributes: `id`, `toid`
+#'
 #' @returns vector of flowline ids that are bridge flowlines in the network
 #' @name get_bridge_flowlines
 #' @export

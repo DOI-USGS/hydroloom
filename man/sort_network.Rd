@@ -42,6 +42,9 @@ the diversion are visited prior to continuing upstream. See
 note on the \code{outlets} parameter for implications of this
 implementation detail.
 }
+\details{
+Required attributes: \code{id}, \code{toid}
+}
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 

@@ -1,6 +1,6 @@
 #' @title Create a hy Fabric S3 Object
 #' @description converts a compatible dataset into a fabric s3 class
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
 #' will be removed.
 #' @returns hy object with attributes compatible with the hydroloom package.
@@ -100,7 +100,7 @@ is.hy <- function(x, silent = FALSE) {
 #' Reverse `hy` to Original Names
 #' @description renames hy object to original names and removes hy object
 #' attributes.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @returns returns x with attribute names converted to original names provided to \link{hy}
 #' @export
 #' @examples

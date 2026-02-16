@@ -32,6 +32,13 @@ given a variable, accumulate according to network topology.
 id/toid or fromnode/tonode form. See details for additional information.
 }
 \details{
+Required attributes:
+
+\code{id} and \code{toid} or \code{fromnode}, \code{tonode}, and \code{divergence}
+
+Conditionally: \code{divergence} (if non-dendritic), \code{divergence_fraction}
+(if divergence apportioned routing is desired).
+
 Accumulation Methods:
 
 Divergence apportioned (divergence routing): Where upstream values are passed with

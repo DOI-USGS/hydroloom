@@ -27,6 +27,9 @@ Flowlines are edges in the underlying node graph, so bridge detection
 correctly identifies the sole-path flowlines that separate parts of the
 network -- including flowlines within diversion systems that do not rejoin.
 }
+\details{
+Required attributes: \code{id}, \code{toid}
+}
 \examples{
 
 x <- data.frame(

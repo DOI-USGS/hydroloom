@@ -3,7 +3,7 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #' Add Divergence Attribute
 #' @description Given a non-dendritic flow network and required attributes,
 #' adds a divergence attribute according to NHDPlus data model methods.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param coastal_outlet_ids vector of identifiers for network outlets that
 #' terminate at the coast.
 #' @param inland_outlet_ids vector of identifiers for network outlets that
@@ -16,6 +16,8 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #' as being "major". e.g. river might be major and canal might be minor.
 #' @returns returns x with a `divergence` attribute appended
 #' @details
+#'
+#' Required attributes: `id`, `fromnode`, `tonode`
 #'
 #' When considering downstream connections with diversions, there are three
 #' factors considered to determine which is primary.<br>
@@ -343,8 +345,11 @@ down_level <- function(x) {
 #' The method implemented matches that of the NHDPlus except
 #' in the rare case that a diversion includes more than one secondary path.
 #'
-#' Requires and `id`, `fromnode`, `tonode` and `divergence` attribute.
 #' See \link{add_divergence} and \link{make_node_topology}.
+#'
+#' @details
+#'
+#' Required attributes: `id`, `fromnode`, `tonode`, `divergence`
 #'
 #' Algorithm:
 #'
@@ -367,7 +372,8 @@ down_level <- function(x) {
 #' the most upstream feature in the set of features downstream of the primary
 #' outlet of the diversion is marked as the return divergence.
 #'
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @param status boolean if status updates should be printed.
 #' @returns data.frame containing `return_divergence` attribute
 #' @export
 #' @name add_return_divergence

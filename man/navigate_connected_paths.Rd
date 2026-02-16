@@ -23,6 +23,9 @@ Given a dendritic network and set of ids, finds paths or
 lengths between all identified flowpath outlets. This algorithm finds
 paths between outlets regardless of flow direction.
 }
+\details{
+Required attributes: \code{id}, \code{toid}, \code{length_km}
+}
 \examples{
 x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
 

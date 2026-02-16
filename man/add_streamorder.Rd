@@ -31,9 +31,9 @@ To match the NHDPlus algorithm, non-dendritic network connectivity and a
 \code{divergence} attribute must be included. All secondary paths will have the
 \code{stream_order} of upstream primary paths and a \code{stream_calculator} value of 0.
 Secondary paths have no affect on the order of downstream paths.
-
-Requires a toid attribute or fromnode, tonode, and divergence attributes
-that will be used to construct a toid attribute.
+}
+\details{
+Required attributes: \code{id} and \code{toid} or \code{fromnode}, \code{tonode}, and \code{divergence}
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

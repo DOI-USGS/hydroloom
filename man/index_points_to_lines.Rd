@@ -68,6 +68,8 @@ given an sf point geometry column, return id, aggregate_id
 (e.g. reachcode), and aggregate id measure for each point.
 }
 \details{
+Required attributes: \code{id} and sf linestring geometry
+
 Note 1: Inputs are cast into LINESTRINGS. Because of this, the measure output
 of inputs that are true multipart lines may be in error.
 

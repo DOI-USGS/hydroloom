@@ -15,7 +15,7 @@ align_name_char <- function(x) {
 #' See \link{hydroloom_name_definitions} for definitions of the names
 #' used in hydroloom.
 #'
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @returns data.frame renamed to match hydroloom as possible.
 #' @export
 #' @examples

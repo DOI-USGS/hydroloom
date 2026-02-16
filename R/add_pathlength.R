@@ -1,9 +1,10 @@
 #' Add Path Length
 #' @description Generates the main path length to a basin's terminal path.
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
 #'
-#' Requires id, toid, and length_km hydroloom compatible attributes.
+#' Required attributes: `id`, `toid`, `length_km`
 #'
-#' @inheritParams add_levelpaths
 #' @name add_pathlength
 #' @export
 #' @returns data.frame containing pathlength_km

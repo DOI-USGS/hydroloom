@@ -5,15 +5,17 @@
 #' maximum upstream order then the downstream flowpath is assigned the maximum
 #' upstream order plus one. Otherwise it is assigned the maximum upstream order.
 #'
-#' To match the NHDPlus algorithm, non-dendritic network connectivity and a
-#' `divergence` attribute must be included. All secondary paths will have the
-#' `stream_order` of upstream primary paths and a `stream_calculator` value of 0.
-#' Secondary paths have no affect on the order of downstream paths.
+#' To match the NHDPlus algorithm, non-dendritic network connectivity must
+#' be included. All secondary paths will have the `stream_order` of upstream
+#' primary paths and a `stream_calculator` value of 0. Secondary paths have
+#' no affect on the order of downstream paths.
 #'
-#' Requires a toid attribute or fromnode, tonode, and divergence attributes
-#' that will be used to construct a toid attribute.
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @param status boolean if status updates should be printed.
+#' @details
 #'
-#' @inheritParams add_levelpaths
+#' Required attributes: `id` and `toid` or `fromnode`, `tonode`, and `divergence`
+#'
 #' @returns data.frame containing added `stream_order` and `stream_calculator` attribute.
 #' @export
 #' @name add_streamorder
@@ -168,7 +170,11 @@ add_streamorder.hy <- function(x, status = TRUE) {
 #' If a TRUE/FALSE coastal attribute is included, coastal terminal paths
 #' begin at 1 and internal terminal paths begin at 4 as is implemented by
 #' the NHD stream leveling rules.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
+#'
+#' Required attributes: `levelpath`, `dn_levelpath`
+#'
 #' @param coastal character attribute name containing a logical flag
 #' indicating if a given terminal catchment flows to the coast of is an
 #' inland sink. If no coastal flag is included, all terminal paths are

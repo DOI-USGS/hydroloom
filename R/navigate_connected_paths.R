@@ -2,9 +2,13 @@
 #' @description Given a dendritic network and set of ids, finds paths or
 #' lengths between all identified flowpath outlets. This algorithm finds
 #' paths between outlets regardless of flow direction.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param outlets vector of ids from data.frame
 #' @param status logical print status and progress bars?
+#' @details
+#'
+#' Required attributes: `id`, `toid`, `length_km`
+#'
 #' @returns data.frame containing the distance between pairs of network outlets
 #' and a list column containing flowpath identifiers along path that connect outlets.
 #' For a network with one terminal outlet, the data.frame will have `nrow(x)^2` rows.

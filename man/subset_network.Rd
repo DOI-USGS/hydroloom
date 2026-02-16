@@ -43,6 +43,11 @@ Note: If a diversion leaves a basin entirely, the subset will include the
 entire basin upstream of where the diversion terminates. this function
 will return both closed basins and intersecting basins.
 }
+\details{
+Required attributes: \code{id}, \code{fromnode}, \code{tonode}
+
+Conditionally: \code{divergence} (if non-dendritic)
+}
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 

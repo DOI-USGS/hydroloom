@@ -12,11 +12,17 @@
 #' entire basin upstream of where the diversion terminates. this function 
 #' will return both closed basins and intersecting basins.
 #'
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param outlet identifier of the outlet flowpath to subset upstream from.
 #' @param only_up logical if \code{TRUE}, only upstream navigation is used and
 #' any missed diversion connections are disconnected. If \code{FALSE} (default),
 #' nested endorheic basins reachable through diversions are also included.
+#' @details
+#'
+#' Required attributes: `id`, `fromnode`, `tonode`
+#'
+#' Conditionally: `divergence` (if non-dendritic)
+#'
 #' @returns data.frame subset of \code{x} containing flowpaths upstream of
 #' the outlet.
 #' 

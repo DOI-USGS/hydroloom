@@ -33,6 +33,9 @@ If a TRUE/FALSE coastal attribute is included, coastal terminal paths
 begin at 1 and internal terminal paths begin at 4 as is implemented by
 the NHD stream leveling rules.
 }
+\details{
+Required attributes: \code{levelpath}, \code{dn_levelpath}
+}
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 

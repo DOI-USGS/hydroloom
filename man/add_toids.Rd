@@ -26,6 +26,11 @@ Given input with fromnode and tonode attributes,
 will return the input with a toid attribute that is the result of joining
 tonode and fromnode attributes.
 }
+\details{
+Required attributes: \code{fromnode}, \code{tonode}
+
+Conditionally: \code{divergence} (if \code{return_dendritic = TRUE})
+}
 \examples{
 g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
