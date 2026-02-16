@@ -5,6 +5,7 @@ Hydroloom 1.1.2 introduces new functionality in `accumulation_downstream()`, rew
 and deprecates `make_fromids()` and `format_index_ids()` for clarity of package function. Deprecated functions
 will be removed in the next major version release.
 
+- `subset_network()` has been added to support subsetting networks to include all diversions that emanate from the basin. -- #60
 - `accumulate_downstream()` now supports "total upstream" and "divergence routed" accumulation. -- #17
 - `make_index_ids()` has been rewritten. It now uses four modes ("to", "from", and "both"). 
 - `make_fromids()` is deprecated in favor of `make_index_ids()` with mode = "from".
