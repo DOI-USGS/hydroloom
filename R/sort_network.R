@@ -70,27 +70,25 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
   x <- select(st_drop_geometry(x), id, toid, everything())
 
   # index for fast traversal
-  index_ids <- make_index_ids(x)
-
-  froms <- make_fromids(index_ids)
+  index_ids <- make_index_ids(x, mode = "both")
 
   if (!is.null(outlets)) {
-    starts <- which(index_ids$to_list$id %in% outlets)
+    starts <- which(index_ids$to$to_list$id %in% outlets)
   } else {
     # All the start nodes
     if (any(x$toid != get_outlet_value(x) & !x$toid %in% x$id)) {
       warning("no outlet found -- will start from outlets that go no where.")
-      starts <- which(index_ids$to_list$id %in% x$id[!x$toid %in% x$id])
+      starts <- which(index_ids$to$to_list$id %in% x$id[!x$toid %in% x$id])
     } else {
-      starts <- which(index_ids$to_list$id %in% x$id[x$toid == get_outlet_value(x)])
+      starts <- which(index_ids$to$to_list$id %in% x$id[x$toid == get_outlet_value(x)])
     }
   }
   # Some vectors to track results
-  to_visit <- out <- rep(0, length(index_ids$to_list$id))
+  to_visit <- out <- rep(0, length(index_ids$to$to_list$id))
 
   # Use to track if a node is ready to be visited.
   # will subtract from this and not visit the upstream until ready element = 1
-  ready <- index_ids$lengths
+  ready <- index_ids$to$lengths
 
   if (split) {
     set <- out
@@ -128,13 +126,13 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
       # loop over upstream catchments
       # does nothing if froms_l[node] == 0
 
-      for (from in seq_len(froms$lengths[node])) {
+      for (from in seq_len(index_ids$from$lengths[node])) {
 
         # grab the next upstream node
-        next_node <- froms$froms[from, node]
+        next_node <- index_ids$from$froms[from, node]
 
         # check if we have a node to visit
-        # not needed? was in the if below node <= ncol(froms$froms) &&
+        # not needed? was in the if below node <= ncol(index_ids$from$froms) &&
         if (!is.na(next_node)) {
 
           if (ready[next_node] == 1) {
@@ -158,19 +156,19 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
       trk <- trk + 1
 
-      if (trk > length(index_ids$to_list$id) * 2) {
+      if (trk > length(index_ids$to$to_list$id) * 2) {
         stop("runaway while loop, something wrong with the network?")
       }
 
     }
 
     if (split) {
-      out_list[[set_id]] <- index_ids$to_list$id[set[1:(n - 1)]]
+      out_list[[set_id]] <- index_ids$to$to_list$id[set[1:(n - 1)]]
       set_id <- set_id + 1
     }
   }
 
-  if (split) names(out_list) <- index_ids$to_list$id[starts]
+  if (split) names(out_list) <- index_ids$to$to_list$id[starts]
 
   ### rewrites x into the correct order. ###
   id_order <- unique(x$id)[which(out != 0)]

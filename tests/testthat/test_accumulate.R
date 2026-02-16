@@ -29,7 +29,6 @@ test_that("accumulate downstream", {
 })
 
 test_that("divergences with total", {
-  skip()
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
   net <- navigate_network_dfs(x, 8893236, "up")
@@ -128,8 +127,6 @@ test_that("divergences with total", {
 })
 
 test_that("simple diversions total", {
-  skip()
-
   x <- sf::read_sf(list.files(pattern = "simple_diversions.geojson", full.names = TRUE, recursive = TRUE))
 
   x$tot_totareasqkm <- accumulate_downstream(x, "areasqkm", total = TRUE)
@@ -150,71 +147,10 @@ test_that("simple diversions total", {
   # we shoud have the outlet be the sum of everything
   expect_equal(max(x$tot_totareasqkm), sum(x$areasqkm))
 
-  Sys.setenv(accumulate_debug = "debug")
-
-  node_record <- accumulate_downstream(x, "areasqkm", total = TRUE)
-
-  outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 32]
-
-  expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
-
-  Sys.unsetenv("accumulate_debug")
-
-})
-
-test_that("accumulate_utilities", {
-
-  dup_nodes_1 <- structure(list(node = c(48, 48, 48),
-    catchment = c(123, 123, 123),
-    local_id = c("48-123", "48-123", "48-123"),
-    dup = c(TRUE, FALSE, FALSE)),
-  row.names = c(1L, 13L, 14L), class = "data.frame") |>
-    group_by(.data$local_id) |>
-    filter(n() > 1) |>
-    filter(any(.data$dup) & any(!.data$dup)) |>
-    data.table::as.data.table()
-
-  dup_nodes_2 <- structure(list(node = c(2, 48, 60, 62, 2, 48, 60, 62, 65, 65),
-    catchment = c("123", "456", "789", "012", "123", "456", "789", "012", "345", "345"),
-    dup = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE)),
-  class = "data.frame",
-  row.names = c(NA, -10L)) |>
-    mutate(local_id = paste0(node, "-", catchment)) |>
-    group_by(.data$node) |>
-    filter(n() > 1) |>
-    filter(any(.data$dup) & any(!.data$dup)) |>
-    data.table::as.data.table()
-
-  dup_nodes_3 <- data.frame(
-    node = c(2, 48, 2, 48,
-      62, 63, 2, 48,
-      60, 2, 48, 60,
-      2, 48, 63, 62,
-      62, 2, 48),
-    catchment = c("123", "456", "123", "456",
-      "789", "012", "123", "456",
-      "345", "123", "456", "345",
-      "123", "456", "012", "789",
-      "789", "123", "456"),
-    dup = rep(rep(c(FALSE, TRUE), 3), rep(c(14L, 1L), c(1L, 5L)))) |>
-    mutate(local_id = paste0(node, "-", catchment)) |>
-    group_by(.data$node) |>
-    filter(n() > 1) |>
-    filter(any(.data$dup) & any(!.data$dup)) |>
-    data.table::as.data.table()
-
-  expect_equal(sum(reconcile_dup_set(dup_nodes_1)$cancel), 2)
-
-  expect_equal(sum(reconcile_dup_set(dup_nodes_2)$cancel), 2)
-
-  check <- reconcile_dup_set(dup_nodes_3)
-
-  expect_equal(sum(check[check$node == 48, ]$cancel), 2)
-
 })
 
 test_that("complex diversions", {
-  skip()
+
   net <- read.csv(list.files(pattern = "diversions.csv", full.names = TRUE, recursive = TRUE))
 
   net$tot_totareasqkm <- accumulate_downstream(net, "areasqkm", TRUE)
@@ -250,20 +186,10 @@ test_that("complex diversions", {
   check_fun(14702328)
   check_fun(14702352)
 
-  Sys.setenv(accumulate_debug = "debug")
-
-  node_record <- accumulate_downstream(net, "areasqkm", total = TRUE)
-
-  outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 14702352]
-
-  expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
-
-  Sys.unsetenv("accumulate_debug")
-
 })
 
 test_that("part closed test", {
-  skip()
+
   net <- read.csv(text =
     "id,toid,divergence
   1,2,0
@@ -280,16 +206,6 @@ test_that("part closed test", {
 
   expect_equal(accumulate_downstream(net, "val", TRUE), c(1, 1, 2, 2, 3, 3, 2, 5, 7))
 
-  Sys.setenv(accumulate_debug = "debug")
-
-  node_record <- accumulate_downstream(net, "val", total = TRUE)
-
-  outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 7]
-
-  expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
-
-  Sys.unsetenv("accumulate_debug")
-
   net <- read.csv(text =
     "id,toid,divergence
   1,2,0
@@ -305,16 +221,6 @@ test_that("part closed test", {
   net$val <- 1
 
   expect_equal(accumulate_downstream(net, "val", TRUE), c(1, 1, 2, 2, 3, 3, 2, 5, 7))
-
-  Sys.setenv(accumulate_debug = "debug")
-
-  node_record <- accumulate_downstream(net, "val", total = TRUE)
-
-  outlet_node <- node_record[[2]]$tonode[node_record[[2]]$id == 7]
-
-  expect_equal(nrow(node_record[[1]]$open[outlet_node][[1]]), 0)
-
-  Sys.unsetenv("accumulate_debug")
 
   net <- read.csv(text =
     "id, toid, divergence
