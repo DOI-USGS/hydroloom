@@ -21,7 +21,7 @@ if no localized loops are found, returns TRUE. If localized
 loops are found, problem rows with a row number added.
 }
 \description{
-check that a id toid graph doesn't contain localized loops.
+check that a network graph doesn't contain localized loops.
 }
 \details{
 Required attributes: \code{id}, \code{toid}

@@ -23,7 +23,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' See details for more info.
 #' @details
 #' The levelpath algorithm defines upstream mainstem paths through a network.
-#' At a given junction with two or more upstream flowpaths, the main path is
+#' At a given junction with two or more upstream flowlines, the main path is
 #' either 1) the path with the same name, 2) the path with any name, 3) or the
 #' path with the larger weight. If the `weight_attribute` is `override_factor`
 #' times larger on a path, it will be followed regardless of the name_attribute

@@ -17,7 +17,7 @@ sort_network(x, split = FALSE, outlets = NULL)
 
 \item{split}{logical if TRUE, the result will be split into
 independent networks identified by the id of their outlet. The
-outlet id of each independent network is added as a "terminalid"
+outlet id of each independent network is added as a "terminal_id"
 attribute.}
 
 \item{outlets}{same as id in x. if specified, only the network

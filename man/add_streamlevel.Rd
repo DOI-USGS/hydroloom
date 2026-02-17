@@ -41,20 +41,22 @@ x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
 x <- add_toids(x)
 
+x <- dplyr::rename(x, orig_stream_level = StreamLeve)
+
 y <- add_streamlevel(x)
 
-plot(sf::st_geometry(y), lwd = y$streamlevel, col = "blue")
+plot(sf::st_geometry(y), lwd = y$stream_level, col = "blue")
 
 x$coastal <- rep(FALSE, nrow(x))
 
 y <- add_streamlevel(x, coastal = "coastal")
 
-unique(y$streamlevel)
+unique(y$stream_level)
 
 x$coastal[!x$Hydroseq == min(x$Hydroseq)] <- TRUE
 
 y <- add_streamlevel(x)
 
-unique(y$streamlevel)
+unique(y$stream_level)
 
 }

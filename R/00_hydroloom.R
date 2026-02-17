@@ -110,7 +110,7 @@ hnd$terminal_topo_sort <- "topo sort value of the outlet network element"
 hnd$terminal_flag <- "1 for network terminous 0 for within network"
 hnd$terminal_id <- "id of terminal catchment for entire drainage basin"
 hnd$start_flag <- "1 for a headwater, 0 otherwise"
-hnd$levelpath <- paste("provides an identifier for the collection of flowpaths",
+hnd$levelpath <- paste("provides an identifier for the collection of flowlines",
   "that make up a single mainstem flowpath of a drainage basin")
 hnd$up_levelpath <- "levelpath value of the upstream mainstem"
 hnd$dn_levelpath <- "levelpath value of the downstream mainstem"

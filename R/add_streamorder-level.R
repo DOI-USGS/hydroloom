@@ -1,8 +1,8 @@
 #' @title add Streamorder
 #' @description Adds a strahler stream order.
 #'
-#' Algorithm: If more than one upstream flowpath has an order equal to the
-#' maximum upstream order then the downstream flowpath is assigned the maximum
+#' Algorithm: If more than one upstream flowline has an order equal to the
+#' maximum upstream order then the downstream flowline is assigned the maximum
 #' upstream order plus one. Otherwise it is assigned the maximum upstream order.
 #'
 #' To match the NHDPlus algorithm, non-dendritic network connectivity must

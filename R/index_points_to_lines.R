@@ -395,7 +395,7 @@ index_points_to_lines.hy <- function(x, points,
 
 #' @title Index Points to Waterbodies
 #' @description given an sf point geometry column, return waterbody id, and
-#' COMID of dominant artificial path
+#' id of dominant artificial path
 #' @param waterbodies sf data.frame of type POLYGON or MULTIPOLYGON including
 #' a "wbid" attribute.
 #' @param points sfc of type POINT
@@ -404,8 +404,10 @@ index_points_to_lines.hy <- function(x, points,
 #' @param search_radius units class with a numeric value indicating how far to
 #' search for a waterbody boundary in units of provided projection. Set units with
 #' \link[units]{set_units}.
-#' @returns data.frame with columns, `COMID`, `in_wb_COMID`, `near_wb_COMID`,
-#' `near_wb_dist`, and `outlet_fline_COMID`.
+#' @returns data.frame with columns `in_wb_COMID` (or `in_wbid`), `near_wb_COMID`
+#' (or `near_wbid`), `near_wb_dist`, and `outlet_fline_COMID` (or `wb_outlet_id`).
+#' Column names use COMID when input contains a COMID attribute, otherwise
+#' hydroloom names (wbid) are used.
 #' Distance is in units of provided projection.
 #' @export
 #' @examples

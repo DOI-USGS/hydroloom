@@ -17,7 +17,7 @@ accumulate_downstream(x, var, total = FALSE, quiet = FALSE)
 
 \item{var}{variable to accumulate.}
 
-\item{total}{logical !!NOT IMPLEMENTED!! if TRUE, accumulation will use "total" apportionment
+\item{total}{logical if TRUE, accumulation will use "total" apportionment
 if FALSE, divergence or dendritic apportionment will apply ( see details).}
 
 \item{quiet}{logical quiet messages?}
@@ -27,16 +27,12 @@ vector of the same length as \code{nrow(x)} containing values of \code{var} accu
 }
 \description{
 given a variable, accumulate according to network topology.
-
-\code{x} input requires a valid dendritic or non-dendritic network in either
-id/toid or fromnode/tonode form. See details for additional information.
+See details for required attributes and additional information.
 }
 \details{
-Required attributes:
+Required attributes: \code{id} and \code{toid} or \code{fromnode}, \code{tonode}, and \code{divergence}
 
-\code{id} and \code{toid} or \code{fromnode}, \code{tonode}, and \code{divergence}
-
-Conditionally: \code{divergence} (if non-dendritic), \code{divergence_fraction}
+Conditionally: \code{divergence_fraction}
 (if divergence apportioned routing is desired).
 
 Accumulation Methods:

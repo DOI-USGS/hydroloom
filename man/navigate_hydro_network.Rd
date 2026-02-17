@@ -18,13 +18,14 @@ navigate_hydro_network(x, start, mode, distance = NULL)
 \item{start}{character or numeric to match identifier attribute. The
 starting catchment is included.}
 
-\item{mode}{character chosen from c(UM, DM, UT, or DD).
+\item{mode}{character chosen from c(UM, DM, UT, DD) or equivalently
+c(upmain, downmain, up, down).
 
 \enumerate{
-\item UM: upstream mainstem
-\item DM: downstream main
-\item UT: upstream with tributaries
-\item DD: downstream with diversions
+\item UM / upmain: upstream mainstem
+\item DM / downmain: downstream mainstem
+\item UT / up: upstream with tributaries
+\item DD / down: downstream with diversions
 }}
 
 \item{distance}{numeric distance in km to limit navigation. The first
