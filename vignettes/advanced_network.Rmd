@@ -217,8 +217,4 @@ The attributes described in this vignette assume that diversions in the network 
 
 ```{r teardown, include=FALSE}
 options(oldoption)
-
-if (Sys.getenv("BUILD_VIGNETTES") != "TRUE") {
-  unlink(work_dir, recursive = TRUE)
-}
 ```

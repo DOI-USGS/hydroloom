@@ -47,11 +47,11 @@ For the latest development and to open issues, please visit the [package github 
 
 # `hy` S3 class
 
-Hydroloom implements an `hy` S3 class designed to simplify integration of `hydroloom` with existing data and workflows. `hy()` converts a data.frame to an `hy` `data.frame` with attributes compatible with `hydroloom` functions. `hy_reverse()` converts a `hy` `data.frame` back to its original attribute names. You can teach `hydroloom` how to map your attributes to `hydroloom_name_definitions()` with the `hydroloom_names()` function.8
+Hydroloom implements an `hy` S3 class designed to simplify integration of `hydroloom` with existing data and workflows. `hy()` converts a data.frame to an `hy` `data.frame` with attributes compatible with `hydroloom` functions. `hy_reverse()` converts a `hy` `data.frame` back to its original attribute names. You can teach `hydroloom` how to map your attributes to `hydroloom_name_definitions()` with the `hydroloom_names()` function.
 
 Most `hydroloom` functions will work with either a `hy` object or a `data.frame` containing names registered with `hydroloom_names()`. Any attributes added to the `data.frame` will contain names from `hydroloom` and must be renamed in the calling environment.
 
-Internally, the `hy` S3 class has an attribute `orig_names` as shown below. The `orig_names` attribute is used to convert original attribute names back to their original values. Using the `hydroloom` names and the `hy` S3 object are note required but adopting `hydroloom_names_definitions()` may be helpful for people aiming for consistent, simple, and accurate attribute names.
+Internally, the `hy` S3 class has an attribute `orig_names` as shown below. The `orig_names` attribute is used to convert original attribute names back to their original values. Using the `hydroloom` names and the `hy` S3 object are not required but adopting `hydroloom_names_definitions()` may be helpful for people aiming for consistent, simple, and accurate attribute names.
 
 ```{r}
 library(hydroloom)
@@ -102,7 +102,7 @@ The "toid" of a terminal flowline can be either NA or, by convention, 0 or "". U
 
 In `hydroloom`, edge-to-edge topology is referred to with "id and toid" attributes.
 
-## Representing Dendritic Network Topology
+## Representing Non-Dendritic Network Topology
 
 As discussed in the `vignette("non-dendritic")` vignette, a hydrologic flow network can be represented as an edge to edge (e.g. edge list) topology or an edge-node topology. In the case of dendritic networks, an edge list can be stored as a single "toid" attribute on each feature and nodes are redundant as there would be one and only one node for each feature. In non-dendritic networks, an edge list can include multiple "toid" attributes for each feature, necessitating a one to many relationship that can be difficult to interpret. Nevertheless, the U.S. National Hydrography Dataset uses an edge-list format in its "flow table" and the format is capable of storing non-dendritic feature topology.
 

@@ -4,7 +4,7 @@
 #'
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param var variable to accumulate.
-#' @param total logical !!NOT IMPLEMENTED!! if TRUE, accumulation will use "total" apportionment
+#' @param total logical if TRUE, accumulation will use "total" apportionment
 #' if FALSE, divergence or dendritic apportionment will apply ( see details).
 #' @param quiet logical quiet messages?
 #' @details

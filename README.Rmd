@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 Or for latest development: `remotes::install_github("doi-usgs/hydroloom")`
 
-`hydroloom` is a collection of functions to work with hydrologic geospatial fabrics. Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. The package intended for developers of workflows and other packages that require low level network and network data manipulation utilities.
+`hydroloom` is a collection of functions to work with hydrologic geospatial fabrics. Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. The package is intended for developers of workflows and other packages that require low level network and network data manipulation utilities.
 
 **To Learn More, visit the pkgdown site**: https://doi-usgs.github.io/hydroloom/articles/hydroloom.html
 
@@ -36,7 +36,7 @@ Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics,
 https://doi.org/10.5066/P9AQCUY0
 ```
 
-Hyroloom has support for attributes that can be seen in:
+Hydroloom has support for attributes that can be seen in:
 
 ```{r, eval=FALSE}
 hydroloom::hydroloom_name_definitions
