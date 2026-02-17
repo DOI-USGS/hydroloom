@@ -41,7 +41,9 @@ One of the most common operations with hydrologic and hydrographic networks is r
 `Hydroloom` has two functions that support network navigation.
 
 1. `navigate_network_dfs()`, requires the "flownetwork" representation of a hydrologic network (see `to_flownetwork()`) and returns ids encountered along the requested navigation as a list of contiguous paths.
-1. `navigate_hydro_network()` currently (5/2024) requires the nhdplus representation of a hydrologic network (see `vignette("advanced_network")`) and returns ids encountered along the requested navigation as a single vector.
+1. `navigate_hydro_network()` requires the nhdplus representation of a hydrologic network (see `vignette("advanced_network")`) and returns ids encountered along the requested navigation as a single vector.
+
+Both functions accept the same navigation mode names: `upmain`, `downmain`, `up`, and `down`. `navigate_hydro_network()` also accepts the NHDPlus shorthand `UM`, `DM`, `UT`, and `DD`.
 
 While similar, the two functions use completely different implementations. `navigate_network_dfs()` uses a graph-theoretic "depth first search" with `upmain` and `downmain` attributes for all flownetwork connections. `navigate_hydro_network()` relies on `topo_sort`, `levelpath`, and other nhdplus attributes to support network navigation.
 
@@ -139,19 +141,19 @@ plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
 plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
 ```
-Now we can look at the more complete up and down navigation. Sometimes these are called "upstream with tributaries" and "downstream with diversions" or "UT" and "DD". For demonstration sake, we will start at the top of the half path found above. More typically, this would be starting from a known location, such as where a gage site is located.
+Now we can look at the `up` and `down` navigation (also known as "upstream with tributaries" and "downstream with diversions" or "UT" and "DD" in NHDPlus). For demonstration sake, we will start at the top of the half path found above. More typically, this would be starting from a known location, such as where a gage site is located.
 
 ```{r}
 start <- half_path[half_path$topo_sort == max(half_path$topo_sort), ]
 
 up <- navigate_hydro_network(hy_net,
   start = start$id,
-  mode = "UT")
+  mode = "up")
 up <- hy_net[hy_net$id %in% up, ]
 
 down <- navigate_hydro_network(hy_net,
   start = start$id,
-  mode = "DD")
+  mode = "down")
 down <- hy_net[hy_net$id %in% down, ]
 
 par(mar = c(0, 0, 0, 0))
@@ -325,7 +327,7 @@ plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
 plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
 ```
-Now we can look at the more complete up and down navigation. Sometimes these are called "upstream with tributaries" and "downstream with diversions" or "UT" and "DD". For demonstration sake, we will start at the top of the half path found above. More typically, this would be starting from a known location, such as where a gage site is located.
+Now we can look at the `up` and `down` navigation (also known as "upstream with tributaries" and "downstream with diversions" or "UT" and "DD" in NHDPlus). For demonstration sake, we will start at the top of the half path found above. More typically, this would be starting from a known location, such as where a gage site is located.
 
 ```{r}
 # chosen from map

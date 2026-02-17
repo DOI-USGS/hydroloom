@@ -13,6 +13,11 @@ required_atts_navigate <- function(mode, distance) {
   required_atts[[mode]]
 }
 
+resolve_nav_mode <- function(mode) {
+  mode_map <- c(upmain = "UM", downmain = "DM", up = "UT", down = "DD")
+  if (mode %in% names(mode_map)) mode_map[[mode]] else mode
+}
+
 get_start_row <- function(x, id) {
   start_row <- x[x$id == id, ]
 
@@ -29,13 +34,14 @@ get_start_row <- function(x, id) {
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param start character or numeric to match identifier attribute. The
 #' starting catchment is included.
-#' @param mode character chosen from c(UM, DM, UT, or DD).
+#' @param mode character chosen from c(UM, DM, UT, DD) or equivalently
+#' c(upmain, downmain, up, down).
 #'
 #' \enumerate{
-#'   \item UM: upstream mainstem
-#'   \item DM: downstream main
-#'   \item UT: upstream with tributaries
-#'   \item DD: downstream with diversions
+#'   \item UM / upmain: upstream mainstem
+#'   \item DM / downmain: downstream mainstem
+#'   \item UT / up: upstream with tributaries
+#'   \item DD / down: downstream with diversions
 #' }
 #'
 #' @param distance numeric distance in km to limit navigation. The first
@@ -81,8 +87,10 @@ get_start_row <- function(x, id) {
 #' plot_fun(x, start, ut)
 #'
 navigate_hydro_network <- function(x, start, mode, distance = NULL) {
+  if (!missing(mode)) mode <- resolve_nav_mode(mode)
+
   if (missing(mode) || !mode %in% c("UM", "DM", "UT", "DD")) {
-    stop("must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
+    stop("must choose mode input from: 'UM', 'DM', 'UT', 'DD' (or 'upmain', 'downmain', 'up', 'down')")
   }
 
   if (is.na(start)) stop("Must provide a value for start.")
@@ -105,6 +113,7 @@ navigate_hydro_network.data.frame <- function(x, start, mode, distance = NULL) {
 #' @name navigate_hydro_network
 #' @export
 navigate_hydro_network.hy <- function(x, start, mode, distance = NULL) {
+  mode <- resolve_nav_mode(mode)
 
   required_atts <- required_atts_navigate(mode, distance)
 
