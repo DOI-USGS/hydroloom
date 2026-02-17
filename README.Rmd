@@ -125,7 +125,7 @@ Terms for rivers:
 - Hydroloom uses tibble because dplyr verbs for data.frame was dropping the custom hy attributes.
 - The `data.table` package is used for some key joins to enhance scalability but dplyr is preferred for clarity.
 - `hy` class tibble standardizes all attribute names in code.
-- graph representation facilitated by `make_index_ids()` and `make_fromids()`
+- graph representation facilitated by `make_index_ids()`
 - names are plural when referring to identifiers and singular when referring to a numerical attribute.
 
 ```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
