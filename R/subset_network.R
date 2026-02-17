@@ -65,7 +65,7 @@ subset_network.hy <- function(x, outlet, only_up = FALSE) {
 
   leave_toid <- toid %in% names(x)
 
-  x <- add_toids_internal(x)
+  x <- add_toids_internal(x, keep = TRUE)
 
   index_ids <- make_index_ids(x, mode = "both")
 
