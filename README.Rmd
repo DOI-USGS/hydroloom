@@ -114,6 +114,11 @@ Terms for rivers:
                A catchment is represented by one or more partial realizations;
                flowpath, divide, and networks of flowpaths and divides.
 **Catchment Divide:** The polygon boundary that encompasses a catchment.
+**Divergence:** The hydrologic nexus (node) where flow diverges. A divergence
+                is an abstract location in a hydrologic network.
+**Diversion:** A flowline that is below a divergence and is not the primary 
+               downstream path. A diversion is a specific feature downstream
+               of a divergence.
 
 ### Design Notes:
 
