@@ -1,4 +1,4 @@
-#' @title add Streamorder
+#' @title Add Streamorder
 #' @description Adds a strahler stream order.
 #'
 #' Algorithm: If more than one upstream flowline has an order equal to the

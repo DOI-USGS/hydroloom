@@ -22,6 +22,7 @@ rename_measures <- function(x) {
 #' @param x sf data.frame compatible with \link{hydroloom_names} with atleast
 #' id and aggregate_id attributes. A pre-populated toid attribute will be used
 #' if present.
+#' @returns x with aggregate measures added to it
 #' @details
 #' If no "toid" attribute is included, \link{make_attribute_topology} is used to
 #' to create one. This is required to ensure the flowlines making up each
