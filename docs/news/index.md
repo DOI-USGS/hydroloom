@@ -3,7 +3,8 @@
 ## hydroloom 1.1.2
 
 Hydroloom 1.1.2 introduces new functionality in
-`accumulation_downstream()`, reworks the
+[`accumulate_downstream()`](https://doi-usgs.github.io/hydroloom/reference/accumulate_downstream.md),
+reworks the
 [`make_index_ids()`](https://doi-usgs.github.io/hydroloom/reference/make_index_ids.md),
 and deprecates
 [`make_fromids()`](https://doi-usgs.github.io/hydroloom/reference/make_fromids.md)

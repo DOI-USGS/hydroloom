@@ -166,17 +166,10 @@ the following tables.
 The
 [`make_index_ids()`](https://doi-usgs.github.io/hydroloom/reference/make_index_ids.md)
 `hydroloom` function creates an adjacency matrix representation of a
-flow network as well as some convenient content that are useful when
+flow network as well as some convenient content that is useful when
 traversing the graph. This adjacency matrix is used heavily in
 `hydroloom` functions and may be useful to people who want to write
 their own graph traversal algorithms.
-
-A companion to
-[`make_index_ids()`](https://doi-usgs.github.io/hydroloom/reference/make_index_ids.md),
-[`make_fromids()`](https://doi-usgs.github.io/hydroloom/reference/make_fromids.md)
-reverses the graph such that the adjacency matrix is directed opposite
-the direction of the provided graph. This is used for upstream flow
-network traversals.
 
 In the example below we’ll add a dendritic toid and explore the
 [`make_index_ids()`](https://doi-usgs.github.io/hydroloom/reference/make_index_ids.md)
@@ -246,4 +239,79 @@ sapply(ind_id, class)
 #> 
 #> $to_list
 #> [1] "data.frame"
+```
+
+The default `mode = "to"` produces a downstream-directed graph. Setting
+`mode = "from"` inverts the direction so that each column’s entries
+point to upstream neighbors instead. The output uses `froms` and
+`froms_list` naming to distinguish from the downstream version.
+
+``` r
+from_id <- make_index_ids(y, mode = "from")
+
+names(from_id)
+#> [1] "froms"      "lengths"    "froms_list"
+
+dim(from_id$froms)
+#> [1]   3 746
+
+# a confluence: two upstream connections
+max(from_id$lengths)
+#> [1] 3
+
+sum(from_id$lengths == 2)
+#> [1] 227
+```
+
+Setting `mode = "both"` returns a list containing both the `to` and
+`from` graphs, which is useful when an algorithm needs to traverse the
+network in both directions without creating the graph twice.
+
+``` r
+both_id <- make_index_ids(y, mode = "both")
+
+names(both_id)
+#> [1] "to"   "from"
+
+# each direction covers the same set of features
+ncol(both_id$to$to) == ncol(both_id$from$froms)
+#> [1] TRUE
+```
+
+### Using the Graph Representation
+
+Most `hydroloom` functions that need a graph create it internally from
+`id` and `toid` attributes. Functions like
+[`sort_network()`](https://doi-usgs.github.io/hydroloom/reference/sort_network.md),
+[`accumulate_downstream()`](https://doi-usgs.github.io/hydroloom/reference/accumulate_downstream.md),
+[`add_levelpaths()`](https://doi-usgs.github.io/hydroloom/reference/add_levelpaths.md),
+[`add_streamorder()`](https://doi-usgs.github.io/hydroloom/reference/add_streamorder.md),
+and
+[`subset_network()`](https://doi-usgs.github.io/hydroloom/reference/subset_network.md)
+all call
+[`make_index_ids()`](https://doi-usgs.github.io/hydroloom/reference/make_index_ids.md)
+behind the scenes so users do not need to construct the graph
+themselves.
+
+The exception is
+[`navigate_network_dfs()`](https://doi-usgs.github.io/hydroloom/reference/navigate_network_dfs.md),
+which accepts either a data.frame or a pre-built index_ids list. When
+calling
+[`navigate_network_dfs()`](https://doi-usgs.github.io/hydroloom/reference/navigate_network_dfs.md)
+many times (e.g., starting from every feature in a network), passing a
+pre-built graph avoids reconstructing it on each call.
+
+``` r
+# navigate_network_dfs creates the graph internally from a data.frame
+navigate_network_dfs(y, starts = y$id[1], direction = "down")
+#> list()
+
+# or accept pre-built index ids -- use "to" for downstream, "from" for upstream
+to_index <- make_index_ids(y, mode = "to")
+navigate_network_dfs(to_index, starts = y$id[1], direction = "down")
+#> list()
+
+from_index <- make_index_ids(y, mode = "from")
+navigate_network_dfs(from_index, starts = y$id[1], direction = "up")
+#> list()
 ```

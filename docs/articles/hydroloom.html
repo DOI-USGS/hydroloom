@@ -296,14 +296,10 @@ the following tables.</p>
 </h3>
 <p>The <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code> <code>hydroloom</code> function
 creates an adjacency matrix representation of a flow network as well as
-some convenient content that are useful when traversing the graph. This
+some convenient content that is useful when traversing the graph. This
 adjacency matrix is used heavily in <code>hydroloom</code> functions and
 may be useful to people who want to write their own graph traversal
 algorithms.</p>
-<p>A companion to <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code>,
-<code><a href="../reference/make_fromids.html">make_fromids()</a></code> reverses the graph such that the adjacency
-matrix is directed opposite the direction of the provided graph. This is
-used for upstream flow network traversals.</p>
 <p>In the example below we’ll add a dendritic toid and explore the
 <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code> output.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -368,6 +364,68 @@ of the matrix in the <code>to</code> element.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $to_list</span></span>
 <span><span class="co">#&gt; [1] "data.frame"</span></span></code></pre></div>
+<p>The default <code>mode = "to"</code> produces a downstream-directed
+graph. Setting <code>mode = "from"</code> inverts the direction so that
+each column’s entries point to upstream neighbors instead. The output
+uses <code>froms</code> and <code>froms_list</code> naming to
+distinguish from the downstream version.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">from_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_index_ids.html">make_index_ids</a></span><span class="op">(</span><span class="va">y</span>, mode <span class="op">=</span> <span class="st">"from"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">from_id</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "froms"      "lengths"    "froms_list"</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">from_id</span><span class="op">$</span><span class="va">froms</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]   3 746</span></span>
+<span></span>
+<span><span class="co"># a confluence: two upstream connections</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">from_id</span><span class="op">$</span><span class="va">lengths</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">from_id</span><span class="op">$</span><span class="va">lengths</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 227</span></span></code></pre></div>
+<p>Setting <code>mode = "both"</code> returns a list containing both the
+<code>to</code> and <code>from</code> graphs, which is useful when an
+algorithm needs to traverse the network in both directions without
+creating the graph twice.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">both_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_index_ids.html">make_index_ids</a></span><span class="op">(</span><span class="va">y</span>, mode <span class="op">=</span> <span class="st">"both"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">both_id</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "to"   "from"</span></span>
+<span></span>
+<span><span class="co"># each direction covers the same set of features</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">both_id</span><span class="op">$</span><span class="va">to</span><span class="op">$</span><span class="va">to</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">both_id</span><span class="op">$</span><span class="va">from</span><span class="op">$</span><span class="va">froms</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="using-the-graph-representation">Using the Graph Representation<a class="anchor" aria-label="anchor" href="#using-the-graph-representation"></a>
+</h3>
+<p>Most <code>hydroloom</code> functions that need a graph create it
+internally from <code>id</code> and <code>toid</code> attributes.
+Functions like <code><a href="../reference/sort_network.html">sort_network()</a></code>,
+<code><a href="../reference/accumulate_downstream.html">accumulate_downstream()</a></code>, <code><a href="../reference/add_levelpaths.html">add_levelpaths()</a></code>,
+<code><a href="../reference/add_streamorder.html">add_streamorder()</a></code>, and <code><a href="../reference/subset_network.html">subset_network()</a></code> all
+call <code><a href="../reference/make_index_ids.html">make_index_ids()</a></code> behind the scenes so users do not
+need to construct the graph themselves.</p>
+<p>The exception is <code><a href="../reference/navigate_network_dfs.html">navigate_network_dfs()</a></code>, which accepts
+either a data.frame or a pre-built index_ids list. When calling
+<code><a href="../reference/navigate_network_dfs.html">navigate_network_dfs()</a></code> many times (e.g., starting from
+every feature in a network), passing a pre-built graph avoids
+reconstructing it on each call.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># navigate_network_dfs creates the graph internally from a data.frame</span></span>
+<span><span class="fu"><a href="../reference/navigate_network_dfs.html">navigate_network_dfs</a></span><span class="op">(</span><span class="va">y</span>, starts <span class="op">=</span> <span class="va">y</span><span class="op">$</span><span class="va">id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, direction <span class="op">=</span> <span class="st">"down"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; list()</span></span>
+<span></span>
+<span><span class="co"># or accept pre-built index ids -- use "to" for downstream, "from" for upstream</span></span>
+<span><span class="va">to_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_index_ids.html">make_index_ids</a></span><span class="op">(</span><span class="va">y</span>, mode <span class="op">=</span> <span class="st">"to"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/navigate_network_dfs.html">navigate_network_dfs</a></span><span class="op">(</span><span class="va">to_index</span>, starts <span class="op">=</span> <span class="va">y</span><span class="op">$</span><span class="va">id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, direction <span class="op">=</span> <span class="st">"down"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; list()</span></span>
+<span></span>
+<span><span class="va">from_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_index_ids.html">make_index_ids</a></span><span class="op">(</span><span class="va">y</span>, mode <span class="op">=</span> <span class="st">"from"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/navigate_network_dfs.html">navigate_network_dfs</a></span><span class="op">(</span><span class="va">from_index</span>, starts <span class="op">=</span> <span class="va">y</span><span class="op">$</span><span class="va">id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, direction <span class="op">=</span> <span class="st">"up"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; list()</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
