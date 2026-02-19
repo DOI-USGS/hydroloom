@@ -7,9 +7,9 @@
 #' connected through diversions. If \code{only_up} is \code{FALSE}, those
 #' nested basins are captured by navigating downstream from missed diversions
 #' to find their outlets, then navigating upstream from those outlets.
-#' 
-#' Note: If a diversion leaves a basin entirely, the subset will include the 
-#' entire basin upstream of where the diversion terminates. this function 
+#'
+#' Note: If a diversion leaves a basin entirely, the subset will include the
+#' entire basin upstream of where the diversion terminates. this function
 #' will return both closed basins and intersecting basins.
 #'
 #' @param x data.frame network compatible with \link{hydroloom_names}.
@@ -25,11 +25,11 @@
 #'
 #' @returns data.frame subset of \code{x} containing flowpaths upstream of
 #' the outlet.
-#' 
+#'
 #' Note: if "toid" is included in the input, it will be returned without modification.
 #' This may result in one or more "toid" entries that contain ids that are not part
 #' of the subset.
-#' 
+#'
 #' @name subset_network
 #' @export
 #' @examples
@@ -107,9 +107,9 @@ subset_network.hy <- function(x, outlet, only_up = FALSE) {
 
   result <- x[x$id %in% up$id, ]
 
-  if(!leave_toid)
+  if (!leave_toid)
     result <- select(result, -all_of(toid))
-  
+
   result <- distinct(result)
 
   result <- put_hyg(result, hy_g)

@@ -312,8 +312,8 @@ add_toids_internal <- function(x, var = NULL, keep = FALSE) {
     x |>
       st_drop_geometry()
 
-    if(!keep) x <- select(x, any_of(c(id, fromnode, tonode, divergence, as.character(var))))
-    
+    if (!keep) x <- select(x, any_of(c(id, fromnode, tonode, divergence, as.character(var))))
+
     add_toids(x, return_dendritic = FALSE)
 
   } else {

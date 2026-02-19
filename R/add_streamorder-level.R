@@ -187,9 +187,9 @@ add_streamorder.hy <- function(x, status = TRUE) {
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #'
 #' x <- add_toids(x)
-#' 
+#'
 #' x <- dplyr::rename(x, orig_stream_level = StreamLeve)
-#' 
+#'
 #' y <- add_streamlevel(x)
 #'
 #' plot(sf::st_geometry(y), lwd = y$stream_level, col = "blue")

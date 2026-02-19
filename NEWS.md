@@ -24,7 +24,7 @@ hydroloom 1.1.0
 - Add new vignette for network navigation `vignette("network_navigation")`
 - Add support for upmain and downmain navigation in `navigate_network_dfs()`
 - Add support for upmain and downmain in `make_index_ids()` and `make_fromids()`.
-- Add function tp create a "flownetwork" representation of the network with a `to_flownetwork` function.
+- Add function to create a "flownetwork" representation of the network with a `to_flownetwork` function.
 - Improved handling / fix bugs with edge cases in `add_toids()`
 - Improved error conditions when missing suggested packages.
 - `navigate_hydro_network()` will now navigate from a diverted path to a main path where it previously only followed traditional tributaries..
