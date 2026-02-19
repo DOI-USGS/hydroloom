@@ -1,5 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://doi-usgs.github.io/hydroloom/404.html</loc></url>
+<url><loc>https://doi-usgs.github.io/hydroloom/articles/accumulate_downstream.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/articles/advanced_network.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/articles/flow-table.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/articles/hydroloom.html</loc></url>
@@ -15,6 +16,7 @@
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/accumulate_downstream.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/add_divergence.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/add_levelpaths.html</loc></url>
+<url><loc>https://doi-usgs.github.io/hydroloom/reference/add_measures.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/add_pathlength.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/add_pfafstetter.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/add_return_divergence.html</loc></url>
@@ -28,6 +30,7 @@
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/drop_geometry.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/fix_flowdir.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/format_index_ids.html</loc></url>
+<url><loc>https://doi-usgs.github.io/hydroloom/reference/get_bridge_flowlines.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/get_hydro_location.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/get_node.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/get_partial_length.html</loc></url>
@@ -50,6 +53,7 @@
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/rescale_measures.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/sort_network.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/st_compatibalize.html</loc></url>
+<url><loc>https://doi-usgs.github.io/hydroloom/reference/subset_network.html</loc></url>
 <url><loc>https://doi-usgs.github.io/hydroloom/reference/to_flownetwork.html</loc></url>
 </urlset>
 
