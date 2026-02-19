@@ -1,7 +1,7 @@
 hydroloom 1.1.2
 ==========
 
-Hydroloom 1.1.2 introduces new functionality in `accumulation_downstream()`, reworks the `make_index_ids()`, 
+Hydroloom 1.1.2 introduces new functionality in `accumulate_downstream()`, reworks the `make_index_ids()`, 
 and deprecates `make_fromids()` and `format_index_ids()` for clarity of package function. Deprecated functions
 will be removed in the next major version release.
 
