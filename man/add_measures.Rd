@@ -17,6 +17,9 @@ add_measures(x)
 id and aggregate_id attributes. A pre-populated toid attribute will be used
 if present.}
 }
+\value{
+x with aggregate measures added to it
+}
 \description{
 given a set of connected flowlines that have ids and aggregate ids, adds
 from_aggregate_id_measure and to_aggregate_id_measure for use with

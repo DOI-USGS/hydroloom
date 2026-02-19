@@ -4,7 +4,7 @@
 \alias{add_streamorder}
 \alias{add_streamorder.data.frame}
 \alias{add_streamorder.hy}
-\title{add Streamorder}
+\title{Add Streamorder}
 \usage{
 add_streamorder(x, status = TRUE)
 
