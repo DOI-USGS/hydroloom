@@ -34,3 +34,4 @@ cran-comments.md
 .lintr
 .vscode
 .*temp.*
+revdep
