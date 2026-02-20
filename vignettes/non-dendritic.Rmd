@@ -31,6 +31,10 @@ oldoption <- options(scipen = 9999)
 
 `vignette("hydroloom")` and `vignette("advanced_network")` talks about the basics of network topology representation and attributes that build on a strictly dendritic network. This vignette expands those topics by describing `hydroloom` functionality that supports non-dendritic networks.
 
+The term "non-dendritic" refers to any network that does not follow a dendritic flow pattern. Typically, this is where one or more flowlines divert from a primary flow path. However, non-dendritic can also refer to endorheic basins that are nested within an otherwise dendritic basin. This article pertains to the former, "non-dendritic networks" which contain diverted flowlines.
+
+The two terms: "diversion" and "divergence" are used in similar contexts but have distinct meaning. A **diversion is a diverted flowline** (waterbody) where as a **divergence is where the network diverges**. "Diversion" is often associated with anthropogenic features but a diversion can also be a naturally occurring diverted flow. 
+
 # Non-dendritic topology attributes.
 
 Non-dendritic networks represent downstream diverted flow where one path is primary and all others are thought to be secondary. The following attributes are supported by `hydroloom` to help track and work with this primary and secondary downstream categorization.
@@ -57,7 +61,7 @@ As a system, `stream calculator`, `divergence` and `return divergence` support n
 
 1. A feature at the top of a diversion will have `divergence` set to 1.
 1. All features that are part of a diversion that has not yet recombined with a main path, will have `stream calculator` set to 0.
-1. A feature that is just downstream of where a diversion path recombines with a main path will have `return diversion` set to 1.
+1. A feature that is just downstream of where a diversion recombines with a main path will have `return divergence` set to 1.
 
 ## Bringing it all together
 

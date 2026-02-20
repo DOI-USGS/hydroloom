@@ -13,9 +13,12 @@ add_measures(x)
 \method{add_measures}{hy}(x)
 }
 \arguments{
-\item{x}{sf data.frame compatible with \link{hydroloom_names} with atleast
+\item{x}{sf data.frame compatible with \link{hydroloom_names} with at least
 id and aggregate_id attributes. A pre-populated toid attribute will be used
 if present.}
+}
+\value{
+x with aggregate measures added to it
 }
 \description{
 given a set of connected flowlines that have ids and aggregate ids, adds

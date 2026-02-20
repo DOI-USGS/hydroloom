@@ -25,8 +25,10 @@ Adds a return divergence attribute to the provided network.
 The method implemented matches that of the NHDPlus except
 in the rare case that a diversion includes more than one secondary path.
 
-Requires and \code{id}, \code{fromnode}, \code{tonode} and \code{divergence} attribute.
 See \link{add_divergence} and \link{make_node_topology}.
+}
+\details{
+Required attributes: \code{id}, \code{fromnode}, \code{tonode}, \code{divergence}
 
 Algorithm:
 

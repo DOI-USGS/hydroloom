@@ -32,3 +32,6 @@ CONTRIBUTING.md
 cran-comments.md
 ^CRAN-SUBMISSION$
 .lintr
+.vscode
+.*temp.*
+revdep

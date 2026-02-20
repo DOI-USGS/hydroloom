@@ -6,14 +6,16 @@
 \alias{get_bridge_flowlines.hy}
 \title{Get Bridge Flowlines}
 \usage{
-get_bridge_flowlines(x)
+get_bridge_flowlines(x, quiet = FALSE)
 
-\method{get_bridge_flowlines}{data.frame}(x)
+\method{get_bridge_flowlines}{data.frame}(x, quiet = FALSE)
 
-\method{get_bridge_flowlines}{hy}(x)
+\method{get_bridge_flowlines}{hy}(x, quiet = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
+
+\item{quiet}{logical quiet messages?}
 }
 \value{
 vector of flowline ids that are bridge flowlines in the network
@@ -24,6 +26,9 @@ Bridge flowlines are those whose removal would disconnect the network.
 Flowlines are edges in the underlying node graph, so bridge detection
 correctly identifies the sole-path flowlines that separate parts of the
 network -- including flowlines within diversion systems that do not rejoin.
+}
+\details{
+Required attributes: \code{id}, \code{toid}
 }
 \examples{
 

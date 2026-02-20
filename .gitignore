@@ -6,3 +6,5 @@
 cran-comments.md
 CRAN-SUBMISSION
 *temp*
+.vscode/
+revdep/

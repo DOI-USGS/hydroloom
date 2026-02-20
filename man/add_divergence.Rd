@@ -59,6 +59,8 @@ Given a non-dendritic flow network and required attributes,
 adds a divergence attribute according to NHDPlus data model methods.
 }
 \details{
+Required attributes: \code{id}, \code{fromnode}, \code{tonode}
+
 When considering downstream connections with diversions, there are three
 factors considered to determine which is primary.\if{html}{\out{<br>}}
 1a) same name\if{html}{\out{<br>}}

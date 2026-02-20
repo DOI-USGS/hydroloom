@@ -11,7 +11,6 @@ Description: A collection of utilities that support creation of network attribut
 Depends: R (>= 4.1.0)
 Imports: dplyr, data.table, sf, units, stats, methods, utils, pbapply, tidyr, RANN, rlang, fastmap
 Suggests: testthat, nhdplusTools, future, lwgeom, future.apply, knitr, gifski, mapview, webshot, geos
-Remotes: DOI-USGS/nhdplusTools
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

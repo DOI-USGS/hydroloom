@@ -21,11 +21,15 @@
 #' @title Make Index ids
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that the row number and id are equal.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param long_form logical DEPRECATED
 #' @param mode character indicating the mode of the graph. Choose from "to",
 #' "from", or "both". Default is "to". Se Details for more information.
-#' @details mode determines the direction of the graph. If "to", the graph will
+#' @details
+#'
+#' Required attributes: `id`, `toid`
+#'
+#' mode determines the direction of the graph. If "to", the graph will
 #' be directed from the `id` to the `toid`. If "from", the graph will be
 #' directed from the `toid` to the `id`. If "both", the list will contain both
 #' a "from" and a "to" element containing each version of the graph.

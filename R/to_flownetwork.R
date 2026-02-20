@@ -1,9 +1,9 @@
-#' to flownetwork
+#' To Flownetwork
 #' @description
 #' converts an `hy` object into a flownetwork with "id", "toid",
 #' "upmain" and "downmain attributes.
 #'
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param warn_dendritic logical if TRUE and a dendritic `toid` attribute is
 #' provided, a warning will be emitted as toid is expected to be non-dendritic
 #' for any `downmain` to be `FALSE`.

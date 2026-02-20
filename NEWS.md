@@ -1,10 +1,11 @@
 hydroloom 1.1.2
 ==========
 
-Hydroloom 1.1.2 introduces new functionality in `accumulation_downstream()`, reworks the `make_index_ids()`, 
+Hydroloom 1.1.2 introduces new functionality in `accumulate_downstream()`, reworks the `make_index_ids()`, 
 and deprecates `make_fromids()` and `format_index_ids()` for clarity of package function. Deprecated functions
 will be removed in the next major version release.
 
+- `subset_network()` has been added to support subsetting networks to include all diversions that emanate from the basin. -- #60
 - `accumulate_downstream()` now supports "total upstream" and "divergence routed" accumulation. -- #17
 - `make_index_ids()` has been rewritten. It now uses four modes ("to", "from", and "both"). 
 - `make_fromids()` is deprecated in favor of `make_index_ids()` with mode = "from".
@@ -23,7 +24,7 @@ hydroloom 1.1.0
 - Add new vignette for network navigation `vignette("network_navigation")`
 - Add support for upmain and downmain navigation in `navigate_network_dfs()`
 - Add support for upmain and downmain in `make_index_ids()` and `make_fromids()`.
-- Add function tp create a "flownetwork" representation of the network with a `to_flownetwork` function.
+- Add function to create a "flownetwork" representation of the network with a `to_flownetwork` function.
 - Improved handling / fix bugs with edge cases in `add_toids()`
 - Improved error conditions when missing suggested packages.
 - `navigate_hydro_network()` will now navigate from a diverted path to a main path where it previously only followed traditional tributaries..

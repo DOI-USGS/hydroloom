@@ -17,13 +17,28 @@ test_that("get_DM works normal", {
     "DM requires.*")
 
   expect_error(navigate_hydro_network(mode = "BK"),
-    "must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
+    "must choose mode input from:")
 
   expect_error(navigate_hydro_network(dplyr::select(x, -COMID),
     1234, mode = "DD"), "DD requires.*")
 
   result <- navigate_hydro_network(x, 11689050, "DM")
   expect_equal(length(result), 26)
+})
+
+test_that("long-form mode names work", {
+  expect_equal(
+    navigate_hydro_network(x, 11689050, "downmain"),
+    navigate_hydro_network(x, 11689050, "DM"))
+  expect_equal(
+    navigate_hydro_network(x, 11690570, "upmain"),
+    navigate_hydro_network(x, 11690570, "UM"))
+  expect_equal(
+    navigate_hydro_network(x, 11687224, "up"),
+    navigate_hydro_network(x, 11687224, "UT"))
+  expect_equal(
+    navigate_hydro_network(x, 11688810, "down"),
+    navigate_hydro_network(x, 11688810, "DD"))
 })
 
 test_that("get_DM works short", {

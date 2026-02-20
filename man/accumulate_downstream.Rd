@@ -17,7 +17,7 @@ accumulate_downstream(x, var, total = FALSE, quiet = FALSE)
 
 \item{var}{variable to accumulate.}
 
-\item{total}{logical !!NOT IMPLEMENTED!! if TRUE, accumulation will use "total" apportionment
+\item{total}{logical if TRUE, accumulation will use "total" apportionment
 if FALSE, divergence or dendritic apportionment will apply ( see details).}
 
 \item{quiet}{logical quiet messages?}
@@ -27,11 +27,14 @@ vector of the same length as \code{nrow(x)} containing values of \code{var} accu
 }
 \description{
 given a variable, accumulate according to network topology.
-
-\code{x} input requires a valid dendritic or non-dendritic network in either
-id/toid or fromnode/tonode form. See details for additional information.
+See details for required attributes and additional information.
 }
 \details{
+Required attributes: \code{id} and \code{toid} or \code{fromnode}, \code{tonode}, and \code{divergence}
+
+Conditionally: \code{divergence_fraction}
+(if divergence apportioned routing is desired).
+
 Accumulation Methods:
 
 Divergence apportioned (divergence routing): Where upstream values are passed with
@@ -52,7 +55,7 @@ flow to avoid double counting. This is also referred to as
 "total upstream routing". Set "total" to TRUE.
 
 "No apportionment" (total upstream) routing includes considerably more logic
-and requires a noteable amount more computation to avoid double counting
+and requires a notable amount more computation to avoid double counting
 through systems of diverted channels. The implementation has been tested
 to match the total drainage area calculations of NHDPlusV2.
 
@@ -62,7 +65,7 @@ diversions and diversions that have two or more flow splits in one place
 are supported. For this algorithm to work, it is critical that the supplied
 data be a directed acyclic graph and have a complete divergence attribute
 where 0 indicates no diversion, 1 indicates the main catchment downstream
-of a diversion and 2 indicates a secondary (one or more) downstram of a
+of a diversion and 2 indicates a secondary (one or more) downstream of a
 diversion.
 }
 \examples{

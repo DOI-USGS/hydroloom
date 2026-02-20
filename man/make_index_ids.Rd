@@ -37,6 +37,8 @@ makes index ids for the provided hy object. These can be used
 for graph traversal algorithms such that the row number and id are equal.
 }
 \details{
+Required attributes: \code{id}, \code{toid}
+
 mode determines the direction of the graph. If "to", the graph will
 be directed from the \code{id} to the \code{toid}. If "from", the graph will be
 directed from the \code{toid} to the \code{id}. If "both", the list will contain both

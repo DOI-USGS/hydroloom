@@ -20,14 +20,14 @@ reference:
   - title: Network Graph and Topology Functions
     contents:
       - '`sort_network`'
+      - '`subset_network`'
       - '`add_topo_sort`'
       - '`add_toids`'
       - '`make_attribute_topology`'
       - '`make_node_topology`'
       - '`to_flownetwork`'
       - '`make_index_ids`'
-      - '`make_fromids`'
-      - '`format_index_ids`'
+      - '`get_bridge_flowlines`'
   - title: Network Attributes
     contents:
     - '`add_divergence`'
@@ -51,3 +51,8 @@ reference:
       - '`get_hydro_location`'
       - '`get_partial_length`'
       - '`rescale_measures`'
+      - '`add_measures`'
+  - title: Deprecated
+    contents:
+      - '`make_fromids`'
+      - '`format_index_ids`'

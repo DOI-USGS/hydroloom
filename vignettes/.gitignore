@@ -1,2 +1,5 @@
 flow-table-fig.jpeg
 levelpath.gif
+
+/.quarto/
+**/*.quarto_ipynb

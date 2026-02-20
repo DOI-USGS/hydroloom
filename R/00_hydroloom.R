@@ -90,8 +90,8 @@ hnd$id <- "shared network identifier for catchment divide and flowpath or flowli
 hnd$toid <- "indicates to the downstream id. May or may not be dendritic"
 hnd$fromnode <- "indicates the node representing the nexus upstream of a catchment"
 hnd$tonode <- "indicates the node representing the nexus downstream of a catchment"
-hnd$divergence <- paste("indicates whether a catchment is not downstream of a diversion (0),",
-  "the primary path downstream of a divergence (1), or a minor path downstream of a diversion (2).")
+hnd$divergence <- paste("indicates whether a catchment is not downstream of a divergence (0),",
+  "the primary path downstream of a divergence (1), or a diversion downstream of a divergence (2).")
 hnd$divergence_fraction <- paste("Indicates the fraction of flow to be apportioned to a given diverted path.",
   "Should sum to 1 when considering all diverted flowlines downstream of a diversion.")
 hnd$wbid <- "waterbody id"
@@ -110,7 +110,7 @@ hnd$terminal_topo_sort <- "topo sort value of the outlet network element"
 hnd$terminal_flag <- "1 for network terminous 0 for within network"
 hnd$terminal_id <- "id of terminal catchment for entire drainage basin"
 hnd$start_flag <- "1 for a headwater, 0 otherwise"
-hnd$levelpath <- paste("provides an identifier for the collection of flowpaths",
+hnd$levelpath <- paste("provides an identifier for the collection of flowlines",
   "that make up a single mainstem flowpath of a drainage basin")
 hnd$up_levelpath <- "levelpath value of the upstream mainstem"
 hnd$dn_levelpath <- "levelpath value of the downstream mainstem"
@@ -118,7 +118,7 @@ hnd$stream_level <- paste("starting at 1 for coastal terminals and 4 for inland 
   "increments by 1 for each smaller tributary level")
 hnd$dn_stream_level <- "stream level of downstream mainstem network element"
 hnd$stream_order <- paste("starting at 1 for headwaters increments by 1 for each larger tributary level,",
-  "divergences adopt stream order from upstream but returning divergent network does not increment stream order")
+  "diversions adopt stream order from upstream but returning diverted network does not increment stream order")
 hnd$stream_calculator <- paste("starting at 1 for headwaters and 0 along diverted",
   "paths increments by 1 for each larger tributary level,",
   "does no increment along diverted paths. Is equal to stream_order along the dendritic network")

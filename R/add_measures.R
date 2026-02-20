@@ -19,9 +19,10 @@ rename_measures <- function(x) {
 #' of the aggregate line a given flowline makes up. This function assumes
 #' that the complete aggregate feature is included and calculates the measure
 #' of the top and bottom of each flowline along each aggregate line.
-#' @param x sf data.frame compatible with \link{hydroloom_names} with atleast
+#' @param x sf data.frame compatible with \link{hydroloom_names} with at least
 #' id and aggregate_id attributes. A pre-populated toid attribute will be used
 #' if present.
+#' @returns x with aggregate measures added to it
 #' @details
 #' If no "toid" attribute is included, \link{make_attribute_topology} is used to
 #' to create one. This is required to ensure the flowlines making up each

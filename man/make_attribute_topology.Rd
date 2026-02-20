@@ -27,6 +27,8 @@ given a set of lines with starting and ending nodes that
 form a geometric network, construct an attribute topology.
 }
 \details{
+Required attributes: \code{id} and sf linestring geometry
+
 If a \code{future} plan is set up, node distance calculations will be
 applied using future workers.
 }

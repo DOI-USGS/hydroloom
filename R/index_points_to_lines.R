@@ -97,7 +97,7 @@ rename_indexed <- function(x, matched) {
 #' @title Index Points to Lines
 #' @description given an sf point geometry column, return id, aggregate_id
 #' (e.g. reachcode), and aggregate id measure for each point.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param points sf or sfc of type POINT in analysis projection. NOTE: x will
 #' be projected to the projection of the points layer.
 #' @param search_radius units distance for the nearest neighbor search
@@ -121,6 +121,9 @@ rename_indexed <- function(x, matched) {
 #' for each id in x, measures will not be included in the output.
 #'
 #' @details
+#'
+#' Required attributes: `id` and sf linestring geometry
+#'
 #' Note 1: Inputs are cast into LINESTRINGS. Because of this, the measure output
 #' of inputs that are true multipart lines may be in error.
 #'
@@ -392,7 +395,7 @@ index_points_to_lines.hy <- function(x, points,
 
 #' @title Index Points to Waterbodies
 #' @description given an sf point geometry column, return waterbody id, and
-#' COMID of dominant artificial path
+#' id of dominant artificial path
 #' @param waterbodies sf data.frame of type POLYGON or MULTIPOLYGON including
 #' a "wbid" attribute.
 #' @param points sfc of type POINT
@@ -401,8 +404,10 @@ index_points_to_lines.hy <- function(x, points,
 #' @param search_radius units class with a numeric value indicating how far to
 #' search for a waterbody boundary in units of provided projection. Set units with
 #' \link[units]{set_units}.
-#' @returns data.frame with columns, `COMID`, `in_wb_COMID`, `near_wb_COMID`,
-#' `near_wb_dist`, and `outlet_fline_COMID`.
+#' @returns data.frame with columns `in_wb_COMID` (or `in_wbid`), `near_wb_COMID`
+#' (or `near_wbid`), `near_wb_dist`, and `outlet_fline_COMID` (or `wb_outlet_id`).
+#' Column names use COMID when input contains a COMID attribute, otherwise
+#' hydroloom names (wbid) are used.
 #' Distance is in units of provided projection.
 #' @export
 #' @examples

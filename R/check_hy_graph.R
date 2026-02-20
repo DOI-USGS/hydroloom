@@ -1,6 +1,10 @@
 #' Check hy Graph
-#' @description check that a id toid graph doesn't contain localized loops.
-#' @inheritParams add_levelpaths
+#' @description check that a network graph doesn't contain localized loops.
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
+#'
+#' Required attributes: `id`, `toid`
+#'
 #' @param loop_check logical if TRUE, the entire network is walked from
 #' top to bottom searching for loops. This loop detection algorithm visits
 #' a node in the network only once all its upstream neighbors have been

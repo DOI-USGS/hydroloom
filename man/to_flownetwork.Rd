@@ -2,7 +2,7 @@
 % Please edit documentation in R/to_flownetwork.R
 \name{to_flownetwork}
 \alias{to_flownetwork}
-\title{to flownetwork}
+\title{To Flownetwork}
 \usage{
 to_flownetwork(x, warn_dendritic = TRUE)
 }

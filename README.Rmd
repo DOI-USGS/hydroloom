@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 Or for latest development: `remotes::install_github("doi-usgs/hydroloom")`
 
-`hydroloom` is a collection of functions to work with hydrologic geospatial fabrics. Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. The package intended for developers of workflows and other packages that require low level network and network data manipulation utilities.
+`hydroloom` is a collection of functions to work with hydrologic geospatial fabrics. Hydroloom is designed to provide general hydrologic network functionality for any hydrographic or hydrologic data. The package is intended for developers of workflows and other packages that require low level network and network data manipulation utilities.
 
 **To Learn More, visit the pkgdown site**: https://doi-usgs.github.io/hydroloom/articles/hydroloom.html
 
@@ -36,7 +36,7 @@ Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics,
 https://doi.org/10.5066/P9AQCUY0
 ```
 
-Hyroloom has support for attributes that can be seen in:
+Hydroloom has support for attributes that can be seen in:
 
 ```{r, eval=FALSE}
 hydroloom::hydroloom_name_definitions
@@ -114,13 +114,18 @@ Terms for rivers:
                A catchment is represented by one or more partial realizations;
                flowpath, divide, and networks of flowpaths and divides.
 **Catchment Divide:** The polygon boundary that encompasses a catchment.
+**Divergence:** The hydrologic nexus (node) where flow diverges. A divergence
+                is an abstract location in a hydrologic network.
+**Diversion:** A flowline that is below a divergence and is not the primary 
+               downstream path. A diversion is a specific feature downstream
+               of a divergence.
 
 ### Design Notes:
 
 - Hydroloom uses tibble because dplyr verbs for data.frame was dropping the custom hy attributes.
 - The `data.table` package is used for some key joins to enhance scalability but dplyr is preferred for clarity.
 - `hy` class tibble standardizes all attribute names in code.
-- graph representation facilitated by `make_index_ids()` and `make_fromids()`
+- graph representation facilitated by `make_index_ids()`
 - names are plural when referring to identifiers and singular when referring to a numerical attribute.
 
 ```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}

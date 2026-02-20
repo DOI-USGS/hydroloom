@@ -17,7 +17,7 @@ sort_network(x, split = FALSE, outlets = NULL)
 
 \item{split}{logical if TRUE, the result will be split into
 independent networks identified by the id of their outlet. The
-outlet id of each independent network is added as a "terminalid"
+outlet id of each independent network is added as a "terminal_id"
 attribute.}
 
 \item{outlets}{same as id in x. if specified, only the network
@@ -41,6 +41,9 @@ If a network includes diversions, all flowlines downstream of
 the diversion are visited prior to continuing upstream. See
 note on the \code{outlets} parameter for implications of this
 implementation detail.
+}
+\details{
+Required attributes: \code{id}, \code{toid}
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

@@ -1,9 +1,13 @@
 #' @title Make Node Topology from Edge Topology
 #' @description creates a node topology table from an edge topology
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
+#'
+#' Required attributes: `id`, `toid`
+#'
 #' @param add_div data.frame of logical containing id and toid diverted paths to add.
 #' Should have id and toid fields. If TRUE, the network will be interpreted as
-#' a directed acyclic graph with downstream divergences included in the edge
+#' a directed acyclic graph with downstream diversions included in the edge
 #' topology.
 #' @param add logical if TRUE, node topology will be added to x in return.
 #' @returns data.frame containing id, fromnode, and tonode attributes or all

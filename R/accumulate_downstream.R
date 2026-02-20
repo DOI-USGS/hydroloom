@@ -1,15 +1,18 @@
 #' Accumulate Variable Downstream
 #' @description given a variable, accumulate according to network topology.
+#' See details for required attributes and additional information.
 #'
-#' `x` input requires a valid dendritic or non-dendritic network in either
-#' id/toid or fromnode/tonode form. See details for additional information.
-#'
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param var variable to accumulate.
-#' @param total logical !!NOT IMPLEMENTED!! if TRUE, accumulation will use "total" apportionment
+#' @param total logical if TRUE, accumulation will use "total" apportionment
 #' if FALSE, divergence or dendritic apportionment will apply ( see details).
 #' @param quiet logical quiet messages?
 #' @details
+#'
+#' Required attributes: `id` and `toid` or `fromnode`, `tonode`, and `divergence`
+#'
+#' Conditionally: `divergence_fraction`
+#' (if divergence apportioned routing is desired).
 #'
 #' Accumulation Methods:
 #'
@@ -31,7 +34,7 @@
 #'    "total upstream routing". Set "total" to TRUE.
 #'
 #' "No apportionment" (total upstream) routing includes considerably more logic
-#' and requires a noteable amount more computation to avoid double counting
+#' and requires a notable amount more computation to avoid double counting
 #' through systems of diverted channels. The implementation has been tested
 #' to match the total drainage area calculations of NHDPlusV2.
 #'
@@ -41,7 +44,7 @@
 #' are supported. For this algorithm to work, it is critical that the supplied
 #' data be a directed acyclic graph and have a complete divergence attribute
 #' where 0 indicates no diversion, 1 indicates the main catchment downstream
-#' of a diversion and 2 indicates a secondary (one or more) downstram of a
+#' of a diversion and 2 indicates a secondary (one or more) downstream of a
 #' diversion.
 #'
 #' @name accumulate_downstream

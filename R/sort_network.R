@@ -12,10 +12,14 @@
 #' implementation detail.
 #'
 #' @export
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
+#'
+#' Required attributes: `id`, `toid`
+#'
 #' @param split logical if TRUE, the result will be split into
 #' independent networks identified by the id of their outlet. The
-#' outlet id of each independent network is added as a "terminalid"
+#' outlet id of each independent network is added as a "terminal_id"
 #' attribute.
 #' @param outlets same as id in x. if specified, only the network
 #' emanating from these outlets will be considered and returned.
@@ -208,7 +212,13 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 #' Add topo_sort
 #' @description calls \link{sort_network} without support for splitting the network
 #' and adds a `nrow:1` topo_sort attribute.
-#' @inheritParams sort_network
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @param outlets same as id in x. if specified, only the network
+#' emanating from these outlets will be considered and returned.
+#' @details
+#'
+#' Required attributes: `id`, `toid`
+#'
 #' @returns data.frame containing a topo_sort attribute.
 #' @name add_topo_sort
 #' @export
