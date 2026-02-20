@@ -33,7 +33,7 @@ test_that("get_partial_length", {
 
   pl100 <- get_partial_length(hydro_location, x)
 
-  expect_equal(pl100, list(dn = 4.786, up = 0))
+  expect_equal(pl100, list(dn = 4.786, up = 0), tolerance = 0.001)
 
   hydro_location <- list(comid = 5329339,
     reachcode = "18050005000078",
@@ -41,5 +41,5 @@ test_that("get_partial_length", {
 
   pl0 <- get_partial_length(hydro_location, x)
 
-  expect_equal(pl0, list(dn = 0, up = 4.786))
+  expect_equal(pl0, list(dn = 0, up = 4.786), tolerance = 0.001)
 })

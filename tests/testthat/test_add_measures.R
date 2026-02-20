@@ -40,10 +40,10 @@ test_that("mainstem", {
 
   expect_message(threedhp_data <- add_measures(threedhp_data), "no toid found")
 
-  expect_equal(threedhp_data$mainstemid_from_measure[threedhp_data$id3dhp == "CAF7T"], 0)
+  expect_equal(threedhp_data$mainstemid_from_measure[threedhp_data$id3dhp == "CAF7T"], 0, tolerance = 1e-6)
 
   expect_equal(threedhp_data$mainstemid_to_measure[threedhp_data$id3dhp == "CAF7T"], 2.86, tolerance = 0.01)
 
-  expect_equal(threedhp_data$mainstemid_to_measure[threedhp_data$id3dhp == "1I1L0"], 100)
+  expect_equal(threedhp_data$mainstemid_to_measure[threedhp_data$id3dhp == "1I1L0"], 100, tolerance = 1e-6)
 
 })

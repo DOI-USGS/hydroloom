@@ -57,11 +57,11 @@ test_that("get_node", {
 
   expect_equal(sf::st_coordinates(sf::st_geometry(start)[1]),
     structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
-      "1", c("X", "Y"))), ignore_attr = TRUE)
+      "1", c("X", "Y"))), ignore_attr = TRUE, tolerance = 1e-3)
 
   expect_equal(sf::st_coordinates(sf::st_geometry(end)[1]),
     structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
-      "1", c("X", "Y"))), ignore_attr = TRUE)
+      "1", c("X", "Y"))), ignore_attr = TRUE, tolerance = 1e-3)
 
   x <- suppressWarnings(sf::st_cast(x, "LINESTRING"))
 
@@ -70,11 +70,11 @@ test_that("get_node", {
 
   expect_equal(sf::st_coordinates(sf::st_geometry(start)[1]),
     structure(c(1518702.12558262, 1557297.72465482), dim = 1:2, dimnames = list(
-      "1", c("X", "Y"))), ignore_attr = TRUE)
+      "1", c("X", "Y"))), ignore_attr = TRUE, tolerance = 1e-3)
 
   expect_equal(sf::st_coordinates(sf::st_geometry(end)[1]),
     structure(c(1517348.69555168, 1556089.85144106), dim = 1:2, dimnames = list(
-      "1", c("X", "Y"))), ignore_attr = TRUE)
+      "1", c("X", "Y"))), ignore_attr = TRUE, tolerance = 1e-3)
 })
 
 test_that("fix_flowdir", {

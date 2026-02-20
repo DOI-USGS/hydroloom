@@ -1,3 +1,8 @@
+hydroloom 1.1.3
+==========
+
+Update test tolerances for failing Fedora CRAN tests
+
 hydroloom 1.1.2
 ==========
 

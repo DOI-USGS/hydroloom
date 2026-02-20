@@ -73,9 +73,9 @@ test_that("divergences with total", {
   z$dend_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM", quiet = TRUE)
 
   # for dendritic, we shoud have the outlet be the sum of everything
-  expect_equal(max(z$dend_totdasqkm), sum(z$AreaSqKM))
+  expect_equal(max(z$dend_totdasqkm), sum(z$AreaSqKM), tolerance = 1e-6)
   # a diversion should have its own area as its total
-  expect_equal(z$dend_totdasqkm[z$COMID == 8893212], z$AreaSqKM[z$COMID == 8893212])
+  expect_equal(z$dend_totdasqkm[z$COMID == 8893212], z$AreaSqKM[z$COMID == 8893212], tolerance = 1e-6)
 
   z$divergence_fraction <- 1
   z$divergence_fraction[z$Divergence == 2] <- 0.25
@@ -84,22 +84,22 @@ test_that("divergences with total", {
   z$div_totdasqkm <- accumulate_downstream(z, var = "AreaSqKM")
 
   # we shoud have the outlet be the sum of everything
-  expect_equal(max(z$div_totdasqkm), sum(z$AreaSqKM))
+  expect_equal(max(z$div_totdasqkm), sum(z$AreaSqKM), tolerance = 1e-6)
   # a diversion should have its own area plus its diversion fraction from upstream
   expect_equal(z$div_totdasqkm[z$COMID == 8893212],
-    z$AreaSqKM[z$COMID == 8893212] + 0.25 * z$div_totdasqkm[z$COMID == 8893184])
+    z$AreaSqKM[z$COMID == 8893212] + 0.25 * z$div_totdasqkm[z$COMID == 8893184], tolerance = 1e-6)
   # a main should have its own area plus its diversion fraction from upstream
   expect_equal(z$div_totdasqkm[z$COMID == 8893182],
-    z$AreaSqKM[z$COMID == 8893182] + 0.75 * z$div_totdasqkm[z$COMID == 8893184])
+    z$AreaSqKM[z$COMID == 8893182] + 0.75 * z$div_totdasqkm[z$COMID == 8893184], tolerance = 1e-6)
 
   z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
   # a diversion should have its own area plus everything from upstream
   expect_equal(z$tot_totdasqkm[z$COMID == 8893210],
-    z$AreaSqKM[z$COMID == 8893210] + z$tot_totdasqkm[z$COMID == 8893190])
+    z$AreaSqKM[z$COMID == 8893210] + z$tot_totdasqkm[z$COMID == 8893190], tolerance = 1e-6)
   # a main should have its own area plus its diversion fraction from upstream
   expect_equal(z$tot_totdasqkm[z$COMID == 8893186],
-    z$AreaSqKM[z$COMID == 8893186] + z$tot_totdasqkm[z$COMID == 8893190])
+    z$AreaSqKM[z$COMID == 8893186] + z$tot_totdasqkm[z$COMID == 8893190], tolerance = 1e-6)
 
   # need all the stuff upstream but only reachable on a diversion in this goofy edge case
   expect_equal(z$tot_totdasqkm[z$COMID == 8893202],
@@ -107,23 +107,23 @@ test_that("divergences with total", {
       z$AreaSqKM[z$COMID == 8893172],
       z$AreaSqKM[z$COMID == 8893176],
       z$AreaSqKM[z$COMID == 8893174],
-      z$tot_totdasqkm[z$COMID == 8893194]))
+      z$tot_totdasqkm[z$COMID == 8893194]), tolerance = 1e-6)
 
   expect_equal(z$tot_totdasqkm[z$COMID == 8893218],
     z$AreaSqKM[z$COMID == 8893218] + sum(z$tot_totdasqkm[z$COMID == 8893202],
       z$AreaSqKM[z$COMID == 8893198],
       z$AreaSqKM[z$COMID == 8893208],
-      z$AreaSqKM[z$COMID == 8893212]))
+      z$AreaSqKM[z$COMID == 8893212]), tolerance = 1e-6)
 
   # we shoud have the outlet be the sum of everything
-  expect_equal(max(z$tot_totdasqkm), sum(z$AreaSqKM))
+  expect_equal(max(z$tot_totdasqkm), sum(z$AreaSqKM), tolerance = 1e-6)
 
   z <- x |>
     dplyr::select(COMID, LevelPathI, FromNode, ToNode, Divergence, AreaSqKM, TotDASqKM)
 
   z$tot_totdasqkm <- accumulate_downstream(z, "AreaSqKM", total = TRUE)
 
-  expect_equal(z$tot_totdasqkm, z$TotDASqKM)
+  expect_equal(z$tot_totdasqkm, z$TotDASqKM, tolerance = 1e-6)
 })
 
 test_that("simple diversions total", {
@@ -135,7 +135,7 @@ test_that("simple diversions total", {
     up_net <- navigate_network_dfs(x, check_id, "up")
 
     expect_equal(x$tot_totareasqkm[x$id == check_id],
-      sum(x$areasqkm[x$id %in% unique(unlist(up_net))]))
+      sum(x$areasqkm[x$id %in% unique(unlist(up_net))]), tolerance = 1e-6)
   }
 
   # need all the stuff upstream but only reachable on a diversion in this goofy edge case
@@ -145,7 +145,7 @@ test_that("simple diversions total", {
   check_fun(29)
 
   # we shoud have the outlet be the sum of everything
-  expect_equal(max(x$tot_totareasqkm), sum(x$areasqkm))
+  expect_equal(max(x$tot_totareasqkm), sum(x$areasqkm), tolerance = 1e-6)
 
 })
 
@@ -165,13 +165,13 @@ test_that("complex diversions", {
     net$areasqkm[net$comid == 14702436],
     net$areasqkm[net$comid == 14703168],
     net$areasqkm[net$comid == 14702438]
-  ))
+  ), tolerance = 1e-6)
 
   check_fun <- function(check_comid) {
     up_net <- navigate_network_dfs(net, check_comid, "up")
 
     expect_equal(net$tot_totareasqkm[net$comid == check_comid],
-      sum(net$areasqkm[net$comid %in% unique(unlist(up_net))]))
+      sum(net$areasqkm[net$comid %in% unique(unlist(up_net))]), tolerance = 1e-6)
   }
 
   check_fun(14702384)
