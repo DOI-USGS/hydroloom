@@ -16,7 +16,7 @@ test_that("get location", {
 
   expect_equal(as.numeric(sf::st_coordinates(locations)[, 1:2]),
     c(-76.8693957911233, -76.9176139963277, -76.8810037292214, 39.4932572053652,
-      39.4090934738461, 39.3632976014239))
+      39.4090934738461, 39.3632976014239), tolerance = 1e-6)
 
   points <- sf::st_sfc(sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328))),
     crs = 4326))

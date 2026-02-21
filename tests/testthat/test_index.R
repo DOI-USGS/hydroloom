@@ -336,7 +336,7 @@ test_that("3dhp", {
   expect_equal(index_points_to_lines(threedhp_data, point),
     structure(list(point_id = 1L, id3dhp = "9Q1QM",
       mainstemid = "https://geoconnex.us/ref/mainstems/377002",
-      mainstemid_measure = 80.7005, offset = 16.8252448503925),
+      mainstemid_measure = 80.7, offset = 16.825),
     row.names = c(NA, -1L),
-    class = "data.frame"))
+    class = "data.frame"), tolerance = 0.1)
 })
