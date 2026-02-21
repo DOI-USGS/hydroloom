@@ -1,4 +1,4 @@
-# to flownetwork
+# To Flownetwork
 
 converts an `hy` object into a flownetwork with "id", "toid", "upmain"
 and "downmain attributes.

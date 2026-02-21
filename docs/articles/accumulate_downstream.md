@@ -90,7 +90,7 @@ plot(y["frac_totdasqkm"], lwd = y$frac_totdasqkm / 20,
 ``` r
 
 # zoom in to see what's going on at diversions
-plot(sf::st_geometry(y[y$COMID %in% c("8893210",    "8893222"),]), col = NA)
+plot(sf::st_geometry(y[y$COMID %in% c("8893210", "8893222"), ]), col = NA)
 plot(y["frac_totdasqkm"], lwd = y$frac_totdasqkm / 20,
   main = "Fractional accumulation", add = TRUE)
 ```
@@ -121,7 +121,7 @@ plot(z["tot_totdasqkm"], lwd = z$tot_totdasqkm / 20,
 ``` r
 
 # zoom in to see what's going on at diversions
-plot(sf::st_geometry(y[y$COMID %in% c("8893210",    "8893222"),]), col = NA)
+plot(sf::st_geometry(y[y$COMID %in% c("8893210", "8893222"), ]), col = NA)
 plot(z["tot_totdasqkm"], lwd = z$tot_totdasqkm / 20,
   main = "Total upstream accumulation", add = TRUE)
 ```

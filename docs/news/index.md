@@ -1,6 +1,14 @@
 # Changelog
 
+## hydroloom 1.1.3
+
+CRAN release: 2026-02-20
+
+Update test tolerances for failing Fedora CRAN tests
+
 ## hydroloom 1.1.2
+
+CRAN release: 2026-02-20
 
 Hydroloom 1.1.2 introduces new functionality in
 [`accumulate_downstream()`](https://doi-usgs.github.io/hydroloom/reference/accumulate_downstream.md),
@@ -53,7 +61,7 @@ CRAN release: 2024-08-26
   [`make_index_ids()`](https://doi-usgs.github.io/hydroloom/reference/make_index_ids.md)
   and
   [`make_fromids()`](https://doi-usgs.github.io/hydroloom/reference/make_fromids.md).
-- Add function tp create a “flownetwork” representation of the network
+- Add function to create a “flownetwork” representation of the network
   with a `to_flownetwork` function.
 - Improved handling / fix bugs with edge cases in
   [`add_toids()`](https://doi-usgs.github.io/hydroloom/reference/add_toids.md)

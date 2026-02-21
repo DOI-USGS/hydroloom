@@ -29,8 +29,12 @@ add_measures(x)
 
   sf data.frame compatible with
   [hydroloom_names](https://doi-usgs.github.io/hydroloom/reference/hydroloom_names.md)
-  with atleast id and aggregate_id attributes. A pre-populated toid
+  with at least id and aggregate_id attributes. A pre-populated toid
   attribute will be used if present.
+
+## Value
+
+x with aggregate measures added to it
 
 ## Details
 

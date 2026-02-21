@@ -1,4 +1,4 @@
-# add Streamorder
+# Add Streamorder
 
 Adds a strahler stream order.
 

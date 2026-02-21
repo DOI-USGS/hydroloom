@@ -351,13 +351,13 @@ attributes we need to construct a flow network. However, the
 demonstration shows how the NHDPlus attributes relate to the more direct
 and lightweight flownetwork attributes. Note that while the hydroloom
 methods are nearly identical to those of NHDPlus, there are some very
-minor differences, as shown below, nearly all the upmain and dowmain
+minor differences, as shown below, nearly all the upmain and downmain
 connections are the same, but differences can occur.
 
 Comparing the two results, we see that only one junction has a different
 upmain attribute. Inspection shows that the difference is due to
 dendritic accumulation (diversions get 0% of the upstream value) of
-flowline length in hydroloom vs un-apportioned accumulation (diversions
+flowline length in hydroloom vs unapportioned accumulation (diversions
 get 100% of the upstream value) in NHDPlus when calculating weights for
 the divergence attribute and is negligible.
 

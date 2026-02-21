@@ -51,7 +51,7 @@
 - [`make_node_topology()`](https://doi-usgs.github.io/hydroloom/reference/make_node_topology.md)
   : Make Node Topology from Edge Topology
 - [`to_flownetwork()`](https://doi-usgs.github.io/hydroloom/reference/to_flownetwork.md)
-  : to flownetwork
+  : To Flownetwork
 - [`make_index_ids()`](https://doi-usgs.github.io/hydroloom/reference/make_index_ids.md)
   : Make Index ids
 - [`get_bridge_flowlines()`](https://doi-usgs.github.io/hydroloom/reference/get_bridge_flowlines.md)
@@ -72,7 +72,7 @@
 - [`add_streamlevel()`](https://doi-usgs.github.io/hydroloom/reference/add_streamlevel.md)
   : Add Streamlevel
 - [`add_streamorder()`](https://doi-usgs.github.io/hydroloom/reference/add_streamorder.md)
-  : add Streamorder
+  : Add Streamorder
 
 ## Network Navigation and Accumulation
 

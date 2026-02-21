@@ -69,7 +69,7 @@ back to the main flow to avoid double counting. This is also referred to
 as "total upstream routing". Set "total" to TRUE.
 
 "No apportionment" (total upstream) routing includes considerably more
-logic and requires a noteable amount more computation to avoid double
+logic and requires a notable amount more computation to avoid double
 counting through systems of diverted channels. The implementation has
 been tested to match the total drainage area calculations of NHDPlusV2.
 
@@ -80,7 +80,7 @@ are supported. For this algorithm to work, it is critical that the
 supplied data be a directed acyclic graph and have a complete divergence
 attribute where 0 indicates no diversion, 1 indicates the main catchment
 downstream of a diversion and 2 indicates a secondary (one or more)
-downstram of a diversion.
+downstream of a diversion.
 
 ## Examples
 
