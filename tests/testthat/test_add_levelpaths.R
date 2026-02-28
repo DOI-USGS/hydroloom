@@ -76,6 +76,21 @@ test_that("calculate level path", {
     "GNIS_ID", "ArbolateSu", override_factor = 10, status = TRUE)
 
   expect_equal(z$levelpath, y$levelpath)
+
+  # check override works for sure
+  x$ArbolateSu[x$COMID == 5329313] <- x$ArbolateSu[x$COMID == 5329339] * 10
+
+  z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
+    "GNIS_ID", "ArbolateSu", override_factor = 2, status = TRUE)
+  
+  expect_equal(z$levelpath[z$COMID == 5329315], z$levelpath[z$COMID == 5329313])
+
+  x$ArbolateSu[x$COMID == 5329313] <- x$ArbolateSu[x$COMID == 5329339]  
+
+  z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
+    "GNIS_ID", "ArbolateSu", override_factor = 2, status = TRUE)
+  
+  expect_equal(z$levelpath[z$COMID == 5329315], z$levelpath[z$COMID == 5329339])
 })
 
 test_that("degenerate levelpath", {
