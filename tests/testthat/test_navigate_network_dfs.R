@@ -123,14 +123,14 @@ test_that("main", {
 
   y <- make_index_ids(x[, c("id", "toid")])
 
-  z <- make_fromids(y, return_list = TRUE)
+  z <- suppressWarnings(make_fromids(y, return_list = TRUE))
 
   expect_error(navigate_network_dfs(z, 8897784, "upmain"), "include main element")
   expect_error(navigate_network_dfs(y, 8897784, "downmain"), "must include main element")
 
   y <- make_index_ids(x)
 
-  z <- make_fromids(y, return_list = TRUE, upmain = upmain_df)
+  z <- suppressWarnings(make_fromids(y, return_list = TRUE, upmain = upmain_df))
 
   expect_error(navigate_network_dfs(y, 8897784, "upmain"), "must be 'down'")
   expect_error(navigate_network_dfs(z, 8897784, "downmain"), "must be 'up'")

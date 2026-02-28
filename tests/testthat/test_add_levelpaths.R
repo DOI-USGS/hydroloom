@@ -43,18 +43,6 @@ test_that("add_levelpaths non dendritic", {
   expect_equal(lp1, lp2)
 })
 
-test_that("reweight", {
-  x <- readRDS(list.files(pattern = "reweight_test.rds",
-    full.names = TRUE, recursive = TRUE))
-  w <- hydroloom:::reweight(x, nat = "nameid", wat = "weight",
-    override_factor = 5)
-  expect_equal(w$weight[w$nameid == w$ds_nameid], 2)
-
-  w <- hydroloom:::reweight(x, nat = "nameid", wat = "weight",
-    override_factor = 2)
-  expect_equal(w$weight[w$nameid == w$ds_nameid], 1)
-})
-
 test_that("calculate level path", {
   x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
 
@@ -88,6 +76,21 @@ test_that("calculate level path", {
     "GNIS_ID", "ArbolateSu", override_factor = 10, status = TRUE)
 
   expect_equal(z$levelpath, y$levelpath)
+
+  # check override works for sure
+  x$ArbolateSu[x$COMID == 5329313] <- x$ArbolateSu[x$COMID == 5329339] * 10
+
+  z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
+    "GNIS_ID", "ArbolateSu", override_factor = 2, status = TRUE)
+  
+  expect_equal(z$levelpath[z$COMID == 5329315], z$levelpath[z$COMID == 5329313])
+
+  x$ArbolateSu[x$COMID == 5329313] <- x$ArbolateSu[x$COMID == 5329339]  
+
+  z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
+    "GNIS_ID", "ArbolateSu", override_factor = 2, status = TRUE)
+  
+  expect_equal(z$levelpath[z$COMID == 5329315], z$levelpath[z$COMID == 5329339])
 })
 
 test_that("degenerate levelpath", {
