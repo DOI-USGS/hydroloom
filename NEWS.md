@@ -1,3 +1,8 @@
+hydroloom 1.1.4
+==========
+
+Improve performance of `add_levelpaths()` by converting to data.table
+
 hydroloom 1.1.3
 ==========
 
