@@ -43,18 +43,6 @@ test_that("add_levelpaths non dendritic", {
   expect_equal(lp1, lp2)
 })
 
-test_that("reweight", {
-  x <- readRDS(list.files(pattern = "reweight_test.rds",
-    full.names = TRUE, recursive = TRUE))
-  w <- hydroloom:::reweight(x, nat = "nameid", wat = "weight",
-    override_factor = 5)
-  expect_equal(w$weight[w$nameid == w$ds_nameid], 2)
-
-  w <- hydroloom:::reweight(x, nat = "nameid", wat = "weight",
-    override_factor = 2)
-  expect_equal(w$weight[w$nameid == w$ds_nameid], 1)
-})
-
 test_that("calculate level path", {
   x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
 

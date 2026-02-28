@@ -56,8 +56,6 @@ no nameid is available.
 x must include id, toid, and conditionally divergence attributes.
 If a "topo_sort" (hydrosequence in nhdplus terms) attribute is included,
 it will be used instead of recreation.
-
-If a future plan is set, it will be used for a preprocess step of the function.
 }
 \details{
 The levelpath algorithm defines upstream mainstem paths through a network.
