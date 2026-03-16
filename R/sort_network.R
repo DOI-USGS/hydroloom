@@ -1,6 +1,8 @@
 #' Sort Network
 #' @description given a network with an id and and toid, returns a sorted
-#' and potentially split set of output.
+#' and potentially split set of output. Sort is from top to bottom so 
+#' traversing the response from top to bottom will go from upstream to 
+#' downstream.
 #'
 #' Can also be used as a very fast implementation of upstream
 #' with tributaries navigation. The full network from each

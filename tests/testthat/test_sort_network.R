@@ -1,3 +1,25 @@
+test_that("sort order is headwater first, outlet last", {
+  # Linear network: 1 -> 2 -> 3 -> 4 (outlet)
+  test_data <- data.frame(id = c(1, 2, 3, 4),
+    toid = c(2, 3, 4, 0))
+
+  result <- sort_network(test_data)
+
+  # First row should be headwater (toid is in the network, nothing flows into it)
+  expect_false(result$id[1] %in% result$toid)
+  # Last row should be outlet (toid == 0, i.e., flows out of network)
+  expect_equal(result$toid[nrow(result)], 0)
+
+  # Branching network: headwaters 1 and 5 both flow to outlet 4
+  test_data2 <- data.frame(id = c(1, 2, 3, 4, 5),
+    toid = c(2, 3, 4, 0, 3))
+
+  result2 <- sort_network(test_data2)
+
+  expect_false(result2$id[1] %in% result2$toid)
+  expect_equal(result2$toid[nrow(result2)], 0)
+})
+
 test_that("get_sorted", {
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
     toid = c(2, 3, 4, 9, 7, 8, 9, 4))
