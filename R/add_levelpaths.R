@@ -238,8 +238,10 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x <- select(x, all_of(c(id, toid, levelpath_outlet_id, topo_sort, levelpath)),
     !all_of(c("done", "lp_name_attribute", "lp_weight_attribute", "ind", "toind")))
 
-  left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
+  x <- left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
     by = id)
+
+  classify_hy(x)
 
 }
 

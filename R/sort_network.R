@@ -208,7 +208,7 @@ sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
 
   x <- put_hyg(x, hy_g)
 
-  x
+  classify_hy(x)
 }
 
 #' Add topo_sort
@@ -250,9 +250,11 @@ add_topo_sort.hy <- function(x, outlets = NULL) {
 
   ids <- unique(out$id)
 
-  dplyr::left_join(out,
+  out <- dplyr::left_join(out,
     data.frame(id = ids,
       topo_sort = seq(from = length(ids), to = 1, by = -1)),
     by = "id")
+
+  classify_hy(out)
 
 }

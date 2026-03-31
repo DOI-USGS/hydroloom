@@ -65,5 +65,5 @@ to_flownetwork <- function(x, warn_dendritic = TRUE) {
   if (any(duplicated(dm$id))) stop("duplicated down mains?")
   if (any(duplicated(um$toid))) stop("duplicated up mains?")
 
-  x
+  new_hy_flownetwork(x)
 }

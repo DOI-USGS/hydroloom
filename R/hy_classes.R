@@ -86,6 +86,35 @@ new_hy_flownetwork <- function(x) {
   x
 }
 
+# ---- internal classification helper ----
+
+#' Re-classify a hy object after dplyr operations strip its class
+#' @param x data.frame that should be a hy subclass
+#' @returns x with appropriate hy subclass restored
+#' @noRd
+classify_hy <- function(x) {
+
+  # ensure base hy class
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
+
+  # strip any stale hy subclasses before re-classifying
+  class(x) <- class(x)[!class(x) %in% c("hy_topo", "hy_leveled", "hy_node")]
+
+  unique_id <- !any(duplicated(x$id))
+  has_toid  <- "toid" %in% names(x)
+  has_nodes <- all(c("fromnode", "tonode") %in% names(x))
+
+  if (has_toid && unique_id) {
+    x <- new_hy_topo(x)
+    if (all(c("topo_sort", "levelpath", "levelpath_outlet_id") %in% names(x)))
+      x <- new_hy_leveled(x)
+  } else if (has_nodes && unique_id) {
+    x <- new_hy_node(x)
+  }
+
+  x
+}
+
 # ---- exported query helpers ----
 
 #' What representation pattern does this network use?
