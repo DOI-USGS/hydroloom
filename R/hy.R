@@ -1,8 +1,16 @@
 #' @title Create a hy Fabric S3 Object
-#' @description converts a compatible dataset into a fabric s3 class
+#' @description converts a compatible dataset into a fabric s3 class.
+#' Automatically detects the network representation and classifies the
+#' result as the most specific hydroloom subclass (e.g. \code{hy_topo},
+#' \code{hy_node}). With \code{add_topo = TRUE}, also auto-builds
+#' topology (e.g. toid from fromnode/tonode).
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
 #' will be removed.
+#' @param add_topo logical. If TRUE, auto-build topology (e.g. toid
+#' from fromnode/tonode) and classify into subclass hierarchy. If FALSE
+#' (default), classify based on existing columns only without constructing
+#' new attributes.
 #' @returns hy object with attributes compatible with the hydroloom package.
 #' @export
 #' @examples
@@ -14,7 +22,10 @@
 #'
 #' attr(hy(x), "orig_names")
 #'
-hy <- function(x, clean = FALSE) {
+#' # auto-build toid from fromnode/tonode
+#' hy(x, add_topo = TRUE)
+#'
+hy <- function(x, clean = FALSE, add_topo = FALSE) {
 
   orig_names <- names(x)
 
@@ -63,6 +74,61 @@ hy <- function(x, clean = FALSE) {
   attr(x, "orig_names") <- setNames(names(x), keep_names)
 
   class(x) <- c("hy", class(x))
+
+  # set dendritic property
+  if (divergence %in% names(x) && any(x[[divergence]] == 2, na.rm = TRUE)) {
+    attr(x, "dendritic") <- FALSE
+  } else {
+    attr(x, "dendritic") <- TRUE
+  }
+
+  # classify into subclass hierarchy
+  unique_id <- length(unique(x$id)) == nrow(x)
+  has_toid  <- toid %in% names(x)
+  has_nodes <- all(c(fromnode, tonode) %in% names(x))
+
+  if (add_topo) {
+
+    # auto-build toid from nodes if needed
+    if (has_nodes && !has_toid && unique_id) {
+
+      has_div <- divergence %in% names(x)
+      orig_names_save <- attr(x, "orig_names")
+      dendritic_save <- attr(x, "dendritic")
+
+      x <- add_toids(x, return_dendritic = has_div)
+
+      # add_toids strips hy class through internal dplyr/data.frame ops
+      if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
+
+      attr(x, "orig_names") <- orig_names_save
+      attr(x, "dendritic") <- dendritic_save
+
+      has_toid  <- toid %in% names(x)
+      unique_id <- length(unique(x$id)) == nrow(x)
+    }
+  }
+
+  if (has_toid && unique_id) {
+
+    x <- new_hy_topo(x)
+
+    if (all(c(topo_sort, levelpath, levelpath_outlet_id) %in% names(x)))
+      x <- new_hy_leveled(x)
+
+  } else if (has_toid && !unique_id && add_topo) {
+
+    warning("Non-unique id values detected. This self-referencing table has ",
+            "duplicated rows (likely from divergences). Use to_flownetwork() ",
+            "for a junction-table representation, or make_node_topology() for ",
+            "a fromnode/tonode representation. hy_topo requires unique id.",
+            call. = FALSE)
+
+  } else if (has_nodes && unique_id) {
+
+    x <- new_hy_node(x)
+
+  }
 
   x
 }
@@ -121,7 +187,8 @@ hy_reverse <- function(x) {
 
   names(x)[which(names(x) %in% orig_names)] <- rep_names[!is.na(rep_names)]
 
-  class(x) <- class(x)[!class(x) == "hy"]
+  class(x) <- class(x)[!class(x) %in% hy_classes]
+  attr(x, "dendritic") <- NULL
 
   if (inherits(x, "sf")) {
     attr(x, "sf_column") <- names(orig_names)[orig_names == attr(x, "sf_column")]

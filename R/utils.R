@@ -25,11 +25,17 @@ get_hyg <- function(x, add, id = "id") {
 put_hyg <- function(x, hy_g) {
   if (!is.null(hy_g)) {
     orig_names <- attr(x, "orig_names")
-    x <- st_sf(left_join(x, hy_g, by = id))
-    attr(x, "orig_names") <- orig_names
+    dendritic_attr <- attr(x, "dendritic")
+    saved_hy_cls <- intersect(class(x), hy_classes)
 
-    if (!inherits(x, "hy")) {
-      class(x) <- c("hy", class(x))
+    x <- st_sf(left_join(x, hy_g, by = id))
+
+    attr(x, "orig_names") <- orig_names
+    attr(x, "dendritic") <- dendritic_attr
+
+    # restore hydroloom classes stripped by join/sf ops
+    if(length(saved_hy_cls) > 0 && !all(saved_hy_cls %in% class(x))) {
+      class(x) <- unique(c(saved_hy_cls, class(x)))
     }
   }
   x

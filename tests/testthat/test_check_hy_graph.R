@@ -29,7 +29,8 @@ test_that("loop check", {
     class = c("hy",
       "tbl_df", "tbl", "data.frame"),
     row.names = c(NA, -1L),
-    orig_names = c(id = "id", toid = "toid")))
+    orig_names = c(id = "id", toid = "toid"),
+    dendritic = TRUE))
 
   test_data <- data.frame(id = c(1, 1, 2, 3, 4, 5, 6, 6, 7, 8),
     toid = c(2, 3, 4, 7, 5, 6, 2, 7, 8, 0))
@@ -45,7 +46,8 @@ test_that("loop check", {
     toid = c(4)),
   class = c("hy", "tbl_df", "tbl", "data.frame"),
   row.names = c(NA, -1L),
-  orig_names = c(id = "id", toid = "toid")))
+  orig_names = c(id = "id", toid = "toid"),
+  dendritic = TRUE))
 
   test_data <- data.frame(id = c(1, 1, 3, 2, 4, 5),
     toid = c(3, 2, 4, 4, 5, 0))
