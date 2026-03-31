@@ -33,6 +33,12 @@ add_toids <- function(x, return_dendritic = TRUE) {
 #' @name add_toids
 #' @export
 add_toids.data.frame <- function(x, return_dendritic = TRUE) {
+
+  if (!return_dendritic)
+    warning("return_dendritic = FALSE is deprecated. ",
+      "Use to_flownetwork() for non-dendritic edge lists.",
+      call. = FALSE)
+
   x <- hy(x)
 
   orig_names <- attr(x, "orig_names")
@@ -110,7 +116,7 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
     x <- rename(x, fromnode = "orig_fromnode")
   }
 
-  x
+  classify_hy(x)
 
 }
 

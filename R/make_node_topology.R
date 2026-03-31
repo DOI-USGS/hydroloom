@@ -95,6 +95,8 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
       attr(x, "orig_names") <- orig_names
 
+      x <- classify_hy(x)
+
       return(x)
     }
 
@@ -153,7 +155,7 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
     x <- x[, c(id, toid, fromnode, tonode,
       names(x)[!names(x) %in% c(id, toid, fromnode, tonode)])]
 
-    x
+    classify_hy(x)
 
   } else {
 

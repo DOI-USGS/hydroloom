@@ -249,3 +249,57 @@ test_that("existing hy() behavior preserved", {
   x <- sf::st_sf(dplyr::as_tibble(x))
   expect_equal(x, hy_reverse(hy(x)))
 })
+
+# ---- Phase 2: producer function class tests ----
+
+test_that("producers stamp correct output class", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+  h <- hy(x)
+
+  # add_toids -> hy_topo
+  h_topo <- add_toids(h, return_dendritic = TRUE)
+  expect_s3_class(h_topo, "hy_topo")
+
+  # sort_network -> hy_topo
+  expect_s3_class(sort_network(h_topo), "hy_topo")
+
+  # add_topo_sort -> hy_topo
+  expect_s3_class(add_topo_sort(h_topo), "hy_topo")
+
+  # add_levelpaths -> hy_leveled (inherits hy_topo)
+  h_lev <- add_levelpaths(h_topo, "GNIS_ID", "arbolate_sum")
+  expect_s3_class(h_lev, "hy_leveled")
+  expect_s3_class(h_lev, "hy_topo")
+
+  # make_node_topology dendritic -> hy_topo (has toid + nodes)
+  h_nodes <- make_node_topology(dplyr::select(h_topo, -fromnode, -tonode))
+  expect_s3_class(h_nodes, "hy_topo")
+
+  # make_node_topology add_div = TRUE -> hy_node (toid dropped)
+  h_nd <- make_node_topology(dplyr::select(h_topo, -fromnode, -tonode),
+    add_div = TRUE)
+  expect_s3_class(h_nd, "hy_node")
+
+  # to_flownetwork -> hy_flownetwork
+  expect_s3_class(to_flownetwork(x), "hy_flownetwork")
+})
+
+test_that("add_toids warns for return_dendritic = FALSE", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+  expect_warning(add_toids(x, return_dendritic = FALSE), "deprecated")
+})
+
+test_that("add_divergence.hy sets dendritic attr to FALSE", {
+  h <- hy(data.frame(
+    id = c(1, 2, 3, 4, 5, 6, 7),
+    fromnode = c(1, 2, 3, 3, 4, 5, 6),
+    tonode = c(3, 3, 4, 5, 6, 6, 7),
+    name = c("", "", "", "", "", "", ""),
+    type = c(1, 1, 1, 1, 1, 1, 1)))
+
+  result <- add_divergence(h, 7, c(),
+    name_attr = "name", type_attr = "type", major_types = 1)
+
+  expect_false(attr(result, "dendritic"))
+  expect_s3_class(result, "hy_node")
+})

@@ -168,10 +168,15 @@ add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
 
   div <- lapply(junctions, down_level)
 
-  x_save |>
+  result <- x_save |>
     mutate(divergence = case_when(id %in% div ~ 1,
       id %in% all_div ~ 2,
       TRUE ~ 0))
+
+  result <- classify_hy(result)
+  attr(result, "dendritic") <- FALSE
+
+  result
 
 }
 

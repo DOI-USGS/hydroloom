@@ -6,6 +6,11 @@ hydroloom 1.1.4
 - `hy()` gains `add_topo` parameter to auto-build toid from fromnode/tonode
 - New exported helpers: `hy_network_type()`, `is_dendritic()`, `hy_capabilities()`
 - Print methods for `hy_topo`, `hy_node`, `hy_flownetwork`
+- Producer functions now stamp output classes: `add_toids()` -> `hy_topo`,
+  `sort_network()` -> `hy_topo`, `add_levelpaths()` -> `hy_leveled`,
+  `make_node_topology()` -> `hy_node`, `to_flownetwork()` -> `hy_flownetwork`
+- `add_divergence()` sets `attr(x, "dendritic") <- FALSE` on output
+- `add_toids(return_dendritic = FALSE)` is deprecated; use `to_flownetwork()`
 
 hydroloom 1.1.3
 ==========
