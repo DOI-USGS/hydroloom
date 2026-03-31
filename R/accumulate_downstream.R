@@ -108,6 +108,24 @@ accumulate_downstream.data.frame <- function(x, var, total = FALSE, quiet = FALS
 #' @export
 accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
 
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(accumulate_downstream(x, var, total, quiet))
+
+  hy_dispatch_error("accumulate_downstream", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+#' @name accumulate_downstream
+#' @export
+accumulate_downstream.hy_node <- function(x, var, total = FALSE, quiet = FALSE) {
+
+  accumulate_downstream.hy_topo(x, var, total, quiet)
+}
+
+#' @name accumulate_downstream
+#' @export
+accumulate_downstream.hy_topo <- function(x, var, total = FALSE, quiet = FALSE) {
+
   if (nrow(x) == 0) return(c())
 
   var <- as.character(var)

@@ -10,7 +10,7 @@ test_that("accumulate downstream", {
   expect_error(accumulate_downstream(test_data, "b"), "b must be in x")
 
   expect_error(accumulate_downstream(dplyr::rename(test_data, borked = toid), "a"),
-    "accumulate_downstream requires")
+    "requires hy_topo")
 
   x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
 

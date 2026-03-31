@@ -1,3 +1,5 @@
+utils::globalVariables(c("priority", "lp_name_attribute", "ds_nameid", "lp_weight_attribute"))
+
 required_atts_add_levelpaths <- c("id", "toid")
 
 #' Add Level Paths
@@ -65,11 +67,16 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
                                       override_factor = NULL, status = FALSE) {
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   name_attribute <- align_name_char(name_attribute)
   weight_attribute <- align_name_char(weight_attribute)
 
   x <- add_levelpaths(x, name_attribute, weight_attribute, override_factor,
     status)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 
@@ -77,9 +84,32 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
 
 #' @name add_levelpaths
 #' @export
-#'
 add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
                               override_factor = NULL, status = FALSE) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy"))
+    return(add_levelpaths(x, name_attribute, weight_attribute,
+      override_factor, status))
+
+  hy_dispatch_error("add_levelpaths", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+#' @name add_levelpaths
+#' @export
+add_levelpaths.hy_node <- function(x, name_attribute, weight_attribute,
+                                   override_factor = NULL, status = FALSE) {
+  message("converting hy_node to hy_topo via add_toids(). ",
+    "For large networks, call add_toids() explicitly to avoid repeated conversion.")
+  add_levelpaths(add_toids(x), name_attribute, weight_attribute,
+    override_factor, status)
+}
+
+#' @name add_levelpaths
+#' @export
+add_levelpaths.hy_topo <- function(x, name_attribute, weight_attribute,
+                                   override_factor = NULL, status = FALSE) {
 
   if (nrow(x) == 0) {
     x[[levelpath_outlet_id]] <- NA_character_

@@ -4,6 +4,8 @@
 \alias{sort_network}
 \alias{sort_network.data.frame}
 \alias{sort_network.hy}
+\alias{sort_network.hy_node}
+\alias{sort_network.hy_topo}
 \title{Sort Network}
 \usage{
 sort_network(x, split = FALSE, outlets = NULL)
@@ -11,6 +13,10 @@ sort_network(x, split = FALSE, outlets = NULL)
 \method{sort_network}{data.frame}(x, split = FALSE, outlets = NULL)
 
 \method{sort_network}{hy}(x, split = FALSE, outlets = NULL)
+
+\method{sort_network}{hy_node}(x, split = FALSE, outlets = NULL)
+
+\method{sort_network}{hy_topo}(x, split = FALSE, outlets = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

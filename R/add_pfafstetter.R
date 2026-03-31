@@ -82,7 +82,12 @@ add_pfafstetter.data.frame <- function(x, max_level = 2, status = FALSE) {
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- add_pfafstetter(x, max_level, status)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 
@@ -92,18 +97,54 @@ add_pfafstetter.data.frame <- function(x, max_level = 2, status = FALSE) {
 #' @export
 add_pfafstetter.hy <- function(x, max_level = 2, status = FALSE) {
 
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy"))
+    return(add_pfafstetter(x, max_level, status))
+
+  hy_dispatch_error("add_pfafstetter", "hy_leveled", x,
+    "Use add_toids() then add_levelpaths() to enrich the network.")
+}
+
+#' @name add_pfafstetter
+#' @export
+add_pfafstetter.hy_topo <- function(x, max_level = 2, status = FALSE) {
+
+  if (all(required_atts_pfafsetter %in% names(x)))
+    return(add_pfafstetter.hy_leveled(x, max_level, status))
+
+  hy_dispatch_error("add_pfafstetter", "hy_leveled", x,
+    "Use add_levelpaths() to add levelpath attributes.")
+}
+
+#' @name add_pfafstetter
+#' @export
+add_pfafstetter.hy_node <- function(x, max_level = 2, status = FALSE) {
+
+  if (all(required_atts_pfafsetter %in% names(x)))
+    return(add_pfafstetter.hy_leveled(x, max_level, status))
+
+  hy_dispatch_error("add_pfafstetter", "hy_leveled", x,
+    "Use add_toids() then add_levelpaths() to enrich the network.")
+}
+
+#' @name add_pfafstetter
+#' @export
+add_pfafstetter.hy_leveled <- function(x, max_level = 2, status = FALSE) {
+
   check_names(x, required_atts_pfafsetter, "add_pfafstetter")
 
   mainstem_levelpath <- unique(x$levelpath[x$topo_sort == min(x$topo_sort)])
 
   mainstem <- st_drop_geometry(x)[x$levelpath == mainstem_levelpath, ]
 
-  left_join(x,
+  x <- left_join(x,
     bind_rows(get_pfaf_9(select(st_drop_geometry(x),
       all_of(required_atts_pfafsetter)),
     mainstem, max_level, status = status)) |>
 
       cleanup_pfaf(), by = id)
+
+  classify_hy(x)
 }
 
 #' @noRd

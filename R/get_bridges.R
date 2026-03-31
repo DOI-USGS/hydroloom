@@ -45,6 +45,25 @@ get_bridge_flowlines.data.frame <- function(x, quiet = FALSE) {
 #' @export
 get_bridge_flowlines.hy <- function(x, quiet = FALSE) {
 
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(get_bridge_flowlines(x, quiet))
+
+  hy_dispatch_error("get_bridge_flowlines", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+# TODO: support hy_node auto-convert via add_toids()
+#' @name get_bridge_flowlines
+#' @export
+get_bridge_flowlines.hy_node <- function(x, quiet = FALSE) {
+  hy_dispatch_error("get_bridge_flowlines", "hy_topo", x,
+    "Use add_toids() to convert fromnode/tonode to edge list.")
+}
+
+#' @name get_bridge_flowlines
+#' @export
+get_bridge_flowlines.hy_topo <- function(x, quiet = FALSE) {
+
   node_topo <- make_nondendritic_topology(x)
 
   n_flowlines <- nrow(node_topo)

@@ -80,12 +80,17 @@ add_divergence.data.frame <- function(x, coastal_outlet_ids, inland_outlet_ids,
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- add_divergence(x,
     coastal_outlet_ids,
     inland_outlet_ids,
     name_attr,
     type_attr,
     major_types)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 }
@@ -94,6 +99,34 @@ add_divergence.data.frame <- function(x, coastal_outlet_ids, inland_outlet_ids,
 #' @export
 add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
                               name_attr, type_attr, major_types) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy"))
+    return(add_divergence(x, coastal_outlet_ids, inland_outlet_ids,
+      name_attr, type_attr, major_types))
+
+  hy_dispatch_error("add_divergence", "hy_node", x,
+    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+}
+
+#' @name add_divergence
+#' @export
+add_divergence.hy_topo <- function(x, coastal_outlet_ids, inland_outlet_ids,
+                                   name_attr, type_attr, major_types) {
+
+  x <- as_hy_node(x)
+  if (inherits(x, "hy_node"))
+    return(add_divergence(x, coastal_outlet_ids, inland_outlet_ids,
+      name_attr, type_attr, major_types))
+
+  hy_dispatch_error("add_divergence", "hy_node", x,
+    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+}
+
+#' @name add_divergence
+#' @export
+add_divergence.hy_node <- function(x, coastal_outlet_ids, inland_outlet_ids,
+                                   name_attr, type_attr, major_types) {
 
   x <- select(x, -any_of("toid"))
 
@@ -402,7 +435,12 @@ add_return_divergence <- function(x, status = TRUE) {
 add_return_divergence.data.frame <- function(x, status = TRUE) {
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- add_return_divergence(x, status)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 }
@@ -410,6 +448,28 @@ add_return_divergence.data.frame <- function(x, status = TRUE) {
 #' @name add_return_divergence
 #' @export
 add_return_divergence.hy <- function(x, status = TRUE) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(add_return_divergence(x, status))
+
+  hy_dispatch_error("add_return_divergence", "hy_node", x,
+    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+}
+
+#' @name add_return_divergence
+#' @export
+add_return_divergence.hy_topo <- function(x, status = TRUE) {
+
+  x <- as_hy_node(x)
+  if (inherits(x, "hy_node")) return(add_return_divergence(x, status))
+
+  hy_dispatch_error("add_return_divergence", "hy_node", x,
+    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+}
+
+#' @name add_return_divergence
+#' @export
+add_return_divergence.hy_node <- function(x, status = TRUE) {
 
   required_atts <- c(id, fromnode, tonode, divergence)
 
@@ -461,6 +521,8 @@ add_return_divergence.hy <- function(x, status = TRUE) {
 
   return <- net$toid[net$id %in% outlets]
 
-  mutate(x, return_divergence = ifelse(id %in% return, 1, 0))
+  x <- mutate(x, return_divergence = ifelse(id %in% return, 1, 0))
+
+  classify_hy(x)
 
 }

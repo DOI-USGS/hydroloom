@@ -303,3 +303,72 @@ test_that("add_divergence.hy sets dendritic attr to FALSE", {
   expect_false(attr(result, "dendritic"))
   expect_s3_class(result, "hy_node")
 })
+
+# ---- Phase 3: dispatch and guided error tests ----
+
+test_that("hy_topo functions error on bare hy", {
+  h_bare <- hy(data.frame(id = 1:3, x = letters[1:3]))
+
+  expect_error(sort_network(h_bare), "requires hy_topo")
+  expect_error(add_topo_sort(h_bare), "requires hy_topo")
+  expect_error(add_pathlength(h_bare), "requires hy_topo")
+  expect_error(make_node_topology(h_bare), "requires hy_topo")
+  expect_error(make_index_ids(h_bare), "requires hy_topo")
+  expect_error(get_bridge_flowlines(h_bare), "requires hy_topo")
+  expect_error(accumulate_downstream(h_bare, "x"), "requires hy_topo")
+  expect_error(add_streamorder(h_bare), "requires hy_topo")
+})
+
+test_that("hy_leveled functions error on bare hy and hy_topo", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+  h_topo <- add_toids(hy(x))
+
+  h_topo_bare <- hy(data.frame(id = 1:3, toid = c(2, 3, 0)))
+
+  expect_error(add_pfafstetter(h_topo_bare), "requires hy_leveled")
+  expect_error(add_streamlevel(h_topo_bare), "requires hy_leveled")
+  expect_error(navigate_hydro_network(h_topo_bare, 1, "UM"), "requires hy_leveled")
+  expect_error(to_flownetwork(h_topo_bare), "requires hy_leveled")
+})
+
+test_that("hy_node functions error on bare hy", {
+  h_bare <- hy(data.frame(id = 1:3, x = letters[1:3]))
+
+  expect_error(subset_network(h_bare, 1), "requires hy_node")
+  expect_error(add_return_divergence(h_bare), "requires hy_node")
+})
+
+test_that("add_toids.hy_topo guard fires", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+  h_topo <- add_toids(hy(x))
+
+  expect_error(add_toids(h_topo), "already has toid")
+})
+
+test_that("hy_node auto-convert works with warning", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+  h_node <- hy(x)
+
+  expect_message(sort_network(h_node), "converting hy_node")
+  expect_message(result <- add_topo_sort(h_node), "converting hy_node")
+  expect_s3_class(result, "hy_topo")
+})
+
+test_that("add_toids.hy auto-promotes from bare hy with nodes", {
+  h <- hy(data.frame(
+    id = 1:3,
+    fromnode = c(1L, 2L, 3L),
+    tonode = c(2L, 3L, 0L),
+    divergence = c(0L, 0L, 0L)))
+
+  result <- add_toids(h)
+  expect_s3_class(result, "hy_topo")
+})
+
+test_that("to_flownetwork generic dispatch works", {
+  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  # data.frame path still works
+  fn <- to_flownetwork(x)
+  expect_s3_class(fn, "hy_flownetwork")
+})

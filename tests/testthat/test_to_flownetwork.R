@@ -2,7 +2,7 @@ test_that("to_flownetwork", {
 
   f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
-  expect_error(to_flownetwork(select(f, -LevelPathI)), "must provide a levelpath attribute")
+  expect_error(to_flownetwork(select(f, -LevelPathI)), "requires hy_leveled")
 
   x <- add_toids(f, return_dendritic = TRUE)
 
@@ -31,5 +31,5 @@ test_that("to_flownetwork", {
 
   x <- select(f, -Divergence)
 
-  expect_error(to_flownetwork(x), "divergence")
+  expect_error(to_flownetwork(x), "requires hy_leveled")
 })

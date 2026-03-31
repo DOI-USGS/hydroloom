@@ -4,6 +4,8 @@
 \alias{subset_network}
 \alias{subset_network.data.frame}
 \alias{subset_network.hy}
+\alias{subset_network.hy_topo}
+\alias{subset_network.hy_node}
 \title{Subset Network}
 \usage{
 subset_network(x, outlet, only_up = FALSE)
@@ -11,6 +13,10 @@ subset_network(x, outlet, only_up = FALSE)
 \method{subset_network}{data.frame}(x, outlet, only_up = FALSE)
 
 \method{subset_network}{hy}(x, outlet, only_up = FALSE)
+
+\method{subset_network}{hy_topo}(x, outlet, only_up = FALSE)
+
+\method{subset_network}{hy_node}(x, outlet, only_up = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

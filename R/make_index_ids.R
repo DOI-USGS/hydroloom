@@ -84,6 +84,42 @@ make_index_ids.data.frame <- function(x, mode = "to", long_form = NULL) {
 #' @name make_index_ids
 #' @export
 make_index_ids.hy <- function(x, mode = "to", long_form = NULL) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(make_index_ids(x, mode, long_form))
+
+  hy_dispatch_error("make_index_ids", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+#' @name make_index_ids
+#' @export
+make_index_ids.hy_flownetwork <- function(x, mode = "to", long_form = NULL) {
+  if (!mode %in% c("to", "from", "both"))
+    stop("mode must be one of 'to', 'from', or 'both'.")
+
+  if (!is.null(long_form))
+    warning("long_form is deprecated and will be removed in a future release.")
+
+  out <- make_to_dt(x)
+
+  if (!is.null(long_form) && long_form) return(out)
+
+  if (mode == "both") {
+    list(
+      to = call_format_index_ids(out, return_list = TRUE, mode = "to"),
+      from = make_from(x, out)
+    )
+  } else if (mode == "from") {
+    make_from(x, out)
+  } else {
+    call_format_index_ids(out, return_list = TRUE, mode = "to")
+  }
+}
+
+#' @name make_index_ids
+#' @export
+make_index_ids.hy_topo <- function(x, mode = "to", long_form = NULL) {
   if (!mode %in% c("to", "from", "both")) {
     stop("mode must be one of 'to', 'from', or 'both'.")
   }
@@ -379,7 +415,7 @@ make_to_dt <- function(x) {
 
     out$toindid <- match(x$toid, x$id, nomatch = 0)
 
-    out <- merge(out, x[, vars, with = FALSE], by = "id", all.x = TRUE, sort = FALSE)
+    out <- merge(out, as.data.table(x)[, vars, with = FALSE], by = "id", all.x = TRUE, sort = FALSE)
 
   }
   select(out, -any_of("toid"))

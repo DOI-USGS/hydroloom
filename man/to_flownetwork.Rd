@@ -2,9 +2,24 @@
 % Please edit documentation in R/to_flownetwork.R
 \name{to_flownetwork}
 \alias{to_flownetwork}
+\alias{to_flownetwork.data.frame}
+\alias{to_flownetwork.hy}
+\alias{to_flownetwork.hy_node}
+\alias{to_flownetwork.hy_topo}
+\alias{to_flownetwork.hy_leveled}
 \title{To Flownetwork}
 \usage{
 to_flownetwork(x, warn_dendritic = TRUE)
+
+\method{to_flownetwork}{data.frame}(x, warn_dendritic = TRUE)
+
+\method{to_flownetwork}{hy}(x, warn_dendritic = TRUE)
+
+\method{to_flownetwork}{hy_node}(x, warn_dendritic = TRUE)
+
+\method{to_flownetwork}{hy_topo}(x, warn_dendritic = TRUE)
+
+\method{to_flownetwork}{hy_leveled}(x, warn_dendritic = TRUE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

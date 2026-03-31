@@ -311,10 +311,11 @@ add_toids_internal <- function(x, var = NULL, keep = FALSE) {
   if (all(c(id, fromnode, tonode, divergence) %in% names(x)) &&
     !toid %in% names(x)) {
 
-    x |>
-      st_drop_geometry()
+    x <- st_drop_geometry(x)
 
     if (!keep) x <- select(x, any_of(c(id, fromnode, tonode, divergence, as.character(var))))
+
+    x <- classify_hy(x)
 
     add_toids(x, return_dendritic = FALSE)
 

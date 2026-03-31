@@ -100,19 +100,57 @@ classify_hy <- function(x) {
   # strip any stale hy subclasses before re-classifying
   class(x) <- class(x)[!class(x) %in% c("hy_topo", "hy_leveled", "hy_node")]
 
-  unique_id <- !any(duplicated(x$id))
+  has_id    <- "id" %in% names(x)
   has_toid  <- "toid" %in% names(x)
   has_nodes <- all(c("fromnode", "tonode") %in% names(x))
+  unique_id <- has_id && !any(duplicated(x$id))
 
-  if (has_toid && unique_id) {
+  if (has_id && has_toid && unique_id) {
     x <- new_hy_topo(x)
     if (all(c("topo_sort", "levelpath", "levelpath_outlet_id") %in% names(x)))
       x <- new_hy_leveled(x)
-  } else if (has_nodes && unique_id) {
+  } else if (has_id && has_toid && !unique_id) {
+    # non-dendritic edge list: has toid but duplicate ids
+    # set hy_topo class directly (bypasses new_hy_topo uniqueness check)
+    class(x) <- unique(c("hy_topo", class(x)))
+  } else if (has_id && has_nodes && unique_id) {
     x <- new_hy_node(x)
   }
 
   x
+}
+
+#' Try to downcast hy_topo to hy_node
+#' @description When data has both toid and fromnode/tonode, classify_hy
+#' prioritizes toid (hy_topo). Node-based functions need this helper to
+#' re-classify as hy_node when node columns are present.
+#' @param x hy_topo object
+#' @returns hy_node object if fromnode/tonode exist, otherwise unchanged x
+#' @noRd
+as_hy_node <- function(x) {
+
+  if (all(c(fromnode, tonode) %in% names(x)) && !any(duplicated(x$id))) {
+    class(x) <- class(x)[!class(x) %in% c("hy_topo", "hy_leveled")]
+    class(x) <- unique(c("hy_node", class(x)))
+  }
+
+  x
+}
+
+#' Generate a guided dispatch error message
+#' @param fn_name character. Name of the function that was called.
+#' @param required_class character. The class the function dispatches on.
+#' @param x object that was passed.
+#' @param guidance character. Instruction on how to convert.
+#' @noRd
+hy_dispatch_error <- function(fn_name, required_class, x, guidance) {
+
+  current <- hy_network_type(x)
+
+  stop(fn_name, "() requires ", required_class, ".\n",
+    "  Current input is: ", current, ".\n",
+    "  ", guidance,
+    call. = FALSE)
 }
 
 # ---- exported query helpers ----

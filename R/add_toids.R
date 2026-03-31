@@ -55,6 +55,25 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
 
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(add_toids(x, return_dendritic))
+
+  hy_dispatch_error("add_toids", "hy_node", x,
+    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+}
+
+#' @name add_toids
+#' @export
+add_toids.hy_topo <- function(x, return_dendritic = TRUE) {
+  stop("This network already has toid (class: ", hy_network_type(x),
+    "). add_toids() converts fromnode/tonode to toid.",
+    call. = FALSE)
+}
+
+#' @name add_toids
+#' @export
+add_toids.hy_node <- function(x, return_dendritic = TRUE) {
+
   if ("toid" %in% names(x)) stop("network already contains a toid attribute")
 
   # nolint start

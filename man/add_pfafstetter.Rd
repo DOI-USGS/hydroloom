@@ -4,6 +4,9 @@
 \alias{add_pfafstetter}
 \alias{add_pfafstetter.data.frame}
 \alias{add_pfafstetter.hy}
+\alias{add_pfafstetter.hy_topo}
+\alias{add_pfafstetter.hy_node}
+\alias{add_pfafstetter.hy_leveled}
 \title{Add Pfafstetter Codes}
 \usage{
 add_pfafstetter(x, max_level = 2, status = FALSE)
@@ -11,6 +14,12 @@ add_pfafstetter(x, max_level = 2, status = FALSE)
 \method{add_pfafstetter}{data.frame}(x, max_level = 2, status = FALSE)
 
 \method{add_pfafstetter}{hy}(x, max_level = 2, status = FALSE)
+
+\method{add_pfafstetter}{hy_topo}(x, max_level = 2, status = FALSE)
+
+\method{add_pfafstetter}{hy_node}(x, max_level = 2, status = FALSE)
+
+\method{add_pfafstetter}{hy_leveled}(x, max_level = 2, status = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

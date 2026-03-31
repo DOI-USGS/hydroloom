@@ -27,13 +27,61 @@
 #' and one and only one downmain from any given network element.
 #'
 #' @export
+#' @name to_flownetwork
 #' @examples
 #' f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 #' to_flownetwork(f)
 #'
 to_flownetwork <- function(x, warn_dendritic = TRUE) {
+  UseMethod("to_flownetwork")
+}
+
+#' @name to_flownetwork
+#' @export
+to_flownetwork.data.frame <- function(x, warn_dendritic = TRUE) {
 
   x <- hy(x, clean = TRUE)
+
+  to_flownetwork(x, warn_dendritic)
+}
+
+#' @name to_flownetwork
+#' @export
+to_flownetwork.hy <- function(x, warn_dendritic = TRUE) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy"))
+    return(to_flownetwork(x, warn_dendritic))
+
+  hy_dispatch_error("to_flownetwork", "hy_leveled", x,
+    "Use add_toids() then add_levelpaths() to enrich the network.")
+}
+
+#' @name to_flownetwork
+#' @export
+to_flownetwork.hy_node <- function(x, warn_dendritic = TRUE) {
+
+  if (all(c(divergence, levelpath) %in% names(x)))
+    return(to_flownetwork.hy_leveled(x, warn_dendritic))
+
+  hy_dispatch_error("to_flownetwork", "hy_leveled", x,
+    "Use add_toids() then add_levelpaths() to enrich the network.")
+}
+
+#' @name to_flownetwork
+#' @export
+to_flownetwork.hy_topo <- function(x, warn_dendritic = TRUE) {
+
+  if (all(c(divergence, levelpath) %in% names(x)))
+    return(to_flownetwork.hy_leveled(x, warn_dendritic))
+
+  hy_dispatch_error("to_flownetwork", "hy_leveled", x,
+    "Use add_levelpaths() to add levelpath attributes.")
+}
+
+#' @name to_flownetwork
+#' @export
+to_flownetwork.hy_leveled <- function(x, warn_dendritic = TRUE) {
 
   if ("toid" %in% names(x) && warn_dendritic) {
     if (!any(duplicated(x$id)))
@@ -41,13 +89,13 @@ to_flownetwork <- function(x, warn_dendritic = TRUE) {
   }
 
   if (fromnode %in% names(x) && !toid %in% names(x))
-    x <- add_toids(x, return_dendritic = FALSE)
+    x <- add_toids(as_hy_node(x), return_dendritic = FALSE)
 
   if (!divergence %in% names(x)) stop("must provide a divergence attribute")
 
   if (!levelpath %in% names(x)) stop("must provide a levelpath attribute")
 
-  x <- select(x, all_of(c(id, toid, divergence, levelpath)))
+  x <- select(st_drop_geometry(x), all_of(c(id, toid, divergence, levelpath)))
 
   x <- x |>
     left_join(distinct(select(x, toid = id, toid_divergence = divergence)),

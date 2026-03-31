@@ -47,9 +47,13 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- make_node_topology(x, add_div, add)
 
   if (inherits(x, "hy")) {
+    attr(x, "orig_names") <- orig_names
+    if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
     hy_reverse(x)
   } else {
     x
@@ -60,6 +64,17 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 #' @name make_node_topology
 #' @export
 make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(make_node_topology(x, add_div, add))
+
+  hy_dispatch_error("make_node_topology", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+#' @name make_node_topology
+#' @export
+make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
   check_names(x, c(id, toid), "make_node_topology")
 

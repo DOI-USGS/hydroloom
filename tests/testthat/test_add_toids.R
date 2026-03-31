@@ -26,7 +26,7 @@ test_that("make toid", {
 
   expect_error(add_toids(x), "To remove non dendritic paths, a divergence attribute is required.")
 
-  expect_error(add_toids(y), "network already contains a toid attribute")
+  expect_error(add_toids(y), "already has toid")
 
   g$COMID <- as.character(g$COMID)
 

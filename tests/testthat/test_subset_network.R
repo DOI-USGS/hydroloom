@@ -80,6 +80,6 @@ test_that("subset_network error on missing names", {
 
   x <- data.frame(id = 1:3, toid = c(2, 3, 0))
 
-  expect_error(subset_network(hy(x), 1), "subset_network requires")
+  expect_error(subset_network(hy(x), 1), "requires hy_node")
 
 })

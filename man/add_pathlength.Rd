@@ -4,6 +4,8 @@
 \alias{add_pathlength}
 \alias{add_pathlength.data.frame}
 \alias{add_pathlength.hy}
+\alias{add_pathlength.hy_node}
+\alias{add_pathlength.hy_topo}
 \title{Add Path Length}
 \usage{
 add_pathlength(x)
@@ -11,6 +13,10 @@ add_pathlength(x)
 \method{add_pathlength}{data.frame}(x)
 
 \method{add_pathlength}{hy}(x)
+
+\method{add_pathlength}{hy_node}(x)
+
+\method{add_pathlength}{hy_topo}(x)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

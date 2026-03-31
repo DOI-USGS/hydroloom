@@ -60,7 +60,12 @@ sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- sort_network(x, split, outlets)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 
@@ -68,8 +73,26 @@ sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
 
 #' @name sort_network
 #' @export
-#'
 sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(sort_network(x, split, outlets))
+
+  hy_dispatch_error("sort_network", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+#' @name sort_network
+#' @export
+sort_network.hy_node <- function(x, split = FALSE, outlets = NULL) {
+  message("converting hy_node to hy_topo via add_toids(). ",
+    "For large networks, call add_toids() explicitly to avoid repeated conversion.")
+  sort_network(add_toids(x), split, outlets)
+}
+
+#' @name sort_network
+#' @export
+sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
 
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
@@ -235,7 +258,12 @@ add_topo_sort.data.frame <- function(x, outlets = NULL) {
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- add_topo_sort(x, outlets)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 
@@ -243,8 +271,26 @@ add_topo_sort.data.frame <- function(x, outlets = NULL) {
 
 #' @name add_topo_sort
 #' @export
-#'
 add_topo_sort.hy <- function(x, outlets = NULL) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(add_topo_sort(x, outlets))
+
+  hy_dispatch_error("add_topo_sort", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+#' @name add_topo_sort
+#' @export
+add_topo_sort.hy_node <- function(x, outlets = NULL) {
+  message("converting hy_node to hy_topo via add_toids(). ",
+    "For large networks, call add_toids() explicitly to avoid repeated conversion.")
+  add_topo_sort(add_toids(x), outlets)
+}
+
+#' @name add_topo_sort
+#' @export
+add_topo_sort.hy_topo <- function(x, outlets = NULL) {
 
   out <- sort_network(x, outlets = outlets)
 

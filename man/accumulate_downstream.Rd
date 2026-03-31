@@ -4,6 +4,8 @@
 \alias{accumulate_downstream}
 \alias{accumulate_downstream.data.frame}
 \alias{accumulate_downstream.hy}
+\alias{accumulate_downstream.hy_node}
+\alias{accumulate_downstream.hy_topo}
 \title{Accumulate Variable Downstream}
 \usage{
 accumulate_downstream(x, var, total = FALSE, quiet = FALSE)
@@ -11,6 +13,10 @@ accumulate_downstream(x, var, total = FALSE, quiet = FALSE)
 \method{accumulate_downstream}{data.frame}(x, var, total = FALSE, quiet = FALSE)
 
 \method{accumulate_downstream}{hy}(x, var, total = FALSE, quiet = FALSE)
+
+\method{accumulate_downstream}{hy_node}(x, var, total = FALSE, quiet = FALSE)
+
+\method{accumulate_downstream}{hy_topo}(x, var, total = FALSE, quiet = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

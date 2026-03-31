@@ -29,7 +29,12 @@ add_pathlength.data.frame <- function(x) {
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- add_pathlength(x)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 }
@@ -37,6 +42,25 @@ add_pathlength.data.frame <- function(x) {
 #' @name add_pathlength
 #' @export
 add_pathlength.hy <- function(x) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(add_pathlength(x))
+
+  hy_dispatch_error("add_pathlength", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+# TODO: support hy_node auto-convert via add_toids()
+#' @name add_pathlength
+#' @export
+add_pathlength.hy_node <- function(x) {
+  hy_dispatch_error("add_pathlength", "hy_topo", x,
+    "Use add_toids() to convert fromnode/tonode to edge list.")
+}
+
+#' @name add_pathlength
+#' @export
+add_pathlength.hy_topo <- function(x) {
 
   check_names(x, c(id, toid, length_km), "add_pathlength")
 
@@ -62,5 +86,7 @@ add_pathlength.hy <- function(x) {
 
   x$pathlength_km <- pathlength_km
 
-  left_join(orig_order, x, by = id)
+  x <- left_join(orig_order, x, by = id)
+
+  classify_hy(x)
 }

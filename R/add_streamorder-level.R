@@ -38,7 +38,12 @@ add_streamorder <- function(x, status = TRUE) {
 add_streamorder.data.frame <- function(x, status = TRUE) {
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- add_streamorder(x, status)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 }
@@ -46,6 +51,25 @@ add_streamorder.data.frame <- function(x, status = TRUE) {
 #' @name add_streamorder
 #' @export
 add_streamorder.hy <- function(x, status = TRUE) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy")) return(add_streamorder(x, status))
+
+  hy_dispatch_error("add_streamorder", "hy_topo", x,
+    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+}
+
+#' @name add_streamorder
+#' @export
+add_streamorder.hy_node <- function(x, status = TRUE) {
+  message("converting hy_node to hy_topo via add_toids(). ",
+    "For large networks, call add_toids() explicitly to avoid repeated conversion.")
+  add_streamorder(add_toids(x), status)
+}
+
+#' @name add_streamorder
+#' @export
+add_streamorder.hy_topo <- function(x, status = TRUE) {
 
   if ("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
 
@@ -154,10 +178,12 @@ add_streamorder.hy <- function(x, status = TRUE) {
     }
   }
 
-  left_join(x,
+  x <- left_join(x,
     bind_cols(id = unique(net$id), tibble(stream_order = order,
       stream_calculator = calc)),
     by = "id")
+
+  classify_hy(x)
 
 }
 
@@ -215,7 +241,12 @@ add_streamlevel <- function(x, coastal = NULL) {
 add_streamlevel.data.frame <- function(x, coastal = NULL) {
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- add_streamlevel(x, coastal)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 }
@@ -223,6 +254,29 @@ add_streamlevel.data.frame <- function(x, coastal = NULL) {
 #' @name add_streamlevel
 #' @export
 add_streamlevel.hy <- function(x, coastal = NULL) {
+
+  x <- classify_hy(x)
+  if (!identical(hy_network_type(x), "hy"))
+    return(add_streamlevel(x, coastal))
+
+  hy_dispatch_error("add_streamlevel", "hy_leveled", x,
+    "Use add_toids() then add_levelpaths() to enrich the network.")
+}
+
+#' @name add_streamlevel
+#' @export
+add_streamlevel.hy_topo <- function(x, coastal = NULL) {
+
+  if (all(c(levelpath, dn_levelpath) %in% names(x)))
+    return(add_streamlevel.hy_leveled(x, coastal))
+
+  hy_dispatch_error("add_streamlevel", "hy_leveled", x,
+    "Use add_levelpaths() to add levelpath attributes.")
+}
+
+#' @name add_streamlevel
+#' @export
+add_streamlevel.hy_leveled <- function(x, coastal = NULL) {
 
   check_names(x, c(levelpath, dn_levelpath), "add_streamlevel")
 
@@ -263,6 +317,8 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
     }
   }
 
-  left_join(x, tibble(levelpath = id, stream_level = level), by = "levelpath")
+  x <- left_join(x, tibble(levelpath = id, stream_level = level), by = "levelpath")
+
+  classify_hy(x)
 
 }
