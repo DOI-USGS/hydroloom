@@ -72,6 +72,9 @@ downmain <- "downmain"
 indid <- "indid"
 toindid <- "toindid"
 
+# hydroloom S3 class names
+hy_classes <- c("hy", "hy_topo", "hy_leveled", "hy_node", "hy_flownetwork")
+
 good_names <- c(id, toid, fromnode, tonode, divergence, divergence_fraction, wbid,
   total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
   topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,

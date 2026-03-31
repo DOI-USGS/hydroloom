@@ -4,19 +4,28 @@
 \alias{hy}
 \title{Create a hy Fabric S3 Object}
 \usage{
-hy(x, clean = FALSE)
+hy(x, clean = FALSE, add_topo = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{clean}{logical if TRUE, geometry and non-hydroloom compatible attributes
 will be removed.}
+
+\item{add_topo}{logical. If TRUE, auto-build topology (e.g. toid
+from fromnode/tonode) and classify into subclass hierarchy. If FALSE
+(default), classify based on existing columns only without constructing
+new attributes.}
 }
 \value{
 hy object with attributes compatible with the hydroloom package.
 }
 \description{
-converts a compatible dataset into a fabric s3 class
+converts a compatible dataset into a fabric s3 class.
+Automatically detects the network representation and classifies the
+result as the most specific hydroloom subclass (e.g. \code{hy_topo},
+\code{hy_node}). With \code{add_topo = TRUE}, also auto-builds
+topology (e.g. toid from fromnode/tonode).
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -26,5 +35,8 @@ hy(x)
 hy(x, clean = TRUE)[1:10, ]
 
 attr(hy(x), "orig_names")
+
+# auto-build toid from fromnode/tonode
+hy(x, add_topo = TRUE)
 
 }

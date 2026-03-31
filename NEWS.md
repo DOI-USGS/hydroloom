@@ -1,7 +1,11 @@
 hydroloom 1.1.4
 ==========
 
-Improve performance of `add_levelpaths()` by converting to data.table
+- Improve performance of `add_levelpaths()` by converting to data.table
+- Add S3 class hierarchy: `hy_topo`, `hy_leveled`, `hy_node`, `hy_flownetwork` -- #73
+- `hy()` gains `add_topo` parameter to auto-build toid from fromnode/tonode
+- New exported helpers: `hy_network_type()`, `is_dendritic()`, `hy_capabilities()`
+- Print methods for `hy_topo`, `hy_node`, `hy_flownetwork`
 
 hydroloom 1.1.3
 ==========
