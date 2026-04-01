@@ -46,16 +46,25 @@ subset_network <- function(x, outlet, only_up = FALSE) {
 #' @name subset_network
 #' @export
 subset_network.data.frame <- function(x, outlet, only_up = FALSE) {
-  x <- hy(x)
-
-  x <- subset_network(x, outlet, only_up)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "subset_network", outlet = outlet, only_up = only_up)
 }
 
 #' @name subset_network
 #' @export
 subset_network.hy <- function(x, outlet, only_up = FALSE) {
+  hy_classify_and_redispatch(x, "subset_network", "hy_node", hy_guidance_node,
+    outlet = outlet, only_up = only_up)
+}
+
+#' @name subset_network
+#' @export
+subset_network.hy_topo <- function(x, outlet, only_up = FALSE) {
+  hy_topo_to_node(x, "subset_network", outlet = outlet, only_up = only_up)
+}
+
+#' @name subset_network
+#' @export
+subset_network.hy_node <- function(x, outlet, only_up = FALSE) {
 
   check_names(x, c(id, fromnode, tonode), "subset_network")
 

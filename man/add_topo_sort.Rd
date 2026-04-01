@@ -4,6 +4,8 @@
 \alias{add_topo_sort}
 \alias{add_topo_sort.data.frame}
 \alias{add_topo_sort.hy}
+\alias{add_topo_sort.hy_node}
+\alias{add_topo_sort.hy_topo}
 \title{Add topo_sort}
 \usage{
 add_topo_sort(x, outlets = NULL)
@@ -11,6 +13,10 @@ add_topo_sort(x, outlets = NULL)
 \method{add_topo_sort}{data.frame}(x, outlets = NULL)
 
 \method{add_topo_sort}{hy}(x, outlets = NULL)
+
+\method{add_topo_sort}{hy_node}(x, outlets = NULL)
+
+\method{add_topo_sort}{hy_topo}(x, outlets = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

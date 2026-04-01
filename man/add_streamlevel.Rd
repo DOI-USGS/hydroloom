@@ -4,6 +4,8 @@
 \alias{add_streamlevel}
 \alias{add_streamlevel.data.frame}
 \alias{add_streamlevel.hy}
+\alias{add_streamlevel.hy_topo}
+\alias{add_streamlevel.hy_leveled}
 \title{Add Streamlevel}
 \usage{
 add_streamlevel(x, coastal = NULL)
@@ -11,6 +13,10 @@ add_streamlevel(x, coastal = NULL)
 \method{add_streamlevel}{data.frame}(x, coastal = NULL)
 
 \method{add_streamlevel}{hy}(x, coastal = NULL)
+
+\method{add_streamlevel}{hy_topo}(x, coastal = NULL)
+
+\method{add_streamlevel}{hy_leveled}(x, coastal = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

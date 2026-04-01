@@ -107,6 +107,20 @@ accumulate_downstream.data.frame <- function(x, var, total = FALSE, quiet = FALS
 #' @name accumulate_downstream
 #' @export
 accumulate_downstream.hy <- function(x, var, total = FALSE, quiet = FALSE) {
+  hy_classify_and_redispatch(x, "accumulate_downstream", "hy_topo",
+    hy_guidance_topo, var = var, total = total, quiet = quiet)
+}
+
+#' @name accumulate_downstream
+#' @export
+accumulate_downstream.hy_node <- function(x, var, total = FALSE, quiet = FALSE) {
+
+  accumulate_downstream.hy_topo(x, var, total, quiet)
+}
+
+#' @name accumulate_downstream
+#' @export
+accumulate_downstream.hy_topo <- function(x, var, total = FALSE, quiet = FALSE) {
 
   if (nrow(x) == 0) return(c())
 

@@ -4,6 +4,8 @@
 \alias{get_bridge_flowlines}
 \alias{get_bridge_flowlines.data.frame}
 \alias{get_bridge_flowlines.hy}
+\alias{get_bridge_flowlines.hy_node}
+\alias{get_bridge_flowlines.hy_topo}
 \title{Get Bridge Flowlines}
 \usage{
 get_bridge_flowlines(x, quiet = FALSE)
@@ -11,6 +13,10 @@ get_bridge_flowlines(x, quiet = FALSE)
 \method{get_bridge_flowlines}{data.frame}(x, quiet = FALSE)
 
 \method{get_bridge_flowlines}{hy}(x, quiet = FALSE)
+
+\method{get_bridge_flowlines}{hy_node}(x, quiet = FALSE)
+
+\method{get_bridge_flowlines}{hy_topo}(x, quiet = FALSE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

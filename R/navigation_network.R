@@ -113,6 +113,41 @@ navigate_hydro_network.data.frame <- function(x, start, mode, distance = NULL) {
 #' @name navigate_hydro_network
 #' @export
 navigate_hydro_network.hy <- function(x, start, mode, distance = NULL) {
+  hy_classify_and_redispatch(x, "navigate_hydro_network", "hy_leveled",
+    hy_guidance_leveled, start = start, mode = mode, distance = distance)
+}
+
+#' @name navigate_hydro_network
+#' @export
+navigate_hydro_network.hy_topo <- function(x, start, mode, distance = NULL) {
+
+  mode <- resolve_nav_mode(mode)
+  required_atts <- required_atts_navigate(mode, distance)
+
+  if (all(required_atts %in% names(x)))
+    return(navigate_hydro_network.hy_leveled(x, start, mode, distance))
+
+  hy_dispatch_error("navigate_hydro_network", "hy_leveled", x,
+    "Use add_levelpaths() to add levelpath attributes.")
+}
+
+#' @name navigate_hydro_network
+#' @export
+navigate_hydro_network.hy_node <- function(x, start, mode, distance = NULL) {
+
+  mode <- resolve_nav_mode(mode)
+  required_atts <- required_atts_navigate(mode, distance)
+
+  if (all(required_atts %in% names(x)))
+    return(navigate_hydro_network.hy_leveled(x, start, mode, distance))
+
+  hy_dispatch_error("navigate_hydro_network", "hy_leveled", x,
+    "Use add_toids() then add_levelpaths() to enrich the network.")
+}
+
+#' @name navigate_hydro_network
+#' @export
+navigate_hydro_network.hy_leveled <- function(x, start, mode, distance = NULL) {
   mode <- resolve_nav_mode(mode)
 
   required_atts <- required_atts_navigate(mode, distance)

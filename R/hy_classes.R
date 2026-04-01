@@ -88,11 +88,14 @@ new_hy_flownetwork <- function(x) {
 
 # ---- internal classification helper ----
 
-#' Re-classify a hy object after dplyr operations strip its class
+#' Re-classify a hy object based on its columns
 #' @param x data.frame that should be a hy subclass
+#' @param allow_non_unique logical. If TRUE (default), non-unique id with
+#'   toid is classified as hy_topo (bypassing uniqueness check). Used for
+#'   re-classification after dplyr ops. If FALSE, non-unique id stays bare hy.
 #' @returns x with appropriate hy subclass restored
 #' @noRd
-classify_hy <- function(x) {
+classify_hy <- function(x, allow_non_unique = TRUE) {
 
   # ensure base hy class
   if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
@@ -100,19 +103,141 @@ classify_hy <- function(x) {
   # strip any stale hy subclasses before re-classifying
   class(x) <- class(x)[!class(x) %in% c("hy_topo", "hy_leveled", "hy_node")]
 
-  unique_id <- !any(duplicated(x$id))
+  has_id    <- "id" %in% names(x)
   has_toid  <- "toid" %in% names(x)
   has_nodes <- all(c("fromnode", "tonode") %in% names(x))
+  unique_id <- has_id && !any(duplicated(x$id))
 
-  if (has_toid && unique_id) {
+  if (has_id && has_toid && unique_id) {
     x <- new_hy_topo(x)
     if (all(c("topo_sort", "levelpath", "levelpath_outlet_id") %in% names(x)))
       x <- new_hy_leveled(x)
-  } else if (has_nodes && unique_id) {
+  } else if (allow_non_unique && has_id && has_toid && !unique_id) {
+    # non-dendritic edge list: has toid but duplicate ids
+    # set hy_topo class directly (bypasses new_hy_topo uniqueness check)
+    class(x) <- unique(c("hy_topo", class(x)))
+  } else if (has_id && has_nodes && unique_id) {
     x <- new_hy_node(x)
   }
 
   x
+}
+
+#' Try to downcast hy_topo to hy_node
+#' @description When data has both toid and fromnode/tonode, classify_hy
+#' prioritizes toid (hy_topo). Node-based functions need this helper to
+#' re-classify as hy_node when node columns are present.
+#' @param x hy_topo object
+#' @returns hy_node object if fromnode/tonode exist, otherwise unchanged x
+#' @noRd
+as_hy_node <- function(x) {
+
+  if (all(c(fromnode, tonode) %in% names(x)) && !any(duplicated(x$id))) {
+    class(x) <- class(x)[!class(x) %in% c("hy_topo", "hy_leveled")]
+    class(x) <- unique(c("hy_node", class(x)))
+  }
+
+  x
+}
+
+#' Generate a guided dispatch error message
+#' @param fn_name character. Name of the function that was called.
+#' @param required_class character. The class the function dispatches on.
+#' @param x object that was passed.
+#' @param guidance character. Instruction on how to convert.
+#' @noRd
+hy_dispatch_error <- function(fn_name, required_class, x, guidance) {
+
+  current <- hy_network_type(x)
+
+  stop(fn_name, "() requires ", required_class, ".\n",
+    "  Current input is: ", current, ".\n",
+    "  ", guidance,
+    call. = FALSE)
+}
+
+# ---- guidance constants ----
+
+hy_guidance_topo <- paste0(
+  "Use add_toids() to build toid from fromnode/tonode, ",
+  "or hy(x, add_topo = TRUE).")
+
+hy_guidance_leveled <- paste0(
+  "Use add_toids() then add_levelpaths() ",
+  "to enrich the network.")
+
+hy_guidance_node <- paste0(
+  "Supply data with fromnode/tonode columns, ",
+  "or use make_node_topology() to build them.")
+
+# ---- dispatch helpers (reduce boilerplate in S3 methods) ----
+
+#' Classify a bare hy and re-dispatch, or error with guidance
+#' @param x hy object
+#' @param fn_name character. Name of the calling function.
+#' @param required_class character. Class the function needs.
+#' @param guidance character. How to convert.
+#' @param ... arguments forwarded to the re-dispatched call.
+#' @noRd
+hy_classify_and_redispatch <- function(x, fn_name, required_class,
+  guidance, ...) {
+
+  x <- classify_hy(x)
+
+  if (!identical(hy_network_type(x), "hy"))
+    return(match.fun(fn_name)(x, ...))
+
+  hy_dispatch_error(fn_name, required_class, x, guidance)
+}
+
+#' Standard .data.frame method: hy() -> dispatch -> hy_reverse()
+#' @param x data.frame
+#' @param fn_name character. Name of the function to call.
+#' @param ... arguments forwarded to fn_name.
+#' @noRd
+hy_as_dataframe <- function(x, fn_name, ...) {
+
+  x <- hy(x)
+
+  orig_names <- attr(x, "orig_names")
+
+  x <- match.fun(fn_name)(x, ...)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
+
+  hy_reverse(x)
+}
+
+#' Convert hy_node to hy_topo and re-dispatch
+#' @param x hy_node object
+#' @param fn_name character. Function to call after conversion.
+#' @param ... arguments forwarded.
+#' @noRd
+hy_node_to_topo <- function(x, fn_name, ...) {
+
+  message("converting hy_node to hy_topo via add_toids(). ",
+    "For large networks, call add_toids() explicitly ",
+    "to avoid repeated conversion.")
+
+  match.fun(fn_name)(add_toids(x), ...)
+}
+
+#' Try to downcast hy_topo to hy_node, then re-dispatch or error
+#' @param x hy_topo object
+#' @param fn_name character. Function to call after downcast.
+#' @param guidance character. Guidance if downcast fails.
+#' @param ... arguments forwarded.
+#' @noRd
+hy_topo_to_node <- function(x, fn_name, guidance = hy_guidance_node,
+  ...) {
+
+  x <- as_hy_node(x)
+
+  if (inherits(x, "hy_node"))
+    return(match.fun(fn_name)(x, ...))
+
+  hy_dispatch_error(fn_name, "hy_node", x, guidance)
 }
 
 # ---- exported query helpers ----

@@ -36,16 +36,25 @@ add_streamorder <- function(x, status = TRUE) {
 #' @name add_streamorder
 #' @export
 add_streamorder.data.frame <- function(x, status = TRUE) {
-  x <- hy(x)
-
-  x <- add_streamorder(x, status)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_streamorder", status = status)
 }
 
 #' @name add_streamorder
 #' @export
 add_streamorder.hy <- function(x, status = TRUE) {
+  hy_classify_and_redispatch(x, "add_streamorder", "hy_topo", hy_guidance_topo,
+    status = status)
+}
+
+#' @name add_streamorder
+#' @export
+add_streamorder.hy_node <- function(x, status = TRUE) {
+  hy_node_to_topo(x, "add_streamorder", status = status)
+}
+
+#' @name add_streamorder
+#' @export
+add_streamorder.hy_topo <- function(x, status = TRUE) {
 
   if ("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
 
@@ -154,10 +163,12 @@ add_streamorder.hy <- function(x, status = TRUE) {
     }
   }
 
-  left_join(x,
+  x <- left_join(x,
     bind_cols(id = unique(net$id), tibble(stream_order = order,
       stream_calculator = calc)),
     by = "id")
+
+  classify_hy(x)
 
 }
 
@@ -213,16 +224,30 @@ add_streamlevel <- function(x, coastal = NULL) {
 #' @name add_streamlevel
 #' @export
 add_streamlevel.data.frame <- function(x, coastal = NULL) {
-  x <- hy(x)
-
-  x <- add_streamlevel(x, coastal)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_streamlevel", coastal = coastal)
 }
 
 #' @name add_streamlevel
 #' @export
 add_streamlevel.hy <- function(x, coastal = NULL) {
+  hy_classify_and_redispatch(x, "add_streamlevel", "hy_leveled",
+    hy_guidance_leveled, coastal = coastal)
+}
+
+#' @name add_streamlevel
+#' @export
+add_streamlevel.hy_topo <- function(x, coastal = NULL) {
+
+  if (all(c(levelpath, dn_levelpath) %in% names(x)))
+    return(add_streamlevel.hy_leveled(x, coastal))
+
+  hy_dispatch_error("add_streamlevel", "hy_leveled", x,
+    "Use add_levelpaths() to add levelpath attributes.")
+}
+
+#' @name add_streamlevel
+#' @export
+add_streamlevel.hy_leveled <- function(x, coastal = NULL) {
 
   check_names(x, c(levelpath, dn_levelpath), "add_streamlevel")
 
@@ -263,6 +288,8 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
     }
   }
 
-  left_join(x, tibble(levelpath = id, stream_level = level), by = "levelpath")
+  x <- left_join(x, tibble(levelpath = id, stream_level = level), by = "levelpath")
+
+  classify_hy(x)
 
 }

@@ -4,6 +4,8 @@
 \alias{make_index_ids}
 \alias{make_index_ids.data.frame}
 \alias{make_index_ids.hy}
+\alias{make_index_ids.hy_flownetwork}
+\alias{make_index_ids.hy_topo}
 \title{Make Index ids}
 \usage{
 make_index_ids(x, mode = "to", long_form = NULL)
@@ -11,6 +13,10 @@ make_index_ids(x, mode = "to", long_form = NULL)
 \method{make_index_ids}{data.frame}(x, mode = "to", long_form = NULL)
 
 \method{make_index_ids}{hy}(x, mode = "to", long_form = NULL)
+
+\method{make_index_ids}{hy_flownetwork}(x, mode = "to", long_form = NULL)
+
+\method{make_index_ids}{hy_topo}(x, mode = "to", long_form = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

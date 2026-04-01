@@ -1,3 +1,5 @@
+utils::globalVariables(c("priority", "lp_name_attribute", "ds_nameid", "lp_weight_attribute"))
+
 required_atts_add_levelpaths <- c("id", "toid")
 
 #' Add Level Paths
@@ -65,11 +67,16 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
                                       override_factor = NULL, status = FALSE) {
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   name_attribute <- align_name_char(name_attribute)
   weight_attribute <- align_name_char(weight_attribute)
 
   x <- add_levelpaths(x, name_attribute, weight_attribute, override_factor,
     status)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 
@@ -77,9 +84,26 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
 
 #' @name add_levelpaths
 #' @export
-#'
 add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
                               override_factor = NULL, status = FALSE) {
+  hy_classify_and_redispatch(x, "add_levelpaths", "hy_topo", hy_guidance_topo,
+    name_attribute = name_attribute, weight_attribute = weight_attribute,
+    override_factor = override_factor, status = status)
+}
+
+#' @name add_levelpaths
+#' @export
+add_levelpaths.hy_node <- function(x, name_attribute, weight_attribute,
+                                   override_factor = NULL, status = FALSE) {
+  hy_node_to_topo(x, "add_levelpaths",
+    name_attribute = name_attribute, weight_attribute = weight_attribute,
+    override_factor = override_factor, status = status)
+}
+
+#' @name add_levelpaths
+#' @export
+add_levelpaths.hy_topo <- function(x, name_attribute, weight_attribute,
+                                   override_factor = NULL, status = FALSE) {
 
   if (nrow(x) == 0) {
     x[[levelpath_outlet_id]] <- NA_character_

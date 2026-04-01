@@ -103,32 +103,18 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
 
       attr(x, "orig_names") <- orig_names_save
       attr(x, "dendritic") <- dendritic_save
-
-      has_toid  <- toid %in% names(x)
-      unique_id <- length(unique(x$id)) == nrow(x)
     }
   }
 
-  if (has_toid && unique_id) {
-
-    x <- new_hy_topo(x)
-
-    if (all(c(topo_sort, levelpath, levelpath_outlet_id) %in% names(x)))
-      x <- new_hy_leveled(x)
-
-  } else if (has_toid && !unique_id && add_topo) {
-
+  if (add_topo && toid %in% names(x) && any(duplicated(x$id))) {
     warning("Non-unique id values detected. This self-referencing table has ",
             "duplicated rows (likely from divergences). Use to_flownetwork() ",
             "for a junction-table representation, or make_node_topology() for ",
             "a fromnode/tonode representation. hy_topo requires unique id.",
             call. = FALSE)
-
-  } else if (has_nodes && unique_id) {
-
-    x <- new_hy_node(x)
-
   }
+
+  x <- classify_hy(x, allow_non_unique = FALSE)
 
   x
 }

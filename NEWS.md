@@ -1,5 +1,15 @@
-hydroloom 1.1.4
+hydroloom 1.2.0
 ==========
+
+This release introduces an S3 class hierarchy (`hy_topo`, `hy_leveled`,
+`hy_node`, `hy_flownetwork`) that lets hydroloom functions validate input
+at dispatch time and provide guided error messages when the wrong network
+representation is passed. Existing code that passes `data.frame` or `hy`
+objects continues to work without changes -- the new classes are assigned
+automatically and are transparent to downstream consumers. Package
+developers who depend on hydroloom should note that returned objects now
+carry subclass attributes (e.g. `hy_topo`) which are stripped by
+`hy_reverse()` and by standard dplyr operations.
 
 - Improve performance of `add_levelpaths()` by converting to data.table
 - Add S3 class hierarchy: `hy_topo`, `hy_leveled`, `hy_node`, `hy_flownetwork` -- #73
@@ -11,6 +21,19 @@ hydroloom 1.1.4
   `make_node_topology()` -> `hy_node`, `to_flownetwork()` -> `hy_flownetwork`
 - `add_divergence()` sets `attr(x, "dendritic") <- FALSE` on output
 - `add_toids(return_dendritic = FALSE)` is deprecated; use `to_flownetwork()`
+- S3 method dispatch: functions now dispatch on subclass (e.g. `.hy_topo`,
+  `.hy_leveled`) with guided error messages for wrong input class
+- Functions that require `hy_leveled` (e.g. `add_pfafstetter()`,
+  `navigate_hydro_network()`, `to_flownetwork()`) fall through from
+  `hy_topo`/`hy_node` when required columns are already present
+- Fix pre-existing bug in `make_to_dt()` where dendritic branch failed on
+  tibble input (data.table `with = FALSE` syntax on plain data.frame)
+- **Deprecation notice:** A future release will require that `hy_topo` objects
+  have unique `id` values (one row per catchment). Non-dendritic connectivity
+  with duplicated ids in a toid-based edge list will need to be represented as
+  `hy_flownetwork` (via `to_flownetwork()`). Developers who currently pass
+  non-dendritic toid tables through hydroloom functions should migrate to
+  `to_flownetwork()` or `make_node_topology()` for non-dendritic workflows.
 
 hydroloom 1.1.3
 ==========

@@ -4,6 +4,8 @@
 \alias{add_divergence}
 \alias{add_divergence.data.frame}
 \alias{add_divergence.hy}
+\alias{add_divergence.hy_topo}
+\alias{add_divergence.hy_node}
 \title{Add Divergence Attribute}
 \usage{
 add_divergence(
@@ -25,6 +27,24 @@ add_divergence(
 )
 
 \method{add_divergence}{hy}(
+  x,
+  coastal_outlet_ids,
+  inland_outlet_ids,
+  name_attr,
+  type_attr,
+  major_types
+)
+
+\method{add_divergence}{hy_topo}(
+  x,
+  coastal_outlet_ids,
+  inland_outlet_ids,
+  name_attr,
+  type_attr,
+  major_types
+)
+
+\method{add_divergence}{hy_node}(
   x,
   coastal_outlet_ids,
   inland_outlet_ids,

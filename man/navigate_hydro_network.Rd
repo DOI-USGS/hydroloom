@@ -4,6 +4,9 @@
 \alias{navigate_hydro_network}
 \alias{navigate_hydro_network.data.frame}
 \alias{navigate_hydro_network.hy}
+\alias{navigate_hydro_network.hy_topo}
+\alias{navigate_hydro_network.hy_node}
+\alias{navigate_hydro_network.hy_leveled}
 \title{Navigate Hydro Network}
 \usage{
 navigate_hydro_network(x, start, mode, distance = NULL)
@@ -11,6 +14,12 @@ navigate_hydro_network(x, start, mode, distance = NULL)
 \method{navigate_hydro_network}{data.frame}(x, start, mode, distance = NULL)
 
 \method{navigate_hydro_network}{hy}(x, start, mode, distance = NULL)
+
+\method{navigate_hydro_network}{hy_topo}(x, start, mode, distance = NULL)
+
+\method{navigate_hydro_network}{hy_node}(x, start, mode, distance = NULL)
+
+\method{navigate_hydro_network}{hy_leveled}(x, start, mode, distance = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}

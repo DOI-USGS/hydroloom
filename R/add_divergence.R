@@ -77,23 +77,39 @@ add_divergence <- function(x, coastal_outlet_ids, inland_outlet_ids,
 #' @export
 add_divergence.data.frame <- function(x, coastal_outlet_ids, inland_outlet_ids,
                                       name_attr, type_attr, major_types) {
-
-  x <- hy(x)
-
-  x <- add_divergence(x,
-    coastal_outlet_ids,
-    inland_outlet_ids,
-    name_attr,
-    type_attr,
-    major_types)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_divergence",
+    coastal_outlet_ids = coastal_outlet_ids,
+    inland_outlet_ids = inland_outlet_ids,
+    name_attr = name_attr, type_attr = type_attr,
+    major_types = major_types)
 }
 
 #' @name add_divergence
 #' @export
 add_divergence.hy <- function(x, coastal_outlet_ids, inland_outlet_ids,
                               name_attr, type_attr, major_types) {
+  hy_classify_and_redispatch(x, "add_divergence", "hy_node", hy_guidance_node,
+    coastal_outlet_ids = coastal_outlet_ids,
+    inland_outlet_ids = inland_outlet_ids,
+    name_attr = name_attr, type_attr = type_attr,
+    major_types = major_types)
+}
+
+#' @name add_divergence
+#' @export
+add_divergence.hy_topo <- function(x, coastal_outlet_ids, inland_outlet_ids,
+                                   name_attr, type_attr, major_types) {
+  hy_topo_to_node(x, "add_divergence",
+    coastal_outlet_ids = coastal_outlet_ids,
+    inland_outlet_ids = inland_outlet_ids,
+    name_attr = name_attr, type_attr = type_attr,
+    major_types = major_types)
+}
+
+#' @name add_divergence
+#' @export
+add_divergence.hy_node <- function(x, coastal_outlet_ids, inland_outlet_ids,
+                                   name_attr, type_attr, major_types) {
 
   x <- select(x, -any_of("toid"))
 
@@ -400,16 +416,25 @@ add_return_divergence <- function(x, status = TRUE) {
 #' @name add_return_divergence
 #' @export
 add_return_divergence.data.frame <- function(x, status = TRUE) {
-  x <- hy(x)
-
-  x <- add_return_divergence(x, status)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_return_divergence", status = status)
 }
 
 #' @name add_return_divergence
 #' @export
 add_return_divergence.hy <- function(x, status = TRUE) {
+  hy_classify_and_redispatch(x, "add_return_divergence", "hy_node",
+    hy_guidance_node, status = status)
+}
+
+#' @name add_return_divergence
+#' @export
+add_return_divergence.hy_topo <- function(x, status = TRUE) {
+  hy_topo_to_node(x, "add_return_divergence", status = status)
+}
+
+#' @name add_return_divergence
+#' @export
+add_return_divergence.hy_node <- function(x, status = TRUE) {
 
   required_atts <- c(id, fromnode, tonode, divergence)
 
@@ -461,6 +486,8 @@ add_return_divergence.hy <- function(x, status = TRUE) {
 
   return <- net$toid[net$id %in% outlets]
 
-  mutate(x, return_divergence = ifelse(id %in% return, 1, 0))
+  x <- mutate(x, return_divergence = ifelse(id %in% return, 1, 0))
+
+  classify_hy(x)
 
 }

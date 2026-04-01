@@ -4,6 +4,8 @@
 \alias{add_levelpaths}
 \alias{add_levelpaths.data.frame}
 \alias{add_levelpaths.hy}
+\alias{add_levelpaths.hy_node}
+\alias{add_levelpaths.hy_topo}
 \title{Add Level Paths}
 \usage{
 add_levelpaths(
@@ -23,6 +25,22 @@ add_levelpaths(
 )
 
 \method{add_levelpaths}{hy}(
+  x,
+  name_attribute,
+  weight_attribute,
+  override_factor = NULL,
+  status = FALSE
+)
+
+\method{add_levelpaths}{hy_node}(
+  x,
+  name_attribute,
+  weight_attribute,
+  override_factor = NULL,
+  status = FALSE
+)
+
+\method{add_levelpaths}{hy_topo}(
   x,
   name_attribute,
   weight_attribute,

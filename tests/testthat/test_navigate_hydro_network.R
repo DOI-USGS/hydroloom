@@ -14,13 +14,13 @@ x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = 
 
 test_that("get_DM works normal", {
   expect_error(navigate_hydro_network(dplyr::select(x, -COMID), 1234, mode = "DM"),
-    "DM requires.*")
+    "requires hy_leveled")
 
   expect_error(navigate_hydro_network(mode = "BK"),
     "must choose mode input from:")
 
   expect_error(navigate_hydro_network(dplyr::select(x, -COMID),
-    1234, mode = "DD"), "DD requires.*")
+    1234, mode = "DD"), "requires hy_leveled")
 
   result <- navigate_hydro_network(x, 11689050, "DM")
   expect_equal(length(result), 26)
@@ -113,7 +113,7 @@ test_that("get_UT works", {
   test_error <- rbind(x, x)
 
   expect_error(navigate_hydro_network(test_error, 11687224, "UT"),
-    "Found duplicate id for starting catchment. Duplicate rows in network")
+    "requires hy_leveled")
 })
 
 test_that("get_UT works with distance", {

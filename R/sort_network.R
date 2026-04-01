@@ -57,19 +57,25 @@ sort_network <- function(x, split = FALSE, outlets = NULL) {
 #' @export
 #'
 sort_network.data.frame <- function(x, split = FALSE, outlets = NULL) {
-
-  x <- hy(x)
-
-  x <- sort_network(x, split, outlets)
-
-  hy_reverse(x)
-
+  hy_as_dataframe(x, "sort_network", split = split, outlets = outlets)
 }
 
 #' @name sort_network
 #' @export
-#'
 sort_network.hy <- function(x, split = FALSE, outlets = NULL) {
+  hy_classify_and_redispatch(x, "sort_network", "hy_topo", hy_guidance_topo,
+    split = split, outlets = outlets)
+}
+
+#' @name sort_network
+#' @export
+sort_network.hy_node <- function(x, split = FALSE, outlets = NULL) {
+  hy_node_to_topo(x, "sort_network", split = split, outlets = outlets)
+}
+
+#' @name sort_network
+#' @export
+sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
 
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
@@ -232,19 +238,25 @@ add_topo_sort <- function(x, outlets = NULL) {
 #' @export
 #'
 add_topo_sort.data.frame <- function(x, outlets = NULL) {
-
-  x <- hy(x)
-
-  x <- add_topo_sort(x, outlets)
-
-  hy_reverse(x)
-
+  hy_as_dataframe(x, "add_topo_sort", outlets = outlets)
 }
 
 #' @name add_topo_sort
 #' @export
-#'
 add_topo_sort.hy <- function(x, outlets = NULL) {
+  hy_classify_and_redispatch(x, "add_topo_sort", "hy_topo", hy_guidance_topo,
+    outlets = outlets)
+}
+
+#' @name add_topo_sort
+#' @export
+add_topo_sort.hy_node <- function(x, outlets = NULL) {
+  hy_node_to_topo(x, "add_topo_sort", outlets = outlets)
+}
+
+#' @name add_topo_sort
+#' @export
+add_topo_sort.hy_topo <- function(x, outlets = NULL) {
 
   out <- sort_network(x, outlets = outlets)
 

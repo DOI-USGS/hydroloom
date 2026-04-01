@@ -47,10 +47,18 @@ add_measures <- function(x) {
 #' @name add_measures
 #' @export
 add_measures.data.frame <- function(x) {
-  hy(x) |>
+  x <- hy(x)
+
+  orig_names <- attr(x, "orig_names")
+
+  x <- x |>
     add_measures() |>
-    rename_measures() |>
-    hy_reverse()
+    rename_measures()
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
+
+  hy_reverse(x)
 
 }
 

@@ -47,9 +47,13 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- make_node_topology(x, add_div, add)
 
   if (inherits(x, "hy")) {
+    attr(x, "orig_names") <- orig_names
+    if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
     hy_reverse(x)
   } else {
     x
@@ -60,6 +64,13 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 #' @name make_node_topology
 #' @export
 make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
+  hy_classify_and_redispatch(x, "make_node_topology", "hy_topo",
+    hy_guidance_topo, add_div = add_div, add = add)
+}
+
+#' @name make_node_topology
+#' @export
+make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
   check_names(x, c(id, toid), "make_node_topology")
 
