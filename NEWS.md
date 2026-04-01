@@ -11,6 +11,13 @@ hydroloom 1.1.4
   `make_node_topology()` -> `hy_node`, `to_flownetwork()` -> `hy_flownetwork`
 - `add_divergence()` sets `attr(x, "dendritic") <- FALSE` on output
 - `add_toids(return_dendritic = FALSE)` is deprecated; use `to_flownetwork()`
+- S3 method dispatch: functions now dispatch on subclass (e.g. `.hy_topo`,
+  `.hy_leveled`) with guided error messages for wrong input class
+- Functions that require `hy_leveled` (e.g. `add_pfafstetter()`,
+  `navigate_hydro_network()`, `to_flownetwork()`) fall through from
+  `hy_topo`/`hy_node` when required columns are already present
+- Fix pre-existing bug in `make_to_dt()` where dendritic branch failed on
+  tibble input (data.table `with = FALSE` syntax on plain data.frame)
 
 hydroloom 1.1.3
 ==========
