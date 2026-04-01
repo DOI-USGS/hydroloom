@@ -84,12 +84,8 @@ make_index_ids.data.frame <- function(x, mode = "to", long_form = NULL) {
 #' @name make_index_ids
 #' @export
 make_index_ids.hy <- function(x, mode = "to", long_form = NULL) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy")) return(make_index_ids(x, mode, long_form))
-
-  hy_dispatch_error("make_index_ids", "hy_topo", x,
-    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+  hy_classify_and_redispatch(x, "make_index_ids", "hy_topo", hy_guidance_topo,
+    mode = mode, long_form = long_form)
 }
 
 #' @name make_index_ids

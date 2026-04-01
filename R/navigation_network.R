@@ -113,13 +113,8 @@ navigate_hydro_network.data.frame <- function(x, start, mode, distance = NULL) {
 #' @name navigate_hydro_network
 #' @export
 navigate_hydro_network.hy <- function(x, start, mode, distance = NULL) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy"))
-    return(navigate_hydro_network(x, start, mode, distance))
-
-  hy_dispatch_error("navigate_hydro_network", "hy_leveled", x,
-    "Use add_toids() then add_levelpaths() to enrich the network.")
+  hy_classify_and_redispatch(x, "navigate_hydro_network", "hy_leveled",
+    hy_guidance_leveled, start = start, mode = mode, distance = distance)
 }
 
 #' @name navigate_hydro_network

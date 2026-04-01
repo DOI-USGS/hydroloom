@@ -26,28 +26,13 @@ add_pathlength <- function(x) {
 #' @name add_pathlength
 #' @export
 add_pathlength.data.frame <- function(x) {
-
-  x <- hy(x)
-
-  orig_names <- attr(x, "orig_names")
-
-  x <- add_pathlength(x)
-
-  attr(x, "orig_names") <- orig_names
-  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_pathlength")
 }
 
 #' @name add_pathlength
 #' @export
 add_pathlength.hy <- function(x) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy")) return(add_pathlength(x))
-
-  hy_dispatch_error("add_pathlength", "hy_topo", x,
-    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+  hy_classify_and_redispatch(x, "add_pathlength", "hy_topo", hy_guidance_topo)
 }
 
 # TODO: support hy_node auto-convert via add_toids()

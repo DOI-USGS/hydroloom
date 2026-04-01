@@ -79,30 +79,15 @@ add_pfafstetter <- function(x, max_level = 2, status = FALSE) {
 #' @name add_pfafstetter
 #' @export
 add_pfafstetter.data.frame <- function(x, max_level = 2, status = FALSE) {
-
-  x <- hy(x)
-
-  orig_names <- attr(x, "orig_names")
-
-  x <- add_pfafstetter(x, max_level, status)
-
-  attr(x, "orig_names") <- orig_names
-  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
-
-  hy_reverse(x)
-
+  hy_as_dataframe(x, "add_pfafstetter", max_level = max_level,
+    status = status)
 }
 
 #' @name add_pfafstetter
 #' @export
 add_pfafstetter.hy <- function(x, max_level = 2, status = FALSE) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy"))
-    return(add_pfafstetter(x, max_level, status))
-
-  hy_dispatch_error("add_pfafstetter", "hy_leveled", x,
-    "Use add_toids() then add_levelpaths() to enrich the network.")
+  hy_classify_and_redispatch(x, "add_pfafstetter", "hy_leveled",
+    hy_guidance_leveled, max_level = max_level, status = status)
 }
 
 #' @name add_pfafstetter

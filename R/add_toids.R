@@ -54,12 +54,8 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
 #' @name add_toids
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy")) return(add_toids(x, return_dendritic))
-
-  hy_dispatch_error("add_toids", "hy_node", x,
-    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+  hy_classify_and_redispatch(x, "add_toids", "hy_node", hy_guidance_node,
+    return_dendritic = return_dendritic)
 }
 
 #' @name add_toids

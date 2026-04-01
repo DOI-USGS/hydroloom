@@ -64,12 +64,8 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 #' @name make_node_topology
 #' @export
 make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy")) return(make_node_topology(x, add_div, add))
-
-  hy_dispatch_error("make_node_topology", "hy_topo", x,
-    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+  hy_classify_and_redispatch(x, "make_node_topology", "hy_topo",
+    hy_guidance_topo, add_div = add_div, add = add)
 }
 
 #' @name make_node_topology

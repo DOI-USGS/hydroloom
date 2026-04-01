@@ -44,12 +44,8 @@ get_bridge_flowlines.data.frame <- function(x, quiet = FALSE) {
 #' @name get_bridge_flowlines
 #' @export
 get_bridge_flowlines.hy <- function(x, quiet = FALSE) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy")) return(get_bridge_flowlines(x, quiet))
-
-  hy_dispatch_error("get_bridge_flowlines", "hy_topo", x,
-    "Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).")
+  hy_classify_and_redispatch(x, "get_bridge_flowlines", "hy_topo",
+    hy_guidance_topo, quiet = quiet)
 }
 
 # TODO: support hy_node auto-convert via add_toids()

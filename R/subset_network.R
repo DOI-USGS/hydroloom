@@ -46,38 +46,20 @@ subset_network <- function(x, outlet, only_up = FALSE) {
 #' @name subset_network
 #' @export
 subset_network.data.frame <- function(x, outlet, only_up = FALSE) {
-  x <- hy(x)
-
-  orig_names <- attr(x, "orig_names")
-
-  x <- subset_network(x, outlet, only_up)
-
-  attr(x, "orig_names") <- orig_names
-  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "subset_network", outlet = outlet, only_up = only_up)
 }
 
 #' @name subset_network
 #' @export
 subset_network.hy <- function(x, outlet, only_up = FALSE) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy")) return(subset_network(x, outlet, only_up))
-
-  hy_dispatch_error("subset_network", "hy_node", x,
-    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+  hy_classify_and_redispatch(x, "subset_network", "hy_node", hy_guidance_node,
+    outlet = outlet, only_up = only_up)
 }
 
 #' @name subset_network
 #' @export
 subset_network.hy_topo <- function(x, outlet, only_up = FALSE) {
-
-  x <- as_hy_node(x)
-  if (inherits(x, "hy_node")) return(subset_network(x, outlet, only_up))
-
-  hy_dispatch_error("subset_network", "hy_node", x,
-    "Supply data with fromnode/tonode columns, or use make_node_topology() to build them.")
+  hy_topo_to_node(x, "subset_network", outlet = outlet, only_up = only_up)
 }
 
 #' @name subset_network

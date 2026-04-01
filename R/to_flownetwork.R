@@ -48,13 +48,8 @@ to_flownetwork.data.frame <- function(x, warn_dendritic = TRUE) {
 #' @name to_flownetwork
 #' @export
 to_flownetwork.hy <- function(x, warn_dendritic = TRUE) {
-
-  x <- classify_hy(x)
-  if (!identical(hy_network_type(x), "hy"))
-    return(to_flownetwork(x, warn_dendritic))
-
-  hy_dispatch_error("to_flownetwork", "hy_leveled", x,
-    "Use add_toids() then add_levelpaths() to enrich the network.")
+  hy_classify_and_redispatch(x, "to_flownetwork", "hy_leveled",
+    hy_guidance_leveled, warn_dendritic = warn_dendritic)
 }
 
 #' @name to_flownetwork
