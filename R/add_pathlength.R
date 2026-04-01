@@ -1,6 +1,10 @@
 #' Add Path Length
 #' @description Generates the main path length to a basin's terminal path.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
+#'
+#' Required attributes: `id`, `toid`, `length_km`
+#'
 #' @name add_pathlength
 #' @export
 #' @returns data.frame containing pathlength_km
@@ -22,35 +26,52 @@ add_pathlength <- function(x) {
 #' @name add_pathlength
 #' @export
 add_pathlength.data.frame <- function(x) {
-
-  x <- hy(x)
-
-  x <- add_pathlength(x)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_pathlength")
 }
 
 #' @name add_pathlength
 #' @export
 add_pathlength.hy <- function(x) {
+  hy_classify_and_redispatch(x, "add_pathlength", "hy_topo", hy_guidance_topo)
+}
+
+# TODO: support hy_node auto-convert via add_toids()
+#' @name add_pathlength
+#' @export
+add_pathlength.hy_node <- function(x) {
+  hy_dispatch_error("add_pathlength", "hy_topo", x,
+    "Use add_toids() to convert fromnode/tonode to edge list.")
+}
+
+#' @name add_pathlength
+#' @export
+add_pathlength.hy_topo <- function(x) {
 
   check_names(x, c(id, toid, length_km), "add_pathlength")
 
   orig_order <- select(x, id)
 
-  x <- sort_network(st_drop_geometry(x))[nrow(x):1, ]
+  x <- sort_network(st_drop_geometry(x))[rev(seq_len(nrow(x))), ]
 
-  x$pathlength_km <- rep(0, nrow(x))
+  pathlength_km <- rep(0, nrow(x))
+  length_km <- x$length_km
+  toid <- x$toid
 
   toids <- match(x$toid, x$id)
 
-  for(i in seq_len(length(x$id))) {
-    if((tid <- x$toid[i]) != get_outlet_value(x)) {
+  for (i in seq_along(toid)) {
+    tid <- toid[i]
+    if (tid != 0) {
 
-      x$pathlength_km[i] <- x$length_km[toids[i]] + x$pathlength_km[toids[i]]
+      pathlength_km[i] <- length_km[toids[i]] + pathlength_km[toids[i]]
 
     }
+    if (i %% 10000 == 0) message(i)
   }
 
-  left_join(orig_order, x, by = id)
+  x$pathlength_km <- pathlength_km
+
+  x <- left_join(orig_order, x, by = id)
+
+  classify_hy(x)
 }

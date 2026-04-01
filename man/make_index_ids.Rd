@@ -4,39 +4,64 @@
 \alias{make_index_ids}
 \alias{make_index_ids.data.frame}
 \alias{make_index_ids.hy}
+\alias{make_index_ids.hy_flownetwork}
+\alias{make_index_ids.hy_topo}
 \title{Make Index ids}
 \usage{
-make_index_ids(x, long_form = FALSE)
+make_index_ids(x, mode = "to", long_form = NULL)
 
-\method{make_index_ids}{data.frame}(x, long_form = FALSE)
+\method{make_index_ids}{data.frame}(x, mode = "to", long_form = NULL)
 
-\method{make_index_ids}{hy}(x, long_form = FALSE)
+\method{make_index_ids}{hy}(x, mode = "to", long_form = NULL)
+
+\method{make_index_ids}{hy_flownetwork}(x, mode = "to", long_form = NULL)
+
+\method{make_index_ids}{hy_topo}(x, mode = "to", long_form = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
-\item{long_form}{logical if TRUE, return will be a long-form version of the
-\code{to_list}. This form can be converted to the default list format with
-\link{format_index_ids}.}
+\item{mode}{character indicating the mode of the graph. Choose from "to",
+"from", or "both". Default is "to". Se Details for more information.}
+
+\item{long_form}{logical DEPRECATED}
 }
 \value{
-list containing named elements: \code{to}: adjacency matrix \code{lengths}:
-vector indicating the number of connections from each node, and: \code{to_list}:
-a data.frame with an \code{id}, \code{indid} and a \code{toindid} list column. If long_form
-= TRUE, return will be a long form data.frame with no list column as in \code{to_list}.
-NOTE: the long_form output should be used with caution as indid may not
-correspond to row number.
+list containing named elements:
+\describe{
+\item{to}{adjacency matrix with columns that correspond to \code{unqiue(x$id)}}
+\item{lengths}{vector indicating the number of connections from each node}
+\item{to_list}{a data.frame with an \code{id}, \code{indid} and a \code{toindid} list column.}
+}
+
+List will have names \code{froms}, \code{lengths}, and \code{froms_list} for mode "from".
+
+NOTE: the long_form output is deprecated and will be removed in a future release.
 }
 \description{
 makes index ids for the provided hy object. These can be used
 for graph traversal algorithms such that the row number and id are equal.
 }
+\details{
+Required attributes: \code{id}, \code{toid}
+
+mode determines the direction of the graph. If "to", the graph will
+be directed from the \code{id} to the \code{toid}. If "from", the graph will be
+directed from the \code{toid} to the \code{id}. If "both", the list will contain both
+a "from" and a "to" element containing each version of the graph.
+}
 \examples{
 
-x <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
-              toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4))
+x <- data.frame(
+  id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+  toid = c(2, 3, 4, 5, 0, 7, 8, 9, 4)
+)
 
-make_index_ids(x)
+make_index_ids(x, mode = "to")
+
+make_index_ids(x, mode = "from")
+
+make_index_ids(x, mode = "both")
 
 x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
 

@@ -4,6 +4,8 @@
 \alias{add_return_divergence}
 \alias{add_return_divergence.data.frame}
 \alias{add_return_divergence.hy}
+\alias{add_return_divergence.hy_topo}
+\alias{add_return_divergence.hy_node}
 \title{Add Return Divergence}
 \usage{
 add_return_divergence(x, status = TRUE)
@@ -11,6 +13,10 @@ add_return_divergence(x, status = TRUE)
 \method{add_return_divergence}{data.frame}(x, status = TRUE)
 
 \method{add_return_divergence}{hy}(x, status = TRUE)
+
+\method{add_return_divergence}{hy_topo}(x, status = TRUE)
+
+\method{add_return_divergence}{hy_node}(x, status = TRUE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
@@ -25,8 +31,10 @@ Adds a return divergence attribute to the provided network.
 The method implemented matches that of the NHDPlus except
 in the rare case that a diversion includes more than one secondary path.
 
-Requires and \code{id}, \code{fromnode}, \code{tonode} and \code{divergence} attribute.
 See \link{add_divergence} and \link{make_node_topology}.
+}
+\details{
+Required attributes: \code{id}, \code{fromnode}, \code{tonode}, \code{divergence}
 
 Algorithm:
 

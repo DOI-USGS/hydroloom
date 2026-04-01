@@ -1,8 +1,11 @@
 #' @title Make Attribute Topology
 #' @description given a set of lines with starting and ending nodes that
 #' form a geometric network, construct an attribute topology.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @details
+#'
+#' Required attributes: `id` and sf linestring geometry
+#'
 #' If a `future` plan is set up, node distance calculations will be
 #' applied using future workers.
 #'
@@ -23,8 +26,8 @@
 #'
 #' x <- add_toids(hy(x), return_dendritic = FALSE)
 #'
-#' x[x$id == x$id[1],]$toid
-#' z[z$COMID == x$id[1],]$toid
+#' x[x$id == x$id[1], ]$toid
+#' z[z$COMID == x$id[1], ]$toid
 #'
 make_attribute_topology <- function(x, min_distance) {
   UseMethod("make_attribute_topology")
@@ -36,8 +39,6 @@ make_attribute_topology.data.frame <- function(x, min_distance) {
 
   x <- hy(x)
 
-  x <- select(x, all_of(c(id)))
-
   hy_reverse(make_attribute_topology(x, min_distance))
 
 }
@@ -45,6 +46,8 @@ make_attribute_topology.data.frame <- function(x, min_distance) {
 #' @name make_attribute_topology
 #' @export
 make_attribute_topology.hy <- function(x, min_distance) {
+
+  x <- select(x, all_of(c(id)))
 
   # first we get start and end nodes
   nodes <- as.data.frame(cbind(
@@ -61,7 +64,7 @@ make_attribute_topology.hy <- function(x, min_distance) {
   nodes$row <- seq_len(nrow(nodes))
   x$row <- seq_len(nrow(nodes))
 
-  xs <- 1:nrow(nodes)
+  xs <- seq_len(nrow(nodes))
 
   # apply over allnodes
   closest <- pblapply(xs, function(x, nodes) {
@@ -70,14 +73,14 @@ make_attribute_topology.hy <- function(x, min_distance) {
     d <- sqrt((nodes$ex[x] - nodes$sx)^2 + (nodes$ey[x] - nodes$sy)^2)
 
     # if nothing close, 0
-    if(min(d) > min_distance) {
+    if (min(d) > min_distance) {
       0
     } else {
-      #whichever is minimum but not na
+      # whichever is minimum but not na
       which(d == min(d, na.rm = TRUE))
     }
 
-  }, nodes = nodes, cl = "future")
+  }, nodes = nodes, cl = future_available())
 
   # Add resulting list as a list column
   nodes$torow <- closest
@@ -88,10 +91,14 @@ make_attribute_topology.hy <- function(x, min_distance) {
     filter(.data$row != .data$torow) |>
     left_join(st_drop_geometry(x), by = "row") |>
     left_join(select(st_drop_geometry(x), row, toid = id),
-                     by = c("torow" = "row")) |>
+      by = c("torow" = "row")) |>
     select(-all_of(c("row", "torow")))
 
   nodes$toid <- replace_na(nodes$toid, get_outlet_value(nodes))
 
-  left_join(select(st_drop_geometry(x), -all_of("row")), select(nodes, id, toid), by = id)
+  out <- left_join(select(st_drop_geometry(x), -all_of("row")), select(nodes, id, toid), by = id)
+
+  out$toid <- replace_na(out$toid, get_outlet_value(out))
+
+  out
 }

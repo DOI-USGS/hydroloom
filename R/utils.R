@@ -1,5 +1,10 @@
+future_available <- function() {
+  if (!requireNamespace("future", quietly = TRUE) ||
+    inherits(future::plan(), "sequential")) NULL else "future"
+}
+
 get_outlet_value <- function(x) {
-  if(inherits(x$id, "character")) {
+  if (inherits(x$id, "character")) {
     ""
   } else {
     0
@@ -7,7 +12,7 @@ get_outlet_value <- function(x) {
 }
 
 get_hyg <- function(x, add, id = "id") {
-  if(add && inherits(x, "sf")) {
+  if (add && inherits(x, "sf")) {
     select(x, all_of(id)) |>
       group_by(.data$id) |>
       filter(row_number() == 1) |>
@@ -18,14 +23,16 @@ get_hyg <- function(x, add, id = "id") {
 }
 
 put_hyg <- function(x, hy_g) {
-  if(!is.null(hy_g)) {
+  if (!is.null(hy_g)) {
     orig_names <- attr(x, "orig_names")
-    x <- st_sf(left_join(x, hy_g, by = id))
-    attr(x, "orig_names") <- orig_names
+    dendritic_attr <- attr(x, "dendritic")
 
-    if(!inherits(x, "hy")) {
-      class(x) <- c("hy", class(x))
-    }
+    x <- st_sf(left_join(x, hy_g, by = id))
+
+    attr(x, "orig_names") <- orig_names
+    attr(x, "dendritic") <- dendritic_attr
+
+    x <- classify_hy(x)
   }
   x
 }
@@ -67,13 +74,13 @@ st_compatibalize <- function(sf1, sf2) {
 #' @export
 #' @examples
 #'
-#' (g <- sf::st_sf(a=3, geo = sf::st_sfc(sf::st_point(1:2))))
+#' (g <- sf::st_sf(a = 3, geo = sf::st_sfc(sf::st_point(1:2))))
 #' rename_geometry(g, "geometry")
 #'
-rename_geometry <- function(g, name){
-  current = attr(g, "sf_column")
+rename_geometry <- function(g, name) {
+  current <- attr(g, "sf_column")
 
-  names(g)[names(g)==current] = name
+  names(g)[names(g) == current] <- name
 
   attr(g, "sf_column") <- name
 
@@ -95,11 +102,11 @@ rename_geometry <- function(g, name){
 #' end <- get_node(x, "end")
 #'
 #' plot(sf::st_zm(sf::st_geometry(x)),
-#'      lwd = x$StreamOrde, col = "blue")
+#'   lwd = x$StreamOrde, col = "blue")
 #' plot(sf::st_geometry(start), add = TRUE)
 #'
 #' plot(sf::st_zm(sf::st_geometry(x)),
-#'      lwd = x$StreamOrde, col = "blue")
+#'   lwd = x$StreamOrde, col = "blue")
 #' plot(sf::st_geometry(end), add = TRUE)
 #'
 get_node <- function(x, position = "end") {
@@ -107,21 +114,21 @@ get_node <- function(x, position = "end") {
 
   x <- x |>
     st_coordinates() |>
-    as.data.frame()
+    as.data.table()
 
-  if("L2" %in% names(x)) {
-    x <- group_by(x, .data$L2)
+  if ("L2" %in% names(x)) {
+    by <- "L2"
   } else {
-    x <- group_by(x, .data$L1)
+    by <- "L1"
   }
 
-  if(position == "end") {
-    x <- filter(x, row_number() == n())
-  } else if(position == "start") {
-    x <- filter(x, row_number() == 1)
+  if (position == "end") {
+    x <- x[, .SD[.N], by = by]
+  } else if (position == "start") {
+    x <- x[, .SD[1], by = by]
   }
 
-  x <- select(ungroup(x), "X", "Y")
+  x <- x[, c("X", "Y")]
 
   st_as_sf(x, coords = c("X", "Y"), crs = in_crs)
 }
@@ -168,12 +175,12 @@ get_node <- function(x, position = "end") {
 #'
 fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
 
-  if(!is.null(network))
+  if (!is.null(network))
     network <- hy(network)
 
   try({
 
-    if(!is.null(fn_list)) {
+    if (!is.null(fn_list)) {
       f <- fn_list$flowline
 
       check_line <- hy(fn_list$network)
@@ -182,7 +189,7 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
     } else {
       f <- network[network$id == id, ]
 
-      if(is.na(f$toid) | f$toid == get_outlet_value(f)) {
+      if (is.na(f$toid) | f$toid == get_outlet_value(f)) {
 
         check_line <- network[network$toid == f$id, ][1, ]
 
@@ -199,11 +206,11 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
 
     suppressMessages(
       check_end <- st_join(get_node(f, position = check_position),
-                           select(check_line, check_id = "id")))
+        select(check_line, check_id = "id")))
 
     reverse <- is.na(check_end$check_id)
 
-    if(reverse) {
+    if (reverse) {
       st_geometry(f)[reverse] <- st_reverse(st_geometry(f)[reverse])
     }
 
@@ -212,13 +219,13 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
 }
 
 #' @title Rescale Aggregate id Measure to id Measure
-#' @description Given a aggregate id (e.g. reachcode) measure and the from and
-#' to measure for a id (e.g. comid flowline), returns the measure along the
-#' id line. This is a utility specific to the NHDPlus data model where
-#' many comid flowlines make up a single reachcode / reach. "Measures"
-#' are typically referenced to reaches. Flowlines have a stated from-measure /
-#' to-measure. In some cases it is useful to rescale the measure such that it
-#' is relative only to the flowline.
+#' @description Given an aggregate_id (e.g. reachcode in NHDPlus) measure and
+#' the from and to measure for an id (e.g. COMID flowline in NHDPlus), returns
+#' the measure along the id flowline. This is useful where many flowlines make
+#' up a single aggregate feature. "Measures" are typically referenced to the
+#' aggregate feature. Flowlines have a stated from-measure / to-measure. In
+#' some cases it is useful to rescale the measure such that it is relative only
+#' to the flowline.
 #'
 #' from is downstream -- 0 is the outlet
 #' to is upstream -- 100 is the inlet
@@ -235,14 +242,14 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
 rescale_measures <- function(measure, from, to) {
   tryCatch({
 
-    if(!between(measure, from, to))
+    if (!between(measure, from, to))
       stop("measure must be between from and to")
 
     100 * (measure - from) / (to - from)
 
   }, error = function(e) {
-    if(measure < from & from - measure < 0.1 |
-       measure > to & measure - to < 0.1) {
+    if (measure < from & from - measure < 0.1 |
+      measure > to & measure - to < 0.1) {
 
       to <- round(to, 1)
       from <- round(from, 1)
@@ -255,16 +262,67 @@ rescale_measures <- function(measure, from, to) {
   })
 }
 
+add_index <- function(x) {
+  x |>
+    as.data.frame() |>
+    mutate(index = seq_len(nrow(x)))
+}
+
+add_len <- function(x) {
+  x |>
+    mutate(len = sqrt(((.data$X - (lag(.data$X)))^2) +
+      (((.data$Y - (lag(.data$Y)))^2)))) |>
+    mutate(len = replace_na(.data$len, 0)) |>
+    mutate(len = cumsum(.data$len)) |>
+    mutate(id_measure = 100 - (100 * .data$len / max(.data$len)))
+}
+
 # utility function
 get_fl <- function(hydro_location, net) {
-  if(hydro_location$aggregate_id_measure == 100) {
+  if (hydro_location$aggregate_id_measure == 100) {
     filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
+      .data$aggregate_id == hydro_location$aggregate_id &
+        .data$aggregate_id_to_measure == hydro_location$aggregate_id_measure)
   } else {
     filter(net,
-           .data$aggregate_id == hydro_location$aggregate_id &
-             .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
-             .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
+      .data$aggregate_id == hydro_location$aggregate_id &
+        .data$aggregate_id_from_measure <= hydro_location$aggregate_id_measure &
+        .data$aggregate_id_to_measure > hydro_location$aggregate_id_measure)
   }
+}
+
+force_linestring <- function(x) {
+  if (st_geometry_type(x, by_geometry = FALSE) != "LINESTRING") {
+    warning("converting to LINESTRING, this may be slow, check results")
+  }
+
+  suppressWarnings(x <- st_cast(x, "LINESTRING", warn = FALSE))
+
+  if (!"XY" %in% class(st_geometry(x)[[1]])) {
+    warning("dropping z coordinates, this may be slow")
+    x <- st_zm(x)
+  }
+
+  x
+}
+
+add_toids_internal <- function(x, var = NULL, keep = FALSE) {
+
+  if (all(c(id, fromnode, tonode, divergence) %in% names(x)) &&
+    !toid %in% names(x)) {
+
+    x <- st_drop_geometry(x)
+
+    if (!keep) x <- select(x, any_of(c(id, fromnode, tonode, divergence, as.character(var))))
+
+    x <- classify_hy(x)
+
+    add_toids(x, return_dendritic = FALSE)
+
+  } else {
+
+    x
+
+  }
+
 }

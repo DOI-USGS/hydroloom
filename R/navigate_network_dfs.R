@@ -2,13 +2,40 @@
 #' @description given a starting node, return all reachable paths. Once visited,
 #' a node is marked as visited and will not take part in a future path.
 #' @param x data.frame containing hydroloom compatible network or list
-#' as returned by \link{make_index_ids} (for down) or \link{make_fromids}
-#' (for up). The list formats avoids recreating the index ids for every call
+#' as returned by \link{make_index_ids} ("to" mode for downstream or "from" mode
+#' for upstream). The index list format avoids recreating the index ids for every call
 #' to navigate network dfs in the case that it needs to be called many times.
 #' @param starts vector with ids from x to start at.
-#' @param direction character "up or "down"
+#' @param direction character "up", "upmain", "down", or "downmain". If "upmain" or
+#' "downmain", x must contain sufficient information to construct an upmain and
+#' downmain network (see details).
 #' @param reset logical if TRUE, reset graph for each start such that later paths
 #' will have overlapping results.
+#'
+#' @details
+#' `navigate_network_dfs` offers two usage patterns. In the simple case,
+#' you can provide an `hy` in which case preprocessing is performed automatically,
+#' or you can do the preprocessing ahead of time and provide index ids. The latter
+#' is more complicated but can be much faster in certain circumstances.
+#'
+#' `hy` object:
+#'
+#' If the function will only be called one or a few times, it can be called
+#' with x containing (at a minimum) `id` and `toid`. For "upmain" and "downmain"
+#' support, x also requires attributes for determination of the primary upstream
+#' and downstream connection across every junction.
+#'
+#' In this pattern, the `hy` object will be passed to  \link{make_index_ids}
+#' called for every call to `navigate_network_dfs` and the resulting index ids
+#' will be used for network navigation.
+#'
+#' Index ids:
+#'
+#' If the function will be called repeatedly or index_ids are available for
+#' other reasons, the index_id list as created by \link{make_index_ids} ("to"
+#' mode for downstream or "from" mode for upstream). For "upmain"
+#' and "downmain" support, the `main` element must be included.
+#'
 #' @returns list containing dfs result for each start.
 #' @export
 #' @examples
@@ -23,61 +50,88 @@
 #'
 navigate_network_dfs <- function(x, starts, direction = "down", reset = FALSE) {
 
-  if(identical(names(x),  c("to", "lengths", "to_list"))) {
+  # check if we to index ids or from index ids
+  # should this be done with a class attribute?
 
-    if(direction != "down")
+  if (all(c("to", "lengths", "to_list") %in% names(x))) {
+
+    if (!grepl("down", direction))
       stop("Direction must be 'down' if x contains to index ids")
 
-    g <- x
-    rm(x)
+    if (grepl("main", direction) && !"main" %in% names(x))
+      stop("for downmain, index ids must include main element")
 
-    if(!all(starts %in% g$to_list$id)) stop("all starts must be in x")
+  } else if (all(c("froms", "lengths", "froms_list") %in% names(x))) {
 
-  } else if(identical(names(x), c("froms", "lengths", "froms_list"))) {
-
-    if(direction != "up")
+    if (!grepl("up", direction))
       stop("Direction must be 'up' if x contains from index ids")
 
-    g <- x
-    rm(x)
-
-    names(g) <- c("to", "lengths", "to_list")
-    names(g$to_list) <- c("indid", "id", "toindid")
+    if (grepl("main", direction) && !"main" %in% names(x))
+      stop("for upmain, index ids must include main element")
 
   } else {
 
-    if(!inherits(x, "data.frame"))
+    # prepare the flownetwork for navigation
+    # all of this has to be done seperately for the above two cases
+
+    if (!inherits(x, "data.frame"))
       stop("if x is not a length three list as
-            returned by make_index_ids or make_fromids
+            returned by make_index_ids
             it must be a data.frame that can be coerced
             to an hy object.")
 
     x <- hy(x, clean = TRUE)
 
-    if(!all(starts %in% x$id)) stop("all starts must be in x")
+    x <- try_add_toids(x, flownetwork = grepl("main", direction))
 
-    g <- make_index_ids(x)
-
-    if(direction == "up") {
-      g <- make_fromids(g, return_list = TRUE)
-
-      names(g) <- c("to", "lengths", "to_list")
-      names(g$to_list) <- c("indid", "id", "toindid")
+    if (grepl("up", direction)) {
+      g <- make_index_ids(x, mode = "from")
+    } else {
+      g <- make_index_ids(x, mode = "to")
     }
+
+    rm(x) # this can be huge
 
   }
 
-  navigate_network_dfs_internal(g, starts, reset)
+  if (!exists("g", inherits = FALSE)) {
+    g <- x
+    rm(x)
+  }
+
+  # if we are going upstream, we need to update names
+  # the code below assumes the graph is directed where we are going
+  if (grepl("up", direction)) {
+    names(g)[names(g) == "froms"] <- "to"
+    names(g)[names(g) == "froms_list"] <- "to_list"
+
+    names(g$to_list)[names(g$to_list) == "fromindid"] <- "toindid"
+  }
+
+  # if the above resulted in dat that won't work
+  if (grepl("main", direction) && !"main" %in% names(g))
+    stop("main path must be provided for downmain navigation")
+
+  # make sure this will actually work!
+  if (!all(starts %in% g$to_list$id)) stop("all starts must be in x")
+
+  main <- grepl("main", direction)
+
+  navigate_network_dfs_internal(g, starts, reset, main)
 
 }
 
-navigate_network_dfs_internal <- function(g, all_starts, reset) {
+#' @param ind_id_mode logical if TRUE, no id transformations are applied. all_starts is assumed to be in index_id space
+#' @noRd
+navigate_network_dfs_internal <- function(g, all_starts, reset, main, ind_id_mode = FALSE) {
 
-  # these are in indid space
-  all_starts <- unique(g$to_list$indid[match(all_starts, g$to_list$id)])
+  if (!ind_id_mode) {
+    # these are in indid space
+    all_starts <- unique(g$to_list$indid[match(all_starts, g$to_list$id)])
+  }
 
   # if reset is TRUE, we keep all connections in subsequent starts runs
-  if(reset) save_to <- g$to
+  if (reset) save_to <- g$to
 
   # Some vectors to track results
   # indexes into the full set from all starts
@@ -101,10 +155,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
   set_id <- 1
   path_id <- 1
 
-  # path start sort position used to find loops
-  path_start_position <- 1
-
-  for(start in all_starts) {
+  for (start in all_starts) {
 
     # Set up the starting node we change node below so this just tracks for clarity
     node <- start
@@ -121,11 +172,11 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
     new_path <- FALSE
 
     # only reset if we are explicitely asking for overlapping paths
-    if(reset) visited_tracker <- rep(NA_integer_, ncol(g$to))
+    if (reset) visited_tracker <- rep(NA_integer_, ncol(g$to))
 
-    while(visit_index > 0) {
+    while (visit_index > 0) {
 
-      if(is.na(visited_tracker[node])) {
+      if (is.na(visited_tracker[node])) {
         # this is the first time we've seen this,
         # add it to the set in the current path.
         set_index[node_index] <- node
@@ -139,7 +190,23 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
       }
 
       # now look at what's downtream
-      for(to in seq_len(g$lengths[node])) {
+      if (main) {
+
+        for (to in seq_len(g$lengths[node])) {
+          if (g$to[to, node] != 0 && g$main[to, node]) {
+            # Add the next node to visit to the tracking vector
+            to_visit_pointer[visit_index] <- g$to[to, node]
+
+            # break the graph where we've been so we stop next time
+            g$to[to, node] <- 0
+
+            # add to the visit index
+            visit_index <- visit_index + 1
+          }
+        }
+
+      } else {
+        for (to in seq_len(g$lengths[node])) {
           # Add the next node to visit to the tracking vector
           to_visit_pointer[visit_index] <- g$to[to, node]
 
@@ -149,6 +216,7 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
           # add to the visit index
           visit_index <- visit_index + 1
         }
+      }
 
       # go to the last element added in to_visit_pointer
       visit_index <- visit_index - 1
@@ -156,14 +224,14 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
 
       # if nothing there, just increment to the next visit position
       # this indicates we hit a new path
-      while(!node && visit_index > 0) {
+      while (!node && visit_index > 0) {
         visit_index <- visit_index - 1
         node <- to_visit_pointer[visit_index]
         new_path <- TRUE
       }
 
       # if we just hit a new path we need to do a little setup
-      if(new_path) {
+      if (new_path) {
         # increment the path id and set new_path back to FALSE
         path_id <- path_id + 1
         new_path <- FALSE
@@ -172,19 +240,26 @@ navigate_network_dfs_internal <- function(g, all_starts, reset) {
 
     }
 
-    if(none_in_path) {
+    if (none_in_path) {
       out_list[[set_id]] <- list()
     } else {
-      out_list[[set_id]] <- split(pull(g$to_list, "id")[set_index[1:(node_index - 1)]], path_index[1:(node_index-1)])
+      if (!ind_id_mode) {
+        out_list[[set_id]] <- split(
+          pull(g$to_list, "id")[set_index[1:(node_index - 1)]],
+          path_index[1:(node_index - 1)]
+        )
+      } else {
+        out_list[[set_id]] <- split(set_index[1:(node_index - 1)], path_index[1:(node_index - 1)])
+      }
     }
 
     set_id <- set_id + 1
 
     # for every start, we need to reset
-    if(reset) g$to <- save_to
+    if (reset) g$to <- save_to
 
   }
 
-out_list
+  out_list
 
 }

@@ -4,6 +4,8 @@
 \alias{add_levelpaths}
 \alias{add_levelpaths.data.frame}
 \alias{add_levelpaths.hy}
+\alias{add_levelpaths.hy_node}
+\alias{add_levelpaths.hy_topo}
 \title{Add Level Paths}
 \usage{
 add_levelpaths(
@@ -23,6 +25,22 @@ add_levelpaths(
 )
 
 \method{add_levelpaths}{hy}(
+  x,
+  name_attribute,
+  weight_attribute,
+  override_factor = NULL,
+  status = FALSE
+)
+
+\method{add_levelpaths}{hy_node}(
+  x,
+  name_attribute,
+  weight_attribute,
+  override_factor = NULL,
+  status = FALSE
+)
+
+\method{add_levelpaths}{hy_topo}(
   x,
   name_attribute,
   weight_attribute,
@@ -52,14 +70,22 @@ NHD and NHDPlus. If arbolate sum is provided in the weight column, this
 will match the behavior of NHDPlus. Any numeric value can be
 included in this column and the largest value will be followed when
 no nameid is available.
+
+x must include id, toid, and conditionally divergence attributes.
+If a "topo_sort" (hydrosequence in nhdplus terms) attribute is included,
+it will be used instead of recreation.
 }
 \details{
 The levelpath algorithm defines upstream mainstem paths through a network.
-At a given junction with two or more upstream flowpaths, the main path is
+At a given junction with two or more upstream flowlines, the main path is
 either 1) the path with the same name, 2) the path with any name, 3) or the
 path with the larger weight. If the \code{weight_attribute} is \code{override_factor}
 times larger on a path, it will be followed regardless of the name_attribute
 indication.
+
+If id and toid are non-dendritic so id:toid is many to one and id is
+non-unique, a divergence attribute must be included such that the dendritic
+network can be extracted after the network is sorted.
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -68,12 +94,12 @@ test_flowline <- add_toids(g)
 
 # use NHDPlus attributes directly
 add_levelpaths(test_flowline,
-               name_attribute = "GNIS_ID",
-               weight_attribute = "ArbolateSu")
+  name_attribute = "GNIS_ID",
+  weight_attribute = "ArbolateSu")
 
 # use hy attributes where they can be mapped
 add_levelpaths(hy(test_flowline),
-               name_attribute = "GNIS_ID",
-               weight_attribute = "arbolate_sum")
+  name_attribute = "GNIS_ID",
+  weight_attribute = "arbolate_sum")
 
 }

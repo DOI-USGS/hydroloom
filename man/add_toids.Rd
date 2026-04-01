@@ -4,6 +4,8 @@
 \alias{add_toids}
 \alias{add_toids.data.frame}
 \alias{add_toids.hy}
+\alias{add_toids.hy_topo}
+\alias{add_toids.hy_node}
 \title{Add Downstream IDs}
 \usage{
 add_toids(x, return_dendritic = TRUE)
@@ -11,6 +13,10 @@ add_toids(x, return_dendritic = TRUE)
 \method{add_toids}{data.frame}(x, return_dendritic = TRUE)
 
 \method{add_toids}{hy}(x, return_dendritic = TRUE)
+
+\method{add_toids}{hy_topo}(x, return_dendritic = TRUE)
+
+\method{add_toids}{hy_node}(x, return_dendritic = TRUE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
@@ -22,9 +28,13 @@ a "divergence" flag where 1 is main and 2 is secondary.}
 hy object with toid attribute
 }
 \description{
-Given input with fromnode and tonode attributes,
-will return the input with a toid attribute that is the result of joining
+Generates a toid attribute from node topology by joining
 tonode and fromnode attributes.
+}
+\details{
+Required attributes: \code{fromnode}, \code{tonode}
+
+Conditionally: \code{divergence} (if \code{return_dendritic = TRUE})
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

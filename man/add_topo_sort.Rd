@@ -4,6 +4,8 @@
 \alias{add_topo_sort}
 \alias{add_topo_sort.data.frame}
 \alias{add_topo_sort.hy}
+\alias{add_topo_sort.hy_node}
+\alias{add_topo_sort.hy_topo}
 \title{Add topo_sort}
 \usage{
 add_topo_sort(x, outlets = NULL)
@@ -11,14 +13,16 @@ add_topo_sort(x, outlets = NULL)
 \method{add_topo_sort}{data.frame}(x, outlets = NULL)
 
 \method{add_topo_sort}{hy}(x, outlets = NULL)
+
+\method{add_topo_sort}{hy_node}(x, outlets = NULL)
+
+\method{add_topo_sort}{hy_topo}(x, outlets = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{outlets}{same as id in x. if specified, only the network
-emanating from these outlets will be considered and returned.
-NOTE: If outlets does not include all outlets from a given
-network containing diversions, a partial network may be returned.}
+emanating from these outlets will be considered and returned.}
 }
 \value{
 data.frame containing a topo_sort attribute.
@@ -26,4 +30,7 @@ data.frame containing a topo_sort attribute.
 \description{
 calls \link{sort_network} without support for splitting the network
 and adds a \code{nrow:1} topo_sort attribute.
+}
+\details{
+Required attributes: \code{id}, \code{toid}
 }

@@ -1,3 +1,5 @@
+utils::globalVariables(c("priority", "lp_name_attribute", "ds_nameid", "lp_weight_attribute"))
+
 required_atts_add_levelpaths <- c("id", "toid")
 
 #' Add Level Paths
@@ -6,6 +8,11 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' will match the behavior of NHDPlus. Any numeric value can be
 #' included in this column and the largest value will be followed when
 #' no nameid is available.
+#'
+#' x must include id, toid, and conditionally divergence attributes.
+#' If a "topo_sort" (hydrosequence in nhdplus terms) attribute is included,
+#' it will be used instead of recreation.
+#'
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param name_attribute character attribute to be used as name identifiers.
 #' @param weight_attribute character attribute to be used as weight.
@@ -16,11 +23,16 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' See details for more info.
 #' @details
 #' The levelpath algorithm defines upstream mainstem paths through a network.
-#' At a given junction with two or more upstream flowpaths, the main path is
+#' At a given junction with two or more upstream flowlines, the main path is
 #' either 1) the path with the same name, 2) the path with any name, 3) or the
 #' path with the larger weight. If the `weight_attribute` is `override_factor`
 #' times larger on a path, it will be followed regardless of the name_attribute
 #' indication.
+#'
+#' If id and toid are non-dendritic so id:toid is many to one and id is
+#' non-unique, a divergence attribute must be included such that the dendritic
+#' network can be extracted after the network is sorted.
+#'
 #' @name add_levelpaths
 #' @export
 #' @examples
@@ -30,18 +42,18 @@ required_atts_add_levelpaths <- c("id", "toid")
 #'
 #' # use NHDPlus attributes directly
 #' add_levelpaths(test_flowline,
-#'                name_attribute = "GNIS_ID",
-#'                weight_attribute = "ArbolateSu")
+#'   name_attribute = "GNIS_ID",
+#'   weight_attribute = "ArbolateSu")
 #'
 #' # use hy attributes where they can be mapped
 #' add_levelpaths(hy(test_flowline),
-#'                name_attribute = "GNIS_ID",
-#'                weight_attribute = "arbolate_sum")
+#'   name_attribute = "GNIS_ID",
+#'   weight_attribute = "arbolate_sum")
 #'
 add_levelpaths <- function(x, name_attribute, weight_attribute,
-                              override_factor = NULL, status = FALSE) {
+                           override_factor = NULL, status = FALSE) {
 
-  if(any(!c(name_attribute, weight_attribute) %in% names(x))) {
+  if (any(!c(name_attribute, weight_attribute) %in% names(x))) {
     stop("name and weight attribute must be in x")
   }
 
@@ -52,14 +64,19 @@ add_levelpaths <- function(x, name_attribute, weight_attribute,
 #' @export
 #'
 add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
-                                         override_factor = NULL, status = FALSE) {
+                                      override_factor = NULL, status = FALSE) {
   x <- hy(x)
+
+  orig_names <- attr(x, "orig_names")
 
   name_attribute <- align_name_char(name_attribute)
   weight_attribute <- align_name_char(weight_attribute)
 
   x <- add_levelpaths(x, name_attribute, weight_attribute, override_factor,
-                         status)
+    status)
+
+  attr(x, "orig_names") <- orig_names
+  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   hy_reverse(x)
 
@@ -67,16 +84,43 @@ add_levelpaths.data.frame <- function(x, name_attribute, weight_attribute,
 
 #' @name add_levelpaths
 #' @export
-#'
 add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
-                                 override_factor = NULL, status = FALSE) {
+                              override_factor = NULL, status = FALSE) {
+  hy_classify_and_redispatch(x, "add_levelpaths", "hy_topo", hy_guidance_topo,
+    name_attribute = name_attribute, weight_attribute = weight_attribute,
+    override_factor = override_factor, status = status)
+}
 
-  if(!status) {
-    pbopts <- pboptions(type = "none")
-    on.exit(pboptions(pbopts), add = TRUE)
+#' @name add_levelpaths
+#' @export
+add_levelpaths.hy_node <- function(x, name_attribute, weight_attribute,
+                                   override_factor = NULL, status = FALSE) {
+  hy_node_to_topo(x, "add_levelpaths",
+    name_attribute = name_attribute, weight_attribute = weight_attribute,
+    override_factor = override_factor, status = status)
+}
+
+#' @name add_levelpaths
+#' @export
+add_levelpaths.hy_topo <- function(x, name_attribute, weight_attribute,
+                                   override_factor = NULL, status = FALSE) {
+
+  if (nrow(x) == 0) {
+    x[[levelpath_outlet_id]] <- NA_character_
+    x[[topo_sort]] <- NA_integer_
+    x[[levelpath]] <- NA_integer_
+    return(x)
   }
 
-  check_names(x, required_atts_add_levelpaths, "add_levelpaths")
+  req_atts <- required_atts_add_levelpaths
+  check_names(x, req_atts, "add_levelpaths")
+
+  if (length(unique(x$id)) != nrow(x)) {
+    if (!divergence %in% names(x))
+      stop(paste("Non unique ids found. A divergence attribute must be included",
+        "if id is non-unique"))
+    req_atts <- c(required_atts_add_levelpaths, divergence)
+  }
 
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
@@ -84,11 +128,16 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
 
   x <- st_drop_geometry(x)
 
-  extra <- select(x, all_of(c(id, names(x)[!names(x) %in% required_atts_add_levelpaths])))
+  if (topo_sort %in% names(x)) {
+    req_atts <- c(req_atts, topo_sort)
+  }
 
-  x <- select(x, all_of(c(required_atts_add_levelpaths,
-                          "lp_name_attribute" = name_attribute,
-                          "lp_weight_attribute" = weight_attribute)))
+  extra <- distinct(select(x, all_of(c(id, names(x)[!names(x) %in% req_atts]))))
+
+  x <- select(x, all_of(c(req_atts,
+    "lp_name_attribute" = name_attribute,
+    "lp_weight_attribute" = weight_attribute))) |>
+    distinct()
 
   out_val <- get_outlet_value(x)
 
@@ -97,228 +146,178 @@ add_levelpaths.hy <- function(x, name_attribute, weight_attribute,
   x[["lp_name_attribute"]] <- replace_na(x[["lp_name_attribute"]], " ") # NHDPlusHR uses NA for empty names.
   x[["lp_name_attribute"]][x[["lp_name_attribute"]] == "-1"] <- " "
 
-  x <- sort_network(x)
+  if (!topo_sort %in% names(x)) x <- add_topo_sort(x)
 
-  x <- add_topo_sort(x)
+  if (divergence %in% names(x)) {
+    divs <- x[[id]][x[[divergence]] > 1]
+
+    x <- filter(x, !.data$toid %in% divs)
+  }
+
   x$levelpath <- rep(0, nrow(x))
 
-  x <- x |> # get downstream name id added
-    left_join(st_drop_geometry(select(x, all_of(c("id", ds_nameid = "lp_name_attribute")))),
-              by = c("toid" = "id")) |>
-    # if it's na, we need it to be an empty string
-    mutate(ds_nameid = ifelse(is.na(.data$ds_nameid),
-                              " ", .data$ds_nameid)) |>
-    # group on toid so we can operate on upstream choices
-    group_by(.data$toid) |>
-    group_split()
-
-  # reweight sets up ranked upstream paths
-  x <- pblapply(x, reweight, override_factor = override_factor,
-                     nat = "lp_name_attribute", wat = "lp_weight_attribute", cl = "future")
-
+  # get downstream name id to identify name continuity at junctions
   x <- x |>
-    bind_rows() |>
-    select(all_of(c("id", "toid", "topo_sort",
-                  "levelpath", "lp_weight_attribute", "lp_name_attribute")))
+    left_join(st_drop_geometry(select(x, all_of(c("id", ds_nameid = "lp_name_attribute")))),
+      by = c("toid" = "id")) |>
+    mutate(ds_nameid = ifelse(is.na(.data$ds_nameid), " ", .data$ds_nameid))
+
+  # Vectorized reweight: replaces per-junction split/apply/combine with a
+  # single data.table grouped operation. For each toid group, rows are ranked
+  # by name-match priority then weight, and assigned sequential integer weights.
+  dt <- as.data.table(x)
+
+  # priority determines junction routing order:
+  #   1 = name matches downstream (highest priority, continues named path)
+  #   2 = has a name but doesn't match downstream
+  #   3 = unnamed (lowest priority)
+  dt[, priority := fcase(
+    lp_name_attribute == ds_nameid & ds_nameid != " ", 1L,
+    lp_name_attribute != " ",                          2L,
+    default = 3L
+  )]
+
+  if (!is.null(override_factor)) {
+    # override_factor allows a much heavier unnamed path to outrank a named one:
+    # inflate weight for name-matched rows, then sort purely by weight
+    dt[priority == 1L,
+      lp_weight_attribute := lp_weight_attribute * override_factor]
+    setorderv(dt, c("toid", "lp_weight_attribute"), c(1L, -1L))
+  } else {
+    # standard: sort by name-match priority first, then by weight within bucket
+    setorderv(dt, c("toid", "priority", "lp_weight_attribute"), c(1L, 1L, -1L))
+  }
+
+  # assign sequential weights within each junction group:
+  # highest-priority row gets group size N, lowest gets 1
+  dt[, lp_weight_attribute := as.numeric(.N:1L), by = toid]
+  dt[, priority := NULL]
+
+  x <- as_tibble(dt)
+  x <- x[, c("id", "toid", "topo_sort", "levelpath",
+    "lp_weight_attribute", "lp_name_attribute")]
 
   attr(x, "orig_names") <- orig_names
   class(x) <- c("hy", class(x))
 
-  diff = 1
-  checker <- 0
-  done <- 0
-
   x <- arrange(x, .data$topo_sort)
 
-  to_ind <- make_index_ids(x)
-
-  from_ind <- make_fromids(to_ind, return_list = TRUE)
-
-  x$done <- rep(FALSE, nrow(x))
+  to_ind <- make_index_ids(x, mode = "both")
+  from_ind <- to_ind$from
+  to_ind <- to_ind$to
 
   x$ind <- seq_len(nrow(x))
-  x$toind <- to_ind$to[1,]
+  x$toind <- to_ind$to[1, ]
 
-  outlet_ind <- x[which(x$toid == get_outlet_value(x)),]
+  # extract vectors once to avoid repeated data.frame column access in the loop
+  weight_vec <- x[["lp_weight_attribute"]]
+  topo_sort_vec <- x[["topo_sort"]]
+  froms_mat <- from_ind$froms
+  froms_len <- from_ind$lengths
 
-  while(done < nrow(x) & checker < 10000000) {
+  levelpath_result <- integer(nrow(x))
+  done_vec <- logical(nrow(x))
 
-    pathids <- if(nrow(outlet_ind) == 1) {
-      list(par_get_path(as.list(outlet_ind), x, from_ind, status, "lp_weight_attribute"))
-    } else {
-      lapply(split(outlet_ind, seq_len(nrow(outlet_ind))),
-             par_get_path,
-             x_in = x, from_ind = from_ind,
-             status = status, wat = "lp_weight_attribute")
-    }
+  # start from network outlets and work upstream in waves
+  outlet_inds <- which(x$toid == get_outlet_value(x))
+  total_done <- 0L
+  checker <- 0L
 
-    pathids <- bind_rows(pathids)
-
-    x$levelpath[pathids$ind] <- pathids$levelpath
-
-    done <- done + nrow(pathids)
-
-    x$done[pathids$ind] <- rep(TRUE, nrow(pathids))
-
-    # grab everything that goes to the path we just followed
-    outlet_ind <- na.omit(as.numeric(from_ind$froms[, pathids$ind]))
-    # remove the path we just follwed
-    outlet_ind <- x[outlet_ind[!outlet_ind %in% pathids$ind],]
-
-    checker <- checker + 1
-
-    if(status && checker %% 1000 == 0) {
-      message(paste(done, "of", nrow(x), "remaining."))
-    }
+  if (status) {
+    pb <- txtProgressBar(0, nrow(x), style = 3)
+    on.exit(close(pb), add = TRUE)
   }
+
+  while (length(outlet_inds) > 0L && checker < 10000000L) {
+
+    all_path_inds <- integer(0L)
+
+    for (oid in outlet_inds) {
+      path_inds <- get_path_vec(weight_vec, oid, froms_mat, froms_len)
+
+      # levelpath value = topo_sort of the outlet (most downstream node)
+      levelpath_result[path_inds] <- topo_sort_vec[oid]
+      done_vec[path_inds] <- TRUE
+      total_done <- total_done + length(path_inds)
+      all_path_inds <- c(all_path_inds, path_inds)
+    }
+
+    # find upstream tributaries branching off the paths just traced
+    next_outlets <- na.omit(as.integer(froms_mat[, all_path_inds]))
+    next_outlets <- next_outlets[!next_outlets %in% all_path_inds]
+    outlet_inds <- unique(next_outlets[!done_vec[next_outlets]])
+
+    checker <- checker + 1L
+
+    if (status) setTxtProgressBar(pb, total_done)
+  }
+
+  x$levelpath <- levelpath_result
+  x$done <- done_vec
 
   x <- add_levelpath_outlet_ids(x)
 
   x <- put_hyg(x, hy_g)
 
   x <- select(x, all_of(c(id, toid, levelpath_outlet_id, topo_sort, levelpath)),
-              !all_of(c("done", "lp_name_attribute", "lp_weight_attribute", "ind", "toind")))
+    !all_of(c("done", "lp_name_attribute", "lp_weight_attribute", "ind", "toind")))
 
-  left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
-            by = id)
+  x <- left_join(x, select(extra, -any_of(c("levelpath_outlet_id", "topo_sort", "levelpath"))),
+    by = id)
+
+  classify_hy(x)
 
 }
 
-par_get_path <- function(outlet, x_in, from_ind, status, wat) {
-  out <- get_path(x = x_in,
-                  tailid = outlet[names(outlet) == "ind"][[1]],
-                  from_ind = from_ind,
-                  status = status, wat = wat)
-  tibble(ind = out,
-         levelpath = rep(outlet[names(outlet) == "topo_sort"][[1]],
-                         length(out)))
-}
-
-add_levelpath_outlet_ids <-  function(x) {
+add_levelpath_outlet_ids <- function(x) {
   left_join(x, st_drop_geometry(x) |>
-              group_by(.data$levelpath) |>
-              filter(.data$topo_sort == min(.data$topo_sort)) |>
-              ungroup() |>
-              select(levelpath_outlet_id = "id", "levelpath"),
-            by = "levelpath")
+    group_by(.data$levelpath) |>
+    filter(.data$topo_sort == min(.data$topo_sort)) |>
+    ungroup() |>
+    select(levelpath_outlet_id = "id", "levelpath"),
+  by = "levelpath")
 }
 
-#' get level path
+#' Trace upstream path following maximum weight
+#' @description Walks upstream from a starting node through the adjacency
+#' matrix, always following the upstream neighbor with the highest weight.
+#' Uses direct vector/matrix indexing instead of data.frame subsetting
+#' for performance on large networks.
+#' @param weight_vec numeric vector of weights indexed by node position
+#' @param tailid integer starting node index
+#' @param froms_mat integer matrix from make_index_ids (columns = nodes,
+#'   rows = upstream connections, NA for empty slots)
+#' @param froms_len integer vector of upstream connection counts per node
+#' @returns integer vector of node indices along the traced path
+#' @importFrom data.table fcase setorderv
 #' @noRd
-#' @description Recursively walks up a network following the nameid
-#' or, if no nameid exists, maximum weight column.
-#' @param x data.frame with id, toid, nameid and weight columns.
-#' @param tailid integer or numeric id of outlet catchment.
-#' @param override_factor numeric follow weight if this many times larger
-#' @param status print status?
-#'
-get_path <- function(x, tailid, from_ind, status, wat) {
+get_path_vec <- function(weight_vec, tailid, froms_mat, froms_len) {
 
-  keep_going <- TRUE
-  tracker <- rep(NA, nrow(x))
-  counter <- 1
+  tracker <- integer(256L)
+  counter <- 1L
 
-  toid <- NULL
+  repeat {
+    if (counter > length(tracker)) {
+      # double capacity (amortized O(1) growth)
+      tracker <- c(tracker, integer(length(tracker)))
+    }
+    tracker[counter] <- tailid
+    counter <- counter + 1L
 
-  while(keep_going) {
-    tryCatch({
-      next_tails <- x[na.omit(from_ind$froms[,tailid]), ]
+    n_from <- froms_len[tailid]
+    if (n_from == 0L) break
 
-      if(nrow(next_tails) > 1) {
-
-        next_tails <- next_tails[next_tails[[wat]] == max(next_tails[[wat]]), ]
-
-      }
-
-      if(nrow(next_tails) == 0) {
-
-        keep_going <- FALSE
-
-      }
-
-      # if(tailid %in% tracker) stop(paste0("loop at", tailid))
-
-      tracker[counter] <- tailid
-
-      counter <- counter + 1
-
-      tailid <- next_tails$ind
-
-      if(status && counter %% 1000 == 0) message(paste("long mainstem", counter))
-    }, error = function(e) {
-      stop(paste0("Error with outlet tailid ", tailid, "\n",
-                  "Original error was \n", e))
-    })
-
+    if (n_from == 1L) {
+      next_id <- froms_mat[1L, tailid]
+      if (is.na(next_id)) break
+      tailid <- next_id
+    } else {
+      upstream <- froms_mat[seq_len(n_from), tailid]
+      upstream <- upstream[!is.na(upstream)]
+      if (length(upstream) == 0L) break
+      tailid <- upstream[which.max(weight_vec[upstream])]
+    }
   }
 
-  tracker[!is.na(tracker)]
-}
-
-reweight <- function(x, ..., override_factor, nat, wat) {
-
-  if(nrow(x) > 1) {
-
-    cur_name <- x$ds_nameid[1]
-
-    max_weight <- max(x[[wat]])
-
-    rank <- 1
-
-    total <- nrow(x)
-
-    out <- x
-
-    if(any(x[[nat]] != " ")) { # If any of the candidates are named.
-      if(cur_name != " " & cur_name %in% x[[nat]]) {
-        sub <- arrange(x[x[[nat]] == cur_name, ], desc(.data[[wat]]))
-
-        out[1:nrow(sub), ] <- sub
-
-        rank <- rank + nrow(sub)
-
-        x <- x[!x$id %in% sub$id, ]
-      }
-
-      if(rank <= total) {
-        if(any(x[[nat]] != " ")) {
-          sub <-
-            arrange(x[x[[nat]] != " ", ], desc(.data[[wat]]))
-
-          out[rank:(rank + nrow(sub) - 1), ] <- sub
-
-          rank <- rank + nrow(sub)
-
-          x <- x[!x$id %in% sub$id, ]
-
-        }
-
-        if(rank <= total) {
-          out[rank:total, ] <- x
-        }
-
-      }
-    }
-
-    if(!is.null(override_factor)) {
-      out <- mutate(out, "{wat}" := ifelse(.data[[nat]] == .data$ds_nameid,
-                                           .data[[wat]] * override_factor,
-                                           .data[[wat]]))
-    }
-
-    if(rank < nrow(out)) {
-      out[rank:nrow(out), ] <- arrange(x, desc(.data[[wat]]))
-    }
-
-    if(!is.null(override_factor)) {
-      out <- arrange(out, desc(.data[[wat]]))
-    }
-
-    x <- out
-
-  }
-
-  x[[wat]] <- seq(nrow(x), 1)
-
-  x
+  tracker[seq_len(counter - 1L)]
 }

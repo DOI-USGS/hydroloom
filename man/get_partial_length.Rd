@@ -22,17 +22,17 @@ km.
 }
 \description{
 Finds the upstream and downstream lengths along a given
-flowpath (flowline in NHDPlus terminology). Internally, the function
+flowline. Internally, the function
 rescales the aggregate_id_measure to a id_measure and applies that
-rescaled measure to the length of the flowpath.
+rescaled measure to the length of the flowline.
 }
 \examples{
 
 x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
 
 hydro_location <- list(comid = 5329339,
-                       reachcode = "18050005000078",
-                       reach_meas = 30)
+  reachcode = "18050005000078",
+  reach_meas = 30)
 
 (pl <- get_partial_length(hydro_location, x))
 
