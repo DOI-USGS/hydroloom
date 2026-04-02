@@ -85,12 +85,6 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
     }
   }, toindid = index$to)
 
-  # prehashing all_dn since x and y are part of it
-  for (i in seq_along(all_dn)) {
-    fastmatch::fmatch(0, all_dn[[i]])
-  }
-
-
   if (status)
     message("Finding all connected pairs.")    
 
@@ -107,7 +101,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
       return(x)
     
     if (x[x_len] == y[y_len]) {
-      return(c(x[fastmatch::fmatch(x, y, nomatch = 0) == 0], y[fastmatch::fmatch(y, x, nomatch = 0) == 0]))
+      return(c(x[match(x, y, nomatch = 0) == 0], y[match(y, x, nomatch = 0) == 0]))
     }
     
     numeric(0)
