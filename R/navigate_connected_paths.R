@@ -134,7 +134,12 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
     }
   }, simplify = FALSE)
 
-  rbindlist(paths)
+  df <- rbindlist(paths)
+
+  df$id_1 <- outlet_ids[match(df$id_1, seq_along(id_match))]
+  df$id_2 <- outlet_ids[match(df$id_2, seq_along(id_match))]
+
+  df
 }
 
 #' @title Get Partial Flowpath Length
