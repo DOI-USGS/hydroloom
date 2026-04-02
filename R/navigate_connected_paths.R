@@ -10,7 +10,10 @@
 #' Required attributes: `id`, `toid`, `length_km`
 #' 
 #' If outlets is a vector, all combinations (\link{combn}) of the given outlets will be produced.
-#' If outlets is a list, it must be of length 2 (froms, tos). Recycling is performed via \link{expand.grid}.
+#' If outlets is a list, it must be of length 2 (froms, tos). 
+#' Recycling is performed via \link{expand.grid} if subvector lengths to not match.
+#' outlets may also be a 2-column dataframe to submit pairs.
+#'
 #'
 #' @returns data.frame containing the distance between pairs of network outlets
 #' and a list column containing flowpath identifiers along path that connect outlets.
@@ -33,7 +36,6 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
     on.exit(pboptions(pbopts), add = TRUE)
   }
 
-  # check for list compatibility
   outlet_ids <- if (is.list(outlets)) {
     stopifnot(length(outlets) == 2)
     unique(unlist(outlets))
@@ -72,6 +74,8 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   if (status)
     message("Finding all downstream paths.")
 
+  # we could in theory be storing these as we go and looking up
+  # subsequences but that gets pretty complicated
   all_dn <- pblapply(id_match, function(indid, toindid) {
     out <- get_dwn(indid, toindid)
     if ((lo <- length(out)) > 1) {
@@ -81,30 +85,43 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
     }
   }, toindid = index$to)
 
+  # prehashing all_dn since x and y are part of it
+  for (i in seq_along(all_dn)) {
+    fastmatch::fmatch(0, all_dn[[i]])
+  }
+
+
   if (status)
-    message("Finding all connected pairs.")
+    message("Finding all connected pairs.")    
 
   get_path <- function(p, all_dn) {
     x <- all_dn[[p[1]]]
     y <- all_dn[[p[2]]]
+    x_len <- length(x)
+    y_len <- length(y)
 
-    if (length(x) == 1) # if one end is a terminal
+    if (x_len == 1) # if one end is a terminal
       return(y)
-
-    if (length(y) == 1)
+    
+    if (y_len == 1)
       return(x)
-
-    if (x[length(x)] == y[length(y)])
-      return(c(x[!fastmatch::fmatch(x, y, nomatch = 0) > 0], y[!fastmatch::fmatch(y, x, nomatch = 0) > 0]))
-
+    
+    if (x[x_len] == y[y_len]) {
+      return(c(x[fastmatch::fmatch(x, y, nomatch = 0) == 0], y[fastmatch::fmatch(y, x, nomatch = 0) == 0]))
+    }
+    
     numeric(0)
   }
 
   # outlet_ids and id_match are interchangeable in combn
-  # since their lengths are equal, but for match
-  # we need outlet_ids to get to an index
+  # but for outlet list we need to get to an index
   pairs <- if(is.list(outlets)) {
-    expand.grid(lapply(outlets, \(x) match(x, outlet_ids)))
+    if (is.data.frame(outlets) || diff(lengths(outlets)) == 0) {
+      # if the lengths are equal no recycling should be applied
+      sapply(outlets, \(x) match(x, outlet_ids))
+    } else {
+      expand.grid(lapply(outlets, \(x) match(x, outlet_ids)))
+    }
   } else {
     t(combn(length(id_match), 2))
   }
