@@ -68,8 +68,6 @@ test_that("navigate_connected_paths", {
   expect_error(navigate_connected_paths(fline, list(1, 2, 3)))
 
   # Checking for correctness with list input
-  expect_equal(pl$network_distance_km[pl$id_1 == 5329357 & pl$id_2 == 5329365],
+  expect_equal(pl_asis$network_distance_km[pl_asis$id_1 == 5329357 & pl_asis$id_2 == 5329365],
     3.6, tolerance = 0.01)
-
-
 })
