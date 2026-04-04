@@ -9,11 +9,10 @@
 #'
 #' Required attributes: `id`, `toid`, `length_km`
 #' 
-#' If outlets is a vector, all combinations (\link{combn}) of the given outlets will be produced.
-#' If outlets is a list, it must be of length 2 (froms, tos). 
-#' Recycling is performed via \link{expand.grid} if subvector lengths to not match.
-#' outlets may also be a 2-column dataframe to submit pairs.
-#'
+#' If `outlets` is a vector, all combinations (\link{combn}) of the given `outlets` will be produced.
+#' If `outlets` is a list, it must be of length 2 (froms, tos). 
+#' Recycling is performed via \link{expand.grid} if child vector lengths do not match.
+#' `outlets` may also be a 2-column dataframe.
 #'
 #' @returns data.frame containing the distance between pairs of network outlets
 #' and a list column containing flowpath identifiers along path that connect outlets.
@@ -139,7 +138,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
   df$id_1 <- outlet_ids[match(df$id_1, seq_along(id_match))]
   df$id_2 <- outlet_ids[match(df$id_2, seq_along(id_match))]
 
-  df
+  as.data.frame(df)
 }
 
 #' @title Get Partial Flowpath Length
