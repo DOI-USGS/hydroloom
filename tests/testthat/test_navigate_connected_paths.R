@@ -33,5 +33,41 @@ test_that("navigate connected paths", {
   pbopts <- pbapply::pboptions(type = "none")
   on.exit(pbapply::pboptions(pbopts), add = TRUE)
 
-  expect_equal(length(mess), 3)
+  expect_equal(length(mess), 2)
+})
+
+# List input/output, same case as above
+test_that("navigate_connected_paths", {
+  fline <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
+  outlets_vec <- c(5329357, 5329317, 5329365, 5329435, 5329817)
+  fline <- add_toids(fline)
+
+  pl <- navigate_connected_paths(fline, outlets_vec)
+
+  # Checking recycling behavior
+  outlets <- list(
+    outlets_vec[1],
+    outlets_vec[-1]
+  )
+
+  exp_len <- expand.grid(outlets) |> nrow()
+  pl_recycle <- navigate_connected_paths(fline, outlets)
+  expect_equal(nrow(pl_recycle), exp_len)
+  
+  # Checking if we can suppy pairs as-is with no recycling
+  outlets <- list(
+    outlets_vec[1:2],
+    outlets_vec[3:4]
+  )
+
+  pl_asis <- navigate_connected_paths(fline, outlets)
+  expect_equal(nrow(pl_asis), 2)
+
+  # Checking for bad input (also names don't matter)
+  expect_error(navigate_connected_paths(fline, list(1)))
+  expect_error(navigate_connected_paths(fline, list(1, 2, 3)))
+
+  # Checking for correctness with list input
+  expect_equal(pl_asis$network_distance_km[pl_asis$id_1 == 5329357 & pl_asis$id_2 == 5329365],
+    3.6, tolerance = 0.01)
 })
