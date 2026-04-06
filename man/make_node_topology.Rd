@@ -4,6 +4,7 @@
 \alias{make_node_topology}
 \alias{make_node_topology.data.frame}
 \alias{make_node_topology.hy}
+\alias{make_node_topology.hy_flownetwork}
 \alias{make_node_topology.hy_topo}
 \title{Make Node Topology from Edge Topology}
 \usage{
@@ -12,6 +13,8 @@ make_node_topology(x, add_div = NULL, add = TRUE)
 \method{make_node_topology}{data.frame}(x, add_div = NULL, add = TRUE)
 
 \method{make_node_topology}{hy}(x, add_div = NULL, add = TRUE)
+
+\method{make_node_topology}{hy_flownetwork}(x, add_div = NULL, add = TRUE)
 
 \method{make_node_topology}{hy_topo}(x, add_div = NULL, add = TRUE)
 }

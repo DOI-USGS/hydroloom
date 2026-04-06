@@ -114,7 +114,7 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
             call. = FALSE)
   }
 
-  x <- classify_hy(x, allow_non_unique = FALSE)
+  x <- classify_hy(x)
 
   x
 }

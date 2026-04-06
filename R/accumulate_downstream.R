@@ -120,6 +120,12 @@ accumulate_downstream.hy_node <- function(x, var, total = FALSE, quiet = FALSE) 
 
 #' @name accumulate_downstream
 #' @export
+accumulate_downstream.hy_flownetwork <- function(x, var, total = FALSE, quiet = FALSE) {
+  accumulate_downstream.hy_topo(x, var, total, quiet)
+}
+
+#' @name accumulate_downstream
+#' @export
 accumulate_downstream.hy_topo <- function(x, var, total = FALSE, quiet = FALSE) {
 
   if (nrow(x) == 0) return(c())

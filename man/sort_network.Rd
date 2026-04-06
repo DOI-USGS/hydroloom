@@ -5,6 +5,7 @@
 \alias{sort_network.data.frame}
 \alias{sort_network.hy}
 \alias{sort_network.hy_node}
+\alias{sort_network.hy_flownetwork}
 \alias{sort_network.hy_topo}
 \title{Sort Network}
 \usage{
@@ -15,6 +16,8 @@ sort_network(x, split = FALSE, outlets = NULL)
 \method{sort_network}{hy}(x, split = FALSE, outlets = NULL)
 
 \method{sort_network}{hy_node}(x, split = FALSE, outlets = NULL)
+
+\method{sort_network}{hy_flownetwork}(x, split = FALSE, outlets = NULL)
 
 \method{sort_network}{hy_topo}(x, split = FALSE, outlets = NULL)
 }

@@ -63,23 +63,29 @@ new_hy_node <- function(x) {
 }
 
 #' Create hy_flownetwork
-#' @description junction table: id, toid, upmain, downmain
+#' @description Non-dendritic edge list. At minimum requires id and toid
+#' (where id may be non-unique). Optionally includes upmain and downmain
+#' logical columns that annotate main-path connectivity.
 #' @param x data.frame with required columns
 #' @returns hy_flownetwork object
 #' @noRd
 new_hy_flownetwork <- function(x) {
 
-  check_names(x, c(id, toid, upmain, downmain), "hy_flownetwork")
+  check_names(x, c(id, toid), "hy_flownetwork")
 
-  dm <- x[x$downmain, ]
+  if (all(c(upmain, downmain) %in% names(x))) {
 
-  if (any(duplicated(dm$id)))
-    stop("multiple downmain connections per id")
+    dm <- x[x$downmain, ]
 
-  um <- x[x$upmain, ]
+    if (any(duplicated(dm$id)))
+      stop("multiple downmain connections per id")
 
-  if (any(duplicated(um$toid)))
-    stop("multiple upmain connections per toid")
+    um <- x[x$upmain, ]
+
+    if (any(duplicated(um$toid)))
+      stop("multiple upmain connections per toid")
+
+  }
 
   class(x) <- unique(c("hy_flownetwork", class(x)))
 
@@ -90,18 +96,16 @@ new_hy_flownetwork <- function(x) {
 
 #' Re-classify a hy object based on its columns
 #' @param x data.frame that should be a hy subclass
-#' @param allow_non_unique logical. If TRUE (default), non-unique id with
-#'   toid is classified as hy_topo (bypassing uniqueness check). Used for
-#'   re-classification after dplyr ops. If FALSE, non-unique id stays bare hy.
 #' @returns x with appropriate hy subclass restored
 #' @noRd
-classify_hy <- function(x, allow_non_unique = TRUE) {
+classify_hy <- function(x) {
 
   # ensure base hy class
   if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   # strip any stale hy subclasses before re-classifying
-  class(x) <- class(x)[!class(x) %in% c("hy_topo", "hy_leveled", "hy_node")]
+  class(x) <- class(x)[!class(x) %in%
+    c("hy_topo", "hy_leveled", "hy_node", "hy_flownetwork")]
 
   has_id    <- "id" %in% names(x)
   has_toid  <- "toid" %in% names(x)
@@ -112,10 +116,9 @@ classify_hy <- function(x, allow_non_unique = TRUE) {
     x <- new_hy_topo(x)
     if (all(c("topo_sort", "levelpath", "levelpath_outlet_id") %in% names(x)))
       x <- new_hy_leveled(x)
-  } else if (allow_non_unique && has_id && has_toid && !unique_id) {
-    # non-dendritic edge list: has toid but duplicate ids
-    # set hy_topo class directly (bypasses new_hy_topo uniqueness check)
-    class(x) <- unique(c("hy_topo", class(x)))
+  } else if (has_id && has_toid && !unique_id) {
+    # non-dendritic edge list -> flownetwork
+    x <- new_hy_flownetwork(x)
   } else if (has_id && has_nodes && unique_id) {
     x <- new_hy_node(x)
   }
@@ -184,8 +187,17 @@ hy_classify_and_redispatch <- function(x, fn_name, required_class,
 
   x <- classify_hy(x)
 
-  if (!identical(hy_network_type(x), "hy"))
-    return(match.fun(fn_name)(x, ...))
+  net_type <- hy_network_type(x)
+
+  if (!identical(net_type, "hy")) {
+
+    # check that a method exists for this type to avoid infinite recursion
+    method <- utils::getS3method(fn_name, net_type, optional = TRUE)
+
+    if (!is.null(method))
+      return(method(x, ...))
+
+  }
 
   hy_dispatch_error(fn_name, required_class, x, guidance)
 }
@@ -418,11 +430,17 @@ print.hy_node <- function(x, ...) {
 #' @export
 print.hy_flownetwork <- function(x, ...) {
 
-  n_div <- sum(!x$downmain, na.rm = TRUE)
-
-  cat(sprintf(
-    "# hydroloom flow network (junction table): %d connections, %d diversions\n",
-    nrow(x), n_div))
+  if ("downmain" %in% names(x)) {
+    n_div <- sum(!x$downmain, na.rm = TRUE)
+    cat(sprintf(
+      "# hydroloom flow network (junction table): %d connections, %d diversions\n",
+      nrow(x), n_div))
+  } else {
+    n_div <- sum(duplicated(x$id))
+    cat(sprintf(
+      "# hydroloom flow network: %d connections, %d non-dendritic edges\n",
+      nrow(x), n_div))
+  }
 
   NextMethod()
 }

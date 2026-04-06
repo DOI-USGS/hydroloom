@@ -70,6 +70,12 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
 #' @name make_node_topology
 #' @export
+make_node_topology.hy_flownetwork <- function(x, add_div = NULL, add = TRUE) {
+  make_node_topology.hy_topo(x, add_div, add)
+}
+
+#' @name make_node_topology
+#' @export
 make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
   check_names(x, c(id, toid), "make_node_topology")

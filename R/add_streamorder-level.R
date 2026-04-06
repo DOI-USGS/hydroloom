@@ -54,6 +54,12 @@ add_streamorder.hy_node <- function(x, status = TRUE) {
 
 #' @name add_streamorder
 #' @export
+add_streamorder.hy_flownetwork <- function(x, status = TRUE) {
+  add_streamorder.hy_topo(x, status)
+}
+
+#' @name add_streamorder
+#' @export
 add_streamorder.hy_topo <- function(x, status = TRUE) {
 
   if ("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")

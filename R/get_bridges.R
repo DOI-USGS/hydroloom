@@ -58,6 +58,12 @@ get_bridge_flowlines.hy_node <- function(x, quiet = FALSE) {
 
 #' @name get_bridge_flowlines
 #' @export
+get_bridge_flowlines.hy_flownetwork <- function(x, quiet = FALSE) {
+  get_bridge_flowlines.hy_topo(x, quiet)
+}
+
+#' @name get_bridge_flowlines
+#' @export
 get_bridge_flowlines.hy_topo <- function(x, quiet = FALSE) {
 
   node_topo <- make_nondendritic_topology(x)

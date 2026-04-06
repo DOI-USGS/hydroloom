@@ -5,6 +5,7 @@
 \alias{accumulate_downstream.data.frame}
 \alias{accumulate_downstream.hy}
 \alias{accumulate_downstream.hy_node}
+\alias{accumulate_downstream.hy_flownetwork}
 \alias{accumulate_downstream.hy_topo}
 \title{Accumulate Variable Downstream}
 \usage{
@@ -15,6 +16,8 @@ accumulate_downstream(x, var, total = FALSE, quiet = FALSE)
 \method{accumulate_downstream}{hy}(x, var, total = FALSE, quiet = FALSE)
 
 \method{accumulate_downstream}{hy_node}(x, var, total = FALSE, quiet = FALSE)
+
+\method{accumulate_downstream}{hy_flownetwork}(x, var, total = FALSE, quiet = FALSE)
 
 \method{accumulate_downstream}{hy_topo}(x, var, total = FALSE, quiet = FALSE)
 }

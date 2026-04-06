@@ -102,6 +102,14 @@ add_levelpaths.hy_node <- function(x, name_attribute, weight_attribute,
 
 #' @name add_levelpaths
 #' @export
+add_levelpaths.hy_flownetwork <- function(x, name_attribute, weight_attribute,
+                                          override_factor = NULL, status = FALSE) {
+  add_levelpaths.hy_topo(x, name_attribute, weight_attribute,
+    override_factor, status)
+}
+
+#' @name add_levelpaths
+#' @export
 add_levelpaths.hy_topo <- function(x, name_attribute, weight_attribute,
                                    override_factor = NULL, status = FALSE) {
 
