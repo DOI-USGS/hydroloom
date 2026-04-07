@@ -28,6 +28,18 @@ carry subclass attributes (e.g. `hy_topo`) which are stripped by
   `hy_topo`/`hy_node` when required columns are already present
 - Fix pre-existing bug in `make_to_dt()` where dendritic branch failed on
   tibble input (data.table `with = FALSE` syntax on plain data.frame)
+- Documentation:
+  - Add class-level roxygen pages for `hy_topo`, `hy_leveled`, `hy_node`,
+    and `hy_flownetwork` describing representation pattern, required
+    columns, supported functions, and conversion paths
+  - Add divergence case study to `vignette("non-dendritic")` showing how
+    a secondary path is dropped in `hy_topo` form and preserved in
+    `hy_flownetwork` form
+  - Add `hy_capabilities()` pipeline walkthrough to
+    `vignette("network_navigation")` demonstrating the
+    `hy` -> `hy_node` -> `hy_topo` -> `hy_leveled` -> `hy_flownetwork`
+    progression
+  - Style and clarity pass across all vignettes
 - **Deprecation notice:** A future release will require that `hy_topo` objects
   have unique `id` values (one row per catchment). Non-dendritic connectivity
   with duplicated ids in a toid-based edge list will need to be represented as
