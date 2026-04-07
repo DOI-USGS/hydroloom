@@ -198,7 +198,7 @@ add_levelpaths.hy_topo <- function(x, name_attribute, weight_attribute,
 
   # assign sequential weights within each junction group:
   # highest-priority row gets group size N, lowest gets 1
-  dt[, lp_weight_attribute := as.numeric(.N:1L), by = toid]
+  dt[, lp_weight_attribute := as.numeric(rev(seq_len(.N))), by = toid]
   dt[, priority := NULL]
 
   x <- as_tibble(dt)

@@ -256,14 +256,11 @@ test_that("producers stamp correct output class", {
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
   h <- hy(x)
 
-  # add_toids -> hy_topo
   h_topo <- add_toids(h, return_dendritic = TRUE)
   expect_s3_class(h_topo, "hy_topo")
 
-  # sort_network -> hy_topo
   expect_s3_class(sort_network(h_topo), "hy_topo")
 
-  # add_topo_sort -> hy_topo
   expect_s3_class(add_topo_sort(h_topo), "hy_topo")
 
   # add_levelpaths -> hy_leveled (inherits hy_topo)
@@ -280,7 +277,6 @@ test_that("producers stamp correct output class", {
     add_div = TRUE)
   expect_s3_class(h_nd, "hy_node")
 
-  # to_flownetwork -> hy_flownetwork
   expect_s3_class(to_flownetwork(x), "hy_flownetwork")
 })
 
