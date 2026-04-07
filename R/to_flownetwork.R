@@ -26,6 +26,7 @@
 #' is run to ensure upmain and downmain are valid with one and only one upmain
 #' and one and only one downmain from any given network element.
 #'
+#' @seealso [hy_flownetwork], [hy_leveled], [hy_node], [add_levelpaths()]
 #' @export
 #' @name to_flownetwork
 #' @examples

@@ -5,6 +5,7 @@
 \alias{add_topo_sort.data.frame}
 \alias{add_topo_sort.hy}
 \alias{add_topo_sort.hy_node}
+\alias{add_topo_sort.hy_flownetwork}
 \alias{add_topo_sort.hy_topo}
 \title{Add topo_sort}
 \usage{
@@ -15,6 +16,8 @@ add_topo_sort(x, outlets = NULL)
 \method{add_topo_sort}{hy}(x, outlets = NULL)
 
 \method{add_topo_sort}{hy_node}(x, outlets = NULL)
+
+\method{add_topo_sort}{hy_flownetwork}(x, outlets = NULL)
 
 \method{add_topo_sort}{hy_topo}(x, outlets = NULL)
 }

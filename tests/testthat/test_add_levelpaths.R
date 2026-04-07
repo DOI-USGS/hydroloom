@@ -82,14 +82,14 @@ test_that("calculate level path", {
 
   z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
     "GNIS_ID", "ArbolateSu", override_factor = 2, status = TRUE)
-  
+
   expect_equal(z$levelpath[z$COMID == 5329315], z$levelpath[z$COMID == 5329313])
 
-  x$ArbolateSu[x$COMID == 5329313] <- x$ArbolateSu[x$COMID == 5329339]  
+  x$ArbolateSu[x$COMID == 5329313] <- x$ArbolateSu[x$COMID == 5329339]
 
   z <- add_levelpaths(dplyr::select(x, "COMID", "toid", "GNIS_ID", "ArbolateSu"),
     "GNIS_ID", "ArbolateSu", override_factor = 2, status = TRUE)
-  
+
   expect_equal(z$levelpath[z$COMID == 5329315], z$levelpath[z$COMID == 5329339])
 })
 

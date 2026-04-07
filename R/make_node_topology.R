@@ -18,6 +18,7 @@
 #' emanate from a divergence are assigned value 1, and all other paths
 #' are assigned value 0.
 #'
+#' @seealso [hy_topo], [hy_node], [add_toids()]
 #' @export
 #' @name make_node_topology
 #' @examples
@@ -66,6 +67,12 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
   hy_classify_and_redispatch(x, "make_node_topology", "hy_topo",
     hy_guidance_topo, add_div = add_div, add = add)
+}
+
+#' @name make_node_topology
+#' @export
+make_node_topology.hy_flownetwork <- function(x, add_div = NULL, add = TRUE) {
+  make_node_topology.hy_topo(x, add_div, add)
 }
 
 #' @name make_node_topology

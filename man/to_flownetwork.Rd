@@ -56,3 +56,6 @@ f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 to_flownetwork(f)
 
 }
+\seealso{
+\link{hy_flownetwork}, \link{hy_leveled}, \link{hy_node}, \code{\link[=add_levelpaths]{add_levelpaths()}}
+}

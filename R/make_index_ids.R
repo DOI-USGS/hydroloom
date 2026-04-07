@@ -88,18 +88,16 @@ make_index_ids.hy <- function(x, mode = "to", long_form = NULL) {
     mode = mode, long_form = long_form)
 }
 
-#' @name make_index_ids
-#' @export
-make_index_ids.hy_flownetwork <- function(x, mode = "to", long_form = NULL) {
-  if (!mode %in% c("to", "from", "both"))
-    stop("mode must be one of 'to', 'from', or 'both'.")
-
-  if (!is.null(long_form))
-    warning("long_form is deprecated and will be removed in a future release.")
+#' Build index ids from a data.frame with id and toid
+#' @description Shared implementation for make_index_ids. Calls make_to_dt()
+#' then formats into adjacency structure. No S3 dispatch, no graph validation.
+#' @param x data.frame with id, toid, and optionally downmain/upmain
+#' @param mode "to", "from", or "both"
+#' @returns list with adjacency structure
+#' @noRd
+make_index_ids_impl <- function(x, mode = "to") {
 
   out <- make_to_dt(x)
-
-  if (!is.null(long_form) && long_form) return(out)
 
   if (mode == "both") {
     list(
@@ -111,11 +109,29 @@ make_index_ids.hy_flownetwork <- function(x, mode = "to", long_form = NULL) {
   } else {
     call_format_index_ids(out, return_list = TRUE, mode = "to")
   }
+
+}
+
+#' @name make_index_ids
+#' @export
+make_index_ids.hy_flownetwork <- function(x, mode = "to", long_form = NULL) {
+
+  if (!mode %in% c("to", "from", "both"))
+    stop("mode must be one of 'to', 'from', or 'both'.")
+
+  if (!is.null(long_form))
+    warning("long_form is deprecated and will be removed in a future release.")
+
+  if (!is.null(long_form) && long_form) return(make_to_dt(x))
+
+  make_index_ids_impl(x, mode)
+
 }
 
 #' @name make_index_ids
 #' @export
 make_index_ids.hy_topo <- function(x, mode = "to", long_form = NULL) {
+
   if (!mode %in% c("to", "from", "both")) {
     stop("mode must be one of 'to', 'from', or 'both'.")
   }
@@ -133,26 +149,10 @@ make_index_ids.hy_topo <- function(x, mode = "to", long_form = NULL) {
 
   x <- sf::st_drop_geometry(x)
 
-  # generate the long form data.table without a list column
-  out <- make_to_dt(x)
+  if (!is.null(long_form) && long_form) return(make_to_dt(x))
 
-  # this will be a deprecated pattern but for now, short cut and return.
-  if (!is.null(long_form) && long_form) {
-    return(out)
-  }
+  make_index_ids_impl(x, mode)
 
-  if (mode == "both") {
-    list(
-      to = call_format_index_ids(out, return_list = TRUE, mode = "to"),
-      from = make_from(x, out)
-    )
-  } else if (mode == "from") {
-    # return the from format with a list column
-    make_from(x, out)
-  } else {
-    # return the to format with a list column
-    call_format_index_ids(out, return_list = TRUE, mode = "to")
-  }
 }
 
 #' @title Create "from" direction adjacency structure

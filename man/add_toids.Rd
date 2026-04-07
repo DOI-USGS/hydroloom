@@ -50,3 +50,6 @@ names(x)[1:4]
 names(y)[1:4]
 
 }
+\seealso{
+\link{hy_node}, \link{hy_topo}, \code{\link[=make_node_topology]{make_node_topology()}}
+}

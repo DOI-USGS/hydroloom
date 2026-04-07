@@ -1,5 +1,320 @@
 ##### hy_classes.R -- S3 class hierarchy constructors, query helpers, and print methods #####
 
+# ---- class documentation pages ----
+
+#' @title hy_topo: self-referencing edge list
+#'
+#' @description
+#' A `hy_topo` object is a self-referencing edge list representing either
+#' a catchment topology or a flowline topology: one row per feature,
+#' carrying an `id` and a `toid` that points at the immediately downstream
+#' feature. This is the main representation for downstream traversal,
+#' topological sorting, and most accumulation algorithms in hydroloom.
+#'
+#' Catchment topology and flowline topology are functionally separate
+#' graphs. A catchment carries a known local drainage area and is 1:1
+#' with its flowpath (the linear realization of the catchment). A
+#' flowline is a linear feature without a committed local drainage area
+#' — it may coincide with a catchment's flowpath, but that relationship
+#' is not guaranteed. `hy_topo` represents either graph; the two are
+#' practically related but should not be conflated.
+#'
+#' `hy_topo` inherits from `hy`. The enriched subclass `hy_leveled` extends
+#' `hy_topo` with topo-sort and levelpath columns, so methods written for
+#' `hy_topo` apply to `hy_leveled` objects without modification.
+#'
+#' @details
+#' `hy_topo` requires unique `id`. A divergence would need two downstream
+#' connections from the same upstream feature — that is, two rows with
+#' the same `id` — and `hy_topo` does not permit that. Networks with
+#' divergences belong in [hy_node] (a bipartite graph through
+#' `fromnode`/`tonode`) or in [hy_flownetwork] (a junction table that
+#' annotates main and diverted paths). When the internal classifier called
+#' from [hy()] sees a duplicated `id` in an `id`/`toid` table, it produces
+#' an `hy_flownetwork` rather than an `hy_topo`.
+#'
+#' For the authoritative, programmatic view of which functions are callable
+#' on a particular object, use [hy_capabilities()].
+#'
+#' @section Required columns:
+#' \itemize{
+#'   \item `id` — catchment or flowline identifier, unique across rows
+#'   \item `toid` — `id` of the immediately downstream feature; network
+#'     outlets carry a sentinel value
+#' }
+#'
+#' See [hydroloom_name_definitions] for the canonical column definitions
+#' and accepted aliases.
+#'
+#' @section Functions that operate on hy_topo:
+#' \itemize{
+#'   \item Topology and sorting: [sort_network()], [add_topo_sort()],
+#'     [check_hy_graph()]
+#'   \item Path enrichment: [add_levelpaths()], [add_pathlength()],
+#'     [add_streamorder()]
+#'   \item Accumulation and traversal: [accumulate_downstream()],
+#'     [navigate_hydro_network()], [navigate_network_dfs()],
+#'     [make_index_ids()]
+#' }
+#'
+#' Call [hy_capabilities()] on a specific object to see which functions
+#' are callable on it given its current columns.
+#'
+#' @section Conversions to other representations:
+#' \itemize{
+#'   \item To [hy_node] (bipartite graph): [make_node_topology()]
+#'   \item To [hy_leveled] (enriched edge list): [add_levelpaths()],
+#'     which adds `topo_sort`, `levelpath`, and `levelpath_outlet_id`
+#'   \item To [hy_flownetwork] (junction table): [add_levelpaths()] then
+#'     [to_flownetwork()]
+#' }
+#'
+#' @seealso
+#' [hy], [hy_leveled], [hy_node], [hy_flownetwork],
+#' [hy_capabilities()], [hy_network_type()], [is_dendritic()],
+#' [add_toids()], [sort_network()], [make_node_topology()]
+#'
+#' @examples
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
+#' z <- add_toids(hy(x))
+#'
+#' hy_network_type(z)
+#'
+#' z
+#'
+#' @name hy_topo
+NULL
+
+#' @title hy_leveled: enriched self-referencing edge list
+#'
+#' @description
+#' A `hy_leveled` object is a `hy_topo` carrying the additional columns
+#' produced by stream leveling: `topo_sort`, `levelpath`, and
+#' `levelpath_outlet_id`. These columns are what mainstem-aware operations
+#' (Pfafstetter coding, stream level, junction-table conversion) need in
+#' order to run.
+#'
+#' `hy_leveled` is a strict subclass of `hy_topo`, so every function that
+#' accepts a `hy_topo` accepts a `hy_leveled` as well.
+#'
+#' @details
+#' `hy_leveled` exists to mark a `hy_topo` as having been through
+#' [add_levelpaths()] so downstream functions can dispatch on the presence
+#' of leveling without re-checking column names. The leveling columns
+#' encode mainstem path identity (`levelpath`), the outlet that closes
+#' that path (`levelpath_outlet_id`), and the topological order along
+#' the network (`topo_sort`).
+#'
+#' Like `hy_topo`, `hy_leveled` requires unique `id` and cannot represent
+#' divergences as duplicated rows. Convert to [hy_flownetwork] via
+#' [to_flownetwork()] to preserve main and diverted paths in junction-table
+#' form.
+#'
+#' @section Required columns:
+#' \itemize{
+#'   \item `id` — catchment or flowline identifier, unique across rows
+#'   \item `toid` — `id` of the immediately downstream feature
+#'   \item `topo_sort` — topological sort order (NHDPlus hydrosequence)
+#'   \item `levelpath` — mainstem path identifier
+#'   \item `levelpath_outlet_id` — outlet `id` that closes each levelpath
+#' }
+#'
+#' See [hydroloom_name_definitions] for the canonical column definitions.
+#'
+#' @section Functions that operate on hy_leveled:
+#' All `hy_topo` methods, plus the leveling-aware operations:
+#' \itemize{
+#'   \item Mainstem coding: [add_pfafstetter()], [add_streamlevel()]
+#'   \item Junction-table conversion: [to_flownetwork()]
+#' }
+#'
+#' Call [hy_capabilities()] on a specific object for the authoritative
+#' list given its current columns.
+#'
+#' @section Conversions to other representations:
+#' \itemize{
+#'   \item To [hy_node] (bipartite graph): [make_node_topology()]
+#'   \item To [hy_flownetwork] (junction table): [to_flownetwork()],
+#'     which uses `levelpath` to decide which connection at a divergence
+#'     is the main path
+#' }
+#'
+#' @seealso
+#' [hy], [hy_topo], [hy_node], [hy_flownetwork],
+#' [hy_capabilities()], [hy_network_type()],
+#' [add_levelpaths()], [add_pfafstetter()], [to_flownetwork()]
+#'
+#' @examples
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
+#' z <- add_levelpaths(add_toids(hy(x)),
+#'                     name_attribute = "GNIS_ID",
+#'                     weight_attribute = "arbolate_sum")
+#'
+#' hy_network_type(z)
+#'
+#' @name hy_leveled
+NULL
+
+#' @title hy_node: bipartite feature-and-nexus graph
+#'
+#' @description
+#' A `hy_node` object is a bipartite graph over catchments or flowlines
+#' and nexuses: each catchment (or flowline) is one row, carrying a
+#' `fromnode` (the upstream nexus it leaves) and a `tonode` (the
+#' downstream nexus it enters). Connectivity is recovered by matching
+#' `tonode` to `fromnode` across rows. This is the representation that
+#' natively supports divergences without duplicating rows — a divergence
+#' is simply a nexus with more than one outgoing feature.
+#'
+#' As with `hy_topo`, a `hy_node` represents either a catchment topology
+#' or a flowline topology. Catchments carry a known local drainage area
+#' and are 1:1 with their flowpaths; flowlines are linear features
+#' without a committed local drainage area. The two graphs are
+#' practically related but functionally distinct.
+#'
+#' `hy_node` inherits from `hy`.
+#'
+#' @details
+#' Because divergences are encoded through shared node identifiers
+#' rather than row duplication, `hy_node` requires unique `id` even on
+#' non-dendritic networks. The `fromnode`/`tonode` pair carries the
+#' connectivity that an `id`/`toid` edge list cannot.
+#'
+#' `hy_node` is the entry point for hydroloom's divergence-aware
+#' operations: [add_divergence()] flags main and diverted paths from
+#' geometry, [add_return_divergence()] marks where diverted paths return
+#' to the main, and [subset_network()] walks the bipartite graph during
+#' subsetting.
+#'
+#' @section Required columns:
+#' \itemize{
+#'   \item `id` — catchment or flowline identifier, unique across rows
+#'   \item `fromnode` — upstream nexus identifier
+#'   \item `tonode` — downstream nexus identifier
+#' }
+#'
+#' See [hydroloom_name_definitions] for the canonical column definitions.
+#'
+#' @section Functions that operate on hy_node:
+#' \itemize{
+#'   \item Divergence handling: [add_divergence()], [add_return_divergence()]
+#'   \item Subsetting: [subset_network()]
+#'   \item Edge-list construction: [add_toids()]
+#' }
+#'
+#' Call [hy_capabilities()] on a specific object for the authoritative
+#' list given its current columns.
+#'
+#' @section Conversions to other representations:
+#' \itemize{
+#'   \item To [hy_topo] (self-referencing edge list): [add_toids()].
+#'     With `return_dendritic = TRUE` (the default) the resulting `toid`
+#'     drops secondary paths at divergences; set the option to `FALSE`
+#'     and route through [to_flownetwork()] to keep them.
+#' }
+#'
+#' @seealso
+#' [hy], [hy_topo], [hy_leveled], [hy_flownetwork],
+#' [hy_capabilities()], [hy_network_type()],
+#' [make_node_topology()], [add_toids()], [add_divergence()],
+#' [subset_network()]
+#'
+#' @examples
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
+#' z <- hy(x)
+#'
+#' hy_network_type(z)
+#'
+#' z
+#'
+#' @name hy_node
+NULL
+
+#' @title hy_flownetwork: non-dendritic junction table
+#'
+#' @description
+#' A `hy_flownetwork` object is a junction table — a non-dendritic edge
+#' list of `id` and `toid` rows where `id` may repeat. Each row records
+#' one connection between an upstream catchment or flowline and a
+#' downstream one, and optional `upmain`/`downmain` logical columns
+#' annotate which of the connections at a divergence is the main path.
+#' This is the only edge-list-shaped representation in hydroloom that
+#' preserves divergences directly.
+#'
+#' Unlike the other class pages on this index, `hy_flownetwork` does
+#' **not** inherit from `hy`. It is a separate junction table — it does
+#' not carry the `orig_names` attribute and it does not pass [is.hy()].
+#'
+#' @details
+#' `hy_flownetwork` is what hydroloom's internal classifier produces
+#' (via [hy()]) when an `id`/`toid` table has duplicated `id` values,
+#' and what [to_flownetwork()] produces from a `hy_leveled` input. The `upmain`/`downmain` annotation, when
+#' present, lets divergence-aware operations choose a main path without
+#' having to re-derive it from levelpath identity each time.
+#'
+#' Several hydroloom operations that were originally written against
+#' `hy_topo` accept `hy_flownetwork` directly through delegate methods,
+#' because the underlying algorithm already tolerates non-dendritic
+#' input: [add_streamorder()], [accumulate_downstream()],
+#' [get_bridge_flowlines()], [add_levelpaths()], and
+#' [make_node_topology()] all work on `hy_flownetwork` without
+#' conversion.
+#'
+#' @section Required columns:
+#' \itemize{
+#'   \item `id` — catchment or flowline identifier; may be non-unique
+#'   \item `toid` — downstream `id`
+#' }
+#'
+#' Optional:
+#' \itemize{
+#'   \item `upmain` — logical, `TRUE` for the main upstream connection
+#'     at each junction
+#'   \item `downmain` — logical, `TRUE` for the main downstream
+#'     connection at each junction
+#' }
+#'
+#' See [hydroloom_name_definitions] for the canonical column definitions.
+#'
+#' @section Functions that operate on hy_flownetwork:
+#' \itemize{
+#'   \item Native operations: [navigate_network_dfs()], [make_index_ids()]
+#'   \item Delegated to the `hy_topo` algorithm: [add_streamorder()],
+#'     [accumulate_downstream()], [get_bridge_flowlines()],
+#'     [add_levelpaths()], [make_node_topology()]
+#' }
+#'
+#' Call [hy_capabilities()] on a specific object for the authoritative
+#' list given its current columns.
+#'
+#' @section Conversions to other representations:
+#' \itemize{
+#'   \item To [hy_node] (bipartite graph): [make_node_topology()]
+#' }
+#'
+#' Going the other direction — from `hy_node` or `hy_leveled` into
+#' `hy_flownetwork` — is what [to_flownetwork()] is for.
+#'
+#' @seealso
+#' [hy], [hy_topo], [hy_leveled], [hy_node],
+#' [hy_capabilities()], [hy_network_type()], [is_dendritic()],
+#' [to_flownetwork()], [navigate_network_dfs()], [make_index_ids()]
+#'
+#' @examples
+#' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#'
+#' z <- to_flownetwork(x)
+#'
+#' hy_network_type(z)
+#'
+#' z
+#'
+#' @name hy_flownetwork
+NULL
+
 # ---- internal constructors (not exported) ----
 
 #' Create hy_topo from hy
@@ -53,9 +368,9 @@ new_hy_node <- function(x) {
   check_names(x, c(id, fromnode, tonode), "hy_node")
 
   if (any(duplicated(x$id)))
-    stop("hy_node requires unique id. Each catchment appears once; ",
-         "non-dendritic topology is encoded through shared node ",
-         "identifiers, not row duplication.")
+    stop("hy_node requires unique id. Each catchment or flowline ",
+         "appears once; non-dendritic topology is encoded through ",
+         "shared node identifiers, not row duplication.")
 
   class(x) <- unique(c("hy_node", class(x)))
 
@@ -63,23 +378,29 @@ new_hy_node <- function(x) {
 }
 
 #' Create hy_flownetwork
-#' @description junction table: id, toid, upmain, downmain
+#' @description Non-dendritic edge list. At minimum requires id and toid
+#' (where id may be non-unique). Optionally includes upmain and downmain
+#' logical columns that annotate main-path connectivity.
 #' @param x data.frame with required columns
 #' @returns hy_flownetwork object
 #' @noRd
 new_hy_flownetwork <- function(x) {
 
-  check_names(x, c(id, toid, upmain, downmain), "hy_flownetwork")
+  check_names(x, c(id, toid), "hy_flownetwork")
 
-  dm <- x[x$downmain, ]
+  if (all(c(upmain, downmain) %in% names(x))) {
 
-  if (any(duplicated(dm$id)))
-    stop("multiple downmain connections per id")
+    dm <- x[x$downmain, ]
 
-  um <- x[x$upmain, ]
+    if (any(duplicated(dm$id)))
+      stop("multiple downmain connections per id")
 
-  if (any(duplicated(um$toid)))
-    stop("multiple upmain connections per toid")
+    um <- x[x$upmain, ]
+
+    if (any(duplicated(um$toid)))
+      stop("multiple upmain connections per toid")
+
+  }
 
   class(x) <- unique(c("hy_flownetwork", class(x)))
 
@@ -90,18 +411,16 @@ new_hy_flownetwork <- function(x) {
 
 #' Re-classify a hy object based on its columns
 #' @param x data.frame that should be a hy subclass
-#' @param allow_non_unique logical. If TRUE (default), non-unique id with
-#'   toid is classified as hy_topo (bypassing uniqueness check). Used for
-#'   re-classification after dplyr ops. If FALSE, non-unique id stays bare hy.
 #' @returns x with appropriate hy subclass restored
 #' @noRd
-classify_hy <- function(x, allow_non_unique = TRUE) {
+classify_hy <- function(x) {
 
   # ensure base hy class
   if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
 
   # strip any stale hy subclasses before re-classifying
-  class(x) <- class(x)[!class(x) %in% c("hy_topo", "hy_leveled", "hy_node")]
+  class(x) <- class(x)[!class(x) %in%
+    c("hy_topo", "hy_leveled", "hy_node", "hy_flownetwork")]
 
   has_id    <- "id" %in% names(x)
   has_toid  <- "toid" %in% names(x)
@@ -112,10 +431,9 @@ classify_hy <- function(x, allow_non_unique = TRUE) {
     x <- new_hy_topo(x)
     if (all(c("topo_sort", "levelpath", "levelpath_outlet_id") %in% names(x)))
       x <- new_hy_leveled(x)
-  } else if (allow_non_unique && has_id && has_toid && !unique_id) {
-    # non-dendritic edge list: has toid but duplicate ids
-    # set hy_topo class directly (bypasses new_hy_topo uniqueness check)
-    class(x) <- unique(c("hy_topo", class(x)))
+  } else if (has_id && has_toid && !unique_id) {
+    # non-dendritic edge list -> flownetwork
+    x <- new_hy_flownetwork(x)
   } else if (has_id && has_nodes && unique_id) {
     x <- new_hy_node(x)
   }
@@ -184,8 +502,17 @@ hy_classify_and_redispatch <- function(x, fn_name, required_class,
 
   x <- classify_hy(x)
 
-  if (!identical(hy_network_type(x), "hy"))
-    return(match.fun(fn_name)(x, ...))
+  net_type <- hy_network_type(x)
+
+  if (!identical(net_type, "hy")) {
+
+    # check that a method exists for this type to avoid infinite recursion
+    method <- utils::getS3method(fn_name, net_type, optional = TRUE)
+
+    if (!is.null(method))
+      return(method(x, ...))
+
+  }
 
   hy_dispatch_error(fn_name, required_class, x, guidance)
 }
@@ -409,7 +736,7 @@ print.hy_node <- function(x, ...) {
   n_nodes <- length(unique(c(x$fromnode, x$tonode)))
 
   cat(sprintf(
-    "# hydroloom %s fromnode/tonode graph: %d catchments, %d nexuses\n",
+    "# hydroloom %s fromnode/tonode graph: %d features, %d nexuses\n",
     dend, length(unique(x$id)), n_nodes))
 
   NextMethod()
@@ -418,11 +745,17 @@ print.hy_node <- function(x, ...) {
 #' @export
 print.hy_flownetwork <- function(x, ...) {
 
-  n_div <- sum(!x$downmain, na.rm = TRUE)
-
-  cat(sprintf(
-    "# hydroloom flow network (junction table): %d connections, %d diversions\n",
-    nrow(x), n_div))
+  if ("downmain" %in% names(x)) {
+    n_div <- sum(!x$downmain, na.rm = TRUE)
+    cat(sprintf(
+      "# hydroloom flow network (junction table): %d connections, %d diversions\n",
+      nrow(x), n_div))
+  } else {
+    n_div <- sum(duplicated(x$id))
+    cat(sprintf(
+      "# hydroloom flow network: %d connections, %d non-dendritic edges\n",
+      nrow(x), n_div))
+  }
 
   NextMethod()
 }

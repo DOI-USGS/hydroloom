@@ -5,6 +5,7 @@
 \alias{add_levelpaths.data.frame}
 \alias{add_levelpaths.hy}
 \alias{add_levelpaths.hy_node}
+\alias{add_levelpaths.hy_flownetwork}
 \alias{add_levelpaths.hy_topo}
 \title{Add Level Paths}
 \usage{
@@ -33,6 +34,14 @@ add_levelpaths(
 )
 
 \method{add_levelpaths}{hy_node}(
+  x,
+  name_attribute,
+  weight_attribute,
+  override_factor = NULL,
+  status = FALSE
+)
+
+\method{add_levelpaths}{hy_flownetwork}(
   x,
   name_attribute,
   weight_attribute,
@@ -102,4 +111,7 @@ add_levelpaths(hy(test_flowline),
   name_attribute = "GNIS_ID",
   weight_attribute = "arbolate_sum")
 
+}
+\seealso{
+\link{hy_leveled}, \link{hy_topo}, \code{\link[=add_pfafstetter]{add_pfafstetter()}}, \code{\link[=to_flownetwork]{to_flownetwork()}}
 }

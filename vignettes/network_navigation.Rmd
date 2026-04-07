@@ -36,18 +36,18 @@ oldoption <- options(scipen = 9999)
 
 # Network Navigation
 
-One of the most common operations with hydrologic and hydrographic networks is referred to as "navigation". To "navigate" the network is the action of traversing network connections according to a set of rules. There four primary types of network navigation, two in the upstream direction and two in the downstream direction and only along a main path or including branches. In `hydroloom`, these navigation types are referred to as `upmain`, `downmain`, `up` and `down`. Additional rules, such as a desired maximum distance, can be applied to any of the four types.
+Network navigation traverses connections according to a set of rules. There are four primary modes: upstream or downstream, and along the main path only or including branches. In `hydroloom`, these are `upmain`, `downmain`, `up`, and `down`. Additional rules — a maximum distance, for example — can be applied to any of the four.
 
-`Hydroloom` has two functions that support network navigation.
+`hydroloom` provides two functions for network navigation.
 
-1. `navigate_network_dfs()`, requires the "flownetwork" representation of a hydrologic network (see `to_flownetwork()`) and returns ids encountered along the requested navigation as a list of contiguous paths.
-1. `navigate_hydro_network()` requires the nhdplus representation of a hydrologic network (see `vignette("advanced_network")`) and returns ids encountered along the requested navigation as a single vector.
+1. `navigate_network_dfs()` requires the "flownetwork" representation of a hydrologic network (see `to_flownetwork()`) and returns ids encountered along the requested navigation as a list of contiguous paths.
+2. `navigate_hydro_network()` requires the nhdplus representation of a hydrologic network (see `vignette("advanced_network")`) and returns ids encountered along the requested navigation as a single vector.
 
 Both functions accept the same navigation mode names: `upmain`, `downmain`, `up`, and `down`. `navigate_hydro_network()` also accepts the NHDPlus shorthand `UM`, `DM`, `UT`, and `DD`.
 
-While similar, the two functions use completely different implementations. `navigate_network_dfs()` uses a graph-theoretic "depth first search" with `upmain` and `downmain` attributes for all flownetwork connections. `navigate_hydro_network()` relies on `topo_sort`, `levelpath`, and other nhdplus attributes to support network navigation.
+The two functions use different implementations. `navigate_network_dfs()` runs a depth-first search over `upmain` and `downmain` attributes on each flownetwork connection. `navigate_hydro_network()` relies on `topo_sort`, `levelpath`, and other nhdplus attributes.
 
-For the rest of this vignette, we will use the new_hope sample dataset included with hydroloom. A map some basic summary information about the data are shown just below.
+The rest of this vignette uses the `new_hope` sample dataset included with hydroloom. A map and basic summary information are shown below.
 
 ```{r}
 library(hydroloom)
@@ -70,7 +70,7 @@ names(hy(hy_net, clean = TRUE))
 map_prep <- \(x, tol = 100) {
   sf::st_geometry(x) |> # no attributes
   sf::st_transform(3857) |> # basemap projection
-  sf::st_simplify(dTolerance = tol) # sleaner rendering
+  sf::st_simplify(dTolerance = tol) # cleaner rendering
 }
 
 pc <- list(flowline = list(col = NA)) # to hide flowlines in basemap
@@ -81,11 +81,13 @@ nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
 plot(map_prep(hy_net), col = "blue", add = TRUE)
 ```
 
-# NHDPlus-based network navigation.
+# NHDPlus-based network navigation
 
-The nhdplus data model has network attributes, like `levelpath` that provide a shortcut to "main" navigations. A path of flowlines that flow from a most upstream headwater to the outlet of a given `levelpath` in the network have the same `levelpath` id. Additionally, every feature has a `up_levelpath` and `dn_levelpath` indicating the `levelpath` of the flowline upstream and downstream along the "main" path respectively. These attributes, combined with relatively simple table operations, enable navigation up and down stream along the network. While `levelpath` attributes are the key to the algorithm, `topo_sort`, `dn_toposort`, `dn_minor_hydro`, `length_km`, and `pathlength_km` are also used to accomplish aspects of the algorithm implemented in`navigate_hydro_network()`.
+The nhdplus data model carries network attributes — `levelpath` chief among them — that provide a shortcut to "main" navigations. Flowlines from an upstream headwater down to the outlet of a given `levelpath` share the same `levelpath` id. Each feature also carries `up_levelpath` and `dn_levelpath`, the `levelpath` of the flowline upstream and downstream along the main path.
 
-When working with data that uses the nhdplus data model, `navigate_hydro_network()` works with no pre-processing. Below, all network navigation modes are demonstrated using the sample data as is from NHDPlusV2.
+`levelpath` is the key to the algorithm, but `navigate_hydro_network()` also draws on `topo_sort`, `dn_toposort`, `dn_minor_hydro`, `length_km`, and `pathlength_km`.
+
+When working with data that uses the nhdplus data model, `navigate_hydro_network()` runs with no pre-processing. Below, all four navigation modes are demonstrated using the sample data as it is provided in NHDPlusV2.
 
 First, we can extract some key features that will help illustrate the network navigation functionality. In line comments illustrate what is being done.
 
@@ -113,7 +115,7 @@ plot(map_prep(outlet), col = "magenta", add = TRUE, lwd = 4)
 plot(map_prep(headwater), col = "magenta", add = TRUE, lwd = 4)
 plot(map_prep(main_path), col = "darkblue", add = TRUE, lwd = 1.5)
 ```
-We can reproduce the path extracted above with a network navigation, which is a more natural approach for most applications. Below, we see how to use navigate_hydro_network from a starting location and use the `distance` parameter to limit how far we will navigate from the start point.
+The path extracted above can be reproduced with a network navigation, which is the more direct path for most applications. Below, `navigate_hydro_network()` runs from a starting location, with the `distance` parameter limiting how far the navigation extends from the start point.
 
 ```{r}
 # this is just the ids
@@ -141,7 +143,7 @@ plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
 plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
 ```
-Now we can look at the `up` and `down` navigation (also known as "upstream with tributaries" and "downstream with diversions" or "UT" and "DD" in NHDPlus). For demonstration sake, we will start at the top of the half path found above. More typically, this would be starting from a known location, such as where a gage site is located.
+Next, look at `up` and `down` navigation — "upstream with tributaries" and "downstream with diversions", or "UT" and "DD" in NHDPlus. For this demonstration, the start point is the top of the half path found above. In practice, the start would be a known location like a gage site.
 
 ```{r}
 start <- half_path[half_path$topo_sort == max(half_path$topo_sort), ]
@@ -163,19 +165,19 @@ plot(map_prep(start), col = "magenta", add = TRUE, lwd = 4)
 plot(map_prep(up), col = "darkblue", add = TRUE, lwd = 2)
 plot(map_prep(down), col = "blue", add = TRUE, lwd = 2)
 ```
-With the above, assuming nhdplus attributes are available, a wide range of network navigation applications are possible. However, the sweet of nhdplus attributes are not always available. When this is the case, `navigate_network_dfs()` is useful.
+The four navigations above cover most common use cases when the nhdplus attributes are available. The full nhdplus attribute suite is not always available, though, and that is where `navigate_network_dfs()` comes in.
 
-# flownetwork-based navigation
+# Flownetwork-based navigation
 
-In contrast with `navigate_hydro_network()`, `navigate_network_dfs()` can perform `up` and `down` navigation with only a network topology described as `id` and `toid`. If `upmain` and `downmain` attributes are also available, it can also perform main path navigation.
+`navigate_network_dfs()` performs `up` and `down` navigation with only a network topology described as `id` and `toid`. If `upmain` and `downmain` attributes are also available, it performs main path navigation as well.
 
-First, it's worth reviewing the definition of "upmain" and "downmain" in the context of the flow network.
+The definitions of `upmain` and `downmain` in the flow network context are worth a look:
 
 ```{r}
 hydroloom_name_definitions[names(hydroloom_name_definitions) == "upmain"]
 hydroloom_name_definitions[names(hydroloom_name_definitions) == "downmain"]
 ```
-Using these definitions, we can add to the non-dendritic network example in `vignette("hydroloom")` by defining "upmain" and "downmain" attributes on it. In this simple network, we have one divergence and one confluence. Notice that where `id` 1 appears twice, it has one and only one downmain TRUE (4) and where `toid` 5 appears twice, it has one and only one upmain TRUE (4).
+Building on the non-dendritic network example from `vignette("hydroloom")`, the same five-edge network can carry `upmain` and `downmain` attributes. The network has one divergence and one confluence. Where `id` 1 appears twice it has exactly one `downmain == TRUE` (the row connecting to 4), and where `toid` 5 appears twice it has exactly one `upmain == TRUE` (the row from 4). This is the same divergence case study used in `vignette("non-dendritic")`, where it is shown in `hy_node`, `hy_topo`, and `hy_flownetwork` form.
 
 <div class = "row">
 <div class = "column">
@@ -218,7 +220,7 @@ par(oldpar)
 </div>
 </div>
 
-`Hydroloom` provides utilities to construct this lightweight flownetwork format from a geometric network in `make_attribute_topology()`. `upmain` and `downmain` attributes can be constructed using `add_divergence()`, `add_levelpaths()`, and `to_flownetwork`. In this demonstration, we have `divergence` and `levelpath` attributes already, but reconstructing them is shown below.
+`hydroloom` provides utilities to build this lightweight flownetwork format from a geometric network via `make_attribute_topology()`. `upmain` and `downmain` attributes can be constructed using `add_divergence()`, `add_levelpaths()`, and `to_flownetwork()`. The sample data already carries `divergence` and `levelpath` attributes, but reconstructing them is shown below.
 
 ```{r}
 # select only id, name, feature_type.
@@ -276,9 +278,72 @@ flow_net <- to_flownetwork(base_net)
 nrow(flow_net)
 names(flow_net)
 ```
-With the above, we have a flow network. The above demonstration wasn't strictly necessary given that the demo NHDPlus data has all the attributes we need to construct a flow network. However, the demonstration shows how the NHDPlus attributes relate to the more direct and lightweight flownetwork attributes. Note that while the hydroloom methods are nearly identical to those of NHDPlus, there are some very minor differences, as shown below, nearly all the upmain and downmain connections are the same, but differences can occur.
 
-Comparing the two results, we see that only one junction has a different upmain attribute. Inspection shows that the difference is due to dendritic accumulation (diversions get 0% of the upstream value) of flowline length in hydroloom vs unapportioned accumulation (diversions get 100% of the upstream value) in NHDPlus when calculating weights for the divergence attribute and is negligible.
+The pipeline above transforms the data through several `hy` subclasses.
+At each stage, `hy_capabilities()` reports which hydroloom functions are
+directly callable on the object's current class and columns. Re-running
+the pipeline with intermediate objects makes the progression visible:
+
+```{r capabilities_walkthrough}
+# 1. Raw load -- base hy with geometry only.
+step1 <- hy(dplyr::select(hy_net, id, GNIS_NAME, feature_type))
+class(step1)
+hy_capabilities(step1)
+
+# 2. After make_attribute_topology + make_node_topology -- now hy_node.
+step2 <- dplyr::left_join(
+  make_attribute_topology(step1, min_distance = 10),
+  step1, by = "id"
+) |>
+  sf::st_sf() |>
+  make_node_topology(add_div = TRUE, add = TRUE)
+class(step2)
+hy_capabilities(step2)
+
+# 3. After add_divergence -- still hy_node, now with divergence so
+#    add_return_divergence becomes available.
+step3 <- add_divergence(step2,
+  coastal_outlet_ids = outlet$id,
+  inland_outlet_ids = c(),
+  name_attr = "GNIS_NAME",
+  type_attr = "feature_type",
+  major_types = "StreamRiver")
+class(step3)
+hy_capabilities(step3)
+
+# 4. After add_toids(return_dendritic = TRUE) -- promotes to hy_topo,
+#    unlocking edge-list operations (sort_network, add_levelpaths,
+#    add_streamorder, accumulate_downstream, ...).
+step4 <- add_toids(step3, return_dendritic = TRUE)
+class(step4)
+hy_capabilities(step4)
+
+# 5. After add_levelpaths -- promotes to hy_leveled, unlocking
+#    add_pfafstetter, add_streamlevel, and to_flownetwork.
+step4$length_km <- as.numeric(sf::st_length(step4) / 1000)
+step4$weight    <- accumulate_downstream(step4, "length_km")
+step5 <- add_levelpaths(step4,
+  name_attribute = "GNIS_NAME",
+  weight_attribute = "weight")
+class(step5)
+hy_capabilities(step5)
+
+# 6. After to_flownetwork -- becomes hy_flownetwork; navigate_network_dfs
+#    on upmain/downmain is now supported on this lightweight form.
+step6 <- to_flownetwork(dplyr::select(step5, -toid))
+class(step6)
+hy_capabilities(step6)
+```
+
+Each transformation either changes the subclass or adds a column that
+unlocks additional operations. The progression
+`hy` -> `hy_node` -> `hy_topo` -> `hy_leveled` -> `hy_flownetwork`
+is the canonical path for working with non-dendritic NHDPlus-like data
+in `hydroloom`.
+
+The result is a flow network. The reconstruction wasn't strictly necessary — the demo NHDPlus data already carries every attribute needed to build one — but it shows how the NHDPlus attributes map onto the lighter flownetwork attributes. The hydroloom methods are nearly identical to those of NHDPlus, with minor differences shown below: nearly all `upmain` and `downmain` connections agree, with a single junction differing.
+
+The difference traces to how the divergence weight is computed. hydroloom uses dendritic accumulation of flowline length (diversions get 0% of the upstream value) while NHDPlus uses unapportioned accumulation (diversions get 100% of the upstream value). The resulting `upmain` choice at one junction differs by a single feature.
 
 ```{r}
 flow_net_nhdplus <- to_flownetwork(hy_net) |>
@@ -303,7 +368,7 @@ plot(map_prep(hy_net, 10), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(different_upmain, 10), col = "blue", add = TRUE, lwd = 2)
 ```
 
-Now that we have a flownetwork, we can perform the same navigations as were conducted earlier only this time, with only the basic network, not including the NHDPlus attributes.
+With a flownetwork in hand, the same navigations from earlier can be reproduced — this time using only the basic network, without any NHDPlus attributes.
 
 ```{r}
 # this is just the ids
@@ -327,7 +392,7 @@ plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
 plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
 plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
 ```
-Now we can look at the `up` and `down` navigation (also known as "upstream with tributaries" and "downstream with diversions" or "UT" and "DD" in NHDPlus). For demonstration sake, we will start at the top of the half path found above. More typically, this would be starting from a known location, such as where a gage site is located.
+Now look at `up` and `down` navigation on the flownetwork. The start point is the same feature picked from the map above; in practice it would be a known location like a gage site.
 
 ```{r}
 # chosen from map

@@ -1,7 +1,7 @@
 #' Sort Network
 #' @description given a network with an id and and toid, returns a sorted
-#' and potentially split set of output. Sort is from top to bottom so 
-#' traversing the response from top to bottom will go from upstream to 
+#' and potentially split set of output. Sort is from top to bottom so
+#' traversing the response from top to bottom will go from upstream to
 #' downstream.
 #'
 #' Can also be used as a very fast implementation of upstream
@@ -73,16 +73,19 @@ sort_network.hy_node <- function(x, split = FALSE, outlets = NULL) {
   hy_node_to_topo(x, "sort_network", split = split, outlets = outlets)
 }
 
-#' @name sort_network
-#' @export
-sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
+#' Topological sort implementation
+#' @description Shared algorithm body for sort_network. Works on any data.frame
+#' with id and toid columns (including non-unique id). Uses make_index_ids_impl()
+#' to avoid S3 dispatch loops.
+#' @param x data.frame with id, toid columns (geometry already dropped)
+#' @param split logical
+#' @param outlets optional outlet ids
+#' @returns sorted data.frame (no class stamp, no geometry)
+#' @noRd
+sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
 
-  hy_g <- get_hyg(x, add = TRUE, id = id)
-
-  x <- select(st_drop_geometry(x), id, toid, everything())
-
-  # index for fast traversal
-  index_ids <- make_index_ids(x, mode = "both")
+  # index for fast traversal (no dispatch, no validation)
+  index_ids <- make_index_ids_impl(x, mode = "both")
 
   if (!is.null(outlets)) {
     starts <- which(index_ids$to$to_list$id %in% outlets)
@@ -95,6 +98,7 @@ sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
       starts <- which(index_ids$to$to_list$id %in% x$id[x$toid == get_outlet_value(x)])
     }
   }
+
   # Some vectors to track results
   to_visit <- out <- rep(0, length(index_ids$to$to_list$id))
 
@@ -144,7 +148,6 @@ sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
         next_node <- index_ids$from$froms[from, node]
 
         # check if we have a node to visit
-        # not needed? was in the if below node <= ncol(index_ids$from$froms) &&
         if (!is.na(next_node)) {
 
           if (ready[next_node] == 1) {
@@ -212,9 +215,47 @@ sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
 
   }
 
+  x
+
+}
+
+#' @name sort_network
+#' @export
+sort_network.hy_flownetwork <- function(x, split = FALSE, outlets = NULL) {
+
+  hy_g <- get_hyg(x, add = TRUE, id = id)
+
+  x <- check_hy_outlets(x, fix = FALSE)
+
+  x <- select(st_drop_geometry(x), id, toid, everything())
+
+  x <- sort_network_impl(x, split, outlets)
+
+  put_hyg(x, hy_g)
+
+}
+
+#' @name sort_network
+#' @export
+sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
+
+  hy_g <- get_hyg(x, add = TRUE, id = id)
+
+  x <- check_hy_outlets(x, fix = FALSE)
+
+  if (!isTRUE(check_hy_graph(x))) {
+    stop("found one or more pairs of features that reference eachother.
+          Run check_hy_graph to identify issues.")
+  }
+
+  x <- select(st_drop_geometry(x), id, toid, everything())
+
+  x <- sort_network_impl(x, split, outlets)
+
   x <- put_hyg(x, hy_g)
 
   classify_hy(x)
+
 }
 
 #' Add topo_sort
@@ -252,6 +293,21 @@ add_topo_sort.hy <- function(x, outlets = NULL) {
 #' @export
 add_topo_sort.hy_node <- function(x, outlets = NULL) {
   hy_node_to_topo(x, "add_topo_sort", outlets = outlets)
+}
+
+#' @name add_topo_sort
+#' @export
+add_topo_sort.hy_flownetwork <- function(x, outlets = NULL) {
+
+  out <- sort_network(x, outlets = outlets)
+
+  ids <- unique(out$id)
+
+  dplyr::left_join(out,
+    data.frame(id = ids,
+      topo_sort = seq(from = length(ids), to = 1, by = -1)),
+    by = "id")
+
 }
 
 #' @name add_topo_sort

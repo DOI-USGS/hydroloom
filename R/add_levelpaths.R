@@ -33,6 +33,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' non-unique, a divergence attribute must be included such that the dendritic
 #' network can be extracted after the network is sorted.
 #'
+#' @seealso [hy_leveled], [hy_topo], [add_pfafstetter()], [to_flownetwork()]
 #' @name add_levelpaths
 #' @export
 #' @examples
@@ -98,6 +99,14 @@ add_levelpaths.hy_node <- function(x, name_attribute, weight_attribute,
   hy_node_to_topo(x, "add_levelpaths",
     name_attribute = name_attribute, weight_attribute = weight_attribute,
     override_factor = override_factor, status = status)
+}
+
+#' @name add_levelpaths
+#' @export
+add_levelpaths.hy_flownetwork <- function(x, name_attribute, weight_attribute,
+                                          override_factor = NULL, status = FALSE) {
+  add_levelpaths.hy_topo(x, name_attribute, weight_attribute,
+    override_factor, status)
 }
 
 #' @name add_levelpaths
@@ -190,7 +199,7 @@ add_levelpaths.hy_topo <- function(x, name_attribute, weight_attribute,
 
   # assign sequential weights within each junction group:
   # highest-priority row gets group size N, lowest gets 1
-  dt[, lp_weight_attribute := as.numeric(.N:1L), by = toid]
+  dt[, lp_weight_attribute := as.numeric(rev(seq_len(.N))), by = toid]
   dt[, priority := NULL]
 
   x <- as_tibble(dt)

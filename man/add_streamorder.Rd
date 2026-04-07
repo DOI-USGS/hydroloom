@@ -5,6 +5,7 @@
 \alias{add_streamorder.data.frame}
 \alias{add_streamorder.hy}
 \alias{add_streamorder.hy_node}
+\alias{add_streamorder.hy_flownetwork}
 \alias{add_streamorder.hy_topo}
 \title{Add Streamorder}
 \usage{
@@ -15,6 +16,8 @@ add_streamorder(x, status = TRUE)
 \method{add_streamorder}{hy}(x, status = TRUE)
 
 \method{add_streamorder}{hy_node}(x, status = TRUE)
+
+\method{add_streamorder}{hy_flownetwork}(x, status = TRUE)
 
 \method{add_streamorder}{hy_topo}(x, status = TRUE)
 }
