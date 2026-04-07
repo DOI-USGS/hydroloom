@@ -18,6 +18,7 @@
 #' emanate from a divergence are assigned value 1, and all other paths
 #' are assigned value 0.
 #'
+#' @seealso [hy_topo], [hy_node], [add_toids()]
 #' @export
 #' @name make_node_topology
 #' @examples

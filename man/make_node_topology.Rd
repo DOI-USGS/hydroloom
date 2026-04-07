@@ -61,3 +61,6 @@ y <- dplyr::select(add_toids(x), -ToNode, -FromNode)
 y <- make_node_topology(y, add_div = div)
 
 }
+\seealso{
+\link{hy_topo}, \link{hy_node}, \code{\link[=add_toids]{add_toids()}}
+}

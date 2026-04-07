@@ -136,7 +136,7 @@ test_that("print methods produce expected output", {
 
   out2 <- capture_output(print(h2))
   expect_true(grepl("fromnode/tonode graph", out2))
-  expect_true(grepl("3 catchments", out2))
+  expect_true(grepl("3 entities", out2))
 })
 
 test_that("new_hy_flownetwork validates correctly", {

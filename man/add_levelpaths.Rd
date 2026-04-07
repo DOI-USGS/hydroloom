@@ -112,3 +112,6 @@ add_levelpaths(hy(test_flowline),
   weight_attribute = "arbolate_sum")
 
 }
+\seealso{
+\link{hy_leveled}, \link{hy_topo}, \code{\link[=add_pfafstetter]{add_pfafstetter()}}, \code{\link[=to_flownetwork]{to_flownetwork()}}
+}

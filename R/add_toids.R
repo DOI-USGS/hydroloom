@@ -11,6 +11,7 @@
 #' Conditionally: `divergence` (if `return_dendritic = TRUE`)
 #'
 #' @returns hy object with toid attribute
+#' @seealso [hy_node], [hy_topo], [make_node_topology()]
 #' @name add_toids
 #' @export
 #' @examples

@@ -33,6 +33,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' non-unique, a divergence attribute must be included such that the dendritic
 #' network can be extracted after the network is sorted.
 #'
+#' @seealso [hy_leveled], [hy_topo], [add_pfafstetter()], [to_flownetwork()]
 #' @name add_levelpaths
 #' @export
 #' @examples
