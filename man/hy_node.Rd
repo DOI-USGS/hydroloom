@@ -2,15 +2,21 @@
 % Please edit documentation in R/hy_classes.R
 \name{hy_node}
 \alias{hy_node}
-\title{hy_node: bipartite catchment/flowline-and-nexus graph}
+\title{hy_node: bipartite feature-and-nexus graph}
 \description{
-A \code{hy_node} object is a bipartite graph: each entity (a catchment or
-flowline) is one row, carrying a \code{fromnode} (the upstream nexus it
-leaves) and a \code{tonode} (the downstream nexus it enters). Connectivity
-is recovered by matching \code{tonode} to \code{fromnode} across rows. This is
-the representation that natively supports divergences without
-duplicating rows — a divergence is simply a nexus with more than one
-outgoing entity.
+A \code{hy_node} object is a bipartite graph over catchments or flowlines
+and nexuses: each catchment (or flowline) is one row, carrying a
+\code{fromnode} (the upstream nexus it leaves) and a \code{tonode} (the
+downstream nexus it enters). Connectivity is recovered by matching
+\code{tonode} to \code{fromnode} across rows. This is the representation that
+natively supports divergences without duplicating rows — a divergence
+is simply a nexus with more than one outgoing feature.
+
+As with \code{hy_topo}, a \code{hy_node} represents either a catchment topology
+or a flowline topology. Catchments carry a known local drainage area
+and are 1:1 with their flowpaths; flowlines are linear features
+without a committed local drainage area. The two graphs are
+practically related but functionally distinct.
 
 \code{hy_node} inherits from \code{hy}.
 }
@@ -29,7 +35,7 @@ subsetting.
 \section{Required columns}{
 
 \itemize{
-\item \code{id} — entity identifier, unique across rows
+\item \code{id} — catchment or flowline identifier, unique across rows
 \item \code{fromnode} — upstream nexus identifier
 \item \code{tonode} — downstream nexus identifier
 }

@@ -4,11 +4,19 @@
 \alias{hy_topo}
 \title{hy_topo: self-referencing edge list}
 \description{
-A \code{hy_topo} object is a self-referencing edge list: one row per
-entity (a catchment or flowline), carrying an \code{id} and a \code{toid} that
-points at the immediately downstream entity. This is the main
-representation for downstream traversal, topological sorting, and
-most accumulation algorithms in hydroloom.
+A \code{hy_topo} object is a self-referencing edge list representing either
+a catchment topology or a flowline topology: one row per feature,
+carrying an \code{id} and a \code{toid} that points at the immediately downstream
+feature. This is the main representation for downstream traversal,
+topological sorting, and most accumulation algorithms in hydroloom.
+
+Catchment topology and flowline topology are functionally separate
+graphs. A catchment carries a known local drainage area and is 1:1
+with its flowpath (the linear realization of the catchment). A
+flowline is a linear feature without a committed local drainage area
+— it may coincide with a catchment's flowpath, but that relationship
+is not guaranteed. \code{hy_topo} represents either graph; the two are
+practically related but should not be conflated.
 
 \code{hy_topo} inherits from \code{hy}. The enriched subclass \code{hy_leveled} extends
 \code{hy_topo} with topo-sort and levelpath columns, so methods written for
@@ -16,13 +24,13 @@ most accumulation algorithms in hydroloom.
 }
 \details{
 \code{hy_topo} requires unique \code{id}. A divergence would need two downstream
-connections from the same entity — that is, two rows with the same
-\code{id} — and \code{hy_topo} does not permit that. Networks with divergences
-belong in \link{hy_node} (a bipartite graph through \code{fromnode}/\code{tonode}) or
-in \link{hy_flownetwork} (a junction table that annotates main and diverted
-paths). When the internal classifier called from \code{\link[=hy]{hy()}} sees a duplicated
-\code{id} in an \code{id}/\code{toid} table, it produces an \code{hy_flownetwork} rather than
-an \code{hy_topo}.
+connections from the same upstream feature — that is, two rows with
+the same \code{id} — and \code{hy_topo} does not permit that. Networks with
+divergences belong in \link{hy_node} (a bipartite graph through
+\code{fromnode}/\code{tonode}) or in \link{hy_flownetwork} (a junction table that
+annotates main and diverted paths). When the internal classifier called
+from \code{\link[=hy]{hy()}} sees a duplicated \code{id} in an \code{id}/\code{toid} table, it produces
+an \code{hy_flownetwork} rather than an \code{hy_topo}.
 
 For the authoritative, programmatic view of which functions are callable
 on a particular object, use \code{\link[=hy_capabilities]{hy_capabilities()}}.
@@ -30,9 +38,9 @@ on a particular object, use \code{\link[=hy_capabilities]{hy_capabilities()}}.
 \section{Required columns}{
 
 \itemize{
-\item \code{id} — entity identifier, unique across rows
-\item \code{toid} — identifier of the immediately downstream entity;
-network outlets carry a sentinel value
+\item \code{id} — catchment or flowline identifier, unique across rows
+\item \code{toid} — \code{id} of the immediately downstream feature; network
+outlets carry a sentinel value
 }
 
 See \link{hydroloom_name_definitions} for the canonical column definitions

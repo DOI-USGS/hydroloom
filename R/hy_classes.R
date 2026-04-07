@@ -5,11 +5,19 @@
 #' @title hy_topo: self-referencing edge list
 #'
 #' @description
-#' A `hy_topo` object is a self-referencing edge list: one row per
-#' entity (a catchment or flowline), carrying an `id` and a `toid` that
-#' points at the immediately downstream entity. This is the main
-#' representation for downstream traversal, topological sorting, and
-#' most accumulation algorithms in hydroloom.
+#' A `hy_topo` object is a self-referencing edge list representing either
+#' a catchment topology or a flowline topology: one row per feature,
+#' carrying an `id` and a `toid` that points at the immediately downstream
+#' feature. This is the main representation for downstream traversal,
+#' topological sorting, and most accumulation algorithms in hydroloom.
+#'
+#' Catchment topology and flowline topology are functionally separate
+#' graphs. A catchment carries a known local drainage area and is 1:1
+#' with its flowpath (the linear realization of the catchment). A
+#' flowline is a linear feature without a committed local drainage area
+#' — it may coincide with a catchment's flowpath, but that relationship
+#' is not guaranteed. `hy_topo` represents either graph; the two are
+#' practically related but should not be conflated.
 #'
 #' `hy_topo` inherits from `hy`. The enriched subclass `hy_leveled` extends
 #' `hy_topo` with topo-sort and levelpath columns, so methods written for
@@ -17,22 +25,22 @@
 #'
 #' @details
 #' `hy_topo` requires unique `id`. A divergence would need two downstream
-#' connections from the same entity — that is, two rows with the same
-#' `id` — and `hy_topo` does not permit that. Networks with divergences
-#' belong in [hy_node] (a bipartite graph through `fromnode`/`tonode`) or
-#' in [hy_flownetwork] (a junction table that annotates main and diverted
-#' paths). When the internal classifier called from [hy()] sees a duplicated
-#' `id` in an `id`/`toid` table, it produces an `hy_flownetwork` rather than
-#' an `hy_topo`.
+#' connections from the same upstream feature — that is, two rows with
+#' the same `id` — and `hy_topo` does not permit that. Networks with
+#' divergences belong in [hy_node] (a bipartite graph through
+#' `fromnode`/`tonode`) or in [hy_flownetwork] (a junction table that
+#' annotates main and diverted paths). When the internal classifier called
+#' from [hy()] sees a duplicated `id` in an `id`/`toid` table, it produces
+#' an `hy_flownetwork` rather than an `hy_topo`.
 #'
 #' For the authoritative, programmatic view of which functions are callable
 #' on a particular object, use [hy_capabilities()].
 #'
 #' @section Required columns:
 #' \itemize{
-#'   \item `id` — entity identifier, unique across rows
-#'   \item `toid` — identifier of the immediately downstream entity;
-#'     network outlets carry a sentinel value
+#'   \item `id` — catchment or flowline identifier, unique across rows
+#'   \item `toid` — `id` of the immediately downstream feature; network
+#'     outlets carry a sentinel value
 #' }
 #'
 #' See [hydroloom_name_definitions] for the canonical column definitions
@@ -105,8 +113,8 @@ NULL
 #'
 #' @section Required columns:
 #' \itemize{
-#'   \item `id` — entity identifier, unique across rows
-#'   \item `toid` — downstream entity identifier
+#'   \item `id` — catchment or flowline identifier, unique across rows
+#'   \item `toid` — `id` of the immediately downstream feature
 #'   \item `topo_sort` — topological sort order (NHDPlus hydrosequence)
 #'   \item `levelpath` — mainstem path identifier
 #'   \item `levelpath_outlet_id` — outlet `id` that closes each levelpath
@@ -149,16 +157,22 @@ NULL
 #' @name hy_leveled
 NULL
 
-#' @title hy_node: bipartite catchment/flowline-and-nexus graph
+#' @title hy_node: bipartite feature-and-nexus graph
 #'
 #' @description
-#' A `hy_node` object is a bipartite graph: each entity (a catchment or
-#' flowline) is one row, carrying a `fromnode` (the upstream nexus it
-#' leaves) and a `tonode` (the downstream nexus it enters). Connectivity
-#' is recovered by matching `tonode` to `fromnode` across rows. This is
-#' the representation that natively supports divergences without
-#' duplicating rows — a divergence is simply a nexus with more than one
-#' outgoing entity.
+#' A `hy_node` object is a bipartite graph over catchments or flowlines
+#' and nexuses: each catchment (or flowline) is one row, carrying a
+#' `fromnode` (the upstream nexus it leaves) and a `tonode` (the
+#' downstream nexus it enters). Connectivity is recovered by matching
+#' `tonode` to `fromnode` across rows. This is the representation that
+#' natively supports divergences without duplicating rows — a divergence
+#' is simply a nexus with more than one outgoing feature.
+#'
+#' As with `hy_topo`, a `hy_node` represents either a catchment topology
+#' or a flowline topology. Catchments carry a known local drainage area
+#' and are 1:1 with their flowpaths; flowlines are linear features
+#' without a committed local drainage area. The two graphs are
+#' practically related but functionally distinct.
 #'
 #' `hy_node` inherits from `hy`.
 #'
@@ -176,7 +190,7 @@ NULL
 #'
 #' @section Required columns:
 #' \itemize{
-#'   \item `id` — entity identifier, unique across rows
+#'   \item `id` — catchment or flowline identifier, unique across rows
 #'   \item `fromnode` — upstream nexus identifier
 #'   \item `tonode` — downstream nexus identifier
 #' }
@@ -224,8 +238,8 @@ NULL
 #' @description
 #' A `hy_flownetwork` object is a junction table — a non-dendritic edge
 #' list of `id` and `toid` rows where `id` may repeat. Each row records
-#' one connection between an entity (a catchment or flowline) and a
-#' downstream entity, and optional `upmain`/`downmain` logical columns
+#' one connection between an upstream catchment or flowline and a
+#' downstream one, and optional `upmain`/`downmain` logical columns
 #' annotate which of the connections at a divergence is the main path.
 #' This is the only edge-list-shaped representation in hydroloom that
 #' preserves divergences directly.
@@ -251,8 +265,8 @@ NULL
 #'
 #' @section Required columns:
 #' \itemize{
-#'   \item `id` — entity identifier; may be non-unique
-#'   \item `toid` — downstream entity identifier
+#'   \item `id` — catchment or flowline identifier; may be non-unique
+#'   \item `toid` — downstream `id`
 #' }
 #'
 #' Optional:
@@ -354,9 +368,9 @@ new_hy_node <- function(x) {
   check_names(x, c(id, fromnode, tonode), "hy_node")
 
   if (any(duplicated(x$id)))
-    stop("hy_node requires unique id. Each entity appears once; ",
-         "non-dendritic topology is encoded through shared node ",
-         "identifiers, not row duplication.")
+    stop("hy_node requires unique id. Each catchment or flowline ",
+         "appears once; non-dendritic topology is encoded through ",
+         "shared node identifiers, not row duplication.")
 
   class(x) <- unique(c("hy_node", class(x)))
 
@@ -722,7 +736,7 @@ print.hy_node <- function(x, ...) {
   n_nodes <- length(unique(c(x$fromnode, x$tonode)))
 
   cat(sprintf(
-    "# hydroloom %s fromnode/tonode graph: %d entities, %d nexuses\n",
+    "# hydroloom %s fromnode/tonode graph: %d features, %d nexuses\n",
     dend, length(unique(x$id)), n_nodes))
 
   NextMethod()

@@ -29,8 +29,8 @@ form.
 \section{Required columns}{
 
 \itemize{
-\item \code{id} — entity identifier, unique across rows
-\item \code{toid} — downstream entity identifier
+\item \code{id} — catchment or flowline identifier, unique across rows
+\item \code{toid} — \code{id} of the immediately downstream feature
 \item \code{topo_sort} — topological sort order (NHDPlus hydrosequence)
 \item \code{levelpath} — mainstem path identifier
 \item \code{levelpath_outlet_id} — outlet \code{id} that closes each levelpath

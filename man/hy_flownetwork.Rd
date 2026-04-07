@@ -6,8 +6,8 @@
 \description{
 A \code{hy_flownetwork} object is a junction table — a non-dendritic edge
 list of \code{id} and \code{toid} rows where \code{id} may repeat. Each row records
-one connection between an entity (a catchment or flowline) and a
-downstream entity, and optional \code{upmain}/\code{downmain} logical columns
+one connection between an upstream catchment or flowline and a
+downstream one, and optional \code{upmain}/\code{downmain} logical columns
 annotate which of the connections at a divergence is the main path.
 This is the only edge-list-shaped representation in hydroloom that
 preserves divergences directly.
@@ -34,8 +34,8 @@ conversion.
 \section{Required columns}{
 
 \itemize{
-\item \code{id} — entity identifier; may be non-unique
-\item \code{toid} — downstream entity identifier
+\item \code{id} — catchment or flowline identifier; may be non-unique
+\item \code{toid} — downstream \code{id}
 }
 
 Optional:
