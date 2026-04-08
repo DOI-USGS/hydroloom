@@ -136,11 +136,14 @@ hy_domain <- function(domain_id,
 #'     `domain_graph` edge is registered in `nexus_registry`.
 #'   \item **Containment resolution** — every non-NA
 #'     `containing_domain_id` resolves to a key of `decomposition$domains`.
+#'   \item **Override references** — every row in `overrides` (when
+#'     present) names a known source/sink domain via `id`/`toid` and a
+#'     known source/sink nexus via `source_nexus_id`/`sink_nexus_id`.
 #' }
 #'
 #' Mass-balance checks (compact-domain outflows match trunk lateral
 #' inflows) and at-scale closed-basin counts are deferred until
-#' [decompose_network()] and [recompose()] are implemented; the
+#' [decompose_network()] and `recompose()` are implemented; the
 #' corresponding negative oracles live in Layer 5 and Layer 9 of the
 #' decomposition test scaffold.
 #'
@@ -315,6 +318,73 @@ validate_decomposition <- function(decomposition) {
         issues <- c(issues, sprintf(
           "domain '%s': containing_domain_id '%s' not in decomposition$domains",
           d$domain_id, cd))
+
+      }
+
+    }
+
+  }
+
+  # ---- Check 7: overrides reference known domains and nexuses ----------
+
+  ov <- decomposition$overrides
+
+  if (!is.null(ov) && is.data.frame(ov) && nrow(ov) > 0) {
+
+    domain_keys <- names(domains)
+    reg_ids     <- decomposition$nexus_registry$nexus_id %||% character(0)
+
+    if ("id" %in% names(ov)) {
+
+      bad_src <- setdiff(ov$id, domain_keys)
+
+      if (length(bad_src) > 0) {
+
+        issues <- c(issues, sprintf(
+          "override unknown source domain: %s not present in decomposition$domains",
+          paste(shQuote(bad_src), collapse = ", ")))
+
+      }
+
+    }
+
+    if ("toid" %in% names(ov)) {
+
+      bad_sink <- setdiff(ov$toid, domain_keys)
+
+      if (length(bad_sink) > 0) {
+
+        issues <- c(issues, sprintf(
+          "override unknown sink domain: %s not present in decomposition$domains",
+          paste(shQuote(bad_sink), collapse = ", ")))
+
+      }
+
+    }
+
+    if ("source_nexus_id" %in% names(ov)) {
+
+      bad_src_nx <- setdiff(ov$source_nexus_id, reg_ids)
+
+      if (length(bad_src_nx) > 0) {
+
+        issues <- c(issues, sprintf(
+          "override unknown source nexus: %s not present in nexus_registry",
+          paste(shQuote(bad_src_nx), collapse = ", ")))
+
+      }
+
+    }
+
+    if ("sink_nexus_id" %in% names(ov)) {
+
+      bad_sink_nx <- setdiff(ov$sink_nexus_id, reg_ids)
+
+      if (length(bad_sink_nx) > 0) {
+
+        issues <- c(issues, sprintf(
+          "override unknown sink nexus: %s not present in nexus_registry",
+          paste(shQuote(bad_sink_nx), collapse = ", ")))
 
       }
 

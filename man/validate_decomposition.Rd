@@ -37,11 +37,14 @@ acyclic graph; checked by delegating to \code{\link[=check_hy_graph]{check_hy_gr
 \code{domain_graph} edge is registered in \code{nexus_registry}.
 \item \strong{Containment resolution} — every non-NA
 \code{containing_domain_id} resolves to a key of \code{decomposition$domains}.
+\item \strong{Override references} — every row in \code{overrides} (when
+present) names a known source/sink domain via \code{id}/\code{toid} and a
+known source/sink nexus via \code{source_nexus_id}/\code{sink_nexus_id}.
 }
 
 Mass-balance checks (compact-domain outflows match trunk lateral
 inflows) and at-scale closed-basin counts are deferred until
-\code{\link[=decompose_network]{decompose_network()}} and \code{\link[=recompose]{recompose()}} are implemented; the
+\code{\link[=decompose_network]{decompose_network()}} and \code{recompose()} are implemented; the
 corresponding negative oracles live in Layer 5 and Layer 9 of the
 decomposition test scaffold.
 }
