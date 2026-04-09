@@ -101,9 +101,8 @@ cat("source rows:     ", nrow(src), "\n")
 #
 # Tabulates trunk-domain catchment counts. With trunk_threshold = 100,
 # every levelpath whose outlet total_da_sqkm exceeds 100 km² becomes a
-# trunk. The distribution shows how many trunks fall in each size
-# bucket; small trunks may still appear for basins whose outlet
-# levelpath is below the threshold (always included as a fallback).
+# trunk. Basins whose outlet metric is at or below the threshold get
+# no trunk and are wrapped in a single compact domain instead.
 
 trunk_sizes <- summary_df$n_catchments[summary_df$type == "trunk"]
 

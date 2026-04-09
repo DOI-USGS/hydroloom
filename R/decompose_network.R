@@ -41,9 +41,9 @@
 #'
 #' \itemize{
 #'   \item When `trunk_threshold` is supplied, every levelpath whose
-#'     outlet metric exceeds the threshold becomes a trunk. The
-#'     basin's terminal-outlet levelpath is always included regardless
-#'     of metric, so every basin has at least one trunk.
+#'     outlet metric exceeds the threshold becomes a trunk. Basins
+#'     whose outlet metric is at or below the threshold receive no
+#'     trunk; the entire basin is wrapped in a single compact domain.
 #'   \item When `trunk_levelpaths` is supplied (and `trunk_threshold`
 #'     is `NULL`), those levelpaths are forced to be trunks. The
 #'     component outlet's levelpath is still unioned in.
@@ -363,6 +363,15 @@ select_trunk_levelpaths <- function(component, terminal_id,
 
   qualifying <- lp_outlet_rows$levelpath[
     lp_outlet_rows[[metric_col]] > trunk_threshold]
+
+  # Basin too small for a trunk -- return empty so the component becomes
+  # a single compact domain.
+  if (length(qualifying) == 0L) {
+    outlet_metric <- outlet_row[[metric_col]]
+    if (is.na(outlet_metric) || outlet_metric <= trunk_threshold) {
+      return(character(0))
+    }
+  }
 
   unique(c(qualifying, outlet_lp))
 }
@@ -816,6 +825,47 @@ print_override_breakdown <- function(overrides) {
 #' @noRd
 decompose_build_component <- function(component, terminal_id,
                                       trunk_lps) {
+
+  # --- Zero-trunk shortcut: entire component is one compact domain. ---
+  #
+  # When trunk_lps is empty (sub-threshold basin), the entire component
+  # becomes a single compact domain with no trunk reference.
+
+  if (length(trunk_lps) == 0L) {
+
+    compact_domain_id <- paste0("compact_", terminal_id)
+    outlet_nx <- paste0("nx_outlet_", terminal_id)
+
+    out_sentinel <- get_outlet_value(component)
+    component$toid[component$id == terminal_id] <- out_sentinel
+    component <- classify_hy(component)
+
+    compact_domain <- hy_domain(
+      domain_id            = compact_domain_id,
+      domain_type          = "compact",
+      outlet_nexus_id      = outlet_nx,
+      inlet_nexus_ids      = character(0),
+      trunk_domain_id      = NA_character_,
+      containing_domain_id = NA_character_,
+      catchments           = component,
+      topo_sort_offset     = 0L)
+
+    nexus_row <- data.frame(
+      nexus_id             = outlet_nx,
+      from_domain_id       = compact_domain_id,
+      to_domain_id         = NA_character_,
+      trunk_catchment_id   = as.character(terminal_id),
+      aggregate_id_measure = NA_real_,
+      stringsAsFactors     = FALSE)
+
+    return(list(
+      domains      = setNames(list(compact_domain), compact_domain_id),
+      edges        = NULL,
+      nexuses      = nexus_row,
+      index_names  = as.character(component$id),
+      index_values = rep(compact_domain_id, nrow(component))
+    ))
+  }
 
   # --- A. Compute the trunk / residual split across all trunks. ----
 

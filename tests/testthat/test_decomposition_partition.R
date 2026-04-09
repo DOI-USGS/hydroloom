@@ -263,3 +263,47 @@ test_that("decompose_network errors on unknown trunk_levelpaths", {
     "unknown levelpath")
 
 })
+
+test_that("decompose_network omits trunks for sub-threshold basins", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
+
+  # Two disconnected basins:
+  #   Basin A (ids 1-3, DA sums to 30) -- below threshold 50
+  #   Basin B (ids 4-6, DA sums to 100) -- above threshold 50
+  pair <- data.frame(
+    id = 1:6,
+    toid = c(2L, 3L, 0L, 5L, 6L, 0L),
+    topo_sort = c(3L, 2L, 1L, 6L, 5L, 4L),
+    levelpath = c(1L, 1L, 1L, 2L, 2L, 2L),
+    levelpath_outlet_id = c(3L, 3L, 3L, 6L, 6L, 6L),
+    da_sqkm = c(10, 10, 10, 30, 30, 40))
+
+  src <- hydroloom::hy(pair)
+
+  d <- hydroloom::decompose_network(src,
+    trunk_metric    = "drainage_area",
+    trunk_threshold = 50)
+
+  expect_true(hydroloom::validate_decomposition(d)$valid)
+  assert_partition_coverage(d, src)
+
+  types <- vapply(d$domains,
+    \(dom) dom$domain_type, character(1))
+
+  # Basin B (DA = 100) should have at least one trunk.
+  expect_gte(sum(types == "trunk"), 1L)
+
+  # Basin A (DA = 30) should have NO trunk -- only a compact domain.
+  basin_a_domain <- d$catchment_domain_index[["3"]]
+  basin_a_type <- d$domains[[basin_a_domain]]$domain_type
+
+  expect_equal(basin_a_type, "compact",
+    label = "sub-threshold basin is a compact domain, not a trunk")
+
+  # The compact domain for basin A should contain all three catchments.
+  expect_setequal(
+    as.character(d$domains[[basin_a_domain]]$catchments$id),
+    c("1", "2", "3"))
+
+})

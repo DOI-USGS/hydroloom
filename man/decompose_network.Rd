@@ -75,9 +75,9 @@ basin by one of three paths:
 
 \itemize{
 \item When \code{trunk_threshold} is supplied, every levelpath whose
-outlet metric exceeds the threshold becomes a trunk. The
-basin's terminal-outlet levelpath is always included regardless
-of metric, so every basin has at least one trunk.
+outlet metric exceeds the threshold becomes a trunk. Basins
+whose outlet metric is at or below the threshold receive no
+trunk; the entire basin is wrapped in a single compact domain.
 \item When \code{trunk_levelpaths} is supplied (and \code{trunk_threshold}
 is \code{NULL}), those levelpaths are forced to be trunks. The
 component outlet's levelpath is still unioned in.
