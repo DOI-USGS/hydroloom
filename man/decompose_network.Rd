@@ -70,20 +70,20 @@ Call \code{\link[=add_levelpaths]{add_levelpaths()}} first. Non-dendritic source
 (\code{hy_flownetwork}) are deferred to a later layer and currently
 error.
 
-\strong{Trunk selection.} Trunk levelpaths are selected per drainage
-basin by one of three paths:
+\strong{Trunk selection.} Each drainage basin gets at most one trunk
+domain, selected by one of three paths:
 
 \itemize{
-\item When \code{trunk_threshold} is supplied, every levelpath whose
-outlet metric exceeds the threshold becomes a trunk. Basins
-whose outlet metric is at or below the threshold receive no
-trunk; the entire basin is wrapped in a single compact domain.
+\item When \code{trunk_threshold} is supplied, the basin's outlet
+metric must exceed the threshold to receive a trunk. The trunk
+domain contains all catchments in the basin whose metric
+exceeds the threshold. Basins at or below the threshold get
+no trunk; the entire basin becomes a single compact domain.
 \item When \code{trunk_levelpaths} is supplied (and \code{trunk_threshold}
-is \code{NULL}), those levelpaths are forced to be trunks. The
-component outlet's levelpath is still unioned in.
-\item When both are \code{NULL} (the default), each drainage basin
-gets exactly one trunk equal to the levelpath containing the
-basin's terminal outlet.
+is \code{NULL}), catchments on those levelpaths (plus the outlet
+levelpath) form the single trunk domain.
+\item When both are \code{NULL} (the default), the trunk contains
+catchments on the basin's terminal-outlet levelpath.
 }
 
 \strong{Metric auto-computation.} When \code{trunk_metric = "drainage_area"}

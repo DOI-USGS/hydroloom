@@ -118,10 +118,9 @@ test_that("decompose_network handles non-dendritic network.rds", {
 
 # ---- trunk_threshold / trunk_levelpaths tests -------------------------
 
-test_that("decompose_network splits walker into multiple trunks on threshold", {
+test_that("decompose_network trunk includes all above-threshold catchments", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition",
-    "get_domain_for_catchment"))
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 
@@ -136,25 +135,29 @@ test_that("decompose_network splits walker into multiple trunks on threshold", {
   assert_one_outlet_per_domain(d)
   assert_dendritic_inter_domain(d)
 
+  # One basin -> exactly one trunk.
   trunk_count <- sum(vapply(d$domains,
     \(dom) dom$domain_type == "trunk", logical(1)))
 
-  expect_gt(trunk_count, 1L,
-    label = "walker with threshold = 50 produces multiple trunks")
+  expect_equal(trunk_count, 1L,
+    label = "walker (one basin) produces exactly one trunk")
 
-  # every qualifying levelpath should appear as a trunk
-  lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
-  expected_trunk_lps <- lp_outlets$levelpath[
-    lp_outlets$total_da_sqkm > 50]
+  # The trunk should contain all catchments whose total_da_sqkm > 50,
+  # spanning multiple levelpaths.
+  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d$domains)[[1]]
+  trunk_catchment_ids <- as.character(trunk_dom$catchments$id)
 
-  found_trunk_lps <- unique(unlist(lapply(d$domains,
-    function(dom) {
-      if (dom$domain_type != "trunk") return(NULL)
-      unique(dom$catchments$levelpath)
-    })))
+  expected_ids <- as.character(
+    src$id[src$total_da_sqkm > 50])
 
-  expect_true(all(expected_trunk_lps %in% found_trunk_lps),
-    label = "all qualifying levelpaths are trunks")
+  expect_true(all(expected_ids %in% trunk_catchment_ids),
+    label = "all above-threshold catchments are in the trunk")
+
+  # The trunk spans more than one levelpath.
+  trunk_lps <- unique(trunk_dom$catchments$levelpath)
+
+  expect_gt(length(trunk_lps), 1L,
+    label = "trunk includes catchments from multiple levelpaths")
 
 })
 
@@ -202,14 +205,14 @@ test_that("decompose_network trunk_levelpaths explicit override on walker", {
   assert_partition_coverage(d, src)
   assert_dendritic_inter_domain(d)
 
-  found_trunk_lps <- unique(unlist(lapply(d$domains,
-    function(dom) {
-      if (dom$domain_type != "trunk") return(NULL)
-      unique(dom$catchments$levelpath)
-    })))
+  # One basin -> one trunk containing catchments from the forced LPs.
+  trunk_dom <- Filter(
+    \(dom) dom$domain_type == "trunk", d$domains)[[1]]
 
-  expect_true(all(top_lps %in% found_trunk_lps),
-    label = "both override levelpaths appear as trunks")
+  found_lps <- unique(trunk_dom$catchments$levelpath)
+
+  expect_true(all(top_lps %in% found_lps),
+    label = "both override levelpaths appear in the trunk")
 
 })
 

@@ -39,5 +39,5 @@
       ├─ catchment_domain_index <named character>  62 entries
       └─ overrides              <NULL>             0 rows   (none)
       
-      # Use get_domain(x, "trunk_5329303_1")
+      # Use get_domain(x, "trunk_5329303")
 

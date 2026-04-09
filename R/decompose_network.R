@@ -36,20 +36,20 @@
 #' (`hy_flownetwork`) are deferred to a later layer and currently
 #' error.
 #'
-#' **Trunk selection.** Trunk levelpaths are selected per drainage
-#' basin by one of three paths:
+#' **Trunk selection.** Each drainage basin gets at most one trunk
+#' domain, selected by one of three paths:
 #'
 #' \itemize{
-#'   \item When `trunk_threshold` is supplied, every levelpath whose
-#'     outlet metric exceeds the threshold becomes a trunk. Basins
-#'     whose outlet metric is at or below the threshold receive no
-#'     trunk; the entire basin is wrapped in a single compact domain.
+#'   \item When `trunk_threshold` is supplied, the basin's outlet
+#'     metric must exceed the threshold to receive a trunk. The trunk
+#'     domain contains all catchments in the basin whose metric
+#'     exceeds the threshold. Basins at or below the threshold get
+#'     no trunk; the entire basin becomes a single compact domain.
 #'   \item When `trunk_levelpaths` is supplied (and `trunk_threshold`
-#'     is `NULL`), those levelpaths are forced to be trunks. The
-#'     component outlet's levelpath is still unioned in.
-#'   \item When both are `NULL` (the default), each drainage basin
-#'     gets exactly one trunk equal to the levelpath containing the
-#'     basin's terminal outlet.
+#'     is `NULL`), catchments on those levelpaths (plus the outlet
+#'     levelpath) form the single trunk domain.
+#'   \item When both are `NULL` (the default), the trunk contains
+#'     catchments on the basin's terminal-outlet levelpath.
 #' }
 #'
 #' **Metric auto-computation.** When `trunk_metric = "drainage_area"`
@@ -154,10 +154,10 @@ decompose_network <- function(x,
     # join stripped off.
     component <- classify_hy(component)
 
-    trunk_lps <- select_trunk_levelpaths(component, tid,
+    trunk_ids <- select_trunk_ids(component, tid,
       trunk_metric, trunk_threshold, trunk_levelpaths)
 
-    built <- decompose_build_component(component, tid, trunk_lps)
+    built <- decompose_build_component(component, tid, trunk_ids)
 
     domains <- c(domains, built$domains)
     edges_list[[length(edges_list) + 1L]]   <- built$edges
@@ -313,22 +313,22 @@ decompose_resolve_metric <- function(x, trunk_metric, trunk_threshold,
     call. = FALSE)
 }
 
-#' Select trunk levelpaths for a single drainage basin
+#' Select trunk catchment ids for a single drainage basin
 #'
-#' Returns the vector of levelpath ids that should become trunks in
-#' this basin. The no-arg fallback, the threshold rule, and the
-#' explicit-override path all funnel through here.
+#' Returns a character vector of catchment ids that belong in the
+#' single trunk domain for this basin. Empty means the basin is too
+#' small for a trunk (sub-threshold).
 #'
 #' @param component hy_leveled slice for a single drainage basin.
 #' @param terminal_id scalar terminal outlet id of the basin.
 #' @param trunk_metric character. "drainage_area" or "arbolate_sum".
 #' @param trunk_threshold numeric scalar or NULL.
 #' @param trunk_levelpaths vector of levelpath ids or NULL.
-#' @returns vector of levelpath ids.
+#' @returns character vector of catchment ids.
 #' @noRd
-select_trunk_levelpaths <- function(component, terminal_id,
-                                    trunk_metric, trunk_threshold,
-                                    trunk_levelpaths) {
+select_trunk_ids <- function(component, terminal_id,
+                             trunk_metric, trunk_threshold,
+                             trunk_levelpaths) {
 
   outlet_row <- component[component$id == terminal_id, , drop = FALSE]
 
@@ -342,15 +342,16 @@ select_trunk_levelpaths <- function(component, terminal_id,
 
   # No-arg fallback: one trunk per basin = the outlet's levelpath.
   if (is.null(trunk_threshold) && is.null(trunk_levelpaths)) {
-    return(outlet_lp)
+    return(as.character(component$id[component$levelpath == outlet_lp]))
   }
 
-  # Explicit override path.
+  # Explicit override path: all catchments on the forced levelpaths.
   if (!is.null(trunk_levelpaths)) {
 
     forced <- intersect(trunk_levelpaths, unique(component$levelpath))
+    lps <- unique(c(forced, outlet_lp))
 
-    return(unique(c(forced, outlet_lp)))
+    return(as.character(component$id[component$levelpath %in% lps]))
   }
 
   # Threshold rule.
@@ -358,22 +359,17 @@ select_trunk_levelpaths <- function(component, terminal_id,
     drainage_area = "total_da_sqkm",
     arbolate_sum  = "arbolate_sum")
 
-  lp_outlet_rows <- component[
-    component$id == component$levelpath_outlet_id, , drop = FALSE]
-
-  qualifying <- lp_outlet_rows$levelpath[
-    lp_outlet_rows[[metric_col]] > trunk_threshold]
-
   # Basin too small for a trunk -- return empty so the component becomes
   # a single compact domain.
-  if (length(qualifying) == 0L) {
-    outlet_metric <- outlet_row[[metric_col]]
-    if (is.na(outlet_metric) || outlet_metric <= trunk_threshold) {
-      return(character(0))
-    }
+  outlet_metric <- outlet_row[[metric_col]]
+
+  if (is.na(outlet_metric) || outlet_metric <= trunk_threshold) {
+    return(character(0))
   }
 
-  unique(c(qualifying, outlet_lp))
+  # All catchments whose metric exceeds the threshold.
+  as.character(
+    component$id[component[[metric_col]] > trunk_threshold])
 }
 
 #' Empty-network decomposition shortcut
@@ -815,23 +811,22 @@ print_override_breakdown <- function(overrides) {
   paste0("(", paste(parts, collapse = ", "), ")")
 }
 
-#' Build one drainage basin's trunk(s) and compacts
+#' Build one drainage basin's trunk and compacts
 #'
 #' @param component hy_leveled slice for a single drainage basin.
 #' @param terminal_id scalar terminal outlet id of the basin.
-#' @param trunk_lps vector of levelpath ids that should become trunks.
+#' @param trunk_ids character vector of catchment ids that belong in
+#'   the trunk domain. Empty means the basin is sub-threshold (no
+#'   trunk).
 #' @returns list with domains, edges, nexuses, and two parallel vectors
 #'   for the catchment_domain_index.
 #' @noRd
 decompose_build_component <- function(component, terminal_id,
-                                      trunk_lps) {
+                                      trunk_ids) {
 
   # --- Zero-trunk shortcut: entire component is one compact domain. ---
-  #
-  # When trunk_lps is empty (sub-threshold basin), the entire component
-  # becomes a single compact domain with no trunk reference.
 
-  if (length(trunk_lps) == 0L) {
+  if (length(trunk_ids) == 0L) {
 
     compact_domain_id <- paste0("compact_", terminal_id)
     outlet_nx <- paste0("nx_outlet_", terminal_id)
@@ -867,167 +862,64 @@ decompose_build_component <- function(component, terminal_id,
     ))
   }
 
-  # --- A. Compute the trunk / residual split across all trunks. ----
+  # --- A. Compute the trunk / residual split. ----------------------
 
-  trunk_mask <- component$levelpath %in% trunk_lps
-  trunk_ids  <- component$id[trunk_mask]
+  trunk_mask <- as.character(component$id) %in% trunk_ids
   residual   <- component[!trunk_mask, , drop = FALSE]
 
-  # --- B. Lookup tables used by both trunks and compacts. ----------
+  trunk_domain_id <- paste0("trunk_", terminal_id)
 
-  # catchment id -> its levelpath (trunk catchments only).
-  catchment_lp <- setNames(
-    as.character(component$levelpath[trunk_mask]),
-    as.character(component$id[trunk_mask]))
+  # --- B. Build the single trunk domain. ---------------------------
 
-  # levelpath -> trunk domain id.
-  trunk_lp_to_domain <- setNames(
-    paste0("trunk_", terminal_id, "_", trunk_lps),
-    as.character(trunk_lps))
+  trunk_slice <- component[trunk_mask, , drop = FALSE]
 
-  # The levelpath that contains the basin's terminal outlet.
-  global_outlet_lp <- component$levelpath[component$id == terminal_id]
+  # Rewrite the terminal row's toid to the outlet sentinel so the
+  # trunk slice is self-contained.
+  out_sentinel <- get_outlet_value(trunk_slice)
+  trunk_slice$toid[trunk_slice$id == terminal_id] <- out_sentinel
+  trunk_slice <- classify_hy(trunk_slice)
+
+  trunk_outlet_nx <- paste0("nx_outlet_", terminal_id)
+
+  # Lateral inlets: residual catchments whose toid is in the trunk.
+  lateral_seeds <- residual$id[
+    residual$toid %in% component$id[trunk_mask]]
+
+  lateral_nexus_ids <- if (length(lateral_seeds) > 0L) {
+    paste0("nx_",
+      as.character(lateral_seeds), "_",
+      as.character(residual$toid[match(lateral_seeds, residual$id)]))
+  } else {
+    character(0)
+  }
+
+  trunk_domain <- hy_domain(
+    domain_id            = trunk_domain_id,
+    domain_type          = "trunk",
+    outlet_nexus_id      = trunk_outlet_nx,
+    inlet_nexus_ids      = lateral_nexus_ids,
+    trunk_domain_id      = NA_character_,
+    containing_domain_id = NA_character_,
+    catchments           = trunk_slice,
+    topo_sort_offset     = 0L)
 
   # Initialize containers.
-  domains      <- list()
+  domains      <- setNames(list(trunk_domain), trunk_domain_id)
   edges_list   <- list()
   nexuses_list <- list()
-  index_names  <- character(0)
-  index_values <- character(0)
 
-  # For each non-outlet trunk, record which trunk levelpath is downstream
-  # (needed for inter-trunk edges emitted in step E).
-  trunk_downstream_lp <- list()
+  nexuses_list[[1L]] <- data.frame(
+    nexus_id             = trunk_outlet_nx,
+    from_domain_id       = trunk_domain_id,
+    to_domain_id         = NA_character_,
+    trunk_catchment_id   = as.character(terminal_id),
+    aggregate_id_measure = NA_real_,
+    stringsAsFactors     = FALSE)
 
-  # --- C. Loop over trunk levelpaths. ------------------------------
+  index_names  <- as.character(component$id[trunk_mask])
+  index_values <- rep(trunk_domain_id, sum(trunk_mask))
 
-  for (lp in trunk_lps) {
-
-    lp_chr  <- as.character(lp)
-    lp_mask <- component$levelpath == lp
-    lp_ids  <- component$id[lp_mask]
-
-    trunk_slice <- component[lp_mask, , drop = FALSE]
-    trunk_slice <- classify_hy(trunk_slice)
-
-    trunk_domain_id <- trunk_lp_to_domain[[lp_chr]]
-
-    # --- outlet nexus for this trunk ---
-
-    lp_outlet_row <- trunk_slice[
-      trunk_slice$id == trunk_slice$levelpath_outlet_id, , drop = FALSE]
-
-    is_global_outlet <- identical(lp, global_outlet_lp)
-
-    if (is_global_outlet) {
-
-      trunk_outlet_nx <- paste0("nx_outlet_", terminal_id)
-
-      nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
-        nexus_id             = trunk_outlet_nx,
-        from_domain_id       = trunk_domain_id,
-        to_domain_id         = NA_character_,
-        trunk_catchment_id   = as.character(terminal_id),
-        aggregate_id_measure = NA_real_,
-        stringsAsFactors     = FALSE)
-
-    } else {
-
-      to_id <- lp_outlet_row$toid
-
-      downstream_lp_hit <- catchment_lp[[as.character(to_id)]]
-
-      if (is.null(downstream_lp_hit)) {
-        stop("decompose_network: trunk levelpath '", lp,
-          "' discharges into a non-trunk catchment. Include the ",
-          "downstream mainstem in trunk_levelpaths or remove this ",
-          "levelpath.",
-          call. = FALSE)
-      }
-
-      trunk_downstream_lp[[lp_chr]] <- downstream_lp_hit
-
-      trunk_outlet_nx <- paste0("nx_",
-        as.character(lp_outlet_row$id), "_",
-        as.character(to_id))
-    }
-
-    # --- lateral inlets from the residual into this trunk ---
-
-    lp_lateral_seeds <- residual$id[residual$toid %in% lp_ids]
-
-    lateral_nexus_ids <- if (length(lp_lateral_seeds) > 0L) {
-      paste0("nx_",
-        as.character(lp_lateral_seeds), "_",
-        as.character(residual$toid[match(lp_lateral_seeds, residual$id)]))
-    } else {
-      character(0)
-    }
-
-    # --- build the trunk domain ---
-
-    trunk_domain <- hy_domain(
-      domain_id            = trunk_domain_id,
-      domain_type          = "trunk",
-      outlet_nexus_id      = trunk_outlet_nx,
-      inlet_nexus_ids      = lateral_nexus_ids,
-      trunk_domain_id      = NA_character_,
-      containing_domain_id = NA_character_,
-      catchments           = trunk_slice,
-      topo_sort_offset     = 0L)
-
-    domains[[trunk_domain_id]] <- trunk_domain
-
-    # --- index entries for this trunk's catchments ---
-
-    index_names  <- c(index_names, as.character(lp_ids))
-    index_values <- c(index_values,
-      rep(trunk_domain_id, length(lp_ids)))
-  }
-
-  # --- E. Emit inter-trunk edges and nexuses. ----------------------
-
-  for (lp in trunk_lps) {
-
-    lp_chr <- as.character(lp)
-
-    if (identical(lp, global_outlet_lp)) next
-
-    downstream_lp_chr <- trunk_downstream_lp[[lp_chr]]
-
-    if (is.null(downstream_lp_chr)) next
-
-    from_id <- trunk_lp_to_domain[[lp_chr]]
-    to_id   <- trunk_lp_to_domain[[downstream_lp_chr]]
-
-    lp_outlet_row <- component[
-      component$levelpath == lp &
-        component$id == component$levelpath_outlet_id, , drop = FALSE]
-
-    inter_trunk_nx <- paste0("nx_",
-      as.character(lp_outlet_row$id), "_",
-      as.character(lp_outlet_row$toid))
-
-    edges_list[[length(edges_list) + 1L]] <- data.frame(
-      id               = from_id,
-      toid             = to_id,
-      nexus_id         = inter_trunk_nx,
-      nexus_position   = NA_real_,
-      relation_type    = "flow",
-      stringsAsFactors = FALSE)
-
-    nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
-      nexus_id             = inter_trunk_nx,
-      from_domain_id       = from_id,
-      to_domain_id         = to_id,
-      trunk_catchment_id   = as.character(lp_outlet_row$toid),
-      aggregate_id_measure = NA_real_,
-      stringsAsFactors     = FALSE)
-  }
-
-  # --- F. Build compacts from residual laterals. -------------------
-
-  lateral_seeds <- residual$id[residual$toid %in% trunk_ids]
+  # --- C. Build compacts from residual laterals. -------------------
 
   if (length(lateral_seeds) > 0L) {
 
@@ -1048,14 +940,11 @@ decompose_build_component <- function(component, terminal_id,
       compact_slice <- component[
         as.character(component$id) %in% new_ids, , drop = FALSE]
 
-      out_sentinel <- get_outlet_value(compact_slice)
-      compact_slice$toid[compact_slice$id == seed] <- out_sentinel
+      cs_sentinel <- get_outlet_value(compact_slice)
+      compact_slice$toid[compact_slice$id == seed] <- cs_sentinel
       compact_slice <- classify_hy(compact_slice)
 
       to_trunk_catchment_id <- component$toid[component$id == seed]
-      to_trunk_lp <- catchment_lp[[as.character(to_trunk_catchment_id)]]
-      receiving_trunk_domain_id <- trunk_lp_to_domain[[
-        as.character(to_trunk_lp)]]
 
       compact_domain_id <- paste0("compact_", terminal_id, "_", seed)
 
@@ -1067,7 +956,7 @@ decompose_build_component <- function(component, terminal_id,
         domain_type          = "compact",
         outlet_nexus_id      = inter_nexus_id,
         inlet_nexus_ids      = character(0),
-        trunk_domain_id      = receiving_trunk_domain_id,
+        trunk_domain_id      = trunk_domain_id,
         containing_domain_id = NA_character_,
         catchments           = compact_slice,
         topo_sort_offset     = 0L)
@@ -1076,7 +965,7 @@ decompose_build_component <- function(component, terminal_id,
 
       edges_list[[length(edges_list) + 1L]] <- data.frame(
         id               = compact_domain_id,
-        toid             = receiving_trunk_domain_id,
+        toid             = trunk_domain_id,
         nexus_id         = inter_nexus_id,
         nexus_position   = NA_real_,
         relation_type    = "flow",
@@ -1085,7 +974,7 @@ decompose_build_component <- function(component, terminal_id,
       nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
         nexus_id             = inter_nexus_id,
         from_domain_id       = compact_domain_id,
-        to_domain_id         = receiving_trunk_domain_id,
+        to_domain_id         = trunk_domain_id,
         trunk_catchment_id   = as.character(to_trunk_catchment_id),
         aggregate_id_measure = NA_real_,
         stringsAsFactors     = FALSE)
@@ -1096,7 +985,7 @@ decompose_build_component <- function(component, terminal_id,
     }
   }
 
-  # --- G. Return. --------------------------------------------------
+  # --- D. Return. --------------------------------------------------
 
   list(
     domains      = domains,

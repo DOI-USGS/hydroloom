@@ -70,7 +70,7 @@ src <- add_streamorder(src, status = FALSE)
 
 message("decomposing network (trunk_threshold = 100 sqkm)")
 
-d <- decompose_network(src, trunk_threshold = 100)
+d <- decompose_network(src, trunk_threshold = 1000)
 
 message("decomposition built: ", length(d$domains), " domains")
 
@@ -100,9 +100,9 @@ cat("source rows:     ", nrow(src), "\n")
 # ---- trunk size distribution -------------------------------------------
 #
 # Tabulates trunk-domain catchment counts. With trunk_threshold = 100,
-# every levelpath whose outlet total_da_sqkm exceeds 100 km² becomes a
-# trunk. Basins whose outlet metric is at or below the threshold get
-# no trunk and are wrapped in a single compact domain instead.
+# each basin whose outlet total_da_sqkm exceeds 100 km² gets one trunk
+# domain containing all catchments above the threshold. Basins at or
+# below the threshold get no trunk -- just a single compact domain.
 
 trunk_sizes <- summary_df$n_catchments[summary_df$type == "trunk"]
 
