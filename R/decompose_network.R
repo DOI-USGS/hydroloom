@@ -243,10 +243,420 @@ decompose_empty <- function(x, overrides) {
   )
 }
 
-#' Build one component's trunk and compacts
+#' Print a domain_decomposition
 #'
-#' @param component hy_leveled slice for a single terminal_id
-#' @param terminal_id scalar outlet id of the component
+#' @description
+#' Two-mode S3 print method for `domain_decomposition`. The default
+#' (cheap) form prints a fixed-size summary of slot counts: trunks,
+#' compacts, catchments, edges, nexuses, and overrides. Cost is bounded
+#' by the number of domains, so it stays fast on 50,000-catchment
+#' decompositions. The full form prints a hierarchical tree summary
+#' with per-block roll-up statistics and is intended for verifying the
+#' shape of a freshly-built decomposition before running analysis on it.
+#'
+#' @details
+#' The cheap form is the default because at the REPL most users want a
+#' quick "did this come out the way I expected" check, not a full audit.
+#' The footer line of the cheap form advertises how to call the full
+#' form.
+#'
+#' The `width` argument is reserved for future column-wrapping support
+#' and is currently ignored by both modes.
+#'
+#' @param x object of class `domain_decomposition`.
+#' @param full logical. `FALSE` (default) prints the cheap summary;
+#'   `TRUE` prints the full hierarchical tree.
+#' @param ... ignored.
+#' @param width integer. Reserved for future use; currently ignored.
+#' @returns `x`, invisibly.
+#' @export
+print.domain_decomposition <- function(x, full = FALSE, ...,
+                                       width = getOption("width")) {
+
+  if (isTRUE(full)) {
+    print_domain_decomposition_full(x, width = width)
+  } else {
+    print_domain_decomposition_cheap(x)
+  }
+
+  invisible(x)
+}
+
+#' Cheap-mode print: counts only, no per-domain iteration
+#' @noRd
+print_domain_decomposition_cheap <- function(x) {
+
+  counts <- decomposition_counts(x)
+
+  fmt <- function(n) format(n, big.mark = ",")
+
+  cat(sprintf(
+    "<domain_decomposition: %s trunks, %s compacts, %s catchments>\n",
+    fmt(counts$n_trunks), fmt(counts$n_compacts), fmt(counts$n_catch)))
+
+  cat(sprintf("  %-16s %s  (%s trunks, %s compacts)\n",
+    "domains:",        fmt(counts$n_total),
+    fmt(counts$n_trunks), fmt(counts$n_compacts)))
+
+  cat(sprintf("  %-16s %s edges\n",
+    "domain_graph:",   fmt(counts$n_edges)))
+
+  cat(sprintf("  %-16s %s nexuses\n",
+    "nexus_registry:", fmt(counts$n_nexus)))
+
+  cat(sprintf("  %-16s %s rows\n",
+    "overrides:",      fmt(counts$n_override)))
+
+  cat(sprintf("  %-16s %s catchments\n",
+    "source_network:", fmt(counts$n_catch)))
+
+  cat("\n# Use print(x, full = TRUE) for the full tree summary\n")
+}
+
+#' Compute the headline counts used by both print modes.
+#' Bounded by O(length(domains)); never opens a catchment table.
+#' @noRd
+decomposition_counts <- function(x) {
+
+  if (length(x$domains) > 0L) {
+    types <- vapply(x$domains,
+      function(d) d$domain_type, character(1))
+  } else {
+    types <- character(0)
+  }
+
+  list(
+    n_total    = length(x$domains),
+    n_trunks   = sum(types == "trunk"),
+    n_compacts = sum(types == "compact"),
+    n_catch    = if (is.null(x$source_network)) 0L
+                 else nrow(x$source_network),
+    n_edges    = if (is.null(x$domain_graph)) 0L
+                 else nrow(x$domain_graph),
+    n_nexus    = if (is.null(x$nexus_registry)) 0L
+                 else nrow(x$nexus_registry),
+    n_override = if (is.null(x$overrides)) 0L
+                 else nrow(x$overrides)
+  )
+}
+
+#' Full-mode print: hierarchical tree with per-block roll-up stats.
+#'
+#' Layout follows the spec at decomposition_plan.md:580-836. Six
+#' top-level slots in fixed order: source_network, domains (with
+#' trunks/compacts roll-ups), domain_graph, nexus_registry,
+#' catchment_domain_index, overrides. Slot names align at column 4,
+#' type tags at column 26, counts right-aligned after.
+#' @noRd
+print_domain_decomposition_full <- function(x, width) {
+
+  counts <- decomposition_counts(x)
+
+  fmt <- function(n) format(n, big.mark = ",")
+
+  # Header line.
+  cat(sprintf(
+    "<domain_decomposition: %s trunks, %s compacts, %s catchments>\n",
+    fmt(counts$n_trunks), fmt(counts$n_compacts), fmt(counts$n_catch)))
+
+  # Slot 1: source_network
+  print_slot_line(
+    branch     = "\u251c\u2500",
+    name       = "source_network",
+    type_tag   = paste0("<", primary_class(x$source_network), ">"),
+    count_text = paste0(fmt(counts$n_catch), " rows"))
+
+  # Slot 2: domains (with sub-tree of trunks + compacts roll-ups).
+  print_slot_line(
+    branch     = "\u251c\u2500",
+    name       = "domains",
+    type_tag   = "<list>",
+    count_text = paste0(fmt(counts$n_total), " elements"))
+
+  if (counts$n_total > 0L) {
+    print_domains_rollup(x, counts, fmt)
+  }
+
+  # Slot 3: domain_graph
+  print_slot_line(
+    branch     = "\u251c\u2500",
+    name       = "domain_graph",
+    type_tag   = paste0("<", primary_class(x$domain_graph), ">"),
+    count_text = paste0(fmt(counts$n_edges), " rows"))
+
+  if (counts$n_edges > 0L) {
+    print_domain_graph_block(x, fmt)
+  }
+
+  # Slot 4: nexus_registry
+  print_slot_line(
+    branch     = "\u251c\u2500",
+    name       = "nexus_registry",
+    type_tag   = paste0("<", primary_class(x$nexus_registry), ">"),
+    count_text = paste0(fmt(counts$n_nexus), " rows"))
+
+  # Slot 5: catchment_domain_index
+  print_slot_line(
+    branch     = "\u251c\u2500",
+    name       = "catchment_domain_index",
+    type_tag   = "<named character>",
+    count_text = paste0(fmt(length(x$catchment_domain_index)),
+      " entries"))
+
+  # Slot 6: overrides
+  override_tail <- if (counts$n_override == 0L) {
+    "(none)"
+  } else {
+    print_override_breakdown(x$overrides)
+  }
+
+  print_slot_line(
+    branch     = "\u2514\u2500",
+    name       = "overrides",
+    type_tag   = paste0("<", primary_class(x$overrides), ">"),
+    count_text = paste0(fmt(counts$n_override), " rows   ", override_tail))
+
+  # Footer hint with sample id (if any domain exists).
+  cat("\n")
+
+  if (counts$n_total > 0L) {
+
+    sample_id <- names(x$domains)[[1L]]
+
+    hint <- sprintf("# Use get_domain(x, \"%s\")", sample_id)
+
+    if (counts$n_override > 0L) {
+      hint <- paste0(hint, " or x$overrides for transfer details")
+    }
+
+    cat(hint, "\n", sep = "")
+
+  } else {
+    cat("# Empty decomposition (no domains)\n")
+  }
+}
+
+#' Print one top-level slot line, padded so type tags and counts align.
+#' @noRd
+print_slot_line <- function(branch, name, type_tag, count_text) {
+
+  cat(sprintf("%s %-22s %-18s %s\n",
+    branch, name, type_tag, count_text))
+}
+
+#' Best-effort primary S3 class for type-tag display.
+#'
+#' Picks the first class that isn't a generic base — prefers
+#' subclasses (e.g., "hy_leveled") over their parents.
+#' @noRd
+primary_class <- function(obj) {
+
+  if (is.null(obj)) return("NULL")
+
+  cls <- class(obj)
+
+  # Drop the generic "data.frame" / "list" tail when a more specific
+  # class is present, but fall back to it when nothing else is.
+  specific <- setdiff(cls, c("data.frame", "list"))
+
+  if (length(specific) > 0L) specific[[1L]] else cls[[1L]]
+}
+
+#' Domains roll-up sub-tree: trunks block + compacts block.
+#' @noRd
+print_domains_rollup <- function(x, counts, fmt) {
+
+  types <- vapply(x$domains,
+    function(d) d$domain_type, character(1))
+
+  trunks   <- x$domains[types == "trunk"]
+  compacts <- x$domains[types == "compact"]
+
+  cat("\u2502  \u2502\n")
+
+  if (length(trunks) > 0L) {
+
+    branch <- if (length(compacts) > 0L) "\u251c\u2500" else "\u2514\u2500"
+
+    cat(sprintf("\u2502  %s <%s trunk domains>\n",
+      branch, fmt(length(trunks))))
+
+    print_domain_block_attrs(trunks, fmt,
+      cont_char = if (length(compacts) > 0L) "\u2502" else " ")
+  }
+
+  if (length(compacts) > 0L) {
+
+    if (length(trunks) > 0L) cat("\u2502  \u2502\n")
+
+    cat(sprintf("\u2502  \u2514\u2500 <%s compact domains>\n",
+      fmt(length(compacts))))
+
+    print_domain_block_attrs(compacts, fmt, cont_char = " ")
+  }
+
+  cat("\u2502\n")
+}
+
+#' Per-block attribute roll-up lines (catchments / area_sqkm /
+#' stream_order / dendritic / topo_offset). Lines for missing optional
+#' columns are omitted rather than printed as NAs.
+#' @noRd
+print_domain_block_attrs <- function(domains, fmt, cont_char) {
+
+  prefix <- sprintf("\u2502  %s     ", cont_char)
+
+  catch_counts <- vapply(domains,
+    function(d) nrow(d$catchments), integer(1))
+
+  print_attr_line(prefix, "catchments", catch_counts, fmt,
+    show_total = TRUE)
+
+  # area_sqkm: present only if every domain's catchments table has it.
+  area_present <- all(vapply(domains,
+    function(d) "area_sqkm" %in% names(d$catchments), logical(1)))
+
+  if (area_present) {
+
+    area_sums <- vapply(domains,
+      function(d) sum(d$catchments$area_sqkm, na.rm = TRUE),
+      numeric(1))
+
+    print_attr_line(prefix, "area_sqkm", area_sums, fmt,
+      show_total = TRUE, is_float = TRUE)
+  }
+
+  # stream_order: per-domain max, then min/median/max across domains.
+  so_present <- all(vapply(domains,
+    function(d) "stream_order" %in% names(d$catchments), logical(1)))
+
+  if (so_present) {
+
+    so_max <- vapply(domains,
+      function(d) suppressWarnings(
+        max(d$catchments$stream_order, na.rm = TRUE)),
+      numeric(1))
+
+    so_max[!is.finite(so_max)] <- NA_real_
+
+    if (any(!is.na(so_max))) {
+      print_attr_line(prefix, "stream_order", so_max, fmt,
+        show_total = FALSE)
+    }
+  }
+
+  # dendritic: read from attr() when set; otherwise infer from class
+  # (hy_topo / hy_leveled are dendritic by invariant; hy_flownetwork
+  # is non-dendritic by definition).
+  dend <- vapply(domains,
+    function(d) {
+      a <- attr(d$catchments, "dendritic")
+      if (!is.null(a)) return(isTRUE(a))
+      if (inherits(d$catchments, "hy_flownetwork")) return(FALSE)
+      TRUE
+    },
+    logical(1))
+
+  n_dend <- sum(dend)
+  n_nondend <- sum(!dend)
+
+  if (n_nondend == 0L) {
+    cat(sprintf("%s%-13s TRUE  (%s)\n",
+      prefix, "dendritic", fmt(n_dend)))
+  } else {
+
+    # Count diversions across non-dendritic domains: rows with
+    # duplicated id contribute one diversion each.
+    n_div <- sum(vapply(domains[!dend],
+      function(d) sum(duplicated(d$catchments$id)),
+      integer(1)))
+
+    cat(sprintf("%s%-13s TRUE  (%s)    FALSE  (%s, %s diversions total)\n",
+      prefix, "dendritic", fmt(n_dend), fmt(n_nondend), fmt(n_div)))
+  }
+}
+
+#' One attribute roll-up line: min, median, max, optionally total.
+#' @noRd
+print_attr_line <- function(prefix, name, values, fmt,
+                            show_total = FALSE,
+                            is_float = FALSE) {
+
+  if (length(values) == 0L || all(is.na(values))) return(invisible())
+
+  num <- function(v) {
+    if (is_float) formatC(v, format = "f", digits = 1, big.mark = ",")
+    else fmt(as.integer(v))
+  }
+
+  vmin <- num(min(values, na.rm = TRUE))
+  vmed <- num(stats::median(values, na.rm = TRUE))
+  vmax <- num(max(values, na.rm = TRUE))
+
+  base <- sprintf("%s%-13s min %6s   median %6s   max %6s",
+    prefix, name, vmin, vmed, vmax)
+
+  if (show_total) {
+    vsum <- num(sum(values, na.rm = TRUE))
+    cat(sprintf("%s   total %s\n", base, vsum))
+  } else {
+    cat(base, "\n", sep = "")
+  }
+}
+
+#' domain_graph sub-block (relation_type breakdown + nexus_position
+#' summary). Skipped entirely when nexus_position is all-NA.
+#' @noRd
+print_domain_graph_block <- function(x, fmt) {
+
+  g <- x$domain_graph
+
+  cat("\u2502     ")
+
+  rt <- table(g$relation_type)
+
+  rt_text <- paste(sprintf("%s (%s)", names(rt), fmt(as.integer(rt))),
+    collapse = "   ")
+
+  cat(sprintf("%-13s %s\n", "relation_type", rt_text))
+
+  if (!is.null(g$nexus_position) && any(!is.na(g$nexus_position))) {
+
+    np <- g$nexus_position[!is.na(g$nexus_position)]
+
+    cat(sprintf("\u2502     %-13s min %6.1f   median %6.1f   max %6.1f\n",
+      "nexus_position",
+      min(np), stats::median(np), max(np)))
+  } else {
+    cat(sprintf("\u2502     %-13s (not yet populated)\n",
+      "nexus_position"))
+  }
+
+  cat("\u2502\n")
+}
+
+#' Tail string for the overrides slot line: counts by transfer_type.
+#' @noRd
+print_override_breakdown <- function(overrides) {
+
+  if (is.null(overrides) || nrow(overrides) == 0L) return("(none)")
+
+  if (!"transfer_type" %in% names(overrides)) {
+    return(sprintf("(%d rows)", nrow(overrides)))
+  }
+
+  tt <- table(overrides$transfer_type)
+
+  parts <- sprintf("%s %s", as.integer(tt), names(tt))
+
+  paste0("(", paste(parts, collapse = ", "), ")")
+}
+
+#' Build one component's trunk(s) and compacts
+#'
+#' @param component hy_leveled slice for a single terminal_id.
+#' @param terminal_id scalar outlet id of the component.
+#' @param trunk_lps vector of levelpath ids that should become trunks.
 #' @returns list with domains, edges, nexuses, and two parallel vectors
 #'   for the catchment_domain_index.
 #' @noRd

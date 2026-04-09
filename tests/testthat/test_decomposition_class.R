@@ -292,3 +292,72 @@ test_that("validate_decomposition flags a non-leveled trunk", {
     res$issues, ignore.case = TRUE)))
 
 })
+
+# ---- print.domain_decomposition ---------------------------------------
+
+test_that("print.domain_decomposition cheap mode (default) is snapshot-stable", {
+
+  decomposition_pending("decompose_network")
+
+  d <- hydroloom::decompose_network(enrich_for_decomposition(load_walker()))
+
+  expect_snapshot(print(d))
+
+})
+
+test_that("print.domain_decomposition full mode is snapshot-stable", {
+
+  decomposition_pending("decompose_network")
+
+  d <- hydroloom::decompose_network(enrich_for_decomposition(load_walker()))
+
+  expect_snapshot(print(d, full = TRUE))
+
+})
+
+test_that("print.domain_decomposition returns x invisibly", {
+
+  decomposition_pending("decompose_network")
+
+  d <- hydroloom::decompose_network(enrich_for_decomposition(load_walker()))
+
+  # capture.output drains the cat() side-effect; the value should be d.
+  capture.output(res <- print(d))
+
+  expect_identical(res, d)
+
+})
+
+test_that("print.domain_decomposition handles empty decomposition", {
+
+  decomposition_pending("decompose_network")
+
+  empty <- structure(
+    list(
+      domains = list(),
+      domain_graph = data.frame(
+        id = character(0), toid = character(0),
+        nexus_id = character(0), nexus_position = numeric(0),
+        relation_type = character(0)),
+      overrides = NULL,
+      catchment_domain_index = setNames(character(0), character(0)),
+      nexus_registry = data.frame(
+        nexus_id = character(0),
+        from_domain_id = character(0),
+        to_domain_id = character(0),
+        trunk_catchment_id = character(0),
+        aggregate_id_measure = numeric(0)),
+      source_network = make_lev()),
+    class = "domain_decomposition")
+
+  out_cheap <- capture.output(print(empty))
+
+  expect_match(out_cheap, "0 trunks", all = FALSE, fixed = TRUE)
+  expect_match(out_cheap, "0 compacts", all = FALSE, fixed = TRUE)
+
+  # Full mode should not error on an empty decomposition either.
+  out_full <- capture.output(print(empty, full = TRUE))
+
+  expect_match(out_full, "Empty decomposition", all = FALSE, fixed = TRUE)
+
+})
