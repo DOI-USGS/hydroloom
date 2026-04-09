@@ -115,3 +115,151 @@ test_that("decompose_network handles non-dendritic network.rds", {
     label = "non-dendritic source produces at least one hy_flownetwork domain")
 
 })
+
+# ---- trunk_threshold / trunk_levelpaths tests -------------------------
+
+test_that("decompose_network splits walker into multiple trunks on threshold", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition",
+    "get_domain_for_catchment"))
+
+  src <- enrich_for_decomposition(load_walker())
+
+  d <- hydroloom::decompose_network(src,
+    trunk_metric    = "drainage_area",
+    trunk_threshold = 50)
+
+  expect_true(hydroloom::validate_decomposition(d)$valid,
+    label = "walker threshold decomposition is valid")
+
+  assert_partition_coverage(d, src)
+  assert_one_outlet_per_domain(d)
+  assert_dendritic_inter_domain(d)
+
+  trunk_count <- sum(vapply(d$domains,
+    \(dom) dom$domain_type == "trunk", logical(1)))
+
+  expect_gt(trunk_count, 1L,
+    label = "walker with threshold = 50 produces multiple trunks")
+
+  # every qualifying levelpath should appear as a trunk
+  lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
+  expected_trunk_lps <- lp_outlets$levelpath[
+    lp_outlets$total_da_sqkm > 50]
+
+  found_trunk_lps <- unique(unlist(lapply(d$domains,
+    function(dom) {
+      if (dom$domain_type != "trunk") return(NULL)
+      unique(dom$catchments$levelpath)
+    })))
+
+  expect_true(all(expected_trunk_lps %in% found_trunk_lps),
+    label = "all qualifying levelpaths are trunks")
+
+})
+
+test_that("decompose_network trunk_threshold scales on new_hope", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
+
+  src <- enrich_for_decomposition(load_new_hope())
+
+  d_lo <- hydroloom::decompose_network(src, trunk_threshold = 100)
+
+  expect_true(hydroloom::validate_decomposition(d_lo)$valid)
+  assert_partition_coverage(d_lo, src)
+  assert_dendritic_inter_domain(d_lo)
+
+  n_trunks_lo <- sum(vapply(d_lo$domains,
+    \(dom) dom$domain_type == "trunk", logical(1)))
+
+  d_hi <- hydroloom::decompose_network(src, trunk_threshold = 500)
+
+  expect_true(hydroloom::validate_decomposition(d_hi)$valid)
+
+  n_trunks_hi <- sum(vapply(d_hi$domains,
+    \(dom) dom$domain_type == "trunk", logical(1)))
+
+  expect_gte(n_trunks_hi, 1L)
+  expect_gte(n_trunks_lo, n_trunks_hi,
+    label = "lower threshold produces at least as many trunks as higher")
+
+})
+
+test_that("decompose_network trunk_levelpaths explicit override on walker", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
+
+  src <- enrich_for_decomposition(load_walker())
+
+  lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
+  top_lps <- lp_outlets$levelpath[
+    order(-lp_outlets$total_da_sqkm)][1:2]
+
+  d <- hydroloom::decompose_network(src, trunk_levelpaths = top_lps)
+
+  expect_true(hydroloom::validate_decomposition(d)$valid)
+  assert_partition_coverage(d, src)
+  assert_dendritic_inter_domain(d)
+
+  found_trunk_lps <- unique(unlist(lapply(d$domains,
+    function(dom) {
+      if (dom$domain_type != "trunk") return(NULL)
+      unique(dom$catchments$levelpath)
+    })))
+
+  expect_true(all(top_lps %in% found_trunk_lps),
+    label = "both override levelpaths appear as trunks")
+
+})
+
+test_that("decompose_network trunk_metric = arbolate_sum on walker", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
+
+  src <- enrich_for_decomposition(load_walker())
+
+  skip_if_not("arbolate_sum" %in% names(src))
+
+  lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
+
+  threshold <- stats::median(lp_outlets$arbolate_sum, na.rm = TRUE)
+
+  d <- hydroloom::decompose_network(src,
+    trunk_metric    = "arbolate_sum",
+    trunk_threshold = threshold)
+
+  expect_true(hydroloom::validate_decomposition(d)$valid)
+  assert_partition_coverage(d, src)
+  assert_dendritic_inter_domain(d)
+
+})
+
+test_that("decompose_network errors on missing drainage_area metric", {
+
+  decomposition_pending("decompose_network")
+
+  src <- enrich_for_decomposition(load_walker())
+
+  src$total_da_sqkm <- NULL
+  src$da_sqkm <- NULL
+
+  expect_error(
+    hydroloom::decompose_network(src,
+      trunk_metric = "drainage_area", trunk_threshold = 50),
+    "total_da_sqkm")
+
+})
+
+test_that("decompose_network errors on unknown trunk_levelpaths", {
+
+  decomposition_pending("decompose_network")
+
+  src <- enrich_for_decomposition(load_walker())
+
+  expect_error(
+    hydroloom::decompose_network(src,
+      trunk_levelpaths = c(999999999)),
+    "unknown levelpath")
+
+})

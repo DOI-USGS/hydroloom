@@ -6,8 +6,10 @@
 \usage{
 decompose_network(
   x,
-  trunk_level = 1,
+  trunk_metric = "drainage_area",
+  trunk_threshold = NULL,
   trunk_levelpaths = NULL,
+  trunk_level = 1,
   min_compact_size = NULL,
   outlet_ids = NULL,
   overrides = NULL,
@@ -18,11 +20,23 @@ decompose_network(
 \item{x}{\code{hy_leveled} object (dendritic network already enriched
 with levelpaths).}
 
+\item{trunk_metric}{character. Metric evaluated at each levelpath
+outlet to decide trunk eligibility. \code{"drainage_area"} reads
+\code{total_da_sqkm}; \code{"arbolate_sum"} reads \code{arbolate_sum}. Only
+consulted when \code{trunk_threshold} is non-NULL.}
+
+\item{trunk_threshold}{numeric scalar or \code{NULL}. Value of
+\code{trunk_metric} at a levelpath outlet above which the levelpath is
+a trunk candidate. \code{NULL} (default) falls back to one trunk per
+drainage basin.}
+
+\item{trunk_levelpaths}{vector of levelpath ids or \code{NULL}. When
+non-NULL, bypasses the threshold rule and forces these levelpaths
+to be trunks (the basin's terminal-outlet levelpath is always unioned
+in). Every id must exist in \code{x$levelpath}.}
+
 \item{trunk_level}{integer. Reserved for a stream-level trunk
 threshold; ignored in the current implementation.}
-
-\item{trunk_levelpaths}{vector of levelpath ids. Reserved for
-explicit trunk selection; ignored in the current implementation.}
 
 \item{min_compact_size}{numeric. Reserved for a minimum-area filter
 on compact domains; ignored in the current implementation.}
@@ -46,35 +60,43 @@ Partitions a hydrologic network into \code{hy_domain} objects for
 independent or parallel resolution. Each domain is an
 HY_CatchmentAggregate with exactly one outlet nexus. Trunk domains
 carry a major mainstem flowpath; compact domains are the maximal
-upstream sub-network of a single lateral inflow point along the
+upstream sub-network of a single lateral inflow point along a
 trunk.
 }
 \details{
-The Layer 2 implementation of \code{decompose_network()} commits to the
-following rules:
+Input must be \code{hy_leveled} -- the network must already carry
+\code{levelpath}, \code{levelpath_outlet_id}, and \code{topo_sort} columns.
+Call \code{\link[=add_levelpaths]{add_levelpaths()}} first. Non-dendritic sources
+(\code{hy_flownetwork}) are deferred to a later layer and currently
+error.
+
+\strong{Trunk selection.} Trunk levelpaths are selected per drainage
+basin by one of three paths:
 
 \itemize{
-\item Input must be \code{hy_leveled} -- the network must already carry
-\code{levelpath}, \code{levelpath_outlet_id}, and \code{topo_sort} columns.
-Call \code{\link[=add_levelpaths]{add_levelpaths()}} first.
-\item Exactly one trunk per connected component. The trunk
-levelpath is the levelpath that contains the component's global
-outlet (the row whose \code{id} matches its own \code{terminal_id} from
-\code{\link[=sort_network]{sort_network()}} with \code{split = TRUE}).
-\item Each compact domain is the maximal upstream sub-network of
-a single "lateral inflow point" -- a non-trunk catchment whose
-\code{toid} is on the trunk. Compacts inherit whatever class
-\code{classify_hy()} returns on their slice (\code{hy_leveled} when the
-source is leveled and dendritic).
-\item Non-dendritic sources (\code{hy_flownetwork}) are deferred to a
-later layer and currently error.
+\item When \code{trunk_threshold} is supplied, every levelpath whose
+outlet metric exceeds the threshold becomes a trunk. The
+basin's terminal-outlet levelpath is always included regardless
+of metric, so every basin has at least one trunk.
+\item When \code{trunk_levelpaths} is supplied (and \code{trunk_threshold}
+is \code{NULL}), those levelpaths are forced to be trunks. The
+component outlet's levelpath is still unioned in.
+\item When both are \code{NULL} (the default), each drainage basin
+gets exactly one trunk equal to the levelpath containing the
+basin's terminal outlet.
 }
 
-The arguments \code{trunk_level}, \code{trunk_levelpaths}, \code{min_compact_size},
-\code{outlet_ids}, \code{overrides}, and \code{contained_basins} are accepted for
-signature stability with the design document but only their defaults
-are honored in this version. \code{overrides} is passed through to the
-returned \code{domain_decomposition$overrides} slot unchanged.
+\strong{Metric auto-computation.} When \code{trunk_metric = "drainage_area"}
+and the input lacks a \code{total_da_sqkm} column but carries \code{da_sqkm},
+\code{decompose_network} computes \code{total_da_sqkm} internally via
+\code{\link[=accumulate_downstream]{accumulate_downstream()}}. When \code{trunk_metric = "arbolate_sum"},
+the \code{arbolate_sum} column must be present on the input.
+
+The arguments \code{trunk_level}, \code{min_compact_size}, \code{outlet_ids}, and
+\code{contained_basins} are accepted for signature stability with the
+design document but only their defaults are honored in this version.
+\code{overrides} is passed through to the returned
+\code{domain_decomposition$overrides} slot unchanged.
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
