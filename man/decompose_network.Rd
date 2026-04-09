@@ -9,9 +9,8 @@ decompose_network(
   trunk_metric = "drainage_area",
   trunk_threshold = NULL,
   trunk_levelpaths = NULL,
-  trunk_level = 1,
-  min_compact_size = NULL,
-  outlet_ids = NULL,
+  trunk_promotion_ratio = 2,
+  headwater_collapse_fraction = NULL,
   overrides = NULL,
   contained_basins = NULL
 )
@@ -35,14 +34,15 @@ non-NULL, bypasses the threshold rule and forces these levelpaths
 to be trunks (the basin's terminal-outlet levelpath is always unioned
 in). Every id must exist in \code{x$levelpath}.}
 
-\item{trunk_level}{integer. Reserved for a stream-level trunk
-threshold; ignored in the current implementation.}
+\item{trunk_promotion_ratio}{numeric. Guards against thin trunks:
+demote a trunk candidate whose outlet metric is below
+\code{trunk_threshold * trunk_promotion_ratio}. Reserved for a future
+layer; ignored in the current implementation. Default \code{2}.}
 
-\item{min_compact_size}{numeric. Reserved for a minimum-area filter
-on compact domains; ignored in the current implementation.}
-
-\item{outlet_ids}{vector. Reserved for forcing domain outlets at
-specific catchment ids; ignored in the current implementation.}
+\item{headwater_collapse_fraction}{numeric or \code{NULL}. Fraction of
+\code{trunk_threshold} below which the headwater end of a confirmed
+trunk is carved off as a compact domain. Reserved for a future
+layer; ignored in the current implementation.}
 
 \item{overrides}{data.frame. Non-dendritic inter-domain transfer
 table; pass-through to \code{decomposition$overrides}.}
@@ -92,8 +92,8 @@ and the input lacks a \code{total_da_sqkm} column but carries \code{da_sqkm},
 \code{\link[=accumulate_downstream]{accumulate_downstream()}}. When \code{trunk_metric = "arbolate_sum"},
 the \code{arbolate_sum} column must be present on the input.
 
-The arguments \code{trunk_level}, \code{min_compact_size}, \code{outlet_ids}, and
-\code{contained_basins} are accepted for signature stability with the
+The arguments \code{trunk_promotion_ratio}, \code{headwater_collapse_fraction},
+and \code{contained_basins} are accepted for signature stability with the
 design document but only their defaults are honored in this version.
 \code{overrides} is passed through to the returned
 \code{domain_decomposition$overrides} slot unchanged.

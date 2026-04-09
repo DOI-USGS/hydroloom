@@ -1,24 +1,23 @@
-##### decompose_network.R -- network partition into hy_domain objects (Layer 2) #####
+##### decompose_network.R -- network partition into hy_domain objects #####
 #
-# Layer 2 surface: decompose_network() plus the accessors its test suite
-# needs to round-trip back through the decomposition (get_domain_graph,
-# get_domain_for_catchment).
+# decompose_network() plus accessors (get_domain_graph,
+# get_domain_for_catchment) and print.domain_decomposition.
 #
 # The Layer 1 constructor + validator live in R/decomposition.R; this
 # file layers the partition machinery on top. Contract is pinned by
 # tests/testthat/test_decomposition_partition.R.
 #
-# First-cut scope (see plan file jiggly-squishing-wreath.md):
+# Implemented:
 #   - require hy_leveled input; error for hy_topo / hy_flownetwork
-#   - one trunk per drainage basin, equal to the levelpath
-#     containing that basin's terminal outlet
-#   - one compact per lateral inflow point on the trunk, carrying the
+#   - trunk selection: single-outlet-levelpath default, trunk_threshold
+#     metric-based multi-trunk, trunk_levelpaths explicit override
+#   - one compact per lateral inflow point on a trunk, carrying the
 #     maximal upstream sub-network of that lateral
 #   - synthetic nexus ids; domain_graph carries flow edges only
+#   - print method (cheap + full modes)
 #
-# Function args trunk_level / trunk_levelpaths / min_compact_size /
-# outlet_ids / contained_basins are accepted for signature stability
-# but only their defaults are honored in the Layer 2 cut.
+# Not yet active: trunk_promotion_ratio, headwater_collapse_fraction,
+# contained_basins. See dev/decomposition_plan.md.
 
 #' Decompose a network into domains
 #'
@@ -59,8 +58,8 @@
 #' [accumulate_downstream()]. When `trunk_metric = "arbolate_sum"`,
 #' the `arbolate_sum` column must be present on the input.
 #'
-#' The arguments `trunk_level`, `min_compact_size`, `outlet_ids`, and
-#' `contained_basins` are accepted for signature stability with the
+#' The arguments `trunk_promotion_ratio`, `headwater_collapse_fraction`,
+#' and `contained_basins` are accepted for signature stability with the
 #' design document but only their defaults are honored in this version.
 #' `overrides` is passed through to the returned
 #' `domain_decomposition$overrides` slot unchanged.
@@ -79,12 +78,14 @@
 #'   non-NULL, bypasses the threshold rule and forces these levelpaths
 #'   to be trunks (the basin's terminal-outlet levelpath is always unioned
 #'   in). Every id must exist in `x$levelpath`.
-#' @param trunk_level integer. Reserved for a stream-level trunk
-#'   threshold; ignored in the current implementation.
-#' @param min_compact_size numeric. Reserved for a minimum-area filter
-#'   on compact domains; ignored in the current implementation.
-#' @param outlet_ids vector. Reserved for forcing domain outlets at
-#'   specific catchment ids; ignored in the current implementation.
+#' @param trunk_promotion_ratio numeric. Guards against thin trunks:
+#'   demote a trunk candidate whose outlet metric is below
+#'   `trunk_threshold * trunk_promotion_ratio`. Reserved for a future
+#'   layer; ignored in the current implementation. Default `2`.
+#' @param headwater_collapse_fraction numeric or `NULL`. Fraction of
+#'   `trunk_threshold` below which the headwater end of a confirmed
+#'   trunk is carved off as a compact domain. Reserved for a future
+#'   layer; ignored in the current implementation.
 #' @param overrides data.frame. Non-dendritic inter-domain transfer
 #'   table; pass-through to `decomposition$overrides`.
 #' @param contained_basins data.frame. Containment relations; reserved
@@ -111,9 +112,8 @@ decompose_network <- function(x,
                               trunk_metric = "drainage_area",
                               trunk_threshold = NULL,
                               trunk_levelpaths = NULL,
-                              trunk_level = 1,
-                              min_compact_size = NULL,
-                              outlet_ids = NULL,
+                              trunk_promotion_ratio = 2,
+                              headwater_collapse_fraction = NULL,
                               overrides = NULL,
                               contained_basins = NULL) {
 

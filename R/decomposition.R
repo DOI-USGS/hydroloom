@@ -143,9 +143,8 @@ hy_domain <- function(domain_id,
 #'
 #' Mass-balance checks (compact-domain outflows match trunk lateral
 #' inflows) and at-scale closed-basin counts are deferred until
-#' [decompose_network()] and `recompose()` are implemented; the
-#' corresponding negative oracles live in Layer 5 and Layer 9 of the
-#' decomposition test scaffold.
+#' `recompose()` is implemented; the corresponding negative oracles
+#' live in Layer 5 and Layer 9 of the decomposition test scaffold.
 #'
 #' @param decomposition object of class `domain_decomposition`.
 #' @returns list with elements `valid` (logical scalar) and `issues`

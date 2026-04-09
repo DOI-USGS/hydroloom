@@ -44,9 +44,8 @@ known source/sink nexus via \code{source_nexus_id}/\code{sink_nexus_id}.
 
 Mass-balance checks (compact-domain outflows match trunk lateral
 inflows) and at-scale closed-basin counts are deferred until
-\code{\link[=decompose_network]{decompose_network()}} and \code{recompose()} are implemented; the
-corresponding negative oracles live in Layer 5 and Layer 9 of the
-decomposition test scaffold.
+\code{recompose()} is implemented; the corresponding negative oracles
+live in Layer 5 and Layer 9 of the decomposition test scaffold.
 }
 \examples{
 lev <- hy(data.frame(

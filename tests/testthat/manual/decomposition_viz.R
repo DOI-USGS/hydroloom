@@ -68,9 +68,9 @@ src <- add_levelpaths(src,
 
 src <- add_streamorder(src, status = FALSE)
 
-message("decomposing network")
+message("decomposing network (trunk_threshold = 100 sqkm)")
 
-d <- decompose_network(src)
+d <- decompose_network(src, trunk_threshold = 100)
 
 message("decomposition built: ", length(d$domains), " domains")
 
@@ -99,13 +99,11 @@ cat("source rows:     ", nrow(src), "\n")
 
 # ---- trunk size distribution -------------------------------------------
 #
-# Tabulates trunk-domain catchment counts. The current Layer 2 rule
-# promotes one trunk per connected component, so every disconnected
-# sub-network surfaces as a trunk regardless of size. The distribution
-# is the empirical motivation for the threshold/promotion-ratio rule:
-# real mainstems should sit in the long tail, while the head of the
-# distribution (size 1, 2, 3 ...) is the "thin trunk" noise that the
-# next layer collapses into compact.
+# Tabulates trunk-domain catchment counts. With trunk_threshold = 100,
+# every levelpath whose outlet total_da_sqkm exceeds 100 km² becomes a
+# trunk. The distribution shows how many trunks fall in each size
+# bucket; small trunks may still appear for basins whose outlet
+# levelpath is below the threshold (always included as a fallback).
 
 trunk_sizes <- summary_df$n_catchments[summary_df$type == "trunk"]
 
@@ -176,7 +174,7 @@ plot(sf::st_geometry(plot_sf),
   col = plot_sf$color,
   lwd = plot_sf$lwd,
   main = sprintf(
-    "decompose_network: %d domains (%d trunk, %d compact) on %d flowlines",
+    "decompose_network(trunk_threshold=100): %d domains (%d trunk, %d compact) on %d flowlines",
     length(d$domains),
     sum(summary_df$type == "trunk"),
     sum(summary_df$type == "compact"),
