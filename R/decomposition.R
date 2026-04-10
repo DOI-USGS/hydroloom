@@ -211,7 +211,7 @@ validate_decomposition <- function(decomposition) {
 
     n_out <- tryCatch(
       suppressWarnings({
-        sorted <- hydroloom::sort_network(catch, split = TRUE)
+        sorted <- sort_network(catch, split = TRUE)
         length(unique(sorted$terminal_id))
       }),
       error = function(e) NA_integer_)
@@ -277,7 +277,7 @@ validate_decomposition <- function(decomposition) {
     if (nrow(flow) > 0 && all(c("id", "toid") %in% names(flow))) {
 
       chk <- tryCatch(
-        hydroloom::check_hy_graph(flow[, c("id", "toid")]),
+        check_hy_graph(flow[, c("id", "toid")]),
         error = function(e) e)
 
       if (!isTRUE(chk)) {

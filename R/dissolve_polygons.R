@@ -52,34 +52,34 @@ dissolve_polygons <- function(polys,
                               work_crs = 5070) {
 
   # -- 1. Validate inputs --
-  if(!inherits(polys, "sf"))
+  if (!inherits(polys, "sf"))
     stop("polys must be an sf data.frame")
 
   gtypes <- as.character(sf::st_geometry_type(polys, by_geometry = FALSE))
-  if(!gtypes %in% c("POLYGON", "MULTIPOLYGON", "GEOMETRY"))
+  if (!gtypes %in% c("POLYGON", "MULTIPOLYGON", "GEOMETRY"))
     stop("polys must have POLYGON or MULTIPOLYGON geometry, got: ", gtypes)
 
-  if(!is.null(group_id)) {
-    if(!group_id %in% names(polys))
+  if (!is.null(group_id)) {
+    if (!group_id %in% names(polys))
       stop("group_id column '", group_id, "' not found in polys")
   }
 
   # -- 2. CRS handling --
   orig_crs <- sf::st_crs(polys)
 
-  if(!is.null(work_crs)) {
+  if (!is.null(work_crs)) {
     work_crs <- sf::st_crs(work_crs)
     polys <- sf::st_transform(polys, work_crs)
   }
 
   # -- 3. Dissolve --
-  merged <- .dissolve_union(polys, group_id)
+  merged <- dissolve_union(polys, group_id)
 
   # -- 4. Validate --
   merged <- check_valid(merged)
 
   # -- 5. Gap absorption --
-  if(gap_tolerance > 0) {
+  if (gap_tolerance > 0) {
     sf::st_geometry(merged) <- sf::st_buffer(
       sf::st_geometry(merged), gap_tolerance)
     sf::st_geometry(merged) <- sf::st_buffer(
@@ -88,24 +88,24 @@ dissolve_polygons <- function(polys,
   }
 
   # -- 6. Fill holes --
-  if(max_hole_area > 0) {
+  if (max_hole_area > 0) {
     crs <- sf::st_crs(merged)
     sf::st_geometry(merged) <- sf::st_sfc(
-      lapply(sf::st_geometry(merged), .remove_small_holes,
+      lapply(sf::st_geometry(merged), remove_small_holes,
              max_hole_area = max_hole_area, crs = crs),
       crs = crs)
   }
 
   # -- 7. Force single polygon --
-  if(single_polygon) {
+  if (single_polygon) {
     crs <- sf::st_crs(merged)
     sf::st_geometry(merged) <- sf::st_sfc(
-      lapply(sf::st_geometry(merged), .keep_largest_polygon, crs = crs),
+      lapply(sf::st_geometry(merged), keep_largest_polygon, crs = crs),
       crs = crs)
   }
 
   # -- 8. Final validation and reproject --
-  out_prj <- if(!is.null(work_crs)) orig_crs else sf::st_crs(merged)
+  out_prj <- if (!is.null(work_crs)) orig_crs else sf::st_crs(merged)
   merged <- check_valid(merged, out_prj = out_prj)
 
   merged
@@ -113,19 +113,19 @@ dissolve_polygons <- function(polys,
 
 #' Perform the union/dissolve step
 #' @noRd
-.dissolve_union <- function(polys, group_id) {
+dissolve_union <- function(polys, group_id) {
 
   use_geos <- requireNamespace("geos", quietly = TRUE)
 
-  if(is.null(group_id)) {
-    geom <- .union_geom(sf::st_geometry(polys), use_geos)
+  if (is.null(group_id)) {
+    geom <- union_geom(sf::st_geometry(polys), use_geos)
     sf::st_sf(geometry = geom)
   } else {
     # Split by group, union each, recombine
     groups <- unique(polys[[group_id]])
     results <- lapply(groups, function(g) {
       sub <- polys[polys[[group_id]] == g, ]
-      geom <- .union_geom(sf::st_geometry(sub), use_geos)
+      geom <- union_geom(sf::st_geometry(sub), use_geos)
       out <- sf::st_sf(geometry = geom)
       out[[group_id]] <- g
       out
@@ -136,9 +136,9 @@ dissolve_polygons <- function(polys,
 
 #' Union an sfc geometry collection
 #' @noRd
-.union_geom <- function(geom, use_geos = FALSE) {
+union_geom <- function(geom, use_geos = FALSE) {
 
-  if(use_geos) {
+  if (use_geos) {
     g <- geos::as_geos_geometry(geom)
     g <- geos::geos_make_collection(g)
     g <- geos::geos_unary_union(g)
@@ -153,31 +153,31 @@ dissolve_polygons <- function(polys,
 
 #' Remove holes from a single geometry below an area threshold
 #' @noRd
-.remove_small_holes <- function(geom, max_hole_area, crs) {
+remove_small_holes <- function(geom, max_hole_area, crs) {
 
-  if(sf::st_is_empty(geom)) return(geom)
+  if (sf::st_is_empty(geom)) return(geom)
 
   # Handle MULTIPOLYGON: process each component
-  if(inherits(geom, "MULTIPOLYGON")) {
+  if (inherits(geom, "MULTIPOLYGON")) {
     parts <- lapply(geom, function(p) {
-      .remove_holes_from_polygon(p, max_hole_area, crs)
+      remove_holes_from_polygon(p, max_hole_area, crs)
     })
     return(sf::st_multipolygon(parts))
   }
 
   # Single POLYGON
-  sf::st_polygon(.remove_holes_from_polygon(geom, max_hole_area, crs))
+  sf::st_polygon(remove_holes_from_polygon(geom, max_hole_area, crs))
 }
 
 #' Remove holes from a single polygon ring list
 #' @param rings list of coordinate matrices (outer ring + hole rings)
 #' @noRd
-.remove_holes_from_polygon <- function(rings, max_hole_area, crs) {
+remove_holes_from_polygon <- function(rings, max_hole_area, crs) {
 
-  if(length(rings) <= 1) return(rings)
+  if (length(rings) <= 1) return(rings)
 
   # Fast path: remove all holes
-  if(is.infinite(max_hole_area)) return(rings[1])
+  if (is.infinite(max_hole_area)) return(rings[1])
 
   # Build sfc of hole-ring polygons for batch area computation
   hole_polys <- sf::st_sfc(
@@ -193,17 +193,17 @@ dissolve_polygons <- function(polys,
 
 #' Extract the largest polygon from a geometry
 #' @noRd
-.keep_largest_polygon <- function(geom, crs) {
+keep_largest_polygon <- function(geom, crs) {
 
-  if(sf::st_is_empty(geom)) return(geom)
+  if (sf::st_is_empty(geom)) return(geom)
 
   # Already a single POLYGON
-  if(inherits(geom, "POLYGON")) return(geom)
+  if (inherits(geom, "POLYGON")) return(geom)
 
   # MULTIPOLYGON: find largest component
   parts <- sf::st_cast(sf::st_sfc(geom, crs = crs), "POLYGON")
 
-  if(length(parts) == 1) return(parts[[1]])
+  if (length(parts) == 1) return(parts[[1]])
 
   areas <- as.numeric(sf::st_area(parts))
   parts[[which.max(areas)]]

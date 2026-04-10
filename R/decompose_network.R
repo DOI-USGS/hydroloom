@@ -908,6 +908,11 @@ decompose_build_component <- function(component, terminal_id,
   trunk_mask <- as.character(component$id) %in% trunk_ids
   residual   <- component[!trunk_mask, , drop = FALSE]
 
+  # Fast id -> toid lookup for the whole component (avoids repeated
+  # linear scans in the seed loops below).
+  comp_toid_lookup <- setNames(
+    as.character(component$toid), as.character(component$id))
+
   trunk_domain_id <- paste0("trunk_", terminal_id)
 
   # --- B. Build the single trunk domain. ---------------------------
@@ -981,6 +986,9 @@ decompose_build_component <- function(component, terminal_id,
     seed_segments <- seg_map[seed_to_trunk]
     seg_groups <- split(lateral_seeds, seed_segments)
 
+    # Build inverted index once for the whole residual.
+    residual_from_idx <- split(residual$id, residual$toid)
+
     for (seg_id in names(seg_groups)) {
 
       seeds_in_seg <- seg_groups[[seg_id]]
@@ -990,7 +998,7 @@ decompose_build_component <- function(component, terminal_id,
       all_ids <- character(0)
 
       for (seed in seeds_in_seg) {
-        up <- decompose_collect_upstream(residual, seed)
+        up <- decompose_collect_upstream(residual, seed, residual_from_idx)
         all_ids <- union(all_ids, as.character(up))
       }
 
@@ -1011,8 +1019,7 @@ decompose_build_component <- function(component, terminal_id,
 
       # Primary outlet nexus (for the domain's outlet_nexus_id field).
       primary_seed <- seeds_in_seg[[1L]]
-      primary_trunk_target <- as.character(
-        component$toid[component$id == primary_seed])
+      primary_trunk_target <- comp_toid_lookup[[as.character(primary_seed)]]
       primary_nexus_id <- paste0("nx_", as.character(primary_seed),
         "_", primary_trunk_target)
 
@@ -1033,8 +1040,7 @@ decompose_build_component <- function(component, terminal_id,
       for (seed in seeds_in_seg) {
 
         seed_chr <- as.character(seed)
-        trunk_target <- as.character(
-          component$toid[component$id == seed])
+        trunk_target <- comp_toid_lookup[[seed_chr]]
         nxid <- paste0("nx_", seed_chr, "_", trunk_target)
 
         edges_list[[length(edges_list) + 1L]] <- data.frame(
@@ -1082,12 +1088,18 @@ decompose_build_component <- function(component, terminal_id,
 #' hy_node / hy_topo round-trip that `subset_network` performs -- the
 #' residual is already a slice and we only need set-of-ids answers.
 #'
+#' Uses a pre-built inverted index (toid -> id) for O(n) total work
+#' instead of repeated `%in%` scans.
+#'
 #' @param residual data.frame with id, toid columns (the non-trunk
 #'   rows of a drainage basin).
 #' @param seed scalar catchment id to start from.
+#' @param from_idx pre-built inverted index (output of
+#'   `split(residual$id, residual$toid)`). Built once per component
+#'   and reused across seeds.
 #' @returns vector of ids in the same type as residual$id, including seed.
 #' @noRd
-decompose_collect_upstream <- function(residual, seed) {
+decompose_collect_upstream <- function(residual, seed, from_idx) {
 
   if (nrow(residual) == 0L) return(seed)
 
@@ -1096,7 +1108,9 @@ decompose_collect_upstream <- function(residual, seed) {
 
   while (length(frontier) > 0L) {
 
-    next_hop <- residual$id[residual$toid %in% frontier]
+    next_hop <- unlist(from_idx[as.character(frontier)], use.names = FALSE)
+
+    if (is.null(next_hop) || length(next_hop) == 0L) break
 
     next_hop <- next_hop[!next_hop %in% collected]
 
