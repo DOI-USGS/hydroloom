@@ -159,13 +159,13 @@ plot_sf$lwd <- ifelse(plot_sf$domain_type == "trunk", 1.4, 0.5)
 
 # ---- render ------------------------------------------------------------
 
-out_png <- normalizePath(
-  file.path("hydroloom_decomposition_at_scale.png"),
-  mustWork = FALSE)
+# out_png <- normalizePath(
+#   file.path("hydroloom_decomposition_at_scale.png"),
+#   mustWork = FALSE)
 
-dir.create(dirname(out_png), showWarnings = FALSE, recursive = TRUE)
+# dir.create(dirname(out_png), showWarnings = FALSE, recursive = TRUE)
 
-grDevices::png(out_png, width = 1600, height = 1600, res = 150)
+# grDevices::png(out_png, width = 1600, height = 1600, res = 150)
 
 par(mar = c(0, 0, 2, 0))
 
@@ -173,12 +173,12 @@ plot(sf::st_geometry(plot_sf),
   col = plot_sf$color,
   lwd = plot_sf$lwd,
   main = sprintf(
-    "decompose_network(trunk_threshold=100): %d domains (%d trunk, %d compact) on %d flowlines",
+    "decompose_network(trunk_threshold=1000): %d domains (%d trunk, %d compact) on %d flowlines",
     length(d$domains),
     sum(summary_df$type == "trunk"),
     sum(summary_df$type == "compact"),
     nrow(src)))
 
-grDevices::dev.off()
+# grDevices::dev.off()
 
-message("wrote ", out_png)
+# message("wrote ", out_png)

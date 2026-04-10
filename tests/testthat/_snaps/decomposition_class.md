@@ -3,8 +3,8 @@
     Code
       print(d)
     Output
-      <domain_decomposition: 1 trunks, 15 compacts, 62 catchments>
-        domains:         16  (1 trunks, 15 compacts)
+      <domain_decomposition: 1 trunks, 1 compacts, 62 catchments>
+        domains:         2  (1 trunks, 1 compacts)
         domain_graph:    15 edges
         nexus_registry:  16 nexuses
         overrides:       0 rows
@@ -17,19 +17,19 @@
     Code
       print(d, full = TRUE)
     Output
-      <domain_decomposition: 1 trunks, 15 compacts, 62 catchments>
+      <domain_decomposition: 1 trunks, 1 compacts, 62 catchments>
       ├─ source_network         <hy_leveled>       62 rows
-      ├─ domains                <list>             16 elements
+      ├─ domains                <list>             2 elements
       │  │
       │  ├─ <1 trunk domains>
       │  │     catchments    min     18   median     18   max     18   total 18
       │  │     stream_order  min      4   median      4   max      4
       │  │     dendritic     TRUE  (1)
       │  │
-      │  └─ <15 compact domains>
-      │        catchments    min      1   median      1   max     16   total 44
-      │        stream_order  min      1   median      1   max      3
-      │        dendritic     TRUE  (15)
+      │  └─ <1 compact domains>
+      │        catchments    min     44   median     44   max     44   total 44
+      │        stream_order  min      3   median      3   max      3
+      │        dendritic     TRUE  (1)
       │
       ├─ domain_graph           <data.frame>       15 rows
       │     relation_type flow (15)

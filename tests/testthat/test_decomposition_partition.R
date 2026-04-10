@@ -124,9 +124,10 @@ test_that("decompose_network trunk includes all above-threshold catchments", {
 
   src <- enrich_for_decomposition(load_walker())
 
+  # threshold=15: trunk spans 2 levelpaths, 2 compact domains
   d <- hydroloom::decompose_network(src,
     trunk_metric    = "drainage_area",
-    trunk_threshold = 50)
+    trunk_threshold = 15)
 
   expect_true(hydroloom::validate_decomposition(d)$valid,
     label = "walker threshold decomposition is valid")
@@ -135,20 +136,23 @@ test_that("decompose_network trunk includes all above-threshold catchments", {
   assert_one_outlet_per_domain(d)
   assert_dendritic_inter_domain(d)
 
-  # One basin -> exactly one trunk.
-  trunk_count <- sum(vapply(d$domains,
-    \(dom) dom$domain_type == "trunk", logical(1)))
+  types <- vapply(d$domains, \(dom) dom$domain_type, character(1))
 
-  expect_equal(trunk_count, 1L,
+  # One basin -> exactly one trunk.
+  expect_equal(sum(types == "trunk"), 1L,
     label = "walker (one basin) produces exactly one trunk")
 
-  # The trunk should contain all catchments whose total_da_sqkm > 50,
+  # Two compacts (one per trunk segment between confluences).
+  expect_equal(sum(types == "compact"), 2L,
+    label = "walker with threshold = 15 produces two compacts")
+
+  # The trunk should contain all catchments whose total_da_sqkm > 15,
   # spanning multiple levelpaths.
   trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d$domains)[[1]]
   trunk_catchment_ids <- as.character(trunk_dom$catchments$id)
 
   expected_ids <- as.character(
-    src$id[src$total_da_sqkm > 50])
+    src$id[src$total_da_sqkm > 15])
 
   expect_true(all(expected_ids %in% trunk_catchment_ids),
     label = "all above-threshold catchments are in the trunk")
@@ -161,31 +165,34 @@ test_that("decompose_network trunk includes all above-threshold catchments", {
 
 })
 
-test_that("decompose_network trunk_threshold scales on new_hope", {
+test_that("decompose_network trunk_threshold on new_hope", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_new_hope())
 
-  d_lo <- hydroloom::decompose_network(src, trunk_threshold = 100)
+  # threshold=100: trunk spans many levelpaths, at least 5 compacts
+  d <- hydroloom::decompose_network(src, trunk_threshold = 100)
 
-  expect_true(hydroloom::validate_decomposition(d_lo)$valid)
-  assert_partition_coverage(d_lo, src)
-  assert_dendritic_inter_domain(d_lo)
+  expect_true(hydroloom::validate_decomposition(d)$valid)
+  assert_partition_coverage(d, src)
+  assert_dendritic_inter_domain(d)
 
-  n_trunks_lo <- sum(vapply(d_lo$domains,
-    \(dom) dom$domain_type == "trunk", logical(1)))
+  types <- vapply(d$domains, \(dom) dom$domain_type, character(1))
 
-  d_hi <- hydroloom::decompose_network(src, trunk_threshold = 500)
+  expect_equal(sum(types == "trunk"), 1L,
+    label = "new_hope (one basin) produces exactly one trunk")
 
-  expect_true(hydroloom::validate_decomposition(d_hi)$valid)
+  # Trunk spans at least 2 tributary levelpaths.
+  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d$domains)[[1]]
+  trunk_lps <- unique(trunk_dom$catchments$levelpath)
 
-  n_trunks_hi <- sum(vapply(d_hi$domains,
-    \(dom) dom$domain_type == "trunk", logical(1)))
+  expect_gt(length(trunk_lps), 2L,
+    label = "trunk includes tributaries beyond the outlet levelpath")
 
-  expect_gte(n_trunks_hi, 1L)
-  expect_gte(n_trunks_lo, n_trunks_hi,
-    label = "lower threshold produces at least as many trunks as higher")
+  # At least 5 compact domains (segments between trunk confluences).
+  expect_gte(sum(types == "compact"), 5L,
+    label = "new_hope with threshold = 100 produces at least 5 compacts")
 
 })
 

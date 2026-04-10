@@ -124,9 +124,9 @@ hy_domain <- function(domain_id,
 #'   \item **Trunk class invariant** — every trunk domain's `catchments`
 #'     slot inherits from `hy_leveled`. Re-checked here because slot
 #'     mutation after construction is permitted.
-#'   \item **Outlet count** — each domain's `catchments` resolves to
-#'     exactly one outlet sub-network via [sort_network()] with
-#'     `split = TRUE`.
+#'   \item **Outlet count** — each trunk domain's `catchments`
+#'     resolves to exactly one outlet sub-network via [sort_network()]
+#'     with `split = TRUE`. Compact domains may have multiple outlets.
 #'   \item **Coverage / partition** — every `source_network` id appears
 #'     in exactly one domain's catchments slot. No orphans, no
 #'     duplicates.
@@ -197,8 +197,13 @@ validate_decomposition <- function(decomposition) {
   }
 
   # ---- Check 2: outlet count per domain --------------------------------
+  # Trunk domains must have exactly one outlet. Compact domains may have
+  # multiple outlets (disconnected tributary groups draining into
+  # different trunk catchments along the same trunk segment).
 
   for (d in domains) {
+
+    if (d$domain_type != "trunk") next
 
     catch <- d$catchments
 

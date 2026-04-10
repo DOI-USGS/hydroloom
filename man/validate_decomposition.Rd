@@ -25,9 +25,9 @@ Layer 1 structural checks, run in order:
 \item \strong{Trunk class invariant} — every trunk domain's \code{catchments}
 slot inherits from \code{hy_leveled}. Re-checked here because slot
 mutation after construction is permitted.
-\item \strong{Outlet count} — each domain's \code{catchments} resolves to
-exactly one outlet sub-network via \code{\link[=sort_network]{sort_network()}} with
-\code{split = TRUE}.
+\item \strong{Outlet count} — each trunk domain's \code{catchments}
+resolves to exactly one outlet sub-network via \code{\link[=sort_network]{sort_network()}}
+with \code{split = TRUE}. Compact domains may have multiple outlets.
 \item \strong{Coverage / partition} — every \code{source_network} id appears
 in exactly one domain's catchments slot. No orphans, no
 duplicates.

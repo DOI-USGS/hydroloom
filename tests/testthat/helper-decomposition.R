@@ -232,6 +232,10 @@ assert_one_outlet_per_domain <- function(decomposition) {
 
   for (d in decomposition$domains) {
 
+    # Compact domains may have multiple outlets (disconnected
+    # tributary groups in a trunk-segment-based compact).
+    if (d$domain_type != "trunk") next
+
     catch <- d$catchments
 
     if (is.null(catch) || nrow(catch) == 0) next

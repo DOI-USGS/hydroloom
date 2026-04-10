@@ -811,6 +811,47 @@ print_override_breakdown <- function(overrides) {
   paste0("(", paste(parts, collapse = ", "), ")")
 }
 
+#' Assign trunk catchments to segments between confluences
+#'
+#' A segment is a maximal linear chain of trunk catchments between two
+#' trunk confluences (or between a headwater and the first confluence,
+#' or the last confluence and the outlet). Returns a named character
+#' vector mapping each trunk catchment id to its segment id (the
+#' downstream confluence or outlet that terminates the segment).
+#'
+#' @param trunk_ids_chr character vector of trunk catchment ids.
+#' @param trunk_toids_chr character vector of toid for each trunk
+#'   catchment (parallel to trunk_ids_chr).
+#' @returns named character vector: names = trunk catchment ids,
+#'   values = segment id (confluence or outlet catchment id).
+#' @noRd
+trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr) {
+
+  # In-degree within the trunk subgraph.
+  targets_in_trunk <- trunk_toids_chr[trunk_toids_chr %in% trunk_ids_chr]
+  in_deg <- table(targets_in_trunk)
+  confluences <- names(in_deg[in_deg >= 2L])
+
+  # Terminals: confluences + outlets (toid not in trunk).
+  outlets <- trunk_ids_chr[!trunk_toids_chr %in% trunk_ids_chr]
+  terminals <- union(confluences, outlets)
+
+  # Walk each trunk catchment downstream to the first terminal.
+  seg <- setNames(rep(NA_character_, length(trunk_ids_chr)), trunk_ids_chr)
+  toid_lookup <- setNames(trunk_toids_chr, trunk_ids_chr)
+
+  for (tid in trunk_ids_chr) {
+
+    cur <- tid
+    while (!cur %in% terminals) {
+      cur <- toid_lookup[[cur]]
+    }
+    seg[[tid]] <- cur
+  }
+
+  seg
+}
+
 #' Build one drainage basin's trunk and compacts
 #'
 #' @param component hy_leveled slice for a single drainage basin.
@@ -919,42 +960,66 @@ decompose_build_component <- function(component, terminal_id,
   index_names  <- as.character(component$id[trunk_mask])
   index_values <- rep(trunk_domain_id, sum(trunk_mask))
 
-  # --- C. Build compacts from residual laterals. -------------------
+  # --- C. Build compacts grouped by trunk segments. -----------------
+  #
+  # A segment is a maximal linear chain of trunk catchments between
+  # two confluences (or between a headwater/confluence and the outlet).
+  # All residual catchments draining into a segment form one compact.
 
   if (length(lateral_seeds) > 0L) {
 
-    claimed <- character(0)
+    trunk_ids_chr   <- as.character(component$id[trunk_mask])
+    trunk_toids_chr <- as.character(component$toid[trunk_mask])
 
-    for (i in seq_along(lateral_seeds)) {
+    seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr)
 
-      seed <- lateral_seeds[[i]]
-      seed_chr <- as.character(seed)
+    # Which trunk catchment does each seed flow into?
+    seed_to_trunk <- as.character(
+      residual$toid[match(lateral_seeds, residual$id)])
 
-      if (seed_chr %in% claimed) next
+    # Group seeds by segment.
+    seed_segments <- seg_map[seed_to_trunk]
+    seg_groups <- split(lateral_seeds, seed_segments)
 
-      up_ids <- decompose_collect_upstream(residual, seed)
-      up_chr <- as.character(up_ids)
-      new_ids <- up_chr[!up_chr %in% claimed]
-      claimed <- c(claimed, new_ids)
+    for (seg_id in names(seg_groups)) {
+
+      seeds_in_seg <- seg_groups[[seg_id]]
+
+      # Collect all residual catchments upstream of all seeds in
+      # this segment.
+      all_ids <- character(0)
+
+      for (seed in seeds_in_seg) {
+        up <- decompose_collect_upstream(residual, seed)
+        all_ids <- union(all_ids, as.character(up))
+      }
 
       compact_slice <- component[
-        as.character(component$id) %in% new_ids, , drop = FALSE]
+        as.character(component$id) %in% all_ids, , drop = FALSE]
 
+      # Rewrite all seeds' toid to the outlet sentinel so the
+      # compact is self-contained.
       cs_sentinel <- get_outlet_value(compact_slice)
-      compact_slice$toid[compact_slice$id == seed] <- cs_sentinel
+
+      for (seed in seeds_in_seg) {
+        compact_slice$toid[compact_slice$id == seed] <- cs_sentinel
+      }
+
       compact_slice <- classify_hy(compact_slice)
 
-      to_trunk_catchment_id <- component$toid[component$id == seed]
+      compact_domain_id <- paste0("compact_", terminal_id, "_", seg_id)
 
-      compact_domain_id <- paste0("compact_", terminal_id, "_", seed)
-
-      inter_nexus_id <- paste0("nx_", seed_chr, "_",
-        as.character(to_trunk_catchment_id))
+      # Primary outlet nexus (for the domain's outlet_nexus_id field).
+      primary_seed <- seeds_in_seg[[1L]]
+      primary_trunk_target <- as.character(
+        component$toid[component$id == primary_seed])
+      primary_nexus_id <- paste0("nx_", as.character(primary_seed),
+        "_", primary_trunk_target)
 
       compact_domain <- hy_domain(
         domain_id            = compact_domain_id,
         domain_type          = "compact",
-        outlet_nexus_id      = inter_nexus_id,
+        outlet_nexus_id      = primary_nexus_id,
         inlet_nexus_ids      = character(0),
         trunk_domain_id      = trunk_domain_id,
         containing_domain_id = NA_character_,
@@ -963,25 +1028,35 @@ decompose_build_component <- function(component, terminal_id,
 
       domains[[compact_domain_id]] <- compact_domain
 
-      edges_list[[length(edges_list) + 1L]] <- data.frame(
-        id               = compact_domain_id,
-        toid             = trunk_domain_id,
-        nexus_id         = inter_nexus_id,
-        nexus_position   = NA_real_,
-        relation_type    = "flow",
-        stringsAsFactors = FALSE)
+      # Emit one edge + nexus per seed (compact may touch the trunk
+      # at multiple points along the segment).
+      for (seed in seeds_in_seg) {
 
-      nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
-        nexus_id             = inter_nexus_id,
-        from_domain_id       = compact_domain_id,
-        to_domain_id         = trunk_domain_id,
-        trunk_catchment_id   = as.character(to_trunk_catchment_id),
-        aggregate_id_measure = NA_real_,
-        stringsAsFactors     = FALSE)
+        seed_chr <- as.character(seed)
+        trunk_target <- as.character(
+          component$toid[component$id == seed])
+        nxid <- paste0("nx_", seed_chr, "_", trunk_target)
 
-      index_names  <- c(index_names, new_ids)
+        edges_list[[length(edges_list) + 1L]] <- data.frame(
+          id               = compact_domain_id,
+          toid             = trunk_domain_id,
+          nexus_id         = nxid,
+          nexus_position   = NA_real_,
+          relation_type    = "flow",
+          stringsAsFactors = FALSE)
+
+        nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
+          nexus_id             = nxid,
+          from_domain_id       = compact_domain_id,
+          to_domain_id         = trunk_domain_id,
+          trunk_catchment_id   = trunk_target,
+          aggregate_id_measure = NA_real_,
+          stringsAsFactors     = FALSE)
+      }
+
+      index_names  <- c(index_names, all_ids)
       index_values <- c(index_values,
-        rep(compact_domain_id, length(new_ids)))
+        rep(compact_domain_id, length(all_ids)))
     }
   }
 
