@@ -34,10 +34,10 @@
 #' @param domain_type character(1). Either `"trunk"` or `"compact"`.
 #' @param outlet_nexus_id character(1). Identifier of the outlet hydro
 #'   nexus where this domain discharges.
-#' @param inlet_nexus_ids character. Inlet domain nexus ids — for compact
-#'   domains, the upstream domain nexuses contributing inflow; for trunks,
-#'   the set of lateral injection points along the mainstem. Use
-#'   `character(0)` for none.
+#' @param inlet_nexus_ids character. For trunk domains, the nexus ids where
+#'   compact domains inject lateral inflow along the mainstem. Always
+#'   `character(0)` for compact domains — compacts have no upstream domain
+#'   connections; they connect only to their parent trunk.
 #' @param trunk_domain_id character(1). For compact domains, the id of
 #'   the receiving trunk; for trunks, self or `NA_character_`.
 #' @param containing_domain_id character(1). For contained (e.g. endorheic)

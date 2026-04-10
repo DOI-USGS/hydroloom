@@ -23,10 +23,10 @@ hy_domain(
 \item{outlet_nexus_id}{character(1). Identifier of the outlet hydro
 nexus where this domain discharges.}
 
-\item{inlet_nexus_ids}{character. Inlet domain nexus ids — for compact
-domains, the upstream domain nexuses contributing inflow; for trunks,
-the set of lateral injection points along the mainstem. Use
-\code{character(0)} for none.}
+\item{inlet_nexus_ids}{character. For trunk domains, the nexus ids where
+compact domains inject lateral inflow along the mainstem. Always
+\code{character(0)} for compact domains — compacts have no upstream domain
+connections; they connect only to their parent trunk.}
 
 \item{trunk_domain_id}{character(1). For compact domains, the id of
 the receiving trunk; for trunks, self or \code{NA_character_}.}
