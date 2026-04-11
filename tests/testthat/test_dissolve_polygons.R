@@ -163,11 +163,15 @@ test_that("work_crs accepts crs object", {
 
 test_that("input validation catches bad inputs", {
   expect_error(dissolve_polygons(data.frame(x = 1)),
-               "polys must be an sf data.frame")
+               "polys must be sf or sfc")
 
   p <- sf::st_point(c(0, 0))
   polys <- sf::st_sf(geometry = sf::st_sfc(p, crs = 5070))
   expect_error(dissolve_polygons(polys, work_crs = NULL),
+               "POLYGON or MULTIPOLYGON")
+
+  # sfc of points also rejected
+  expect_error(dissolve_polygons(sf::st_sfc(p, crs = 5070), work_crs = NULL),
                "POLYGON or MULTIPOLYGON")
 
   p1 <- sf::st_polygon(list(
@@ -175,4 +179,67 @@ test_that("input validation catches bad inputs", {
   polys <- sf::st_sf(geometry = sf::st_sfc(p1, crs = 5070))
   expect_error(dissolve_polygons(polys, group_id = "nonexistent"),
                "not found")
+})
+
+test_that(".fns summarises attributes by group", {
+  p1 <- sf::st_polygon(list(
+    rbind(c(0, 0), c(1e5, 0), c(1e5, 1e5), c(0, 1e5), c(0, 0))))
+  p2 <- sf::st_polygon(list(
+    rbind(c(1e5, 0), c(2e5, 0), c(2e5, 1e5), c(1e5, 1e5), c(1e5, 0))))
+  p3 <- sf::st_polygon(list(
+    rbind(c(3e5, 0), c(4e5, 0), c(4e5, 1e5), c(3e5, 1e5), c(3e5, 0))))
+  polys <- sf::st_sf(
+    grp = c("a", "a", "b"),
+    area = c(10, 20, 30),
+    geometry = sf::st_sfc(p1, p2, p3, crs = 5070))
+
+  result <- dissolve_polygons(polys, group_id = "grp",
+                              .fns = list(area = sum), work_crs = NULL)
+
+  expect_equal(nrow(result), 2)
+  expect_true("area" %in% names(result))
+  expect_true("grp" %in% names(result))
+  expect_equal(result$area[result$grp == "a"], 30)
+  expect_equal(result$area[result$grp == "b"], 30)
+})
+
+test_that(".fns works without group_id", {
+  p1 <- sf::st_polygon(list(
+    rbind(c(0, 0), c(1e5, 0), c(1e5, 1e5), c(0, 1e5), c(0, 0))))
+  p2 <- sf::st_polygon(list(
+    rbind(c(1e5, 0), c(2e5, 0), c(2e5, 1e5), c(1e5, 1e5), c(1e5, 0))))
+  polys <- sf::st_sf(
+    area = c(10, 20),
+    geometry = sf::st_sfc(p1, p2, crs = 5070))
+
+  result <- dissolve_polygons(polys, .fns = list(area = sum), work_crs = NULL)
+
+  expect_equal(nrow(result), 1)
+  expect_equal(result$area, 30)
+})
+
+test_that(".fns validates inputs", {
+  p1 <- sf::st_polygon(list(
+    rbind(c(0, 0), c(1, 0), c(1, 1), c(0, 1), c(0, 0))))
+  polys <- sf::st_sf(geometry = sf::st_sfc(p1, crs = 5070))
+
+  expect_error(dissolve_polygons(polys, .fns = list(bogus = sum)),
+               "not found")
+  expect_error(dissolve_polygons(polys, .fns = c(a = "sum")),
+               "named list")
+})
+
+test_that("sfc input returns sfc", {
+  p1 <- sf::st_polygon(list(
+    rbind(c(0, 0), c(1e5, 0), c(1e5, 1e5), c(0, 1e5), c(0, 0))))
+  p2 <- sf::st_polygon(list(
+    rbind(c(1e5, 0), c(2e5, 0), c(2e5, 1e5), c(1e5, 1e5), c(1e5, 0))))
+  geom <- sf::st_sfc(p1, p2, crs = 5070)
+
+  result <- dissolve_polygons(geom, work_crs = NULL)
+
+  expect_s3_class(result, "sfc")
+  expect_false(inherits(result, "sf"))
+  expect_equal(length(result), 1)
+  expect_true(all(sf::st_is_valid(result)))
 })

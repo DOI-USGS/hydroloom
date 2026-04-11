@@ -2,18 +2,26 @@
 % Please edit documentation in R/check_valid.R
 \name{check_valid}
 \alias{check_valid}
+\alias{check_valid.sf}
+\alias{check_valid.sfc}
 \title{Check and Repair Geometry Validity}
 \usage{
-check_valid(x, out_prj = sf::st_crs(x))
+check_valid(x, ...)
+
+\method{check_valid}{sf}(x, out_prj = sf::st_crs(x), ...)
+
+\method{check_valid}{sfc}(x, out_prj = sf::st_crs(x), ...)
 }
 \arguments{
-\item{x}{sf data.frame or NULL}
+\item{x}{sf data.frame, sfc geometry, or NULL.}
+
+\item{...}{additional arguments passed to methods.}
 
 \item{out_prj}{crs. Target CRS for the output, passed to
 \code{\link[sf]{st_transform}}. Defaults to the CRS of \code{x}.}
 }
 \value{
-sf data.frame with valid geometry, or NULL if \code{x} is NULL.
+Same class as input: sf data.frame, sfc, or NULL.
 }
 \description{
 Validates sf geometry, repairs invalid features, unifies
