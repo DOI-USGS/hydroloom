@@ -17,13 +17,13 @@ rescale_measures(measure, from, to)
 numeric rescaled measure
 }
 \description{
-Given a aggregate id (e.g. reachcode) measure and the from and
-to measure for a id (e.g. comid flowline), returns the measure along the
-id line. This is a utility specific to the NHDPlus data model where
-many comid flowlines make up a single reachcode / reach. "Measures"
-are typically referenced to reaches. Flowlines have a stated from-measure /
-to-measure. In some cases it is useful to rescale the measure such that it
-is relative only to the flowline.
+Given an aggregate_id (e.g. reachcode in NHDPlus) measure and
+the from and to measure for an id (e.g. COMID flowline in NHDPlus), returns
+the measure along the id flowline. This is useful where many flowlines make
+up a single aggregate feature. "Measures" are typically referenced to the
+aggregate feature. Flowlines have a stated from-measure / to-measure. In
+some cases it is useful to rescale the measure such that it is relative only
+to the flowline.
 
 from is downstream -- 0 is the outlet
 to is upstream -- 100 is the inlet

@@ -1,0 +1,425 @@
+---
+title: "Network Navigation"
+author: "dblodgett@usgs.gov"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Network Navigation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<style type="text/css">
+   .main-container {max-width: 100%;}
+   .row {display: flex;}
+   .column {flex: 50%;}
+</style>
+
+```{r setup, include = FALSE}
+library(hydroloom)
+eval <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE") &
+  requireNamespace("nhdplusTools", quietly = TRUE)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  comment = "#>",
+  fig.width = 4,
+  fig.height = 4,
+  fig.align = "center",
+  eval = eval
+)
+
+library(sf)
+
+oldoption <- options(scipen = 9999)
+```
+
+# Network Navigation
+
+Network navigation traverses connections according to a set of rules. There are four primary modes: upstream or downstream, and along the main path only or including branches. In `hydroloom`, these are `upmain`, `downmain`, `up`, and `down`. Additional rules — a maximum distance, for example — can be applied to any of the four.
+
+`hydroloom` provides two functions for network navigation.
+
+1. `navigate_network_dfs()` requires the "flownetwork" representation of a hydrologic network (see `to_flownetwork()`) and returns ids encountered along the requested navigation as a list of contiguous paths.
+2. `navigate_hydro_network()` requires the nhdplus representation of a hydrologic network (see `vignette("advanced_network")`) and returns ids encountered along the requested navigation as a single vector.
+
+Both functions accept the same navigation mode names: `upmain`, `downmain`, `up`, and `down`. `navigate_hydro_network()` also accepts the NHDPlus shorthand `UM`, `DM`, `UT`, and `DD`.
+
+The two functions use different implementations. `navigate_network_dfs()` runs a depth-first search over `upmain` and `downmain` attributes on each flownetwork connection. `navigate_hydro_network()` relies on `topo_sort`, `levelpath`, and other nhdplus attributes.
+
+The rest of this vignette uses the `new_hope` sample dataset included with hydroloom. A map and basic summary information are shown below.
+
+```{r}
+library(hydroloom)
+library(sf)
+
+hy_net <- sf::read_sf(system.file("extdata/new_hope.gpkg",
+  package = "hydroloom"))
+
+nrow(hy_net)
+
+class(hy_net)
+
+names(hy_net)
+
+class(hy(hy_net, clean = TRUE))
+
+names(hy(hy_net, clean = TRUE))
+
+# map utilities
+map_prep <- \(x, tol = 100) {
+  sf::st_geometry(x) |> # no attributes
+  sf::st_transform(3857) |> # basemap projection
+  sf::st_simplify(dTolerance = tol) # cleaner rendering
+}
+
+pc <- list(flowline = list(col = NA)) # to hide flowlines in basemap
+
+oldpar <- par(mar = c(0, 0, 0, 0)) # par is reset in cleanup
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+
+plot(map_prep(hy_net), col = "blue", add = TRUE)
+```
+
+# NHDPlus-based network navigation
+
+The nhdplus data model carries network attributes — `levelpath` chief among them — that provide a shortcut to "main" navigations. Flowlines from an upstream headwater down to the outlet of a given `levelpath` share the same `levelpath` id. Each feature also carries `up_levelpath` and `dn_levelpath`, the `levelpath` of the flowline upstream and downstream along the main path.
+
+`levelpath` is the key to the algorithm, but `navigate_hydro_network()` also draws on `topo_sort`, `dn_toposort`, `dn_minor_hydro`, `length_km`, and `pathlength_km`.
+
+When working with data that uses the nhdplus data model, `navigate_hydro_network()` runs with no pre-processing. Below, all four navigation modes are demonstrated using the sample data as it is provided in NHDPlusV2.
+
+First, we can extract some key features that will help illustrate the network navigation functionality. In line comments illustrate what is being done.
+
+```{r}
+# work in hydroloom attribute names for demo sake
+hy_net <- hy(hy_net)
+
+# the smallest topo_sort is the most downstream
+outlet <- hy_net[hy_net$topo_sort == min(hy_net$topo_sort), ]
+
+# features with the levelpath of the outlet are the mainpath,
+# or mainstem of the network
+main_path <- hy_net[hy_net$levelpath == outlet$levelpath, ]
+
+# the largest topo sort along the main path is its headwater flowline
+headwater <- main_path[main_path$topo_sort == max(main_path$topo_sort), ]
+
+# basemap
+par(mar = c(0, 0, 0, 0))
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+
+# plot the elements prepped above
+plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
+plot(map_prep(outlet), col = "magenta", add = TRUE, lwd = 4)
+plot(map_prep(headwater), col = "magenta", add = TRUE, lwd = 4)
+plot(map_prep(main_path), col = "darkblue", add = TRUE, lwd = 1.5)
+```
+The path extracted above can be reproduced with a network navigation, which is the more direct path for most applications. Below, `navigate_hydro_network()` runs from a starting location, with the `distance` parameter limiting how far the navigation extends from the start point.
+
+```{r}
+# this is just the ids
+path <- navigate_hydro_network(hy_net,
+  start = outlet$id,
+  mode = "UM")
+
+# filter the source data to get the id's representation
+path <- hy_net[hy_net$id %in% path, ]
+
+# pathlength_km is the distance from the furthest downstream network outlet
+# it is used within navigate_hydro_network to filter to a given distance.
+pathlength <- max(path$pathlength_km) - min(path$pathlength_km)
+
+half_path <- navigate_hydro_network(hy_net,
+  start = outlet$id,
+  mode = "UM",
+  distance = pathlength / 2)
+
+half_path <- hy_net[hy_net$id %in% half_path, ]
+
+par(mar = c(0, 0, 0, 0))
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
+plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
+plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
+```
+Next, look at `up` and `down` navigation — "upstream with tributaries" and "downstream with diversions", or "UT" and "DD" in NHDPlus. For this demonstration, the start point is the top of the half path found above. In practice, the start would be a known location like a gage site.
+
+```{r}
+start <- half_path[half_path$topo_sort == max(half_path$topo_sort), ]
+
+up <- navigate_hydro_network(hy_net,
+  start = start$id,
+  mode = "up")
+up <- hy_net[hy_net$id %in% up, ]
+
+down <- navigate_hydro_network(hy_net,
+  start = start$id,
+  mode = "down")
+down <- hy_net[hy_net$id %in% down, ]
+
+par(mar = c(0, 0, 0, 0))
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
+plot(map_prep(start), col = "magenta", add = TRUE, lwd = 4)
+plot(map_prep(up), col = "darkblue", add = TRUE, lwd = 2)
+plot(map_prep(down), col = "blue", add = TRUE, lwd = 2)
+```
+The four navigations above cover most common use cases when the nhdplus attributes are available. The full nhdplus attribute suite is not always available, though, and that is where `navigate_network_dfs()` comes in.
+
+# Flownetwork-based navigation
+
+`navigate_network_dfs()` performs `up` and `down` navigation with only a network topology described as `id` and `toid`. If `upmain` and `downmain` attributes are also available, it performs main path navigation as well.
+
+The definitions of `upmain` and `downmain` in the flow network context are worth a look:
+
+```{r}
+hydroloom_name_definitions[names(hydroloom_name_definitions) == "upmain"]
+hydroloom_name_definitions[names(hydroloom_name_definitions) == "downmain"]
+```
+Building on the non-dendritic network example from `vignette("hydroloom")`, the same five-edge network can carry `upmain` and `downmain` attributes. The network has one divergence and one confluence. Where `id` 1 appears twice it has exactly one `downmain == TRUE` (the row connecting to 4), and where `toid` 5 appears twice it has exactly one `upmain == TRUE` (the row from 4). This is the same divergence case study used in `vignette("non-dendritic")`, where it is shown in `hy_node`, `hy_topo`, and `hy_flownetwork` form.
+
+<div class = "row">
+<div class = "column">
+
+```{r dend_fig, echo=FALSE}
+x <- c(2, 2, 3, 2, 2)
+y <- c(5, 4, 3, 2, 1)
+a <- c(1.4, 3.5)
+b <- c(.9, 5.1)
+main_col <- "darkblue"
+div_col <- "purple"
+make_edges <- function() {
+  arrows(x[1], y[1] - .1, x[2], y[2] + .1, length = .1, col = main_col)
+  arrows(x[2] + .1, y[2] - .1, x[3] - .1, y[3] + .1, length = .1, col = div_col) # right
+  arrows(x[2] + .0, y[2] - .1, x[4] - .0, y[4] + .1, length = .1, col = main_col)
+  arrows(x[3] - .1, y[3] - .1, x[4] + .1, y[4] + .1, length = .1, col = div_col)
+  arrows(x[4], y[4] - .1, x[5], y[5] + .1, length = .1, col = main_col)
+  text(c(2.1, 2.5, 2.5, 1.9, 2.1), c(4.5, 3.8, 2.3, 3, 1.5), c("1", "2", "3", "4", "5"))
+}
+
+oldpar <- par(mar = c(0, 0, 0, 0))
+plot(a, b, col = NA)
+
+make_edges()
+par(oldpar)
+```
+</div>
+
+<div class = "column">
+
+| id | toid | upmain | downmain |
+|----|------|--------|----------|
+| 1 | 2 | TRUE | FALSE |
+| 1 | 4 | TRUE | TRUE |
+| 2 | 3 | TRUE | TRUE |
+| 3 | 5 | FALSE | TRUE |
+| 4 | 5 | TRUE | TRUE |
+| 5 | 0 | TRUE | TRUE |
+
+</div>
+</div>
+
+`hydroloom` provides utilities to build this lightweight flownetwork format from a geometric network via `make_attribute_topology()`. `upmain` and `downmain` attributes can be constructed using `add_divergence()`, `add_levelpaths()`, and `to_flownetwork()`. The sample data already carries `divergence` and `levelpath` attributes, but reconstructing them is shown below.
+
+```{r}
+# select only id, name, feature_type.
+# Note that the geometry is "sticky" and is included in base_net
+base_net <- dplyr::select(hy_net, id, GNIS_NAME, feature_type)
+
+# create a geometric network -- this includes divergences
+base_net <- dplyr::left_join(make_attribute_topology(base_net, min_distance = 10),
+  base_net, by = "id") |>
+  sf::st_sf()
+
+names(base_net)
+nrow(base_net)
+
+# now switch from a flownetwork topology to a node topology.
+base_net <- hydroloom::make_node_topology(base_net, add_div = TRUE, add = TRUE)
+
+names(base_net)
+nrow(base_net)
+
+# divergence determination needs a dominant feature type input
+unique(base_net$feature_type)
+
+base_net <- add_divergence(base_net,
+  coastal_outlet_ids = outlet$id,
+  inland_outlet_ids = c(),
+  name_attr = "GNIS_NAME",
+  type_attr = "feature_type",
+  major_types = "StreamRiver")
+
+names(base_net)
+nrow(base_net)
+
+# now we can add a dendritic toid attribute because we have "divergence"
+base_net <- add_toids(base_net, return_dendritic = TRUE)
+
+# note that no rows were added -- these are only downmain!
+nrow(base_net)
+
+# now add a length attribute as the accumulated flowline length.
+base_net$length_km <- as.numeric(st_length(base_net) / 1000)
+base_net$weight <- accumulate_downstream(base_net, "length_km")
+
+base_net <- add_levelpaths(base_net,
+  name_attribute = "GNIS_NAME",
+  weight_attribute = "weight")
+
+names(base_net)
+
+# remove dendritic toid used above
+base_net <- dplyr::select(base_net, -toid)
+
+flow_net <- to_flownetwork(base_net)
+
+nrow(flow_net)
+names(flow_net)
+```
+
+The pipeline above transforms the data through several `hy` subclasses.
+At each stage, `hy_capabilities()` reports which hydroloom functions are
+directly callable on the object's current class and columns. Re-running
+the pipeline with intermediate objects makes the progression visible:
+
+```{r capabilities_walkthrough}
+# 1. Raw load -- base hy with geometry only.
+step1 <- hy(dplyr::select(hy_net, id, GNIS_NAME, feature_type))
+class(step1)
+hy_capabilities(step1)
+
+# 2. After make_attribute_topology + make_node_topology -- now hy_node.
+step2 <- dplyr::left_join(
+  make_attribute_topology(step1, min_distance = 10),
+  step1, by = "id"
+) |>
+  sf::st_sf() |>
+  make_node_topology(add_div = TRUE, add = TRUE)
+class(step2)
+hy_capabilities(step2)
+
+# 3. After add_divergence -- still hy_node, now with divergence so
+#    add_return_divergence becomes available.
+step3 <- add_divergence(step2,
+  coastal_outlet_ids = outlet$id,
+  inland_outlet_ids = c(),
+  name_attr = "GNIS_NAME",
+  type_attr = "feature_type",
+  major_types = "StreamRiver")
+class(step3)
+hy_capabilities(step3)
+
+# 4. After add_toids(return_dendritic = TRUE) -- promotes to hy_topo,
+#    unlocking edge-list operations (sort_network, add_levelpaths,
+#    add_streamorder, accumulate_downstream, ...).
+step4 <- add_toids(step3, return_dendritic = TRUE)
+class(step4)
+hy_capabilities(step4)
+
+# 5. After add_levelpaths -- promotes to hy_leveled, unlocking
+#    add_pfafstetter, add_streamlevel, and to_flownetwork.
+step4$length_km <- as.numeric(sf::st_length(step4) / 1000)
+step4$weight    <- accumulate_downstream(step4, "length_km")
+step5 <- add_levelpaths(step4,
+  name_attribute = "GNIS_NAME",
+  weight_attribute = "weight")
+class(step5)
+hy_capabilities(step5)
+
+# 6. After to_flownetwork -- becomes hy_flownetwork; navigate_network_dfs
+#    on upmain/downmain is now supported on this lightweight form.
+step6 <- to_flownetwork(dplyr::select(step5, -toid))
+class(step6)
+hy_capabilities(step6)
+```
+
+Each transformation either changes the subclass or adds a column that
+unlocks additional operations. The progression
+`hy` -> `hy_node` -> `hy_topo` -> `hy_leveled` -> `hy_flownetwork`
+is the canonical path for working with non-dendritic NHDPlus-like data
+in `hydroloom`.
+
+The result is a flow network. The reconstruction wasn't strictly necessary — the demo NHDPlus data already carries every attribute needed to build one — but it shows how the NHDPlus attributes map onto the lighter flownetwork attributes. The hydroloom methods are nearly identical to those of NHDPlus, with minor differences shown below: nearly all `upmain` and `downmain` connections agree, with a single junction differing.
+
+The difference traces to how the divergence weight is computed. hydroloom uses dendritic accumulation of flowline length (diversions get 0% of the upstream value) while NHDPlus uses unapportioned accumulation (diversions get 100% of the upstream value). The resulting `upmain` choice at one junction differs by a single feature.
+
+```{r}
+flow_net_nhdplus <- to_flownetwork(hy_net) |>
+  dplyr::arrange(id, toid)
+
+flow_net_hydroloom <- to_flownetwork(base_net) |>
+  dplyr::arrange(id, toid)
+
+different_downmain <- flow_net_nhdplus[flow_net_nhdplus$downmain != flow_net_hydroloom$downmain, ]
+
+different_downmain
+
+different_upmain <- flow_net_nhdplus[flow_net_nhdplus$upmain != flow_net_hydroloom$upmain, ]
+
+different_upmain
+
+different_upmain <- hy_net[hy_net$id %in% c(different_upmain$id, different_upmain$toid), ]
+
+par(mar = c(0, 0, 0, 0))
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(different_upmain), plot_config = pc)
+plot(map_prep(hy_net, 10), col = "dodgerblue2", add = TRUE, lwd = 0.5)
+plot(map_prep(different_upmain, 10), col = "blue", add = TRUE, lwd = 2)
+```
+
+With a flownetwork in hand, the same navigations from earlier can be reproduced — this time using only the basic network, without any NHDPlus attributes.
+
+```{r}
+# this is just the ids
+path <- navigate_network_dfs(flow_net,
+  starts = outlet$id,
+  direction = "upmain")
+
+# filter the source data to get the id's representation
+path <- hy_net[hy_net$id %in% unlist(path), ]
+
+# distance not yet supported
+half_path <- navigate_network_dfs(flow_net,
+  starts = 8893396, # chosen from a map
+  direction = "downmain")
+
+half_path <- hy_net[hy_net$id %in% unlist(half_path), ]
+
+par(mar = c(0, 0, 0, 0))
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
+plot(map_prep(half_path), col = "magenta", add = TRUE, lwd = 3)
+plot(map_prep(path), col = "darkblue", add = TRUE, lwd = 2)
+```
+Now look at `up` and `down` navigation on the flownetwork. The start point is the same feature picked from the map above; in practice it would be a known location like a gage site.
+
+```{r}
+# chosen from map
+start <- hy_net[hy_net$id == 8893396, ]
+
+up <- navigate_network_dfs(flow_net,
+  starts = start$id,
+  direction = "up")
+up <- hy_net[hy_net$id %in% unlist(up), ]
+
+down <- navigate_network_dfs(flow_net,
+  starts = start$id,
+  direction = "down")
+down <- hy_net[hy_net$id %in% unlist(down), ]
+
+par(mar = c(0, 0, 0, 0))
+nhdplusTools::plot_nhdplus(bbox = sf::st_bbox(hy_net), plot_config = pc)
+plot(map_prep(hy_net), col = "dodgerblue2", add = TRUE, lwd = 0.5)
+plot(map_prep(start), col = "magenta", add = TRUE, lwd = 4)
+plot(map_prep(up), col = "darkblue", add = TRUE, lwd = 2)
+plot(map_prep(down), col = "blue", add = TRUE, lwd = 2)
+```
+
+```{r teardown, include=FALSE}
+options(oldoption)
+par(oldpar)
+if (!eval) {
+  unlink(nhdplusTools::nhdplusTools_data_dir(), recursive = TRUE)
+}
+```

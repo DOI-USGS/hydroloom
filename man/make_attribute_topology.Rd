@@ -27,6 +27,8 @@ given a set of lines with starting and ending nodes that
 form a geometric network, construct an attribute topology.
 }
 \details{
+Required attributes: \code{id} and sf linestring geometry
+
 If a \code{future} plan is set up, node distance calculations will be
 applied using future workers.
 }
@@ -42,7 +44,7 @@ z <- make_attribute_topology(y, 10)
 
 x <- add_toids(hy(x), return_dendritic = FALSE)
 
-x[x$id == x$id[1],]$toid
-z[z$COMID == x$id[1],]$toid
+x[x$id == x$id[1], ]$toid
+z[z$COMID == x$id[1], ]$toid
 
 }

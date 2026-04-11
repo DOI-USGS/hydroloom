@@ -4,6 +4,9 @@
 \alias{sort_network}
 \alias{sort_network.data.frame}
 \alias{sort_network.hy}
+\alias{sort_network.hy_node}
+\alias{sort_network.hy_flownetwork}
+\alias{sort_network.hy_topo}
 \title{Sort Network}
 \usage{
 sort_network(x, split = FALSE, outlets = NULL)
@@ -11,13 +14,19 @@ sort_network(x, split = FALSE, outlets = NULL)
 \method{sort_network}{data.frame}(x, split = FALSE, outlets = NULL)
 
 \method{sort_network}{hy}(x, split = FALSE, outlets = NULL)
+
+\method{sort_network}{hy_node}(x, split = FALSE, outlets = NULL)
+
+\method{sort_network}{hy_flownetwork}(x, split = FALSE, outlets = NULL)
+
+\method{sort_network}{hy_topo}(x, split = FALSE, outlets = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{split}{logical if TRUE, the result will be split into
 independent networks identified by the id of their outlet. The
-outlet id of each independent network is added as a "terminalid"
+outlet id of each independent network is added as a "terminal_id"
 attribute.}
 
 \item{outlets}{same as id in x. if specified, only the network
@@ -31,7 +40,9 @@ of the requested network and optionally a terminal id.
 }
 \description{
 given a network with an id and and toid, returns a sorted
-and potentially split set of output.
+and potentially split set of output. Sort is from top to bottom so
+traversing the response from top to bottom will go from upstream to
+downstream.
 
 Can also be used as a very fast implementation of upstream
 with tributaries navigation. The full network from each
@@ -41,6 +52,9 @@ If a network includes diversions, all flowlines downstream of
 the diversion are visited prior to continuing upstream. See
 note on the \code{outlets} parameter for implications of this
 implementation detail.
+}
+\details{
+Required attributes: \code{id}, \code{toid}
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

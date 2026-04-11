@@ -1,11 +1,17 @@
 #' @title Add Downstream IDs
-#' @description Given input with fromnode and tonode attributes,
-#' will return the input with a toid attribute that is the result of joining
+#' @description Generates a toid attribute from node topology by joining
 #' tonode and fromnode attributes.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param return_dendritic logical remove non dendritic paths if TRUE. Requires
 #' a "divergence" flag where 1 is main and 2 is secondary.
+#' @details
+#'
+#' Required attributes: `fromnode`, `tonode`
+#'
+#' Conditionally: `divergence` (if `return_dendritic = TRUE`)
+#'
 #' @returns hy object with toid attribute
+#' @seealso [hy_node], [hy_topo], [make_node_topology()]
 #' @name add_toids
 #' @export
 #' @examples
@@ -28,6 +34,12 @@ add_toids <- function(x, return_dendritic = TRUE) {
 #' @name add_toids
 #' @export
 add_toids.data.frame <- function(x, return_dendritic = TRUE) {
+
+  if (!return_dendritic)
+    warning("return_dendritic = FALSE is deprecated. ",
+      "Use to_flownetwork() for non-dendritic edge lists.",
+      call. = FALSE)
+
   x <- hy(x)
 
   orig_names <- attr(x, "orig_names")
@@ -43,32 +55,51 @@ add_toids.data.frame <- function(x, return_dendritic = TRUE) {
 #' @name add_toids
 #' @export
 add_toids.hy <- function(x, return_dendritic = TRUE) {
+  hy_classify_and_redispatch(x, "add_toids", "hy_node", hy_guidance_node,
+    return_dendritic = return_dendritic)
+}
 
-  if("toid" %in% names(x)) stop("network already contains a toid attribute")
+#' @name add_toids
+#' @export
+add_toids.hy_topo <- function(x, return_dendritic = TRUE) {
+  stop("This network already has toid (class: ", hy_network_type(x),
+    "). add_toids() converts fromnode/tonode to toid.",
+    call. = FALSE)
+}
 
+#' @name add_toids
+#' @export
+add_toids.hy_node <- function(x, return_dendritic = TRUE) {
+
+  if ("toid" %in% names(x)) stop("network already contains a toid attribute")
+
+  # nolint start
   # joiner_fun <- function(x) {
   #   select(
   #     left_join(select(st_drop_geometry(x), "id", "tonode"),
   #               select(st_drop_geometry(x), toid = "id", "fromnode"),
   #               by = c("tonode" = "fromnode")), -"tonode")
   # }
+  # nolint end
 
   # slightly faster data.table
   joiner_fun <- function(x) {
     as.data.frame(
       data.table(toid = x$id,
-                 node = x$fromnode)[data.table(id = x$id,
-                                               node = x$tonode),
-                                    on = 'node']
+        node = x$fromnode)[data.table(id = x$id,
+        node = x$tonode),
+      on = "node"]
     )[, c("id", "toid")]
   }
 
-  if(return_dendritic) {
-    if(!"divergence" %in% names(x)) {
+  if (return_dendritic) {
+    if (!"divergence" %in% names(x)) {
       stop("To remove non dendritic paths, a divergence attribute is required.")
     }
 
-    x$fromnode[which(x$divergence == 2)] <- NA
+    x <- mutate(x,
+      orig_fromnode = fromnode,
+      fromnode = ifelse(.data$divergence == 2, NA, fromnode))
 
   }
 
@@ -89,13 +120,36 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
   sf_t <- inherits(x, "sf")
 
   as.data.frame(
-    x <- x[ , c("id", "toid",
-                names(x)[!names(x) %in% c("id", "toid")])]
+    x <- x[, c("id", "toid",
+      names(x)[!names(x) %in% c("id", "toid")])]
   )
 
-  if(sf_t)
+  if (sf_t)
     x <- st_sf(x)
 
-  x
+  if (return_dendritic) {
+    x <- select(x, -fromnode)
+    x <- rename(x, fromnode = "orig_fromnode")
+  }
 
+  classify_hy(x)
+
+}
+
+#' add toids
+#' given an hy object, adds toids. If flownetwork is TRUE,
+#' a flownetwork with id, toid, upmain and downmain is returned.
+#' @param x data.frame network compatible with hydroloom_names.
+#' @return data.frame containing toid
+#' @noRd
+try_add_toids <- function(x, flownetwork = FALSE) {
+  if (!toid %in% names(x) && # if we can create a flow network
+    fromnode %in% names(x) &&
+    flownetwork) { # and main is the goal
+    x <- to_flownetwork(x)
+  } else if (!toid %in% names(x) && fromnode %in% names(x)) {
+    # otherwise make sure we have toids
+    x <- add_toids(x, return_dendritic = FALSE)
+  }
+  x
 }

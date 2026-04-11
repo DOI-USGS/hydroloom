@@ -4,6 +4,8 @@
 \alias{add_streamlevel}
 \alias{add_streamlevel.data.frame}
 \alias{add_streamlevel.hy}
+\alias{add_streamlevel.hy_topo}
+\alias{add_streamlevel.hy_leveled}
 \title{Add Streamlevel}
 \usage{
 add_streamlevel(x, coastal = NULL)
@@ -11,6 +13,10 @@ add_streamlevel(x, coastal = NULL)
 \method{add_streamlevel}{data.frame}(x, coastal = NULL)
 
 \method{add_streamlevel}{hy}(x, coastal = NULL)
+
+\method{add_streamlevel}{hy_topo}(x, coastal = NULL)
+
+\method{add_streamlevel}{hy_leveled}(x, coastal = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
@@ -33,25 +39,30 @@ If a TRUE/FALSE coastal attribute is included, coastal terminal paths
 begin at 1 and internal terminal paths begin at 4 as is implemented by
 the NHD stream leveling rules.
 }
+\details{
+Required attributes: \code{levelpath}, \code{dn_levelpath}
+}
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
 x <- add_toids(x)
 
+x <- dplyr::rename(x, orig_stream_level = StreamLeve)
+
 y <- add_streamlevel(x)
 
-plot(sf::st_geometry(y), lwd = y$streamlevel, col = "blue")
+plot(sf::st_geometry(y), lwd = y$stream_level, col = "blue")
 
 x$coastal <- rep(FALSE, nrow(x))
 
 y <- add_streamlevel(x, coastal = "coastal")
 
-unique(y$streamlevel)
+unique(y$stream_level)
 
 x$coastal[!x$Hydroseq == min(x$Hydroseq)] <- TRUE
 
 y <- add_streamlevel(x)
 
-unique(y$streamlevel)
+unique(y$stream_level)
 
 }

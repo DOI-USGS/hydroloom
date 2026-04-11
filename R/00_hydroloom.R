@@ -20,7 +20,7 @@
 #'
 
 # hydroloom uses data.table for some key joins. This ensures the syntax is recognized
-.datatable.aware=TRUE
+.datatable.aware <- TRUE
 
 # hydroloom uses .data for masking in many dplyr functions
 # hydroloom attributes are used for tidyselection elsewhere
@@ -32,6 +32,7 @@ toid <- "toid"
 tonode <- "tonode"
 fromnode <- "fromnode"
 divergence <- "divergence"
+divergence_fraction <- "divergence_fraction"
 wbid <- "wbid"
 total_da_sqkm <- "total_da_sqkm"
 da_sqkm <- "da_sqkm"
@@ -65,19 +66,25 @@ aggregate_id_from_measure <- "aggregate_id_from_measure"
 aggregate_id_to_measure <- "aggregate_id_to_measure"
 point_id <- "point_id"
 offset <- "offset"
+upmain <- "upmain"
+downmain <- "downmain"
 
 indid <- "indid"
 toindid <- "toindid"
 
-good_names <- c(id, toid, fromnode, tonode, divergence, wbid,
-                total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
-                topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
-                terminal_topo_sort, terminal_flag, terminal_id, start_flag,
-                levelpath, up_levelpath, dn_levelpath, levelpath_outlet_id,
-                stream_level, dn_stream_level, stream_order, stream_calculator,
-                feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
-                id_measure, aggregate_id, aggregate_id_measure,
-                aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset)
+# hydroloom S3 class names
+hy_classes <- c("hy", "hy_topo", "hy_leveled", "hy_node", "hy_flownetwork")
+
+good_names <- c(id, toid, fromnode, tonode, divergence, divergence_fraction, wbid,
+  total_da_sqkm, da_sqkm, length_km, pathlength_km, arbolate_sum,
+  topo_sort, up_topo_sort, dn_topo_sort, dn_minor_topo_sort,
+  terminal_topo_sort, terminal_flag, terminal_id, start_flag,
+  levelpath, up_levelpath, dn_levelpath, levelpath_outlet_id,
+  stream_level, dn_stream_level, stream_order, stream_calculator,
+  feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
+  id_measure, aggregate_id, aggregate_id_measure,
+  aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset,
+  upmain, downmain)
 
 hnd <- as.list(rep("", length(good_names)))
 names(hnd) <- good_names
@@ -86,14 +93,19 @@ hnd$id <- "shared network identifier for catchment divide and flowpath or flowli
 hnd$toid <- "indicates to the downstream id. May or may not be dendritic"
 hnd$fromnode <- "indicates the node representing the nexus upstream of a catchment"
 hnd$tonode <- "indicates the node representing the nexus downstream of a catchment"
-hnd$divergence <- "indicates whether a catchment is not downstream of a diversion (0), the primary path downstream of a divergence (1), or a minor path downstream of a diversion (2)."
+hnd$divergence <- paste("indicates whether a catchment is not downstream of a divergence (0),",
+  "the primary path downstream of a divergence (1), or a diversion downstream of a divergence (2).")
+hnd$divergence_fraction <- paste("Indicates the fraction of flow to be apportioned to a given diverted path.",
+  "Should sum to 1 when considering all diverted flowlines downstream of a diversion.")
 hnd$wbid <- "waterbody id"
 hnd$total_da_sqkm <- "total drainage area at the outlet of a catchment"
 hnd$da_sqkm <- "local drainage area of a catchment"
 hnd$length_km <- "length of a single catchment's flowpath"
 hnd$pathlength_km <- "distance from the outlet of a catchment to the terminal outlet of a network"
 hnd$arbolate_sum <- "total accumulated length of all upstream flowlines"
-hnd$topo_sort <- "Similar to hydrosequence in NHDPlus. Large topo_sort values are upstream of small topo_sort values. Note that there are many valid topological sort orders of a directed graph."
+hnd$topo_sort <- paste("Similar to hydrosequence in NHDPlus.",
+  "Large topo_sort values are upstream of small topo_sort values.",
+  "Note that there are many valid topological sort orders of a directed graph.")
 hnd$up_topo_sort <- "topo sort value of the upstream mainstem"
 hnd$dn_topo_sort <- "topo sort value of the downstream mainstem"
 hnd$dn_minor_topo_sort <- "topo sort value of the downstream minor network element with the smallest id"
@@ -101,13 +113,18 @@ hnd$terminal_topo_sort <- "topo sort value of the outlet network element"
 hnd$terminal_flag <- "1 for network terminous 0 for within network"
 hnd$terminal_id <- "id of terminal catchment for entire drainage basin"
 hnd$start_flag <- "1 for a headwater, 0 otherwise"
-hnd$levelpath <- "provides an identifier for the collection of flowpaths that make up a single mainstem flowpath of a drainage basin"
+hnd$levelpath <- paste("provides an identifier for the collection of flowlines",
+  "that make up a single mainstem flowpath of a drainage basin")
 hnd$up_levelpath <- "levelpath value of the upstream mainstem"
 hnd$dn_levelpath <- "levelpath value of the downstream mainstem"
-hnd$stream_level <- "starting at 1 for coastal terminals and 4 for inland terminals increments by 1 for each smaller tributary level"
+hnd$stream_level <- paste("starting at 1 for coastal terminals and 4 for inland terminals",
+  "increments by 1 for each smaller tributary level")
 hnd$dn_stream_level <- "stream level of downstream mainstem network element"
-hnd$stream_order <- "starting at 1 for headwaters increments by 1 for each larger tributary level, divergences adopt stream order from upstream but returning divergent network does not increment stream order"
-hnd$stream_calculator <- "starting at 1 for headwaters and 0 along diverted paths increments by 1 for each larger tributary level, does no increment along diverted paths. Is equal to stream_order along the dendritic network"
+hnd$stream_order <- paste("starting at 1 for headwaters increments by 1 for each larger tributary level,",
+  "diversions adopt stream order from upstream but returning diverted network does not increment stream order")
+hnd$stream_calculator <- paste("starting at 1 for headwaters and 0 along diverted",
+  "paths increments by 1 for each larger tributary level,",
+  "does no increment along diverted paths. Is equal to stream_order along the dendritic network")
 hnd$feature_type <- "descriptive feature type moniker"
 hnd$feature_type_code <- "compact feature type identifier"
 hnd$vector_proc_unit <- "identifier for processing units based on vector encapsulation"
@@ -115,11 +132,15 @@ hnd$raster_proc_unit <- "identifier for processing units based on raster encapsu
 hnd$id_measure <- "interpolative linear reference measure along a single identified feature"
 hnd$aggregate_id <- "aggregate identifier useful for 'reach' or 'flowpath' aggregation of flowlines"
 hnd$aggregate_id_measure <- "interpolative linear reference measure along an aggregate feature"
-hnd$aggregate_id_from_measure <- "interpolative linear reference for downstream end of a single feature that makes up an aggregate feature"
-hnd$aggregate_id_to_measure <- "interpolative linear reference for the upstream end of a single feature that makes up an aggregate feature"
+hnd$aggregate_id_from_measure <- paste("interpolative linear reference for downstream end",
+  "of a single feature that makes up an aggregate feature")
+hnd$aggregate_id_to_measure <- paste("interpolative linear reference for the upstream end",
+  "of a single feature that makes up an aggregate feature")
 hnd$point_id <- "identifier of hydrologic location point"
 hnd$offset <- "offset distance from point to line in units of linear reference analysis units"
 hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
+hnd$upmain <- "indicates that a given network element is the primary upstream connection at a confluence"
+hnd$downmain <- "indicates that a given network element is the primary downstream connection at a confluence"
 
 hydroloom_name_definitions <- setNames(as.character(hnd), names(hnd))
 class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_definitions))
@@ -128,25 +149,32 @@ class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_d
 #' @export
 #' @noRd
 print.hydroloom_names <- function(x, ...) {
-  for(i in 1:length(x)) {
+  for (i in seq_along(x)) {
     cat(paste0(i, ' "', names(x)[i], '"', ": \n\t ", unname(x)[i], "\n"))
   }
 }
 
 # input names that should be changed to replacement names
 hydroloom_name_map <- c(
+  id3dhp = id,
   comid = id,
   nhdplusid = id,
   featureid = id,
   permanent_identifier = id,
   from_permanent_identifier = id,
+  reconciled_id = id,
+  aggregated_id = id,
 
   toid = toid,
   tocomid = toid,
   to_permanent_identifier = toid,
+  reconciled_toid = toid,
+  aggregated_toid = toid,
+
   tonode = tonode,
   fromnode = fromnode,
   divergence = divergence,
+  divergence_fraction = divergence_fraction,
   wbareacomi = wbid,
 
   totdasqkm = total_da_sqkm,
@@ -182,10 +210,13 @@ hydroloom_name_map <- c(
   rpuid = raster_proc_unit,
 
   reachcode = aggregate_id,
+  mainstemid = aggregate_id,
   reach_meas = aggregate_id_measure,
   reachcode_measure = aggregate_id_measure,
   frommeas = aggregate_id_from_measure,
-  tomeas = aggregate_id_to_measure)
+  tomeas = aggregate_id_to_measure,
+  mainstemid_from_measure = aggregate_id_from_measure,
+  mainstemid_to_measure = aggregate_id_to_measure)
 
 hydroloom_env <- new.env()
 
@@ -194,7 +225,7 @@ assign("hydroloom_name_map", hydroloom_name_map, envir = hydroloom_env)
 assign("good_names", good_names, envir = hydroloom_env)
 
 check_names <- function(x, req_names, context) {
-  if(!all(req_names %in% names(x)))
+  if (!all(req_names %in% names(x)))
     stop(paste(context, "requires", paste(req_names, collapse = ", "),
-               "hydroloom attributes."), call. = FALSE)
+      "hydroloom attributes."), call. = FALSE)
 }

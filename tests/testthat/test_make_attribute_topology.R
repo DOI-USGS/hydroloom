@@ -9,7 +9,7 @@ test_that("attribute topology basics", {
   y <- sf::st_transform(y, 5070)
 
   # generate a network from the geometry
-  z <- make_attribute_topology(hy(y), 10)
+  z <- make_attribute_topology(y, 10)
 
   expect_equal(sum(z$toid == 0), 1)
 
@@ -18,14 +18,14 @@ test_that("attribute topology basics", {
 
   # make sure that all are the same from scratch
   expect_true(all(sapply(unique(x$id), function(i) {
-    xtid <- order(x[x$id == i,]$toid)
-    ztid <- order(z[z$id == i,]$toid)
+    xtid <- order(x[x$id == i, ]$toid)
+    ztid <- order(z[z$COMID == i, ]$toid)
 
     all(xtid == ztid)
   })))
 
   expect_error(make_node_topology(z),
-               "duplicate identifiers found and 'add_div' is not TRUE")
+    "duplicate identifiers found and 'add_div' is not TRUE")
 
   # add nodes to network from geometry
   z <- make_node_topology(z, add_div = TRUE)
@@ -34,5 +34,5 @@ test_that("attribute topology basics", {
   a <- add_toids(z, return_dendritic = FALSE)
 
   # make sure we get the same toids!
-  all(z$toid == a$toid)
+  expect_true(all(z$toid == a$toid))
 })
