@@ -245,7 +245,7 @@ dissolve_impl <- function(geom, gap_tolerance, max_hole_area,
 
 #' Union an sfc geometry collection
 #' @noRd
-.union_geom <- function(geom, use_geos = FALSE) {
+union_geom <- function(geom, use_geos = FALSE) {
 
   if(use_geos) {
     g <- geos::as_geos_geometry(geom)
@@ -259,26 +259,26 @@ dissolve_impl <- function(geom, gap_tolerance, max_hole_area,
 
 #' Remove holes from a single geometry below an area threshold
 #' @noRd
-.remove_small_holes <- function(geom, max_hole_area, crs) {
+remove_small_holes <- function(geom, max_hole_area, crs) {
 
   if(sf::st_is_empty(geom)) return(geom)
 
   # Handle MULTIPOLYGON: process each component
   if(inherits(geom, "MULTIPOLYGON")) {
     parts <- lapply(geom, function(p) {
-      .remove_holes_from_polygon(p, max_hole_area, crs)
+      remove_holes_from_polygon(p, max_hole_area, crs)
     })
     return(sf::st_multipolygon(parts))
   }
 
   # Single POLYGON
-  sf::st_polygon(.remove_holes_from_polygon(geom, max_hole_area, crs))
+  sf::st_polygon(remove_holes_from_polygon(geom, max_hole_area, crs))
 }
 
 #' Remove holes from a single polygon ring list
 #' @param rings list of coordinate matrices (outer ring + hole rings)
 #' @noRd
-.remove_holes_from_polygon <- function(rings, max_hole_area, crs) {
+remove_holes_from_polygon <- function(rings, max_hole_area, crs) {
 
   if(length(rings) <= 1) return(rings)
 
@@ -339,7 +339,7 @@ summarise_attrs <- function(polys, group_id, .fns, group_order = NULL) {
 
 #' Extract the largest polygon from a geometry
 #' @noRd
-.keep_largest_polygon <- function(geom, crs) {
+keep_largest_polygon <- function(geom, crs) {
 
   if(sf::st_is_empty(geom)) return(geom)
 
