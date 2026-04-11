@@ -3,10 +3,9 @@
 #'   geometry types, and optionally reprojects. Handles GEOMETRYCOLLECTION
 #'   artifacts from \code{st_make_valid()} by extracting the dominant
 #'   geometry type.
-#' @param x sf data.frame or NULL
-#' @param out_prj crs. Target CRS for the output, passed to
-#'   \code{\link[sf]{st_transform}}. Defaults to the CRS of \code{x}.
-#' @returns sf data.frame with valid geometry, or NULL if \code{x} is NULL.
+#' @param x sf data.frame, sfc geometry, or NULL.
+#' @param ... additional arguments passed to methods.
+#' @returns Same class as input: sf data.frame, sfc, or NULL.
 #' @export
 #' @examples
 #' library(sf)
@@ -17,9 +16,21 @@
 #' x <- st_sf(geometry = st_sfc(p1, crs = 5070))
 #' result <- check_valid(x)
 #'
-check_valid <- function(x, out_prj = sf::st_crs(x)) {
+check_valid <- function(x, ...) {
+  UseMethod("check_valid")
+}
 
-  if(is.null(x)) return(NULL)
+#' @export
+check_valid.default <- function(x, ...) {
+  if (is.null(x)) return(NULL)
+  stop("check_valid requires sf or sfc input")
+}
+
+#' @rdname check_valid
+#' @param out_prj crs. Target CRS for the output, passed to
+#'   \code{\link[sf]{st_transform}}. Defaults to the CRS of \code{x}.
+#' @export
+check_valid.sf <- function(x, out_prj = sf::st_crs(x), ...) {
 
   return_now <- FALSE
 
@@ -70,7 +81,10 @@ check_valid <- function(x, out_prj = sf::st_crs(x)) {
 
   }
 
-  if(any(grepl("POLYGON", class(sf::st_geometry(x))))) {
+  if (any(grepl("POLYGON", class(sf::st_geometry(x))))) {
+    use_s2 <- sf::sf_use_s2()
+    suppressMessages(sf::sf_use_s2(FALSE))
+    on.exit(suppressMessages(sf::sf_use_s2(use_s2)), add = TRUE)
     suppressMessages(suppressWarnings(
       {
         use_s2 <- sf::sf_use_s2()
@@ -129,6 +143,84 @@ check_valid <- function(x, out_prj = sf::st_crs(x)) {
   suppressWarnings(x <- sf::st_simplify(x, dTolerance = 0))
 
   return(x)
+}
+
+#' @rdname check_valid
+#' @export
+check_valid.sfc <- function(x, out_prj = sf::st_crs(x), ...) {
+
+  crs <- sf::st_crs(x)
+  x <- sf::st_zm(x)
+
+  if (!all(sf::st_is_valid(x))) {
+
+    if (interactive())
+      message("Found invalid geometry, attempting to fix.")
+
+    orig_type <- unique(as.character(sf::st_geometry_type(x)))
+    orig_type <- orig_type[grepl("POLY|LINE", orig_type)]
+
+    x <- tryCatch(
+      sf::st_make_valid(x),
+      error = function(e) {
+        warning("Error trying to make geometry valid. Returning invalid geometry.")
+        x
+      })
+
+    if (!all(sf::st_geometry_type(x) == orig_type)) {
+      if (any(grepl("^GEOMETRY", sf::st_geometry_type(x)))) {
+
+        x <- sf::st_sfc(
+          lapply(x, fix_g_type,
+                 type = gsub("^MULTI", "", orig_type),
+                 orig_type = orig_type),
+          crs = crs)
+
+        x <- sf::st_cast(x, orig_type)
+      }
+    }
+  }
+
+  if (any(grepl("POLYGON", class(x)))) {
+    use_s2 <- sf::sf_use_s2()
+    suppressMessages(sf::sf_use_s2(FALSE))
+    on.exit(suppressMessages(sf::sf_use_s2(use_s2)), add = TRUE)
+    suppressMessages(suppressWarnings(
+      x <- sf::st_buffer(x, 0)))
+  }
+
+  gtype <- as.character(sf::st_geometry_type(x, by_geometry = FALSE))
+
+  if (gtype == "MULTIPOLYGON") {
+    if (all(vapply(x, length, integer(1)) == 1L))
+      try(suppressWarnings(x <- sf::st_cast(x, "POLYGON")))
+  }
+
+  if (sf::st_crs(x) != sf::st_crs(out_prj))
+    x <- sf::st_transform(x, out_prj)
+
+  types <- as.character(sf::st_geometry_type(x, by_geometry = TRUE))
+
+  if (any(grepl("^GEOME", types))) {
+    unq <- unique(types)
+    cast_to <- unq[which.max(tabulate(match(types, unq)))]
+
+    if (any(grepl("^MULTI", unq)) & !grepl("^MULTI", cast_to))
+      cast_to <- paste0("MULTI", cast_to)
+
+    tryCatch(
+      x <- suppressWarnings(sf::st_cast(x, cast_to)),
+      error = function(e) {
+        warning("\n\n Failed to unify output geometry type. \n\n", e)
+      })
+
+    keep <- sf::st_geometry_type(x, by_geometry = TRUE) == cast_to
+    if (!all(keep)) x <- x[keep]
+  }
+
+  suppressWarnings(x <- sf::st_simplify(x, dTolerance = 0))
+
+  x
 }
 
 #' @noRd
