@@ -34,8 +34,19 @@ if (!file.exists(gpkg)) {
 message("loading fixture: ", gpkg)
 
 flowlines_sf <- sf::read_sf(gpkg, layer = "NHDFlowline_Network")
+catchments_sf <- sf::read_sf(gpkg, layer = "CatchmentSP")
+basin <- sf::read_sf(gpkg, layer = "basin")
+
+flowlines_sf <- sf::st_filter(
+  flowlines_sf,
+  st_compatibalize(basin, flowlines_sf)
+)
+
+# Keep only catchments whose featureid matches a flowline comid.
+catchments_sf <- catchments_sf[catchments_sf$featureid %in% flowlines_sf$comid, ]
 
 message("flowlines loaded: ", nrow(flowlines_sf))
+message("catchments loaded: ", nrow(catchments_sf))
 
 # ---- enrich + decompose ------------------------------------------------
 
@@ -68,9 +79,9 @@ src <- add_levelpaths(src,
 
 src <- add_streamorder(src, status = FALSE)
 
-message("decomposing network (trunk_threshold = 100 sqkm)")
+message("decomposing network (trunk_threshold = 2000 sqkm)")
 
-d <- decompose_network(src, trunk_threshold = 1000)
+d <- decompose_network(src, trunk_threshold = 2000)
 
 message("decomposition built: ", length(d$domains), " domains")
 
@@ -120,23 +131,27 @@ trunk_size_dist <- trunk_size_dist[order(trunk_size_dist$n_catchments), ]
 cat("\n=== trunk size distribution ===\n")
 print(trunk_size_dist, row.names = FALSE)
 
-# ---- join domain_id back to flowline geometry --------------------------
+# ---- join domain_id back to catchment polygons -------------------------
 
 idx <- d$catchment_domain_index
 
-flow_id_chr <- as.character(src$id)
+# Map catchment featureid -> domain_id through the enriched src ids.
+# src$id is the hy-canonical id (was comid); catchments_sf$featureid
+# is the raw NHDPlusV2 key. Both are integer-valued.
+catch_id_chr <- as.character(catchments_sf$featureid)
 
-domain_for_flow <- unname(idx[flow_id_chr])
+domain_for_catch <- unname(idx[catch_id_chr])
 
-# src is the enriched hy_leveled, which keeps geometry from the input.
-# We attach domain_id and the type so the plot can pick a palette.
 type_for_domain <- setNames(summary_df$type, summary_df$domain_id)
 
-plot_sf <- src
+plot_sf <- catchments_sf
 
-plot_sf$domain_id <- domain_for_flow
+plot_sf$domain_id <- domain_for_catch
 
-plot_sf$domain_type <- unname(type_for_domain[domain_for_flow])
+plot_sf$domain_type <- unname(type_for_domain[domain_for_catch])
+
+# Drop any catchments that didn't map (shouldn't happen, but be safe).
+plot_sf <- plot_sf[!is.na(plot_sf$domain_id), ]
 
 # Order so trunks draw on top of compacts.
 plot_sf <- plot_sf[order(plot_sf$domain_type == "trunk"), ]
@@ -155,8 +170,6 @@ names(pal) <- domain_levels
 
 plot_sf$color <- pal[plot_sf$domain_id]
 
-plot_sf$lwd <- ifelse(plot_sf$domain_type == "trunk", 1.4, 0.5)
-
 # ---- render ------------------------------------------------------------
 
 # out_png <- normalizePath(
@@ -171,13 +184,13 @@ par(mar = c(0, 0, 2, 0))
 
 plot(sf::st_geometry(plot_sf),
   col = plot_sf$color,
-  lwd = plot_sf$lwd,
+  border = NA,
   main = sprintf(
-    "decompose_network(trunk_threshold=1000): %d domains (%d trunk, %d compact) on %d flowlines",
+    "decompose_network(trunk_threshold=2000): %d domains (%d trunk, %d compact) on %d catchments",
     length(d$domains),
     sum(summary_df$type == "trunk"),
     sum(summary_df$type == "compact"),
-    nrow(src)))
+    nrow(plot_sf)))
 
 # grDevices::dev.off()
 

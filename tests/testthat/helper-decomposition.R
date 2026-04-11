@@ -537,7 +537,7 @@ prepare_at_scale_fixture <- function() {
 
   if (file.exists(gpkg)) return(gpkg)
 
-  start <- list(featureSource = "nwissite", featureID = "USGS-08082500")
+  start <- list(featureSource = "comid", featureID = "13968830")
 
   basin <- tryCatch(
     nhdplusTools::get_nldi_basin(start),
@@ -547,14 +547,16 @@ prepare_at_scale_fixture <- function() {
 
   basin_buf <- sf::st_buffer(basin, units::set_units(500, "m"))
 
-  res <- tryCatch(
+  res <- tryCatch({
     nhdplusTools::subset_nhdplus(
       bbox = sf::st_bbox(basin_buf),
       output_file = gpkg,
       nhdplus_data = "download",
       flowline_only = FALSE,
       return_data = FALSE,
-      overwrite = FALSE),
+      overwrite = FALSE)
+    sf::write_sf(basin, gpkg, "basin")
+  },
     error = \(e) {
       testthat::skip(paste0("could not fetch NHDPlusV2 subset: ",
         conditionMessage(e)))
