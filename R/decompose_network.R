@@ -80,6 +80,14 @@
 #'   non-NULL, bypasses the threshold rule and forces these levelpaths
 #'   to be trunks (the basin's terminal-outlet levelpath is always unioned
 #'   in). Every id must exist in `x$levelpath`.
+#' @param domain_breaks vector of catchment ids or `NULL`. When
+#'   non-NULL, these trunk catchment ids define where the trunk is
+#'   segmented into compact-domain groups. Each break id becomes a
+#'   segment terminal in addition to the auto-detected confluences and
+#'   outlets. Breaks that are not trunk catchments in a given basin
+#'   are silently ignored. When `NULL` (default), trunk segmentation
+#'   is determined automatically from trunk confluences and (if
+#'   available) bridge flowlines.
 #' @param trunk_promotion_ratio numeric. Guards against thin trunks:
 #'   demote a trunk candidate whose outlet metric is below
 #'   `trunk_threshold * trunk_promotion_ratio`. Reserved for a future
@@ -114,6 +122,7 @@ decompose_network <- function(x,
                               trunk_metric = "drainage_area",
                               trunk_threshold = NULL,
                               trunk_levelpaths = NULL,
+                              domain_breaks = NULL,
                               trunk_promotion_ratio = 2,
                               headwater_collapse_fraction = NULL,
                               overrides = NULL,
@@ -135,6 +144,11 @@ decompose_network <- function(x,
     nd_bridge_ids <- compute_nd_bridge_ids(x)
   } else {
     nd_bridge_ids <- NULL
+  }
+
+  if (!is.null(domain_breaks)) {
+    domain_breaks <- as.character(domain_breaks)
+    if (length(domain_breaks) == 0L) domain_breaks <- NULL
   }
 
   # Step 2 -- split the network into drainage basins. sort_network with
@@ -169,7 +183,7 @@ decompose_network <- function(x,
       trunk_metric, trunk_threshold, trunk_levelpaths)
 
     built <- decompose_build_component(component, tid, trunk_ids,
-      nd_bridge_ids)
+      nd_bridge_ids, domain_breaks)
 
     domains <- c(domains, built$domains)
     edges_list[[length(edges_list) + 1L]]   <- built$edges
@@ -854,7 +868,8 @@ print_override_breakdown <- function(overrides) {
 #'   values = segment id (confluence or outlet catchment id).
 #' @noRd
 trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr,
-                              bridge_ids = NULL) {
+                              bridge_ids = NULL,
+                              extra_terminals = NULL) {
 
   # In-degree within the trunk subgraph.
   targets_in_trunk <- trunk_toids_chr[trunk_toids_chr %in% trunk_ids_chr]
@@ -871,6 +886,11 @@ trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr,
   # Terminals: confluences + outlets (toid not in trunk).
   outlets <- trunk_ids_chr[!trunk_toids_chr %in% trunk_ids_chr]
   terminals <- union(confluences, outlets)
+
+  # Layer user-supplied breaks on top of auto-detected terminals.
+  if (!is.null(extra_terminals)) {
+    terminals <- union(terminals, extra_terminals)
+  }
 
   # Walk each trunk catchment downstream to the first terminal.
   seg <- setNames(rep(NA_character_, length(trunk_ids_chr)), trunk_ids_chr)
@@ -934,7 +954,8 @@ compute_nd_bridge_ids <- function(x) {
 #' @noRd
 decompose_build_component <- function(component, terminal_id,
                                       trunk_ids,
-                                      nd_bridge_ids = NULL) {
+                                      nd_bridge_ids = NULL,
+                                      domain_breaks = NULL) {
 
   # --- Zero-trunk shortcut: entire component is one compact domain. ---
 
@@ -1047,8 +1068,13 @@ decompose_build_component <- function(component, terminal_id,
     trunk_ids_chr   <- as.character(component$id[trunk_mask])
     trunk_toids_chr <- as.character(component$toid[trunk_mask])
 
-    seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr,
-      nd_bridge_ids)
+    if (!is.null(domain_breaks)) {
+      seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr,
+        extra_terminals = domain_breaks)
+    } else {
+      seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr,
+        nd_bridge_ids)
+    }
 
     # Which trunk catchment does each seed flow into?
     seed_to_trunk <- as.character(

@@ -211,6 +211,78 @@ legend("topright", legend = c("trunk", "compact (each color = one domain)"),
   col = c("black", "grey60"), lwd = 2, bty = "n", cex = 0.8)
 ```
 
+## Manual domain breaks
+
+The automatic segmentation splits the trunk at confluences -- every point
+where a tributary enters the trunk starts a new segment. A large threshold
+pulls more levelpaths into the trunk and produces fewer, larger compact
+domains. The `domain_breaks` parameter gives direct control over where the
+trunk is segmented, independent of the confluence structure.
+
+In practice, this is useful when domain boundaries need to align with
+modeling sub-basins, gauge locations, or administrative units rather than
+the topology's natural confluence points. The approach is to set a high
+threshold (so the trunk absorbs most of the network) and then pass specific
+catchment ids as break points.
+
+```{r manual-breaks}
+# A high threshold pulls many levelpaths into the trunk. Without
+# domain_breaks the trunk is segmented at every confluence, which
+# may produce more compact domains than desired.
+d_high <- decompose_network(src, trunk_threshold = 25)
+d_high
+
+# Identify trunk catchments where we want to force segment boundaries.
+# Here we pick two catchments roughly in the middle of the trunk.
+trunk_dom <- Filter(\(x) x$domain_type == "trunk", d_high$domains)[[1]]
+trunk_catch <- trunk_dom$catchments
+
+# Choose break points at the 1/3 and 2/3 marks along the trunk.
+break_ids <- trunk_catch$id[
+  c(floor(nrow(trunk_catch) / 3), floor(2 * nrow(trunk_catch) / 3))]
+
+d_manual <- decompose_network(src,
+  trunk_threshold = 25,
+  domain_breaks = break_ids)
+d_manual
+```
+
+The map below compares the automatic segmentation (left) with the
+manual-break segmentation (right). Both use the same trunk threshold; the
+difference is where compact domains attach along the trunk.
+
+```{r plot-manual-breaks, fig.width = 10, fig.height = 5}
+plot_decomp <- function(d, title) {
+
+  domain_idx <- d$catchment_domain_index
+  net <- d$source_network
+  net$domain_id <- unname(domain_idx[as.character(net$id)])
+
+  types <- setNames(
+    vapply(d$domains, \(x) x$domain_type, character(1)),
+    vapply(d$domains, \(x) x$domain_id, character(1)))
+  net$domain_type <- unname(types[net$domain_id])
+
+  compact_ids <- unique(net$domain_id[net$domain_type == "compact"])
+
+  set.seed(42)
+  pal <- sample(grDevices::hcl.colors(
+    max(length(compact_ids), 1), palette = "Set 2"))
+  names(pal) <- compact_ids
+
+  plot(sf::st_geometry(net[net$domain_type == "compact", ]),
+    col = pal[net$domain_id[net$domain_type == "compact"]],
+    lwd = 2, main = title)
+  plot(sf::st_geometry(net[net$domain_type == "trunk", ]),
+    col = "black", lwd = 2, add = TRUE)
+
+}
+
+par(mfrow = c(1, 2), mar = c(0, 0, 2, 0))
+plot_decomp(d_high, "Automatic segmentation")
+plot_decomp(d_manual, "Manual domain_breaks")
+```
+
 ## Accessing domains
 
 Individual domains, the domain graph, and the catchment-to-domain mapping are

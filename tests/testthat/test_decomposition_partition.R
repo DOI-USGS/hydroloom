@@ -318,3 +318,71 @@ test_that("decompose_network omits trunks for sub-threshold basins", {
     c("1", "2", "3"))
 
 })
+
+# ---- domain_breaks parameter --------------------------------------------
+
+test_that("decompose_network domain_breaks splits trunk at specified ids", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
+
+  src <- enrich_for_decomposition(load_walker())
+
+  d_default <- hydroloom::decompose_network(src)
+
+  # Find the trunk domain and pick a mid-trunk catchment that is not
+  # already a confluence or outlet.
+  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d_default$domains)[[1]]
+  trunk_catch <- trunk_dom$catchments
+  mid_id <- trunk_catch$id[ceiling(nrow(trunk_catch) / 2)]
+
+  d_breaks <- hydroloom::decompose_network(src, domain_breaks = mid_id)
+
+  expect_true(hydroloom::validate_decomposition(d_breaks)$valid)
+  assert_partition_coverage(d_breaks, src)
+
+  n_compact_default <- sum(vapply(d_default$domains,
+    \(d) d$domain_type == "compact", logical(1)))
+  n_compact_breaks <- sum(vapply(d_breaks$domains,
+    \(d) d$domain_type == "compact", logical(1)))
+
+  expect_gte(n_compact_breaks, n_compact_default,
+    label = "explicit break produces at least as many compacts")
+
+})
+
+test_that("decompose_network domain_breaks ignores non-trunk ids", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
+
+  src <- enrich_for_decomposition(load_walker())
+
+  d_default <- hydroloom::decompose_network(src)
+  d_breaks <- hydroloom::decompose_network(src, domain_breaks = c(-999))
+
+  expect_equal(length(d_breaks$domains), length(d_default$domains),
+    label = "bogus break id does not change domain count")
+
+})
+
+test_that("decompose_network domain_breaks composes with trunk_levelpaths", {
+
+  decomposition_pending(c("decompose_network", "validate_decomposition"))
+
+  src <- enrich_for_decomposition(load_walker())
+
+  lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
+  top_lps <- lp_outlets$levelpath[order(-lp_outlets$total_da_sqkm)][1:2]
+
+  # Pick a mid-trunk id from the multi-levelpath trunk.
+  d_lp <- hydroloom::decompose_network(src, trunk_levelpaths = top_lps)
+  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d_lp$domains)[[1]]
+  mid_id <- trunk_dom$catchments$id[ceiling(nrow(trunk_dom$catchments) / 2)]
+
+  d_both <- hydroloom::decompose_network(src,
+    trunk_levelpaths = top_lps,
+    domain_breaks = mid_id)
+
+  expect_true(hydroloom::validate_decomposition(d_both)$valid)
+  assert_partition_coverage(d_both, src)
+
+})
