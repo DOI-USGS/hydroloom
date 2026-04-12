@@ -236,6 +236,10 @@ add_streamlevel.data.frame <- function(x, coastal = NULL) {
 #' @name add_streamlevel
 #' @export
 add_streamlevel.hy <- function(x, coastal = NULL) {
+
+  if (all(c(levelpath, dn_levelpath) %in% names(x)))
+    return(add_streamlevel.hy_leveled(x, coastal))
+
   hy_classify_and_redispatch(x, "add_streamlevel", "hy_leveled",
     hy_guidance_leveled, coastal = coastal)
 }
