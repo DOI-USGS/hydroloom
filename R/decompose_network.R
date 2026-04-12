@@ -128,6 +128,15 @@ decompose_network <- function(x,
     return(decompose_empty(x, overrides))
   }
 
+  # Compute bridge ids from the non-dendritic network for trunk
+  # segment boundary restriction. Confluences that are not bridges
+  # (within diversion loops) do not create segment breaks.
+  if (all(c("fromnode", "tonode") %in% names(x))) {
+    nd_bridge_ids <- compute_nd_bridge_ids(x)
+  } else {
+    nd_bridge_ids <- NULL
+  }
+
   # Step 2 -- split the network into drainage basins. sort_network with
   # split = TRUE annotates each row with its terminal_id. We work
   # basin-by-basin so multi-basin sources (or single-basin, the
@@ -159,7 +168,8 @@ decompose_network <- function(x,
     trunk_ids <- select_trunk_ids(component, tid,
       trunk_metric, trunk_threshold, trunk_levelpaths)
 
-    built <- decompose_build_component(component, tid, trunk_ids)
+    built <- decompose_build_component(component, tid, trunk_ids,
+      nd_bridge_ids)
 
     domains <- c(domains, built$domains)
     edges_list[[length(edges_list) + 1L]]   <- built$edges
@@ -837,15 +847,26 @@ print_override_breakdown <- function(overrides) {
 #' @param trunk_ids_chr character vector of trunk catchment ids.
 #' @param trunk_toids_chr character vector of toid for each trunk
 #'   catchment (parallel to trunk_ids_chr).
+#' @param bridge_ids character vector of bridge flowline ids from
+#'   the non-dendritic network, or NULL. When supplied, only
+#'   confluences that are also bridges create segment breaks.
 #' @returns named character vector: names = trunk catchment ids,
 #'   values = segment id (confluence or outlet catchment id).
 #' @noRd
-trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr) {
+trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr,
+                              bridge_ids = NULL) {
 
   # In-degree within the trunk subgraph.
   targets_in_trunk <- trunk_toids_chr[trunk_toids_chr %in% trunk_ids_chr]
   in_deg <- table(targets_in_trunk)
   confluences <- names(in_deg[in_deg >= 2L])
+
+  # Restrict to bridge confluences when bridge ids are available.
+  # Non-bridge confluences (within diversion loops) are absorbed
+  # into the surrounding segment.
+  if (!is.null(bridge_ids)) {
+    confluences <- confluences[confluences %in% bridge_ids]
+  }
 
   # Terminals: confluences + outlets (toid not in trunk).
   outlets <- trunk_ids_chr[!trunk_toids_chr %in% trunk_ids_chr]
@@ -867,6 +888,37 @@ trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr) {
   seg
 }
 
+#' Compute bridge flowline ids from the non-dendritic network
+#'
+#' Rebuilds non-dendritic edges from `fromnode`/`tonode` and runs
+#' `get_bridge_flowlines()`. Used to restrict trunk segment breaks
+#' to confluences that are also bridge flowlines.
+#'
+#' @param x hy_leveled with fromnode and tonode columns.
+#' @returns character vector of bridge flowline ids.
+#' @noRd
+compute_nd_bridge_ids <- function(x) {
+
+  from_lookup <- split(x$id, x$fromnode)
+
+  nd_list <- lapply(seq_len(nrow(x)), function(i) {
+
+    tn <- as.character(x$tonode[i])
+    downstream <- from_lookup[[tn]]
+
+    if (is.null(downstream) || length(downstream) == 0) {
+      data.frame(id = x$id[i], toid = 0)
+    } else {
+      data.frame(id = rep(x$id[i], length(downstream)),
+        toid = downstream)
+    }
+  })
+
+  nd_edges <- do.call(rbind, nd_list)
+
+  as.character(get_bridge_flowlines(nd_edges, quiet = TRUE))
+}
+
 #' Build one drainage basin's trunk and compacts
 #'
 #' @param component hy_leveled slice for a single drainage basin.
@@ -874,11 +926,15 @@ trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr) {
 #' @param trunk_ids character vector of catchment ids that belong in
 #'   the trunk domain. Empty means the basin is sub-threshold (no
 #'   trunk).
+#' @param nd_bridge_ids character vector of bridge flowline ids from
+#'   the non-dendritic network, or NULL. When supplied, trunk segment
+#'   breaks are restricted to confluences that are also bridges.
 #' @returns list with domains, edges, nexuses, and two parallel vectors
 #'   for the catchment_domain_index.
 #' @noRd
 decompose_build_component <- function(component, terminal_id,
-                                      trunk_ids) {
+                                      trunk_ids,
+                                      nd_bridge_ids = NULL) {
 
   # --- Zero-trunk shortcut: entire component is one compact domain. ---
 
@@ -991,7 +1047,8 @@ decompose_build_component <- function(component, terminal_id,
     trunk_ids_chr   <- as.character(component$id[trunk_mask])
     trunk_toids_chr <- as.character(component$toid[trunk_mask])
 
-    seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr)
+    seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr,
+      nd_bridge_ids)
 
     # Which trunk catchment does each seed flow into?
     seed_to_trunk <- as.character(
