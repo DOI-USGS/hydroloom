@@ -67,6 +67,28 @@ test_that("get_streamlevel", {
 
 })
 
+test_that("streamlevel with only levelpath columns", {
+
+  x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
+
+  test_flowline <- data.frame(
+    LevelPathI = x$LevelPathI,
+    DnLevelPat = x$DnLevelPat)
+
+  test_flowline$DnLevelPat[1] <- 0
+
+  expect_equal(x$StreamLeve, add_streamlevel(test_flowline)$stream_level)
+
+  test_flowline$coastal <- rep(FALSE, nrow(test_flowline))
+  expect_equal(x$StreamLeve + 3,
+    add_streamlevel(test_flowline, coastal = "coastal")$stream_level)
+
+  test_flowline$coastal[!test_flowline$DnLevelPat %in% test_flowline$LevelPathI] <- TRUE
+  expect_equal(x$StreamLeve,
+    add_streamlevel(test_flowline, coastal = "coastal")$stream_level)
+
+})
+
 test_that("exists bug #35", {
 
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")) |>
