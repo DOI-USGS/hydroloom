@@ -190,9 +190,9 @@ test_that("decompose_network trunk_threshold on new_hope", {
   expect_gt(length(trunk_lps), 2L,
     label = "trunk includes tributaries beyond the outlet levelpath")
 
-  # At least 5 compact domains (segments between trunk confluences).
-  expect_gte(sum(types == "compact"), 5L,
-    label = "new_hope with threshold = 100 produces at least 5 compacts")
+  # At least 2 compact domains (segments between trunk confluences).
+  expect_gte(sum(types == "compact"), 2L,
+    label = "new_hope with threshold = 100 produces at least 2 compacts")
 
 })
 
@@ -287,7 +287,8 @@ test_that("decompose_network omits trunks for sub-threshold basins", {
     topo_sort = c(3L, 2L, 1L, 6L, 5L, 4L),
     levelpath = c(1L, 1L, 1L, 2L, 2L, 2L),
     levelpath_outlet_id = c(3L, 3L, 3L, 6L, 6L, 6L),
-    da_sqkm = c(10, 10, 10, 30, 30, 40))
+    da_sqkm = c(10, 10, 10, 30, 30, 40),
+    stream_calculator = c(1L, 1L, 1L, 1L, 1L, 1L))
 
   src <- hydroloom::hy(pair)
 

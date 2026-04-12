@@ -123,8 +123,8 @@ enrich_for_decomposition <- function(x,
   # NHDPlusV2 fixtures (e.g. the at-scale gpkg) carry these from the
   # source service. After hy() the column names are canonical, so a
   # single drop list against canonical names is sufficient.
-  drop_canonical <- c("stream_order", "topo_sort", "levelpath",
-    "levelpath_outlet_id", "pathlength_km", "stream_level")
+  drop_canonical <- c("stream_order", "stream_calculator", "topo_sort",
+    "levelpath", "levelpath_outlet_id", "pathlength_km", "stream_level")
 
   to_drop <- intersect(drop_canonical, names(h))
 

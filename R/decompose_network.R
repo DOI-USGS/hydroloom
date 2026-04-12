@@ -23,11 +23,13 @@
 #'
 #' @description
 #' Partitions a hydrologic network into `hy_domain` objects for
-#' independent or parallel resolution. Each domain is an
-#' HY_CatchmentAggregate with exactly one outlet nexus. Trunk domains
-#' carry a major mainstem flowpath; compact domains are the maximal
-#' upstream sub-network of a single lateral inflow point along a
-#' trunk.
+#' independent or parallel resolution. Each drainage basin is split
+#' by extracting its primary flowpath catchments into a trunk domain and
+#' grouping the remaining lateral sub-networks into compact domains.
+#' Each compact domain corresponds to an HY_Features catchment
+#' aggregate -- the segment of trunk that flows through it is the
+#' aggregate's flowpath. Compact domains are grouped by trunk segment
+#' and may connect to the trunk at multiple nexus points.
 #'
 #' @details
 #' Input must be `hy_leveled` -- the network must already carry
@@ -283,6 +285,14 @@ decompose_resolve_metric <- function(x, trunk_metric, trunk_threshold,
       "scalar.", call. = FALSE)
   }
 
+  if (!"stream_calculator" %in% names(x)) {
+    stop("decompose_network: trunk_threshold requires a ",
+      "'stream_calculator' column to exclude diverted paths. ",
+      "This column is typically provided by the source dataset ",
+      "(e.g. NHDPlus StreamCalc).",
+      call. = FALSE)
+  }
+
   metric_col <- switch(trunk_metric,
     drainage_area = "total_da_sqkm",
     arbolate_sum  = "arbolate_sum")
@@ -367,9 +377,14 @@ select_trunk_ids <- function(component, terminal_id,
     return(character(0))
   }
 
-  # All catchments whose metric exceeds the threshold.
-  as.character(
-    component$id[component[[metric_col]] > trunk_threshold])
+  # All catchments whose metric exceeds the threshold, excluding
+  # diverted paths (stream_calculator == 0).
+  above <- component[[metric_col]] > trunk_threshold
+
+  sc <- component$stream_calculator
+  above <- above & !is.na(sc) & sc != 0
+
+  as.character(component$id[above])
 }
 
 #' Empty-network decomposition shortcut

@@ -57,11 +57,13 @@ object of class \code{domain_decomposition} with slots
 }
 \description{
 Partitions a hydrologic network into \code{hy_domain} objects for
-independent or parallel resolution. Each domain is an
-HY_CatchmentAggregate with exactly one outlet nexus. Trunk domains
-carry a major mainstem flowpath; compact domains are the maximal
-upstream sub-network of a single lateral inflow point along a
-trunk.
+independent or parallel resolution. Each drainage basin is split
+by extracting its primary flowpath catchments into a trunk domain and
+grouping the remaining lateral sub-networks into compact domains.
+Each compact domain corresponds to an HY_Features catchment
+aggregate -- the segment of trunk that flows through it is the
+aggregate's flowpath. Compact domains are grouped by trunk segment
+and may connect to the trunk at multiple nexus points.
 }
 \details{
 Input must be \code{hy_leveled} -- the network must already carry
