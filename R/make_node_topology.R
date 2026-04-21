@@ -186,11 +186,27 @@ make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
 make_nondendritic_topology <- function(x) {
 
-  # First create a unique node id that groups on sets of downstream ids
+  outlet_val <- get_outlet_value(x)
+
+  # Create a unique node id that groups on sets of downstream ids. Two
+  # fromids with identical downstream sets legitimately share a graph node
+  # (the divergence or confluence they both resolve to). But fromids whose
+  # downstream set is empty after dropping outlet sentinels do NOT share a
+  # graph node with each other -- they are independent terminal flowlines,
+  # each with its own pendant endpoint. Giving them a unique per-fromid
+  # node_id prevents the spurious collapse that otherwise creates a single
+  # super-hub node incident to every terminal in the partition.
   n <- select(x, all_of(c(fromid = id, toid))) |>
     filter(!is.na(.data$fromid) & !is.na(.data$toid)) |>
     group_by(.data$fromid) |>
-    mutate(node_id = paste(sort(toid), collapse = "-")) |>
+    mutate(node_id = {
+      non_outlet <- toid[toid != outlet_val]
+      if (length(non_outlet) == 0L) {
+        paste0("__tl__", .data$fromid[1])
+      } else {
+        paste(sort(non_outlet), collapse = "-")
+      }
+    }) |>
     ungroup()
 
   hw <- unique(n$fromid[!n$fromid %in% n$toid])
