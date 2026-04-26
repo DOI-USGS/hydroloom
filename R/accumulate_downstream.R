@@ -194,61 +194,44 @@ accumulate_downstream.hy_topo <- function(x, var, total = FALSE, quiet = FALSE) 
   }
 
   if (total) {
-    # replace ids to avoid row lookups
+    # Step 1: identify bridges (Tarjan's, O(V+E))
     id_lookup <- data.frame(indid = seq_len(nrow(out)), id = out$id)
     net$id <- id_lookup$indid[match(net$id, id_lookup$id)]
     net$toid <- id_lookup$indid[match(net$toid, id_lookup$id)]
     net$toid <- replace_na(net$toid, 0)
 
-    # get bridge flowlines
     bridge_ids <- get_bridge_flowlines(net, quiet = quiet)
 
-    # logical vector for which rows are bridge flowlines
-    bridge_indices <- rep(FALSE, nrow(out))
-    bridge_indices[bridge_ids] <- TRUE
+    is_bridge <- rep(FALSE, nrow(out))
+    is_bridge[bridge_ids] <- TRUE
 
-    # flowlines downstream of non-bridges need to be treated as non-bridges
-    non_bridge <- id_lookup$indid[!bridge_indices] # features that are part of a diversion
-    add_non_bridge <- net$toid[net$id %in% non_bridge] # features downstream of non_bridges
-    bridge_indices[id_lookup$indid %in% add_non_bridge] <- FALSE # set these slots to false
+    # Step 2: topological sort already applied above via sort_network().
+    # Step 3: accumulate in topological order.
 
-    # flip naming for use in dfs
+    # w(e) preserved; out[[var]][i] is overwritten with T(e) as we go.
+    w <- out[[var]]
+
+    # rename for the dfs helper's contract
     names(froms)[names(froms) == "froms"] <- "to"
-
-    # make a copy of the values where we will update only the bridge flowlines
-    working_vals <- out[[var]]
-
-    # traverse the network doing normal accumulation for bridge flowlines
-    # and upstream dfs for non-bridge
 
     for (i in seq_along(froms$lengths)) {
       if (!i %% 100 && prog)
         setTxtProgressBar(pb, i)
 
       l <- froms$lengths[i]
+      if (l == 0) next
 
-      if (l > 0) {
-         if (bridge_indices[i]) {
+      upstream <- froms$to[seq_len(l), i]
 
-          # bridge: normal accumulation
-          out[[var]][i] <- sum(out[[var]][i], out[[var]][froms$to[seq_len(l), i]])
+      if (all(is_bridge[upstream])) {
+        # Dendritic fast path: U = {i}, B_U = upstream bridges.
+        # Each out[[var]][u] already holds T(u) by topological order.
+        out[[var]][i] <- w[i] + sum(out[[var]][upstream])
 
-          # we can break the network here since this is an bridge flowline
-          froms$to[seq_len(l), i] <- 0
-
-          # update working_vals so the bridge flowline's total gets used with dfs results
-          working_vals[i] <- out[[var]][i]
-
-         } else {
-          # non-bridge: upstream dfs to get all contributing area
-          # froms has been broken where we already visited an bridge flowline
-          upstream_ids <- navigate_network_dfs_internal(
-            g = froms, all_starts = i, reset = FALSE, main = FALSE, ind_id_mode = TRUE
-          )
-
-          out[[var]][i] <- sum(working_vals[unlist(upstream_ids)])
-
-         }
+      } else {
+        # General case: local upstream DFS on non-bridge edges, halt at bridges.
+        dfs <- dfs_upstream_nonbridge(froms, start = i, is_bridge = is_bridge)
+        out[[var]][i] <- sum(w[dfs$U]) + sum(out[[var]][dfs$B_U])
       }
     }
 
@@ -278,4 +261,59 @@ accumulate_downstream.hy_topo <- function(x, var, total = FALSE, quiet = FALSE) 
 
   left_join(x, out, by = "id")[[var]]
 
+}
+
+# Upstream DFS from `start`, traversing only non-bridge edges, halting at
+# bridges. Returns list(U, B_U):
+#   U   = indices visited via non-bridge edges, including `start` itself
+#   B_U = indices of the boundary bridges encountered as halt points
+# froms: list with $to (matrix: rows = upstream slots, cols = nodes) and
+#        $lengths (integer vector: valid slot count per node).
+# is_bridge: logical vector aligned with node indices.
+#' @noRd
+dfs_upstream_nonbridge <- function(froms, start, is_bridge) {
+
+  n <- length(froms$lengths)
+
+  visited <- logical(n)
+  stack <- integer(n)
+  sp <- 0L
+
+  U_buf <- integer(n)
+  U_n <- 0L
+  BU_buf <- integer(n)
+  BU_n <- 0L
+
+  sp <- sp + 1L
+  stack[sp] <- start
+
+  while (sp > 0L) {
+    node <- stack[sp]
+    sp <- sp - 1L
+
+    if (visited[node]) next
+    visited[node] <- TRUE
+
+    U_n <- U_n + 1L
+    U_buf[U_n] <- node
+
+    l <- froms$lengths[node]
+    if (l == 0L) next
+
+    for (k in seq_len(l)) {
+      a <- froms$to[k, node]
+      if (a == 0L || visited[a]) next
+
+      if (is_bridge[a]) {
+        visited[a] <- TRUE
+        BU_n <- BU_n + 1L
+        BU_buf[BU_n] <- a
+      } else {
+        sp <- sp + 1L
+        stack[sp] <- a
+      }
+    }
+  }
+
+  list(U = U_buf[seq_len(U_n)], B_U = BU_buf[seq_len(BU_n)])
 }
