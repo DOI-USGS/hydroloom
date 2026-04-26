@@ -28,6 +28,13 @@ carry subclass attributes (e.g. `hy_topo`) which are stripped by
   `hy_topo`/`hy_node` when required columns are already present
 - Fix pre-existing bug in `make_to_dt()` where dendritic branch failed on
   tibble input (data.table `with = FALSE` syntax on plain data.frame)
+- Fix `get_bridge_flowlines()` correctness on networks with independent
+  terminals: `make_nondendritic_topology()` collapsed all outlet-sentinel
+  fromids into one synthetic node, misclassifying bridges and exhausting
+  memory on continental networks
+- `to_flownetwork()` and `get_bridge_flowlines()` now accept `hy_node`
+  input without `divergence`/`levelpath`, auto-converting to a
+  non-dendritic edge list with a warning that main-path info is dropped
 - Documentation:
   - Add class-level roxygen pages for `hy_topo`, `hy_leveled`, `hy_node`,
     and `hy_flownetwork` describing representation pattern, required

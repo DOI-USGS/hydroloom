@@ -550,6 +550,19 @@ hy_node_to_topo <- function(x, fn_name, ...) {
   match.fun(fn_name)(add_toids(x), ...)
 }
 
+#' Convert hy_node to hy_flownetwork and re-dispatch
+#' @description For functions that operate on the non-dendritic edge set.
+#' Calls to_flownetwork() (which warns about dropped main-path info) then
+#' re-dispatches.
+#' @param x hy_node object
+#' @param fn_name character. Function to call after conversion.
+#' @param ... arguments forwarded.
+#' @noRd
+hy_node_to_flownetwork <- function(x, fn_name, ...) {
+
+  match.fun(fn_name)(to_flownetwork(x), ...)
+}
+
 #' Try to downcast hy_topo to hy_node, then re-dispatch or error
 #' @param x hy_topo object
 #' @param fn_name character. Function to call after downcast.

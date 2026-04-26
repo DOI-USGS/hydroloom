@@ -60,8 +60,25 @@ to_flownetwork.hy_node <- function(x, warn_dendritic = TRUE) {
   if (all(c(divergence, levelpath) %in% names(x)))
     return(to_flownetwork.hy_leveled(x, warn_dendritic))
 
-  hy_dispatch_error("to_flownetwork", "hy_leveled", x,
-    "Use add_toids() then add_levelpaths() to enrich the network.")
+  warning("converting hy_node to non-dendritic edge list; ",
+    "upmain/downmain will not be set. ",
+    "Add divergence and levelpath attributes (see add_divergence(), ",
+    "add_levelpaths()) to preserve main-path information.",
+    call. = FALSE)
+
+  # flownetwork carries topology only; the source hy_node remains
+  # intact in the caller's environment with its full attribute set.
+  nodes <- data.frame(
+    id = x[[id]],
+    fromnode = x[[fromnode]],
+    tonode = x[[tonode]]
+  )
+  class(nodes) <- c("hy", class(nodes))
+  nodes <- new_hy_node(nodes)
+
+  edges <- add_toids(nodes, return_dendritic = FALSE)
+
+  new_hy_flownetwork(data.frame(id = edges$id, toid = edges$toid))
 }
 
 #' @name to_flownetwork
