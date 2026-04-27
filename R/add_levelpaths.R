@@ -228,7 +228,7 @@ add_levelpaths.hy_topo <- function(x, name_attribute, weight_attribute,
   done_vec <- logical(nrow(x))
 
   # start from network outlets and work upstream in waves
-  outlet_inds <- which(x$toid == get_outlet_value(x))
+  outlet_inds <- which(is_outlet(x))
   total_done <- 0L
   checker <- 0L
 

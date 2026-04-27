@@ -11,6 +11,15 @@ developers who depend on hydroloom should note that returned objects now
 carry subclass attributes (e.g. `hy_topo`) which are stripped by
 `hy_reverse()` and by standard dplyr operations.
 
+- Outlet detection is explicit (#85): a row is an outlet when its
+  `toid` is not in `id`. Canonical sentinels (`0` / `""`), `NA`, implicit
+  absence, foreign sentinels, and unique-per-outlet ids are all accepted.
+- `hy()` still normalizes `NA` `toid` to the canonical sentinel, so
+  `x$toid == 0` after `hy()` keeps working.
+- `make_node_topology()` and `is.hy()` accept `NA` and orphan `toid`;
+  the related errors are removed.
+- `check_hy_outlets()` warns only on `id`/`toid` type mismatch.
+- `sort_network()` warns only when a network has zero outlets.
 - Improve performance of `add_levelpaths()` by converting to data.table
 - Add S3 class hierarchy: `hy_topo`, `hy_leveled`, `hy_node`, `hy_flownetwork` -- #73
 - `hy()` gains `add_topo` parameter to auto-build toid from fromnode/tonode

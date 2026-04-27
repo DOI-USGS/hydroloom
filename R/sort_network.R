@@ -90,12 +90,14 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
   if (!is.null(outlets)) {
     starts <- which(index_ids$to$to_list$id %in% outlets)
   } else {
-    # All the start nodes
-    if (any(x$toid != get_outlet_value(x) & !x$toid %in% x$id)) {
-      warning("no outlet found -- will start from outlets that go no where.")
-      starts <- which(index_ids$to$to_list$id %in% x$id[!x$toid %in% x$id])
-    } else {
-      starts <- which(index_ids$to$to_list$id %in% x$id[x$toid == get_outlet_value(x)])
+    # All the start nodes -- outlets are rows whose toid does not refer to
+    # any id in the network (tolerates any sentinel convention).
+    starts <- which(index_ids$to$to_list$id %in% x$id[is_outlet(x)])
+
+    if (length(starts) == 0L) {
+      warning("no outlets detected in network -- sort may produce incomplete ",
+        "results. A future release will treat this as an error.",
+        call. = FALSE)
     }
   }
 

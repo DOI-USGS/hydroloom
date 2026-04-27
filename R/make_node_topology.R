@@ -118,8 +118,8 @@ make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
   } else {
 
-    if (any(is.na(x$toid))) stop("NA toids found -- must be 0")
-    if (!all(x$toid[x$toid != get_outlet_value(x)] %in% x$id)) stop("Not all non zero toids are in ids")
+    # NA toid and toid-not-in-id are valid outlet markers under the
+    # is_outlet() rule, so no validation of toid values is needed here.
     if (any(c(fromnode, tonode) %in% names(x))) stop("fromnode or tonode already in data")
 
     x <- sort_network(x)
@@ -132,7 +132,7 @@ make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
     x <- left_join(x, select(x, all_of(c(id = id, tonode = fromnode))),
       by = c(toid = id))
 
-    outlets <- x$toid == get_outlet_value(x)
+    outlets <- is_outlet(x)
 
     x$tonode[outlets] <- seq(max(x$tonode, na.rm = TRUE) + 1,
       max(x$tonode, na.rm = TRUE) + sum(outlets))
@@ -184,21 +184,23 @@ make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
 make_nondendritic_topology <- function(x) {
 
-  outlet_val <- get_outlet_value(x)
+  network_ids <- x$id
 
   # Create a unique node id that groups on sets of downstream ids. Two
   # fromids with identical downstream sets legitimately share a graph node
   # (the divergence or confluence they both resolve to). But fromids whose
-  # downstream set is empty after dropping outlet sentinels do NOT share a
-  # graph node with each other -- they are independent terminal flowlines,
-  # each with its own pendant endpoint. Giving them a unique per-fromid
-  # node_id prevents the spurious collapse that otherwise creates a single
-  # super-hub node incident to every terminal in the partition.
+  # downstream set is empty after dropping outlet rows do NOT share a graph
+  # node with each other -- they are independent terminal flowlines, each
+  # with its own pendant endpoint. Giving them a unique per-fromid node_id
+  # prevents the spurious collapse that otherwise creates a single super-hub
+  # node incident to every terminal in the partition. Outlet rows are
+  # identified by membership (toid not present in network_ids) so this
+  # works for any outlet convention, including unique-per-outlet identifiers.
   n <- select(x, all_of(c(fromid = id, toid))) |>
     filter(!is.na(.data$fromid) & !is.na(.data$toid)) |>
     group_by(.data$fromid) |>
     mutate(node_id = {
-      non_outlet <- toid[toid != outlet_val]
+      non_outlet <- toid[toid %in% network_ids]
       if (length(non_outlet) == 0L) {
         paste0("__tl__", .data$fromid[1])
       } else {
@@ -230,11 +232,16 @@ make_nondendritic_topology <- function(x) {
     distinct()
 
   # create a rudimentary node based topology.
+  # The c(x$id, x$toid) anchor pulls outlet pseudo-ids into the join so the
+  # synthetic terminal nodes get joined; the trailing filter drops them.
+  # Filtering by membership in the original network ids (rather than equality
+  # to a sentinel) supports any outlet convention, including unique-per-outlet
+  # identifiers.
   out <- distinct(data.frame(id = c(x$id, x$toid))) |>
     left_join(to, by = id) |>
     left_join(from, by = id) |>
     select(all_of(c(id, fromnode, tonode))) |>
-    filter(!id == get_outlet_value(x))
+    filter(.data$id %in% x$id)
 
   if (inherits(x, "hy")) {
     class(out) <- c("hy", class(out))
