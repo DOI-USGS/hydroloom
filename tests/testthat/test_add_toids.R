@@ -26,7 +26,7 @@ test_that("make toid", {
 
   expect_error(add_toids(x), "To remove non dendritic paths, a divergence attribute is required.")
 
-  expect_error(add_toids(y), "network already contains a toid attribute")
+  expect_error(add_toids(y), "already has toid")
 
   g$COMID <- as.character(g$COMID)
 
@@ -35,4 +35,12 @@ test_that("make toid", {
   expect_true(inherits(z$toid, "character"))
 
   expect_equal(which(y$toid == 0), which(z$toid == ""))
+})
+
+test_that("don't change fromnode", {
+  g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+
+  x <- add_toids(g, return_dendritic = TRUE)
+
+  expect_equal(g$FromNode, x$FromNode)
 })

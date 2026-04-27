@@ -1,19 +1,21 @@
-#' @title add Streamorder
+#' @title Add Streamorder
 #' @description Adds a strahler stream order.
 #'
-#' Algorithm: If more than one upstream flowpath has an order equal to the
-#' maximum upstream order then the downstream flowpath is assigned the maximum
+#' Algorithm: If more than one upstream flowline has an order equal to the
+#' maximum upstream order then the downstream flowline is assigned the maximum
 #' upstream order plus one. Otherwise it is assigned the maximum upstream order.
 #'
-#' To match the NHDPlus algorithm, non-dendritic network connectivity and a
-#' `divergence` attribute must be included. All secondary paths will have the
-#' `stream_order` of upstream primary paths and a `stream_calculator` value of 0.
-#' Secondary paths have no affect on the order of downstream paths.
+#' To match the NHDPlus algorithm, non-dendritic network connectivity must
+#' be included. All secondary paths will have the `stream_order` of upstream
+#' primary paths and a `stream_calculator` value of 0. Secondary paths have
+#' no affect on the order of downstream paths.
 #'
-#' Requires a toid attribute or fromnode, tonode, and divergence attributes
-#' that will be used to construct a toid attribute.
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @param status boolean if status updates should be printed.
+#' @details
 #'
-#' @inheritParams add_levelpaths
+#' Required attributes: `id` and `toid` or `fromnode`, `tonode`, and `divergence`
+#'
 #' @returns data.frame containing added `stream_order` and `stream_calculator` attribute.
 #' @export
 #' @name add_streamorder
@@ -34,42 +36,53 @@ add_streamorder <- function(x, status = TRUE) {
 #' @name add_streamorder
 #' @export
 add_streamorder.data.frame <- function(x, status = TRUE) {
-  x <- hy(x)
-
-  x <- add_streamorder(x, status)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_streamorder", status = status)
 }
 
 #' @name add_streamorder
 #' @export
 add_streamorder.hy <- function(x, status = TRUE) {
+  hy_classify_and_redispatch(x, "add_streamorder", "hy_topo", hy_guidance_topo,
+    status = status)
+}
 
-  if("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
+#' @name add_streamorder
+#' @export
+add_streamorder.hy_node <- function(x, status = TRUE) {
+  hy_node_to_topo(x, "add_streamorder", status = status)
+}
 
-  if(all(c(id, fromnode, tonode, divergence) %in% names(x)) &
-     !toid %in% names(x)) {
-    net <- select(st_drop_geometry(x), all_of(c(id, fromnode, tonode, divergence)))
+#' @name add_streamorder
+#' @export
+add_streamorder.hy_flownetwork <- function(x, status = TRUE) {
+  add_streamorder.hy_topo(x, status)
+}
 
-    net <- add_toids(net, return_dendritic = FALSE)
-  }
+#' @name add_streamorder
+#' @export
+add_streamorder.hy_topo <- function(x, status = TRUE) {
+
+  if ("stream_order" %in% names(x)) stop("network already contains a stream_order attribute")
+
+  net <- add_toids_internal(x)
 
   # if there's any non-dendritic network we need a divergence marker
-  if(length(unique(x$id)) < nrow(x) | exists("net")) {
+  if (length(unique(net$id)) < nrow(net)) {
 
     required_atts <- c(id, toid, divergence)
     error_context <- "If id, fromnode, tonode, and divergence are not supplied, add_streamorder with non-dendritic"
 
   } else {
+
     required_atts <- c(id, toid)
     error_context <- "add_streamorder"
   }
 
-  if(!exists("net")) {
+  if (!exists("net", inherits = FALSE)) {
 
-    check_names(x, required_atts, error_context)
+    check_names(net, required_atts, error_context)
 
-    net <- select(st_drop_geometry(x), all_of(required_atts))
+    net <- select(net, all_of(required_atts))
 
   }
 
@@ -81,39 +94,34 @@ add_streamorder.hy <- function(x, status = TRUE) {
   net <- sort_network(net)
 
   # Now generate a working index against the sorted data.
-  index_ids <- make_index_ids(net)
-
-  # Find fromids from the working index.
-  # columns of the included matrix correspond to the index ids.
-  # rows of the matrix correspond to adjacent upstream ids
-  froms <- make_fromids(index_ids)
+  index_ids <- make_index_ids(net, mode = "both")
 
   # will fill in order as we go in this
-  order <- rep(1, length(froms$lengths))
+  order <- rep(1, length(index_ids$from$lengths))
   calc <- rep(1, length(order))
 
-  if(divergence %in% names(x)) {
+  if (divergence %in% names(x)) {
     # get a divergence marker as logical
-    div <- left_join(tibble(id = index_ids$to_list$id),
-                     distinct(select(st_drop_geometry(x),
-                                     all_of(c(id, divergence)))),
-                     by = id)
+    div <- left_join(tibble(id = index_ids$to$to_list$id),
+      distinct(select(st_drop_geometry(x),
+        all_of(c(id, divergence)))),
+      by = id)
 
     # set divergences to stream calc 0 to be propagated through minor paths
     calc[div$divergence == 2] <- 0
 
   }
 
-  for(i in seq_len(length(froms$lengths))) {
+  for (i in seq_along(index_ids$from$lengths)) {
 
-    l <- froms$lengths[i]
+    l <- index_ids$from$lengths[i]
 
     # nothing to do if nothing upstream
-    if(l > 0) {
+    if (l > 0) {
 
       # these are the upstream orders
-      orders <- order[froms$froms[1:l, i]]
-      calcs <- calc[froms$froms[1:l, i]]
+      orders <- order[index_ids$from$froms[1:l, i]]
+      calcs <- calc[index_ids$from$froms[1:l, i]]
 
       # need to know if all upstream catchments are on a minor path
       # all used to reset calc to order downstream of a confluence with a minor path
@@ -123,11 +131,16 @@ add_streamorder.hy <- function(x, status = TRUE) {
       # calc was set to zero already so can just move on if it's set
       cur_calc <- calc[i]
 
-      if(any_calc_zero & !all_calc_zero) {
+      # only consider non calc-0 upstream flowlines!
+      # this means a large order flowline that is downstream of a
+      # diversion will be ignored
+      if (any_calc_zero && !all_calc_zero) {
         orders <- orders[!calcs == 0]
       }
 
       # Need the max upstream order for this work
+      # note this is max upstream order that is not
+      # downstream of a diversion
       max_order <- max(orders)
 
       # the core stream order algorithm:
@@ -137,17 +150,17 @@ add_streamorder.hy <- function(x, status = TRUE) {
       # do not increment if one or more calcs are 0
       #
       # if current catchment is set as calc 0, we won't mess with incoming order
-      if(cur_calc == 0) {
+      if (cur_calc == 0) {
         order[i] <- max_order
-      # If combining two of the same max order AND we are not below a minor path
-      } else if(length(orders[orders == max_order]) > 1 & !any_calc_zero) {
+        # If combining two of the same max order AND we are not below a minor path
+      } else if (length(orders[orders == max_order]) > 1 && !any_calc_zero) {
         order[i] <- max_order + 1
         calc[i] <- order[i]
-      # If we are not on a minor path
-      } else if(!all_calc_zero) {
+        # If we are not on a minor path
+      } else if (!all_calc_zero) {
         order[i] <- max_order
         calc[i] <- order[i]
-      # if we are on a minor path just pass downstream
+        # if we are on a minor path just pass downstream
       } else {
         order[i] <- max_order
         calc[i] <- 0
@@ -156,10 +169,12 @@ add_streamorder.hy <- function(x, status = TRUE) {
     }
   }
 
-  left_join(x,
-            bind_cols(id = unique(net$id), tibble(stream_order = order,
-                                                  stream_calculator = calc)),
-            by = "id")
+  x <- left_join(x,
+    bind_cols(id = unique(net$id), tibble(stream_order = order,
+      stream_calculator = calc)),
+    by = "id")
+
+  classify_hy(x)
 
 }
 
@@ -172,7 +187,11 @@ add_streamorder.hy <- function(x, status = TRUE) {
 #' If a TRUE/FALSE coastal attribute is included, coastal terminal paths
 #' begin at 1 and internal terminal paths begin at 4 as is implemented by
 #' the NHD stream leveling rules.
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
+#'
+#' Required attributes: `levelpath`, `dn_levelpath`
+#'
 #' @param coastal character attribute name containing a logical flag
 #' indicating if a given terminal catchment flows to the coast of is an
 #' inland sink. If no coastal flag is included, all terminal paths are
@@ -186,21 +205,23 @@ add_streamorder.hy <- function(x, status = TRUE) {
 #'
 #' x <- add_toids(x)
 #'
+#' x <- dplyr::rename(x, orig_stream_level = StreamLeve)
+#'
 #' y <- add_streamlevel(x)
 #'
-#' plot(sf::st_geometry(y), lwd = y$streamlevel, col = "blue")
+#' plot(sf::st_geometry(y), lwd = y$stream_level, col = "blue")
 #'
 #' x$coastal <- rep(FALSE, nrow(x))
 #'
 #' y <- add_streamlevel(x, coastal = "coastal")
 #'
-#' unique(y$streamlevel)
+#' unique(y$stream_level)
 #'
 #' x$coastal[!x$Hydroseq == min(x$Hydroseq)] <- TRUE
 #'
 #' y <- add_streamlevel(x)
 #'
-#' unique(y$streamlevel)
+#' unique(y$stream_level)
 #'
 add_streamlevel <- function(x, coastal = NULL) {
   UseMethod("add_streamlevel")
@@ -209,16 +230,34 @@ add_streamlevel <- function(x, coastal = NULL) {
 #' @name add_streamlevel
 #' @export
 add_streamlevel.data.frame <- function(x, coastal = NULL) {
-  x <- hy(x)
-
-  x <- add_streamlevel(x, coastal)
-
-  hy_reverse(x)
+  hy_as_dataframe(x, "add_streamlevel", coastal = coastal)
 }
 
 #' @name add_streamlevel
 #' @export
 add_streamlevel.hy <- function(x, coastal = NULL) {
+
+  if (all(c(levelpath, dn_levelpath) %in% names(x)))
+    return(add_streamlevel.hy_leveled(x, coastal))
+
+  hy_classify_and_redispatch(x, "add_streamlevel", "hy_leveled",
+    hy_guidance_leveled, coastal = coastal)
+}
+
+#' @name add_streamlevel
+#' @export
+add_streamlevel.hy_topo <- function(x, coastal = NULL) {
+
+  if (all(c(levelpath, dn_levelpath) %in% names(x)))
+    return(add_streamlevel.hy_leveled(x, coastal))
+
+  hy_dispatch_error("add_streamlevel", "hy_leveled", x,
+    "Use add_levelpaths() to add levelpath attributes.")
+}
+
+#' @name add_streamlevel
+#' @export
+add_streamlevel.hy_leveled <- function(x, coastal = NULL) {
 
   check_names(x, c(levelpath, dn_levelpath), "add_streamlevel")
 
@@ -229,17 +268,17 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
   l <- net |>
     filter(.data$levelpath != .data$dn_levelpath) |>
     rename(id = "levelpath",
-           toid = "dn_levelpath") |>
+      toid = "dn_levelpath") |>
     sort_network() |>
     distinct()
 
-  l <- l[nrow(l):1, ]
+  l <- l[rev(seq_len(nrow(l))), ]
 
   l$level <- rep(0, nrow(l))
 
-  l$level[!l$toid %in% l$id] <- 1
+  l$level[is_outlet(l)] <- 1
 
-  if(!is.null(coastal) && coastal %in% names(l)) {
+  if (!is.null(coastal) && coastal %in% names(l)) {
     l$level[l$level == 1 & !l[[coastal]]] <- 4
   }
 
@@ -250,8 +289,8 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
   toids <- match(toid, id)
 
   # walk the network from bottom path up
-  for(i in seq_len(length(id))) {
-    if(!is.na(toids[i])) {
+  for (i in seq_along(id)) {
+    if (!is.na(toids[i])) {
 
       level[i] <- # level at current
         level[toids[i]] + 1 # level of downstream + 1
@@ -259,6 +298,8 @@ add_streamlevel.hy <- function(x, coastal = NULL) {
     }
   }
 
-  left_join(x, tibble(levelpath = id, stream_level = level), by = "levelpath")
+  x <- left_join(x, tibble(levelpath = id, stream_level = level), by = "levelpath")
+
+  classify_hy(x)
 
 }

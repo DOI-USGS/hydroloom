@@ -4,6 +4,9 @@
 \alias{navigate_hydro_network}
 \alias{navigate_hydro_network.data.frame}
 \alias{navigate_hydro_network.hy}
+\alias{navigate_hydro_network.hy_topo}
+\alias{navigate_hydro_network.hy_node}
+\alias{navigate_hydro_network.hy_leveled}
 \title{Navigate Hydro Network}
 \usage{
 navigate_hydro_network(x, start, mode, distance = NULL)
@@ -11,6 +14,12 @@ navigate_hydro_network(x, start, mode, distance = NULL)
 \method{navigate_hydro_network}{data.frame}(x, start, mode, distance = NULL)
 
 \method{navigate_hydro_network}{hy}(x, start, mode, distance = NULL)
+
+\method{navigate_hydro_network}{hy_topo}(x, start, mode, distance = NULL)
+
+\method{navigate_hydro_network}{hy_node}(x, start, mode, distance = NULL)
+
+\method{navigate_hydro_network}{hy_leveled}(x, start, mode, distance = NULL)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
@@ -18,13 +27,14 @@ navigate_hydro_network(x, start, mode, distance = NULL)
 \item{start}{character or numeric to match identifier attribute. The
 starting catchment is included.}
 
-\item{mode}{character chosen from c(UM, DM, UT, or DD).
+\item{mode}{character chosen from c(UM, DM, UT, DD) or equivalently
+c(upmain, downmain, up, down).
 
 \enumerate{
-\item UM: upstream mainstem
-\item DM: downstream main
-\item UT: upstream with tributaries
-\item DD: downstream with diversions
+\item UM / upmain: upstream mainstem
+\item DM / downmain: downstream mainstem
+\item UT / up: upstream with tributaries
+\item DD / down: downstream with diversions
 }}
 
 \item{distance}{numeric distance in km to limit navigation. The first
@@ -39,13 +49,19 @@ network attributes.
 }
 \details{
 if only \code{mode} is supplied, require network attributes are displayed.
+
+NOTE: for "Upstream with tributaries" navigation, if a tributary emanates from
+a diversion and is the minor path downstream of that diversion, it will be
+included. This can have a very large impact when a diversion between two
+large river systems. To strictly follow the dendritic network, set the
+"dn_minor_topo_sort" attribute to all 0 in x.
 }
 \examples{
 
 plot_fun <- function(x, s, n) {
-   plot(sf::st_geometry(x), col = "grey")
-   plot(sf::st_geometry(x[x$id \%in\% n, ]), add = TRUE)
-   plot(sf::st_geometry(x[x$id \%in\% s, ]), col = "red", lwd = 3, add = TRUE)
+  plot(sf::st_geometry(x), col = "grey")
+  plot(sf::st_geometry(x[x$id \%in\% n, ]), add = TRUE)
+  plot(sf::st_geometry(x[x$id \%in\% s, ]), col = "red", lwd = 3, add = TRUE)
 }
 
 x <- hy(sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))

@@ -1,3 +1,113 @@
+hydroloom 1.2.0
+==========
+
+This release introduces an S3 class hierarchy (`hy_topo`, `hy_leveled`,
+`hy_node`, `hy_flownetwork`) that lets hydroloom functions validate input
+at dispatch time and provide guided error messages when the wrong network
+representation is passed. Existing code that passes `data.frame` or `hy`
+objects continues to work without changes -- the new classes are assigned
+automatically and are transparent to downstream consumers. Package
+developers who depend on hydroloom should note that returned objects now
+carry subclass attributes (e.g. `hy_topo`) which are stripped by
+`hy_reverse()` and by standard dplyr operations.
+
+- Outlet detection is explicit (#85): a row is an outlet when its
+  `toid` is not in `id`. Canonical sentinels (`0` / `""`), `NA`, implicit
+  absence, foreign sentinels, and unique-per-outlet ids are all accepted.
+- `hy()` still normalizes `NA` `toid` to the canonical sentinel, so
+  `x$toid == 0` after `hy()` keeps working.
+- `make_node_topology()` and `is.hy()` accept `NA` and orphan `toid`;
+  the related errors are removed.
+- `check_hy_outlets()` warns only on `id`/`toid` type mismatch.
+- `sort_network()` warns only when a network has zero outlets.
+- Improve performance of `add_levelpaths()` by converting to data.table
+- Add S3 class hierarchy: `hy_topo`, `hy_leveled`, `hy_node`, `hy_flownetwork` -- #73
+- `hy()` gains `add_topo` parameter to auto-build toid from fromnode/tonode
+- New exported helpers: `hy_network_type()`, `is_dendritic()`, `hy_capabilities()`
+- Print methods for `hy_topo`, `hy_node`, `hy_flownetwork`
+- Producer functions now stamp output classes: `add_toids()` -> `hy_topo`,
+  `sort_network()` -> `hy_topo`, `add_levelpaths()` -> `hy_leveled`,
+  `make_node_topology()` -> `hy_node`, `to_flownetwork()` -> `hy_flownetwork`
+- `add_divergence()` sets `attr(x, "dendritic") <- FALSE` on output
+- `add_toids(return_dendritic = FALSE)` is deprecated; use `to_flownetwork()`
+- S3 method dispatch: functions now dispatch on subclass (e.g. `.hy_topo`,
+  `.hy_leveled`) with guided error messages for wrong input class
+- Functions that require `hy_leveled` (e.g. `add_pfafstetter()`,
+  `navigate_hydro_network()`, `to_flownetwork()`) fall through from
+  `hy_topo`/`hy_node` when required columns are already present
+- Fix pre-existing bug in `make_to_dt()` where dendritic branch failed on
+  tibble input (data.table `with = FALSE` syntax on plain data.frame)
+- Fix `get_bridge_flowlines()` correctness on networks with independent
+  terminals: `make_nondendritic_topology()` collapsed all outlet-sentinel
+  fromids into one synthetic node, misclassifying bridges and exhausting
+  memory on continental networks
+- `to_flownetwork()` and `get_bridge_flowlines()` now accept `hy_node`
+  input without `divergence`/`levelpath`, auto-converting to a
+  non-dendritic edge list with a warning that main-path info is dropped
+- `hy_flownetwork` no longer inherits from `hy` -- it is a separate
+  junction table where `id` is not guaranteed to be a primary key, and
+  it does not pass `is.hy()`. Documented behavior already; the
+  implementation now matches
+- Documentation:
+  - Add class-level roxygen pages for `hy_topo`, `hy_leveled`, `hy_node`,
+    and `hy_flownetwork` describing representation pattern, required
+    columns, supported functions, and conversion paths
+  - Add divergence case study to `vignette("non-dendritic")` showing how
+    a secondary path is dropped in `hy_topo` form and preserved in
+    `hy_flownetwork` form
+  - Add `hy_capabilities()` pipeline walkthrough to
+    `vignette("network_navigation")` demonstrating the
+    `hy` -> `hy_node` -> `hy_topo` -> `hy_leveled` -> `hy_flownetwork`
+    progression
+  - Style and clarity pass across all vignettes
+- **Deprecation notice:** A future release will require that `hy_topo` objects
+  have unique `id` values (one row per catchment). Non-dendritic connectivity
+  with duplicated ids in a toid-based edge list will need to be represented as
+  `hy_flownetwork` (via `to_flownetwork()`). Developers who currently pass
+  non-dendritic toid tables through hydroloom functions should migrate to
+  `to_flownetwork()` or `make_node_topology()` for non-dendritic workflows.
+
+hydroloom 1.1.3
+==========
+
+Update test tolerances for failing Fedora CRAN tests
+
+hydroloom 1.1.2
+==========
+
+Hydroloom 1.1.2 introduces new functionality in `accumulate_downstream()`, reworks the `make_index_ids()`, 
+and deprecates `make_fromids()` and `format_index_ids()` for clarity of package function. Deprecated functions
+will be removed in the next major version release.
+
+- `subset_network()` has been added to support subsetting networks to include all diversions that emanate from the basin. -- #60
+- `accumulate_downstream()` now supports "total upstream" and "divergence routed" accumulation. -- #17
+- `make_index_ids()` has been rewritten. It now uses four modes ("to", "from", and "both"). 
+- `make_fromids()` is deprecated in favor of `make_index_ids()` with mode = "from".
+- `format_index_ids()` is deprecated. The *_list element of `make_index_ids()` can be unnested instead.
+
+hydroloom 1.1.1
+==========
+
+- fix bug with sort_network when duplicate entries are in the extended attributes -- #52
+- add specific id search to index_points_to_lines for #24
+- error handling #49
+
+hydroloom 1.1.0
+==========
+
+- Add new vignette for network navigation `vignette("network_navigation")`
+- Add support for upmain and downmain navigation in `navigate_network_dfs()`
+- Add support for upmain and downmain in `make_index_ids()` and `make_fromids()`.
+- Add function to create a "flownetwork" representation of the network with a `to_flownetwork` function.
+- Improved handling / fix bugs with edge cases in `add_toids()`
+- Improved error conditions when missing suggested packages.
+- `navigate_hydro_network()` will now navigate from a diverted path to a main path where it previously only followed traditional tributaries..
+
+hydroloom 1.0.1 and 1.0.2
+==========
+
+- Add checks if nhdplusTools is available.
+
 hydroloom 1.0.0
 ==========
 

@@ -9,7 +9,7 @@ navigate_connected_paths(x, outlets, status = FALSE)
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
-\item{outlets}{vector of ids from data.frame}
+\item{outlets}{vector or list of length 2 of ids from data.frame}
 
 \item{status}{logical print status and progress bars?}
 }
@@ -19,9 +19,17 @@ and a list column containing flowpath identifiers along path that connect outlet
 For a network with one terminal outlet, the data.frame will have \code{nrow(x)^2} rows.
 }
 \description{
-Given a network and set of ids, finds paths or lengths between all
-identified flowpath outlets. This algorithm finds paths between outlets
-regardless of flow direction.
+Given a dendritic network and set of ids, finds paths or
+lengths between all identified flowpath outlets. This algorithm finds
+paths between outlets regardless of flow direction.
+}
+\details{
+Required attributes: \code{id}, \code{toid}, \code{length_km}
+
+If \code{outlets} is a vector, all combinations (\link{combn}) of the given \code{outlets} will be produced.
+If \code{outlets} is a list, it must be of length 2 (froms, tos).
+Recycling is performed via \link{expand.grid} if child vector lengths do not match.
+\code{outlets} may also be a 2-column dataframe.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))

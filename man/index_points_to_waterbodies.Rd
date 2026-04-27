@@ -25,26 +25,32 @@ search for a waterbody boundary in units of provided projection. Set units with
 \link[units]{set_units}.}
 }
 \value{
-data.frame with columns, \code{COMID}, \code{in_wb_COMID}, \code{near_wb_COMID},
-\code{near_wb_dist}, and \code{outlet_fline_COMID}.
+data.frame with columns \code{in_wb_COMID} (or \code{in_wbid}), \code{near_wb_COMID}
+(or \code{near_wbid}), \code{near_wb_dist}, and \code{outlet_fline_COMID} (or \code{wb_outlet_id}).
+Column names use COMID when input contains a COMID attribute, otherwise
+hydroloom names (wbid) are used.
 Distance is in units of provided projection.
 }
 \description{
 given an sf point geometry column, return waterbody id, and
-COMID of dominant artificial path
+id of dominant artificial path
 }
 \examples{
 
-source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
+if (require(nhdplusTools)) {
 
-waterbodies <- sf::st_transform(
-  sf::read_sf(sample_data, "NHDWaterbody"), 5070)
+  source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
 
-points <- sf::st_transform(
-  sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
-             crs = 4326), 5070)
+  waterbodies <- sf::st_transform(
+    sf::read_sf(sample_data, "NHDWaterbody"), 5070)
 
-index_points_to_waterbodies(waterbodies, points,
-                    search_radius = units::set_units(500, "m"))
+  points <- sf::st_transform(
+    sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
+      crs = 4326), 5070)
+
+  index_points_to_waterbodies(waterbodies, points,
+    search_radius = units::set_units(500, "m"))
+
+}
 
 }

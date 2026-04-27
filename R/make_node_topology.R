@@ -1,9 +1,13 @@
 #' @title Make Node Topology from Edge Topology
 #' @description creates a node topology table from an edge topology
-#' @inheritParams add_levelpaths
+#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @details
+#'
+#' Required attributes: `id`, `toid`
+#'
 #' @param add_div data.frame of logical containing id and toid diverted paths to add.
 #' Should have id and toid fields. If TRUE, the network will be interpreted as
-#' a directed acyclic graph with downstream divergences included in the edge
+#' a directed acyclic graph with downstream diversions included in the edge
 #' topology.
 #' @param add logical if TRUE, node topology will be added to x in return.
 #' @returns data.frame containing id, fromnode, and tonode attributes or all
@@ -14,6 +18,7 @@
 #' emanate from a divergence are assigned value 1, and all other paths
 #' are assigned value 0.
 #'
+#' @seealso [hy_topo], [hy_node], [add_toids()]
 #' @export
 #' @name make_node_topology
 #' @examples
@@ -25,9 +30,9 @@
 #'
 #' # just the divergences which have unique fromids in x but don't in new hope.
 #' div <- add_toids(dplyr::select(x, COMID, FromNode, ToNode),
-#'                  return_dendritic = FALSE)
+#'   return_dendritic = FALSE)
 #' div <- div[div$toid %in%
-#'            x$COMID[x$Divergence == 2],]
+#'   x$COMID[x$Divergence == 2], ]
 #'
 #' y <- dplyr::select(add_toids(x), -ToNode, -FromNode)
 #'
@@ -43,9 +48,13 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 
   x <- hy(x)
 
+  orig_names <- attr(x, "orig_names")
+
   x <- make_node_topology(x, add_div, add)
 
-  if(inherits(x, "hy")) {
+  if (inherits(x, "hy")) {
+    attr(x, "orig_names") <- orig_names
+    if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
     hy_reverse(x)
   } else {
     x
@@ -56,6 +65,19 @@ make_node_topology.data.frame <- function(x, add_div = NULL, add = TRUE) {
 #' @name make_node_topology
 #' @export
 make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
+  hy_classify_and_redispatch(x, "make_node_topology", "hy_topo",
+    hy_guidance_topo, add_div = add_div, add = add)
+}
+
+#' @name make_node_topology
+#' @export
+make_node_topology.hy_flownetwork <- function(x, add_div = NULL, add = TRUE) {
+  make_node_topology.hy_topo(x, add_div, add)
+}
+
+#' @name make_node_topology
+#' @export
+make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
   check_names(x, c(id, toid), "make_node_topology")
 
@@ -63,19 +85,42 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
   x <- st_drop_geometry(x)
 
-  if(length(unique(x$id)) != nrow(x) | isTRUE(add_div)) {
-    if(!isTRUE(add_div))
+  if (length(unique(x$id)) != nrow(x) || isTRUE(add_div)) {
+    if (!isTRUE(add_div))
       stop("duplicate identifiers found and 'add_div' is not TRUE")
 
-    return(make_nondendritic_topology(x))
+    out <- make_nondendritic_topology(x)
+
+    if (add) {
+
+      x <- select(x, -all_of(toid)) |>
+        distinct()
+
+      x <- left_join(out, x, by = "id")
+
+      rm(out)
+
+      if (!is.null(hy_g)) {
+        x <- sf::st_sf(left_join(x, hy_g, by = id))
+      }
+
+      orig_names <- attr(x, "orig_names")
+
+      x <- x[, c(id, fromnode, tonode,
+        names(x)[!names(x) %in% c(id, fromnode, tonode)])]
+
+      attr(x, "orig_names") <- orig_names
+
+      x <- classify_hy(x)
+
+      return(x)
+    }
 
   } else {
 
-    if(any(is.na(x$toid))) stop("NA toids found -- must be 0")
-    if(!all(x$toid[x$toid != get_outlet_value(x)] %in% x$id)) stop("Not all non zero toids are in ids")
-    if(any(c(fromnode, tonode) %in% names(x))) stop("fromnode or tonode already in data")
-
-    order <- data.frame(id = x$id)
+    # NA toid and toid-not-in-id are valid outlet markers under the
+    # is_outlet() rule, so no validation of toid values is needed here.
+    if (any(c(fromnode, tonode) %in% names(x))) stop("fromnode or tonode already in data")
 
     x <- sort_network(x)
 
@@ -85,30 +130,30 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
     x$fromnode <- head_nodes
 
     x <- left_join(x, select(x, all_of(c(id = id, tonode = fromnode))),
-                   by = c(toid = id))
+      by = c(toid = id))
 
-    outlets <- x$toid == get_outlet_value(x)
+    outlets <- is_outlet(x)
 
     x$tonode[outlets] <- seq(max(x$tonode, na.rm = TRUE) + 1,
-                             max(x$tonode, na.rm = TRUE) + sum(outlets))
+      max(x$tonode, na.rm = TRUE) + sum(outlets))
 
-    if(!is.null(add_div)) {
+    if (!is.null(add_div)) {
       # we need to get the node the divergences upstream neighbor goes to
       # first get the new outlet nodes for our old ids
       add_div <- st_drop_geometry(add_div[, 1:2])
       names(add_div)[1:2] <- c(id, toid)
       add_div <- left_join(select(add_div, all_of(c(id, toid))),
-                           select(x, all_of(c(id, tonode))), by = id)
+        select(x, all_of(c(id, tonode))), by = id)
 
       div2 <- add_div$toid
       div1 <- x$toid[x$id %in% add_div$id]
 
       # now join upstream renaming the tonode to fromnode
       x <- left_join(x, select(add_div, all_of(c(toid = toid, new_fromnode = tonode))),
-                     by = c(id = toid))
+        by = c(id = toid))
 
       x <- mutate(x, fromnode = ifelse(!is.na(.data$new_fromnode),
-                                       .data$new_fromnode, .data$fromnode))
+        .data$new_fromnode, .data$fromnode))
 
       x <- select(x, -all_of("new_fromnode"))
 
@@ -117,16 +162,16 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
       x <- mutate(x, divergence = ifelse(id %in% div2, 2, ifelse(id %in% div1, 1, 0)))
     }
   }
-  if(add & !isTRUE(add_div)) {
+  if (add && !isTRUE(add_div)) {
 
-    if(!is.null(hy_g)) {
+    if (!is.null(hy_g)) {
       x <- sf::st_sf(left_join(x, hy_g, by = id))
     }
 
-    x <- x[ , c(id, toid, fromnode, tonode,
-                names(x)[!names(x) %in% c(id, toid, fromnode, tonode)])]
+    x <- x[, c(id, toid, fromnode, tonode,
+      names(x)[!names(x) %in% c(id, toid, fromnode, tonode)])]
 
-    x
+    classify_hy(x)
 
   } else {
 
@@ -139,11 +184,29 @@ make_node_topology.hy <- function(x, add_div = NULL, add = TRUE) {
 
 make_nondendritic_topology <- function(x) {
 
-  # First create a unique node id that groups on sets of downstream ids
+  network_ids <- x$id
+
+  # Create a unique node id that groups on sets of downstream ids. Two
+  # fromids with identical downstream sets legitimately share a graph node
+  # (the divergence or confluence they both resolve to). But fromids whose
+  # downstream set is empty after dropping outlet rows do NOT share a graph
+  # node with each other -- they are independent terminal flowlines, each
+  # with its own pendant endpoint. Giving them a unique per-fromid node_id
+  # prevents the spurious collapse that otherwise creates a single super-hub
+  # node incident to every terminal in the partition. Outlet rows are
+  # identified by membership (toid not present in network_ids) so this
+  # works for any outlet convention, including unique-per-outlet identifiers.
   n <- select(x, all_of(c(fromid = id, toid))) |>
     filter(!is.na(.data$fromid) & !is.na(.data$toid)) |>
     group_by(.data$fromid) |>
-    mutate(node_id = paste(sort(toid), collapse = "-")) |>
+    mutate(node_id = {
+      non_outlet <- toid[toid %in% network_ids]
+      if (length(non_outlet) == 0L) {
+        paste0("__tl__", .data$fromid[1])
+      } else {
+        paste(sort(non_outlet), collapse = "-")
+      }
+    }) |>
     ungroup()
 
   hw <- unique(n$fromid[!n$fromid %in% n$toid])
@@ -151,7 +214,7 @@ make_nondendritic_topology <- function(x) {
 
   # now get an integer for the nodes
   node <- data.frame(node = seq(1, length(unique(n$node_id))),
-                     node_id = unique(n$node_id))
+    node_id = unique(n$node_id))
 
   # join the integer id in.
   n <- left_join(n, node, by = "node_id")
@@ -169,13 +232,18 @@ make_nondendritic_topology <- function(x) {
     distinct()
 
   # create a rudimentary node based topology.
+  # The c(x$id, x$toid) anchor pulls outlet pseudo-ids into the join so the
+  # synthetic terminal nodes get joined; the trailing filter drops them.
+  # Filtering by membership in the original network ids (rather than equality
+  # to a sentinel) supports any outlet convention, including unique-per-outlet
+  # identifiers.
   out <- distinct(data.frame(id = c(x$id, x$toid))) |>
     left_join(to, by = id) |>
     left_join(from, by = id) |>
     select(all_of(c(id, fromnode, tonode))) |>
-    filter(!id == get_outlet_value(x))
+    filter(.data$id %in% x$id)
 
-  if(inherits(x, "hy")) {
+  if (inherits(x, "hy")) {
     class(out) <- c("hy", class(out))
     attr(out, "orig_names") <- attr(x, "orig_names")
   }

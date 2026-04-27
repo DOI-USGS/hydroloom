@@ -4,6 +4,8 @@
 \alias{add_divergence}
 \alias{add_divergence.data.frame}
 \alias{add_divergence.hy}
+\alias{add_divergence.hy_topo}
+\alias{add_divergence.hy_node}
 \title{Add Divergence Attribute}
 \usage{
 add_divergence(
@@ -25,6 +27,24 @@ add_divergence(
 )
 
 \method{add_divergence}{hy}(
+  x,
+  coastal_outlet_ids,
+  inland_outlet_ids,
+  name_attr,
+  type_attr,
+  major_types
+)
+
+\method{add_divergence}{hy_topo}(
+  x,
+  coastal_outlet_ids,
+  inland_outlet_ids,
+  name_attr,
+  type_attr,
+  major_types
+)
+
+\method{add_divergence}{hy_node}(
   x,
   coastal_outlet_ids,
   inland_outlet_ids,
@@ -59,6 +79,8 @@ Given a non-dendritic flow network and required attributes,
 adds a divergence attribute according to NHDPlus data model methods.
 }
 \details{
+Required attributes: \code{id}, \code{fromnode}, \code{tonode}
+
 When considering downstream connections with diversions, there are three
 factors considered to determine which is primary.\if{html}{\out{<br>}}
 1a) same name\if{html}{\out{<br>}}
@@ -97,14 +119,13 @@ g <- g[g$FTYPE != "Coastline", ]
 outlets <- g$COMID[!g$ToNode \%in\% g$FromNode]
 
 g <- dplyr::select(g, COMID, gnis_id, FTYPE,
-                   FromNode, ToNode)
+  FromNode, ToNode)
 
 add_divergence(g,
-               coastal_outlet_ids = outlets,
-               inland_outlet_ids = c(),
-               name_attr = "gnis_id",
-               type_attr = "FTYPE",
-               major_types = c("StreamRiver", "ArtificialPath", "Connector"))
-
+  coastal_outlet_ids = outlets,
+  inland_outlet_ids = c(),
+  name_attr = "gnis_id",
+  type_attr = "FTYPE",
+  major_types = c("StreamRiver", "ArtificialPath", "Connector"))
 
 }

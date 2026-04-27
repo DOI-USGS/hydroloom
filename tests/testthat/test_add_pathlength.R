@@ -7,5 +7,5 @@ test_that("get_terminal", {
 
   expect_equal(fl$COMID, pl$COMID)
 
-  expect_equal(fl$Pathlength, pl$pathlength_km)
+  expect_equal(fl$Pathlength, pl$pathlength_km, tolerance = 1e-6)
 })

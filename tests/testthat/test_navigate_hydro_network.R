@@ -1,3 +1,4 @@
+#nolint start
 # source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
 #
 # x <- sf::st_drop_geometry(sample_flines[, 1:40])
@@ -8,20 +9,36 @@
 #                    StreamCalc)
 #
 # saveRDS(x, "tests/testthat/data/network.rds")
-#
+# nolint end
 x <- readRDS(list.files(pattern = "network.rds", recursive = TRUE, full.names = TRUE))
 
 test_that("get_DM works normal", {
-  expect_error(navigate_hydro_network(dplyr::select(x, -COMID), mode = "DM"),
-               "DM requires.*")
+  expect_error(navigate_hydro_network(dplyr::select(x, -COMID), 1234, mode = "DM"),
+    "requires hy_leveled")
 
   expect_error(navigate_hydro_network(mode = "BK"),
-               "must choose mode input from: 'UM', 'DM', 'UT', 'DD'")
+    "must choose mode input from:")
 
-  expect_error(navigate_hydro_network(mode = "DD"), "DD requires.*")
+  expect_error(navigate_hydro_network(dplyr::select(x, -COMID),
+    1234, mode = "DD"), "requires hy_leveled")
 
   result <- navigate_hydro_network(x, 11689050, "DM")
   expect_equal(length(result), 26)
+})
+
+test_that("long-form mode names work", {
+  expect_equal(
+    navigate_hydro_network(x, 11689050, "downmain"),
+    navigate_hydro_network(x, 11689050, "DM"))
+  expect_equal(
+    navigate_hydro_network(x, 11690570, "upmain"),
+    navigate_hydro_network(x, 11690570, "UM"))
+  expect_equal(
+    navigate_hydro_network(x, 11687224, "up"),
+    navigate_hydro_network(x, 11687224, "UT"))
+  expect_equal(
+    navigate_hydro_network(x, 11688810, "down"),
+    navigate_hydro_network(x, 11688810, "DD"))
 })
 
 test_that("get_DM works short", {
@@ -57,7 +74,7 @@ test_that("get_DM with distance 2 returns specific COMIDs", {
 test_that("get_DM with distance big returns specific same as no distance", {
   result <- navigate_hydro_network(x, 11688810, "DM", distance = 999)
   result2 <- navigate_hydro_network(x, 11688810, "DM")
-  expect_equal(result,  result2)
+  expect_equal(result, result2)
 })
 
 test_that("get_DM works upstream of diversion", {
@@ -96,7 +113,7 @@ test_that("get_UT works", {
   test_error <- rbind(x, x)
 
   expect_error(navigate_hydro_network(test_error, 11687224, "UT"),
-               "Found duplicate id for starting catchment. Duplicate rows in network")
+    "requires hy_leveled")
 })
 
 test_that("get_UT works with distance", {
@@ -114,7 +131,7 @@ test_that("get_UT works with distance specific", {
 test_that("get_UT returns diverted paths.", {
   result <- navigate_hydro_network(x, 11690184, "UT")
   expect_true(all(c(11689276, 11690200) %in% result),
-              "missing a diverted or main path")
+    "missing a diverted or main path")
 })
 
 test_that("get_DD works with two divergences", {
@@ -155,5 +172,6 @@ test_that("get_DM works if missing the outlet", {
   x_borkd <- dplyr::filter(x, TerminalFl == 0)
   result <- navigate_hydro_network(x_borkd, 11688810, "DM")
   expect_equal(length(result), 34)
-})
 
+  expect_error(navigate_hydro_network(x_borked, NA, "DM"), "Must provide a value for start.")
+})

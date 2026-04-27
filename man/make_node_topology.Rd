@@ -4,6 +4,8 @@
 \alias{make_node_topology}
 \alias{make_node_topology.data.frame}
 \alias{make_node_topology.hy}
+\alias{make_node_topology.hy_flownetwork}
+\alias{make_node_topology.hy_topo}
 \title{Make Node Topology from Edge Topology}
 \usage{
 make_node_topology(x, add_div = NULL, add = TRUE)
@@ -11,13 +13,17 @@ make_node_topology(x, add_div = NULL, add = TRUE)
 \method{make_node_topology}{data.frame}(x, add_div = NULL, add = TRUE)
 
 \method{make_node_topology}{hy}(x, add_div = NULL, add = TRUE)
+
+\method{make_node_topology}{hy_flownetwork}(x, add_div = NULL, add = TRUE)
+
+\method{make_node_topology}{hy_topo}(x, add_div = NULL, add = TRUE)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{add_div}{data.frame of logical containing id and toid diverted paths to add.
 Should have id and toid fields. If TRUE, the network will be interpreted as
-a directed acyclic graph with downstream divergences included in the edge
+a directed acyclic graph with downstream diversions included in the edge
 topology.}
 
 \item{add}{logical if TRUE, node topology will be added to x in return.}
@@ -34,6 +40,9 @@ are assigned value 0.
 \description{
 creates a node topology table from an edge topology
 }
+\details{
+Required attributes: \code{id}, \code{toid}
+}
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
@@ -43,12 +52,15 @@ y <- make_node_topology(y)
 
 # just the divergences which have unique fromids in x but don't in new hope.
 div <- add_toids(dplyr::select(x, COMID, FromNode, ToNode),
-                 return_dendritic = FALSE)
+  return_dendritic = FALSE)
 div <- div[div$toid \%in\%
-           x$COMID[x$Divergence == 2],]
+  x$COMID[x$Divergence == 2], ]
 
 y <- dplyr::select(add_toids(x), -ToNode, -FromNode)
 
 y <- make_node_topology(y, add_div = div)
 
+}
+\seealso{
+\link{hy_topo}, \link{hy_node}, \code{\link[=add_toids]{add_toids()}}
 }
