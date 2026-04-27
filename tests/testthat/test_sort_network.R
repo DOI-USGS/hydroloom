@@ -146,7 +146,9 @@ test_that("no stated outlet", {
     "030202010303", "030202010404", "030202010304")),
   row.names = c(NA, 21L), class = c("tbl_df", "tbl", "data.frame"))
 
-  expect_warning(expect_warning(net <- hydroloom::sort_network(wbd)))
+  # An HUC network with toids pointing to downstream HUCs not in the table
+  # follows the implicit-absence outlet convention -- no warnings expected.
+  expect_no_warning(net <- hydroloom::sort_network(wbd))
 
   expect_equal(nrow(wbd), nrow(net))
 
@@ -178,11 +180,13 @@ test_that("divergences as outlets limit the result", {
 test_that("custom outlet values aren't messed up", {
   net <- readRDS(list.files(pattern = "sort_test.rds", recursive = TRUE, full.names = TRUE))
 
-  warnings <- capture_warnings(out <- hydroloom::sort_network(dplyr::rename(net, id = ID, toid = toNexID)))
+  # Custom outlet values (-1, 24) are detected by membership (toids not
+  # in id) -- no convention or "no outlet found" warnings expected.
+  expect_no_warning(
+    out <- hydroloom::sort_network(dplyr::rename(net, id = ID, toid = toNexID))
+  )
 
   expect_true(which(out$toid == -1) > which(out$toid == 24))
-
-  expect_equal(sum(grepl("Outlets don't follow|no outlet found", warnings)), 2)
 })
 
 test_that("loop warning", {
@@ -245,15 +249,10 @@ test_that("duplicated attributes", {
 
   dedup <- dplyr::distinct(dplyr::select(network, id, toid))
 
-  expect_warning(
-    expect_warning(
-      sorted <- sort_network(network), "Outlets don't follow hydroloom convention"),
-    "no outlet found")
-
-  expect_warning(
-    expect_warning(
-      sorted_dedup <- sort_network(dedup), "Outlets don't follow hydroloom convention"),
-    "no outlet found")
+  # Non-canonical and implicit-absence outlets are both valid under the
+  # is_outlet() rule -- no warnings expected.
+  expect_no_warning(sorted <- sort_network(network))
+  expect_no_warning(sorted_dedup <- sort_network(dedup))
 
   sorted_dedup_2 <- dplyr::distinct(dplyr::select(sorted, id, toid))
 

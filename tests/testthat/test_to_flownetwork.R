@@ -2,7 +2,8 @@ test_that("to_flownetwork", {
 
   f <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 
-  expect_error(to_flownetwork(select(f, -LevelPathI)), "requires hy_leveled")
+  expect_warning(to_flownetwork(select(f, -LevelPathI)),
+    "converting hy_node to non-dendritic edge list")
 
   x <- add_toids(f, return_dendritic = TRUE)
 
@@ -31,5 +32,23 @@ test_that("to_flownetwork", {
 
   x <- select(f, -Divergence)
 
-  expect_error(to_flownetwork(x), "requires hy_leveled")
+  expect_warning(to_flownetwork(x), "converting hy_node to non-dendritic edge list")
+})
+
+test_that("to_flownetwork hy_node without divergence/levelpath warns and returns flownetwork", {
+  # Issue: dev/issue-hy-node-to-topo-conversion.md
+  edges <- data.frame(
+    id       = 1:5,
+    fromnode = c("a", "b", "c", "b", "d"),
+    tonode   = c("b", "c", "e", "d", "c")
+  )
+
+  expect_warning(x <- to_flownetwork(edges),
+    "converting hy_node to non-dendritic edge list")
+
+  expect_s3_class(x, "hy_flownetwork")
+  expect_equal(names(x), c("id", "toid"))
+  # flownetwork is topology-only: source hy attrs are not carried through
+  expect_false("fromnode" %in% names(x))
+  expect_null(attr(x, "orig_names"))
 })

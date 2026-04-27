@@ -134,6 +134,20 @@ test_that("get_bridge_flowlines independent terminals do not collapse", {
   expect_setequal(result, c("hw", "A", "B", "C", "t1", "t2", "t3"))
 })
 
+test_that("get_bridge_flowlines hy_node auto-converts via flownetwork", {
+  # Issue: dev/issue-hy-node-to-topo-conversion.md
+  edges <- data.frame(
+    id       = 1:5,
+    fromnode = c("a", "b", "c", "b", "d"),
+    tonode   = c("b", "c", "e", "d", "c")
+  )
+
+  expect_warning(result <- get_bridge_flowlines(edges),
+    "converting hy_node to non-dendritic edge list")
+
+  expect_setequal(result, c(1, 3))
+})
+
 # --- low-level find_bridges tests on raw node adjacency matrices ---
 
 test_that("find_bridges linear 3 nodes", {

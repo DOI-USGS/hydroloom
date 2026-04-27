@@ -3,12 +3,24 @@ future_available <- function() {
     inherits(future::plan(), "sequential")) NULL else "future"
 }
 
+# Writer-side helper: returns the canonical outlet sentinel for the table's id
+# type. Used when a function needs to fill in a value for a row that has no
+# downstream (e.g., add_toids assigning toid to disconnected segments). For
+# outlet *detection*, use is_outlet() instead.
 get_outlet_value <- function(x) {
   if (inherits(x$id, "character")) {
     ""
   } else {
     0
   }
+}
+
+# Detector: TRUE for rows whose toid does not refer to any id in the table.
+# A row whose downstream is not part of the network is, by definition, an
+# outlet. Independent of any sentinel convention: tolerates 0, "", NA,
+# implicit absence, foreign sentinels, or unique-per-outlet ids.
+is_outlet <- function(x) {
+  !x$toid %in% x$id
 }
 
 get_hyg <- function(x, add, id = "id") {
@@ -189,7 +201,7 @@ fix_flowdir <- function(id, network = NULL, fn_list = NULL) {
     } else {
       f <- network[network$id == id, ]
 
-      if (is.na(f$toid) | f$toid == get_outlet_value(f)) {
+      if (is_outlet(f)) {
 
         check_line <- network[network$toid == f$id, ][1, ]
 

@@ -134,11 +134,8 @@ is.hy <- function(x, silent = FALSE) {
     return(FALSE)
   }
 
-  if ("toid" %in% names(x) && any(is.na(x$toid))) {
-    if (!silent)
-      message("some na toids")
-    return(FALSE)
-  }
+  # NA in toid is allowed -- it identifies the row as an outlet under the
+  # is_outlet() rule (toid not present in id).
 
   if (!"orig_names" %in% names(attributes(x))) {
     if (!silent)

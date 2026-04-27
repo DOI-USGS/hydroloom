@@ -245,8 +245,13 @@ NULL
 #' preserves divergences directly.
 #'
 #' Unlike the other class pages on this index, `hy_flownetwork` does
-#' **not** inherit from `hy`. It is a separate junction table — it does
-#' not carry the `orig_names` attribute and it does not pass [is.hy()].
+#' **not** inherit from `hy` — `id` is not guaranteed to be a primary
+#' key, and a `hy_flownetwork` does not pass [is.hy()]. The user-facing
+#' producer [to_flownetwork()] drops the `orig_names` round-trip
+#' metadata that `hy` carries; a `hy_flownetwork` produced by [hy()] or
+#' [classify_hy()] from a non-dendritic data.frame may still have
+#' `orig_names` attached internally so name-aligned dispatch can
+#' restore the user's column names on return.
 #'
 #' @details
 #' `hy_flownetwork` is what hydroloom's internal classifier produces
@@ -402,6 +407,14 @@ new_hy_flownetwork <- function(x) {
 
   }
 
+  # hy_flownetwork is a separate junction table -- not a subclass of hy.
+  # Strip any hy/hy_* classes that may have leaked in. orig_names may
+  # remain attached when classify_hy() routes here from hy(), so that
+  # internal .data.frame patterns can round-trip user column names.
+  # The user-facing to_flownetwork() drops orig_names at its boundary.
+  class(x) <- class(x)[!class(x) %in%
+    c("hy", "hy_topo", "hy_leveled", "hy_node")]
+
   class(x) <- unique(c("hy_flownetwork", class(x)))
 
   x
@@ -530,10 +543,29 @@ hy_as_dataframe <- function(x, fn_name, ...) {
 
   x <- match.fun(fn_name)(x, ...)
 
-  attr(x, "orig_names") <- orig_names
-  if (!inherits(x, "hy")) class(x) <- c("hy", class(x))
+  # Restore user column names. hy outputs reach here with orig_names
+  # preserved through dispatch; hy_flownetwork outputs reach here
+  # without it (flownetwork is not an hy subclass and strips the
+  # attr), so we use the captured value to do the rename inline.
+  if (!is.null(orig_names)) {
+    rep_names <- names(orig_names)[match(names(x), orig_names)]
+    names(x)[which(names(x) %in% orig_names)] <-
+      rep_names[!is.na(rep_names)]
+  }
 
-  hy_reverse(x)
+  attr(x, "orig_names") <- NULL
+  attr(x, "dendritic")  <- NULL
+  class(x) <- class(x)[!class(x) %in% hy_classes]
+
+  if (inherits(x, "sf") && !is.null(orig_names)) {
+    sf_col <- attr(x, "sf_column")
+    if (!is.null(sf_col) && sf_col %in% orig_names) {
+      attr(x, "sf_column") <- names(orig_names)[orig_names == sf_col]
+      x <- sf::st_sf(x)
+    }
+  }
+
+  x
 }
 
 #' Convert hy_node to hy_topo and re-dispatch
@@ -548,6 +580,19 @@ hy_node_to_topo <- function(x, fn_name, ...) {
     "to avoid repeated conversion.")
 
   match.fun(fn_name)(add_toids(x), ...)
+}
+
+#' Convert hy_node to hy_flownetwork and re-dispatch
+#' @description For functions that operate on the non-dendritic edge set.
+#' Calls to_flownetwork() (which warns about dropped main-path info) then
+#' re-dispatches.
+#' @param x hy_node object
+#' @param fn_name character. Function to call after conversion.
+#' @param ... arguments forwarded.
+#' @noRd
+hy_node_to_flownetwork <- function(x, fn_name, ...) {
+
+  match.fun(fn_name)(to_flownetwork(x), ...)
 }
 
 #' Try to downcast hy_topo to hy_node, then re-dispatch or error
