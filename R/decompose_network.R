@@ -31,6 +31,16 @@
 #' aggregate's flowpath. Compact domains are grouped by trunk segment
 #' and may connect to the trunk at multiple nexus points.
 #'
+#' The trunk and the compacts share catchments along the trunk's
+#' mainstem, but they own them differently. The mainstem catchments are
+#' part of the surrounding compact's drainage area (by catchment
+#' aggregate semantics); the accumulated quantities flowing through
+#' them belong to the trunk. A compact holds its tributaries' outlet
+#' values until recomposition, when those values pass to the trunk.
+#' Per-compact processing runs in parallel and editing stays local
+#' because of this split. See `vignette("domain_decomposition")` for
+#' the full framing.
+#'
 #' @details
 #' Input must be `hy_leveled` -- the network must already carry
 #' `levelpath`, `levelpath_outlet_id`, and `topo_sort` columns.

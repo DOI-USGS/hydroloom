@@ -27,6 +27,41 @@ knitr::opts_chunk$set(
 oldoption <- options(scipen = 9999)
 ```
 
+# The trunk--compact relationship
+
+A trunk is the main river of each compact domain it flows through. The 
+incremental flowlines and catchments that make up a trunk belong to the
+compact domain that the trunk flows through. The accumulated values
+that reflect the broader network connectivity of the trunk belongs to
+the trunk domain only. 
+
+A compact domain is a catchment aggregate (HY_Features): its drainage
+area is the full contributing area to the trunk segment that passes
+through it, including the trunk's own incremental catchments along that
+segment. So the catchments along the trunk's mainstem are, by area, part
+of the surrounding compact. The trunk itself is not a catchment. It
+carries accumulated values from one compact to the next.
+
+The trunk owns the accumulated values along those incremental catchments.
+A compact accumulates internally -- every tributary inside it drains to
+the compact's outlet, or to several outlets where the compact meets the
+trunk at multiple nexus points. The compact holds those outlet values
+until recomposition. At recomposition, the compact passes its outlet
+values to the trunk, and the trunk continues the basin's downstream
+accumulation from there.
+
+In practice, this split has three consequences:
+
+- A compact's catchment network is self-contained, so per-domain
+  processing runs in parallel. One compact can be edited or re-attributed
+  without invalidating any of the others.
+- Recomposition is a single pass through the domain graph. Trunk-level
+  accumulation regenerates from per-compact outlet values; catchment-level
+  data does not need to be revisited.
+- Editing and updating decouple. A new modeled result, a corrected
+  geometry, or a re-derived attribute lands in one compact at a time, and
+  the trunk catches up by replaying recomposition.
+
 # Use case
 
 A catchment network that covers a large area contains many features with

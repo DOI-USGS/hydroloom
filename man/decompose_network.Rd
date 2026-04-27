@@ -9,6 +9,7 @@ decompose_network(
   trunk_metric = "drainage_area",
   trunk_threshold = NULL,
   trunk_levelpaths = NULL,
+  domain_breaks = NULL,
   trunk_promotion_ratio = 2,
   headwater_collapse_fraction = NULL,
   overrides = NULL,
@@ -33,6 +34,15 @@ drainage basin.}
 non-NULL, bypasses the threshold rule and forces these levelpaths
 to be trunks (the basin's terminal-outlet levelpath is always unioned
 in). Every id must exist in \code{x$levelpath}.}
+
+\item{domain_breaks}{vector of catchment ids or \code{NULL}. When
+non-NULL, these trunk catchment ids define where the trunk is
+segmented into compact-domain groups. Each break id becomes a
+segment terminal in addition to the auto-detected confluences and
+outlets. Breaks that are not trunk catchments in a given basin
+are silently ignored. When \code{NULL} (default), trunk segmentation
+is determined automatically from trunk confluences and (if
+available) bridge flowlines.}
 
 \item{trunk_promotion_ratio}{numeric. Guards against thin trunks:
 demote a trunk candidate whose outlet metric is below
@@ -64,6 +74,16 @@ Each compact domain corresponds to an HY_Features catchment
 aggregate -- the segment of trunk that flows through it is the
 aggregate's flowpath. Compact domains are grouped by trunk segment
 and may connect to the trunk at multiple nexus points.
+
+The trunk and the compacts share catchments along the trunk's
+mainstem, but they own them differently. The mainstem catchments are
+part of the surrounding compact's drainage area (by catchment
+aggregate semantics); the accumulated quantities flowing through
+them belong to the trunk. A compact holds its tributaries' outlet
+values until recomposition, when those values pass to the trunk.
+Per-compact processing runs in parallel and editing stays local
+because of this split. See \code{vignette("domain_decomposition")} for
+the full framing.
 }
 \details{
 Input must be \code{hy_leveled} -- the network must already carry
