@@ -276,7 +276,7 @@ add_streamlevel.hy_leveled <- function(x, coastal = NULL) {
 
   l$level <- rep(0, nrow(l))
 
-  l$level[!l$toid %in% l$id] <- 1
+  l$level[is_outlet(l)] <- 1
 
   if (!is.null(coastal) && coastal %in% names(l)) {
     l$level[l$level == 1 & !l[[coastal]]] <- 4

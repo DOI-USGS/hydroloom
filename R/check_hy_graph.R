@@ -22,7 +22,7 @@
 #'
 check_hy_graph <- function(x, loop_check = FALSE) {
 
-  if (!inherits(x, "hy")) {
+  if (!inherits(x, c("hy", "hy_flownetwork"))) {
     x <- hy(x)
   }
 
@@ -63,24 +63,27 @@ check_hy_graph <- function(x, loop_check = FALSE) {
 
 check_hy_outlets <- function(x, fix = FALSE) {
 
-  if (!inherits(x, "hy")) {
+  if (!inherits(x, c("hy", "hy_flownetwork"))) {
     x <- hy(x)
   }
 
-  check <- !x$toid %in% x$id
+  # Type-mismatch detection: id and toid should agree on character vs not.
+  # A genuine mismatch (e.g., numeric id with character toid) breaks outlet
+  # detection because %in% comparisons coerce in surprising ways.
+  if (inherits(x$id, "character") != inherits(x$toid, "character")) {
+    warning("id and toid have incompatible types (one character, one not). ",
+      "Outlet detection may be unreliable.", call. = FALSE)
+  }
 
-  if (any(x$toid[check] != get_outlet_value(x))) {
+  if (fix) {
 
-    if (fix) {
+    # Canonicalize outlet markers to the sentinel value. This destroys any
+    # unique-per-outlet identifiers in the table -- intentional under
+    # explicit fix = TRUE.
+    check <- is_outlet(x)
 
-      warning("Outlets don't follow hydroloom convention of 0 or '', fixing.")
-
+    if (any(check)) {
       x$toid[check] <- rep(get_outlet_value(x), sum(check))
-
-    } else {
-
-      warning("Outlets don't follow hydroloom convention of 0 or '', not fixing.")
-
     }
 
   }

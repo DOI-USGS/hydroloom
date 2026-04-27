@@ -100,7 +100,7 @@ subset_network.hy_node <- function(x, outlet, only_up = FALSE) {
 
       down <- navigate_network_dfs(index_ids$to, missed, "down")
 
-      outlets <- x$id[x$toid == get_outlet_value(x) & x$id %in% unlist(down)]
+      outlets <- x$id[is_outlet(x) & x$id %in% unlist(down)]
 
       more_up <- unlist(navigate_network_dfs(index_ids$from, outlets, "up"))
 

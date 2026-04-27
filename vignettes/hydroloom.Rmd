@@ -135,7 +135,7 @@ text(c(1, 5, 3, 3.25), c(4.8, 4.8, 3.4, 1), c("N1", "N2", "N3", "N4"))
 par(oldpar)
 ```
 
-The "toid" of a terminal flowline can be NA or — by convention — 0 or "". Using 0 or an empty string is preferred within `hydroloom`, but both are handled in most cases. As long as 0 is not in the set of IDs, there is little practical difference.
+A terminal flowline (outlet) is identified by an explicit rule: a row whose `toid` value is not present in the `id` column. The actual value can be anything — `0` (the canonical numeric default), `""` (the canonical character default), `NA`, an arbitrary "no downstream" sentinel from another data source, or a unique downstream identifier per outlet. `hy()` replaces `NA` `toid` values with the canonical sentinel so that user code comparing `toid` to `0` or `""` works as expected, but downstream functions detect outlets by the rule (`!toid %in% id`) and do not depend on the canonical value. Unique-per-outlet identifiers are preserved through the pipeline, which is useful when outlets must remain individually addressable.
 
 In `hydroloom`, edge-to-edge topology is referred to with "id and toid" attributes.
 

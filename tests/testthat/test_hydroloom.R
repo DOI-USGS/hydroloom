@@ -21,9 +21,11 @@ test_that("s3 class creation", {
 
   expect_message(expect_false(is.hy(unclass(y))), "no hy class attribute")
 
+  # NA toid is a valid outlet marker under the is_outlet() rule;
+  # is.hy() accepts it.
   y$toid[1] <- NA
 
-  expect_message(expect_false(is.hy(y)), "some na toids")
+  expect_true(is.hy(y))
 
   y <- hy(x)
 

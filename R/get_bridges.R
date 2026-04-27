@@ -48,12 +48,10 @@ get_bridge_flowlines.hy <- function(x, quiet = FALSE) {
     hy_guidance_topo, quiet = quiet)
 }
 
-# TODO: support hy_node auto-convert via add_toids()
 #' @name get_bridge_flowlines
 #' @export
 get_bridge_flowlines.hy_node <- function(x, quiet = FALSE) {
-  hy_dispatch_error("get_bridge_flowlines", "hy_topo", x,
-    "Use add_toids() to convert fromnode/tonode to edge list.")
+  hy_node_to_flownetwork(x, "get_bridge_flowlines", quiet = quiet)
 }
 
 #' @name get_bridge_flowlines

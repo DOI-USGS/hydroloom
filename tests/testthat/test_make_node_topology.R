@@ -10,13 +10,17 @@ test_that("make_node_topology", {
 
   x <- dplyr::select(d, -FromNode, -ToNode)
 
+  # NA toid and orphan toid (toid not present in id) are valid outlet
+  # markers under the is_outlet() rule; both produce a working node topology.
   y <- hy(x)
   y$toid[1] <- NA
-  expect_error(make_node_topology(y), "NA toids found -- must be 0")
+  expect_no_error(z_na <- make_node_topology(y))
+  expect_s3_class(z_na, "sf")
 
   y <- x
   y$toid[1] <- 12345
-  expect_error(make_node_topology(y), "Not all non zero toids are in ids")
+  expect_no_error(z_orphan <- make_node_topology(y))
+  expect_s3_class(z_orphan, "sf")
 
   y <- make_node_topology(x)
 

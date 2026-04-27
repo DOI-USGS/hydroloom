@@ -13,8 +13,13 @@ This is the only edge-list-shaped representation in hydroloom that
 preserves divergences directly.
 
 Unlike the other class pages on this index, \code{hy_flownetwork} does
-\strong{not} inherit from \code{hy}. It is a separate junction table — it does
-not carry the \code{orig_names} attribute and it does not pass \code{\link[=is.hy]{is.hy()}}.
+\strong{not} inherit from \code{hy} — \code{id} is not guaranteed to be a primary
+key, and a \code{hy_flownetwork} does not pass \code{\link[=is.hy]{is.hy()}}. The user-facing
+producer \code{\link[=to_flownetwork]{to_flownetwork()}} drops the \code{orig_names} round-trip
+metadata that \code{hy} carries; a \code{hy_flownetwork} produced by \code{\link[=hy]{hy()}} or
+\code{\link[=classify_hy]{classify_hy()}} from a non-dendritic data.frame may still have
+\code{orig_names} attached internally so name-aligned dispatch can
+restore the user's column names on return.
 }
 \details{
 \code{hy_flownetwork} is what hydroloom's internal classifier produces

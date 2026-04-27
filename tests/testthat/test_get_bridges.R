@@ -110,6 +110,44 @@ test_that("get_bridge_flowlines two flowlines", {
   expect_setequal(result, c(1, 2))
 })
 
+test_that("get_bridge_flowlines independent terminals do not collapse", {
+  # hw diverges into A, B, C; each reaches its own terminal t1, t2, t3.
+  #           --> A --> t1
+  # src --hw--|--> B --> t2
+  #           --> C --> t3
+  #
+  # All seven flowlines are bridges (pure dendritic tree). Before this was
+  # fixed, t1/t2/t3 each had toid == outlet-sentinel after add_toids() and
+  # make_nondendritic_topology() gave them identical node_ids from
+  # paste(sort(toid), collapse = "-") == "" (character ids) or "0" (numeric).
+  # That collapsed them into a single synthetic node and produced wrong
+  # bridge classifications. Independent terminals must keep distinct nodes.
+  x <- data.frame(
+    id       = c("hw", "A", "B", "C", "t1", "t2", "t3"),
+    fromnode = c(0,    1,   1,   1,   2,    3,    4),
+    tonode   = c(1,    2,   3,   4,   5,    6,    7)
+  )
+  x <- add_toids(hy(x), return_dendritic = FALSE)
+
+  result <- get_bridge_flowlines(x)
+
+  expect_setequal(result, c("hw", "A", "B", "C", "t1", "t2", "t3"))
+})
+
+test_that("get_bridge_flowlines hy_node auto-converts via flownetwork", {
+  # Issue: dev/issue-hy-node-to-topo-conversion.md
+  edges <- data.frame(
+    id       = 1:5,
+    fromnode = c("a", "b", "c", "b", "d"),
+    tonode   = c("b", "c", "e", "d", "c")
+  )
+
+  expect_warning(result <- get_bridge_flowlines(edges),
+    "converting hy_node to non-dendritic edge list")
+
+  expect_setequal(result, c(1, 3))
+})
+
 # --- low-level find_bridges tests on raw node adjacency matrices ---
 
 test_that("find_bridges linear 3 nodes", {
