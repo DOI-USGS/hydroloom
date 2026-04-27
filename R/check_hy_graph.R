@@ -22,7 +22,7 @@
 #'
 check_hy_graph <- function(x, loop_check = FALSE) {
 
-  if (!inherits(x, "hy")) {
+  if (!inherits(x, c("hy", "hy_flownetwork"))) {
     x <- hy(x)
   }
 
@@ -63,7 +63,7 @@ check_hy_graph <- function(x, loop_check = FALSE) {
 
 check_hy_outlets <- function(x, fix = FALSE) {
 
-  if (!inherits(x, "hy")) {
+  if (!inherits(x, c("hy", "hy_flownetwork"))) {
     x <- hy(x)
   }
 

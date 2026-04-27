@@ -35,6 +35,10 @@ carry subclass attributes (e.g. `hy_topo`) which are stripped by
 - `to_flownetwork()` and `get_bridge_flowlines()` now accept `hy_node`
   input without `divergence`/`levelpath`, auto-converting to a
   non-dendritic edge list with a warning that main-path info is dropped
+- `hy_flownetwork` no longer inherits from `hy` -- it is a separate
+  junction table where `id` is not guaranteed to be a primary key, and
+  it does not pass `is.hy()`. Documented behavior already; the
+  implementation now matches
 - Documentation:
   - Add class-level roxygen pages for `hy_topo`, `hy_leveled`, `hy_node`,
     and `hy_flownetwork` describing representation pattern, required

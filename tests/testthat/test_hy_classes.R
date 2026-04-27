@@ -50,12 +50,15 @@ test_that("hy() warns on non-unique id with toid when add_topo = TRUE", {
   x <- data.frame(id = c(1, 1, 2), toid = c(2, 2, 0))
 
   expect_warning(h <- hy(x, add_topo = TRUE), "Non-unique id")
-  expect_s3_class(h, "hy")
+  # hy_flownetwork is NOT an hy subclass: non-unique id+toid routes here
+  expect_s3_class(h, "hy_flownetwork")
+  expect_false(inherits(h, "hy"))
   expect_false(inherits(h, "hy_topo"))
 
-  # with default add_topo = FALSE, no warning, stays hy (no subclass)
+  # with default add_topo = FALSE, same routing
   h2 <- hy(x)
-  expect_s3_class(h2, "hy")
+  expect_s3_class(h2, "hy_flownetwork")
+  expect_false(inherits(h2, "hy"))
   expect_false(inherits(h2, "hy_topo"))
 })
 
@@ -191,8 +194,11 @@ test_that("hy_node preserves fromnode/tonode form", {
 })
 
 test_that("new_hy_topo rejects duplicated id", {
+  # hy() routes non-unique id+toid to hy_flownetwork (not hy), so
+  # new_hy_topo() rejects via the inherits-hy guard before the
+  # uniqueness check.
   x <- hy(data.frame(id = c(1, 1, 2), toid = c(2, 2, 0)))
-  expect_error(new_hy_topo(x), "unique id")
+  expect_error(new_hy_topo(x), "inherits")
 })
 
 test_that("new_hy_topo rejects non-hy input", {

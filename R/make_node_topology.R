@@ -104,9 +104,7 @@ make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
         x <- sf::st_sf(left_join(x, hy_g, by = id))
       }
 
-      if (inherits(x, "hy")) {
-        orig_names <- attributes(x)$orig_names
-      }
+      orig_names <- attr(x, "orig_names")
 
       x <- x[, c(id, fromnode, tonode,
         names(x)[!names(x) %in% c(id, fromnode, tonode)])]

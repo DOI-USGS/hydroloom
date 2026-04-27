@@ -126,5 +126,10 @@ to_flownetwork.hy_leveled <- function(x, warn_dendritic = TRUE) {
   if (any(duplicated(dm$id))) stop("duplicated down mains?")
   if (any(duplicated(um$toid))) stop("duplicated up mains?")
 
+  # to_flownetwork() is the user-facing producer: drop hy round-trip
+  # metadata so the result is a topology-only junction table.
+  attr(x, "orig_names") <- NULL
+  attr(x, "dendritic")  <- NULL
+
   new_hy_flownetwork(x)
 }
