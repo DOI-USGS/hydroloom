@@ -12,77 +12,60 @@
 #'
 #' @description
 #' A `hy_domain` is the unit of independent computation in a network
-#' decomposition. It bundles a domain's catchment network with the
-#' connectivity metadata that recomposition needs.
+#' decomposition. Every `hy_domain` is compact — a partitioned piece
+#' of a drainage basin that bundles the segment's lateral tributaries
+#' with the main-path rows flowing through the segment (the latter
+#' in their decomposed form, with sentinel toids). The basin's
+#' *extensive connectivity* — a `hy_leveled` view of the main path
+#' with toids intact — is stored separately in
+#' `domain_decomposition$domain_connectivity`.
 #'
 #' @details
-#' Two domain types are supported:
+#' The `catchments` slot may be `hy_topo` (or `hy_leveled`) for
+#' dendritic internal connectivity, or `hy_flownetwork` to preserve
+#' internal divergences.
 #'
-#' * **Trunk** domains are realized by a major mainstem flowpath. They
-#'   require a `hy_leveled` `catchments` slot with toids intact, so the
-#'   connected mainstem can be drawn, named, and walked end-to-end. A
-#'   trunk catchment is also present, in its decomposed form, in the
-#'   surrounding compact (the row with its `toid` set to the outlet
-#'   sentinel); the trunk's catchments slot is a duplicate view used
-#'   for visualization and explicit naming.
-#' * **Compact** domains carry the segment's lateral tributaries plus
-#'   the trunk-mainstem rows that flow through the segment. The
-#'   trunk-mainstem rows have a sentinel `toid`, so each is a local
-#'   outlet of its own contributing sub-basin. Membership in the
-#'   trunk-mainstem set is recoverable from the parent trunk domain's
-#'   `catchments$id`. The slot may be `hy_topo` (or `hy_leveled`) for
-#'   dendritic internal connectivity, or `hy_flownetwork` to preserve
-#'   internal divergences.
+#' **Compact and extensive duality.** The main-path rows in a
+#' domain's `catchments` carry a sentinel `toid`, so each is a local
+#' outlet of its own contributing sub-basin. Those same ids appear,
+#' with toids intact, in the basin's `domain_connectivity[[basin_id]]`
+#' overlay so the basin's main path stays addressable end-to-end. With
+#' the two ownerships kept distinct, per-domain processing runs in
+#' parallel and recomposition lands in a single pass. Main-path
+#' membership inside a domain is recoverable by intersecting the
+#' domain's `catchments$id` with the parent basin's
+#' connectivity-overlay `id`.
 #'
-#' **Trunk and compact ownership.** The trunk is not itself a catchment.
-#' It carries accumulated values from one compact domain to the next. The
-#' catchments along the trunk's mainstem are, by catchment aggregate
-#' semantics (HY_Features), part of the surrounding compact domain's drainage
-#' area. The implementation puts them in the compact domain's `catchments`
-#' slot (with sentinel toids) and also duplicates them in the trunk's
-#' `catchments` slot (with toids intact) so the connected mainstem
-#' stays addressable for drawing and naming. With the two ownerships
-#' kept distinct, per-compact processing runs in parallel and
-#' recomposition lands in a single pass.
-#'
-#' **Decomposed and recomposed modes.** The decomposed compact form
-#' is the default mode: each trunk-mainstem row is an outlet of its own
+#' **Decomposed and recomposed modes.** The decomposed form is the
+#' default mode: each main-path row is an outlet of its own
 #' contributing sub-basin, so a single
 #' [accumulate_downstream()][accumulate_downstream] call on the
-#' compact domain's catchments produces, for every trunk catchment in the
+#' domain's catchments produces, for every trunk catchment in the
 #' segment, the locally-incremental drainage area (or any other
 #' accumulable) that belongs there. To switch to recomposed mode, join
-#' `source_network[, c("id", "toid")]` onto the compact domain's catchments
+#' `source_network[, c("id", "toid")]` onto the domain's catchments
 #' where `toid` is the outlet sentinel, replacing it with the original
 #' value; the segment is a connected sub-basin again. See
 #' `vignette("domain_decomposition")` for the full framing.
-#'
-#' Recomposition restores the trunk-mainstem rows' toids in each
-#' compact from `source_network`, reconnecting the mainstem.
 #'
 #' The constructor returns a plain S3 list. Slot mutation after
 #' construction is permitted; downstream invariants are re-checked by
 #' [validate_decomposition()].
 #'
 #' @param domain_id character(1). Unique identifier for this domain.
-#' @param domain_type character(1). Either `"trunk"` or `"compact"`.
 #' @param outlet_nexus_id character(1). Identifier of the outlet hydro
 #'   nexus where this domain discharges.
-#' @param inlet_nexus_ids character. For trunk domains, the nexus ids where
-#'   compact domains inject lateral inflow along the mainstem. Always
-#'   `character(0)` for compact domains — they have no upstream domain
-#'   connections; they connect only to their parent trunk.
-#' @param trunk_domain_id character(1). For compact domains, the id of
-#'   the receiving trunk; for trunks, self or `NA_character_`.
-#' @param containing_domain_id character(1). For contained (e.g. endorheic)
-#'   domains, the id of the enclosing domain. `NA_character_` if not
-#'   contained.
+#' @param inlet_nexus_ids character. Hydro nexus ids where upstream
+#'   domains feed into this one. `character(0)` for leaf domains;
+#'   populated for stem and root domains.
+#' @param containing_domain_id character(1). For contained (e.g.
+#'   endorheic) domains, the id of the enclosing domain.
+#'   `NA_character_` if not contained.
 #' @param catchments hydroloom object carrying the domain's catchment
-#'   network. Must be `hy_leveled` for trunks; `hy_topo`, `hy_leveled`,
-#'   or `hy_flownetwork` for compact domains.
+#'   network. Must be `hy_topo`, `hy_leveled`, or `hy_flownetwork`.
 #' @param topo_sort_offset integer(1). Global topo_sort base enabling
 #'   cross-domain ordering after recomposition.
-#' @returns object of class `hy_domain` — a list with the eight named
+#' @returns object of class `hy_domain` — a list with the six named
 #'   slots above.
 #' @export
 #' @examples
@@ -93,49 +76,31 @@
 #'
 #' hy_domain(
 #'   domain_id = "T1",
-#'   domain_type = "trunk",
 #'   outlet_nexus_id = "n_out",
 #'   inlet_nexus_ids = character(0),
-#'   trunk_domain_id = NA_character_,
 #'   containing_domain_id = NA_character_,
 #'   catchments = lev,
 #'   topo_sort_offset = 0L)
 #'
 hy_domain <- function(domain_id,
-                      domain_type,
                       outlet_nexus_id,
                       inlet_nexus_ids,
-                      trunk_domain_id,
                       containing_domain_id,
                       catchments,
                       topo_sort_offset) {
 
-  if (!domain_type %in% c("trunk", "compact"))
-    stop("hy_domain: domain_type must be 'trunk' or 'compact', got '",
-      domain_type, "'", call. = FALSE)
-
-  if (identical(domain_type, "trunk") && !inherits(catchments, "hy_leveled"))
-    stop("hy_domain: trunk domain catchments must be hy_leveled. ",
-      "Current class: ", paste(class(catchments), collapse = "/"),
-      ". Use add_levelpaths() to enrich the network before wrapping ",
-      "it in a trunk hy_domain.",
-      call. = FALSE)
-
-  if (identical(domain_type, "compact") &&
-      !inherits(catchments, "hy_topo") &&
+  if (!inherits(catchments, "hy_topo") &&
       !inherits(catchments, "hy_flownetwork"))
-    stop("hy_domain: compact domain catchments must be hy_topo, ",
-      "hy_leveled, or hy_flownetwork. Current class: ",
+    stop("hy_domain: catchments must be hy_topo, hy_leveled, or ",
+      "hy_flownetwork. Current class: ",
       paste(class(catchments), collapse = "/"),
       call. = FALSE)
 
   structure(
     list(
       domain_id            = domain_id,
-      domain_type          = domain_type,
       outlet_nexus_id      = outlet_nexus_id,
       inlet_nexus_ids      = inlet_nexus_ids,
-      trunk_domain_id      = trunk_domain_id,
       containing_domain_id = containing_domain_id,
       catchments           = catchments,
       topo_sort_offset     = topo_sort_offset
@@ -152,36 +117,31 @@ hy_domain <- function(domain_id,
 #' of human-readable problem descriptions).
 #'
 #' @details
-#' Layer 1 structural checks, run in order:
+#' Structural checks, run in order:
 #'
 #' \enumerate{
-#'   \item **Trunk class invariant** — every trunk domain's `catchments`
-#'     slot inherits from `hy_leveled`. Re-checked here because slot
-#'     mutation after construction is permitted.
-#'   \item **Outlet count** — each trunk domain's `catchments`
-#'     resolves to exactly one outlet sub-network via [sort_network()]
-#'     with `split = TRUE`. Compact domains may have multiple outlets.
-#'   \item **Coverage / partition** — every `source_network` id appears
-#'     in exactly one compact domain's catchments slot. The
-#'     trunk-subset sub-check then confirms every trunk row is also
-#'     present in a compact domain with its `toid` set to the outlet sentinel
-#'     returned by `get_outlet_value()`. See [hy_domain()] for the
-#'     ownership rules behind this duplication.
-#'   \item **Inter-domain cycle** — `domain_graph` flow edges form an
-#'     acyclic graph; checked by delegating to [check_hy_graph()].
+#'   \item **Outlet count** — each basin's `domain_connectivity`
+#'     overlay resolves to exactly one outlet sub-network via
+#'     [sort_network()] with `split = TRUE`. Domains may have multiple
+#'     outlets by design and are not checked.
+#'   \item **Coverage / partition** — every `source_network` id
+#'     appears in exactly one domain's `catchments` slot.
+#'   \item **Connectivity membership** — each domain's sentinel-`toid`
+#'     rows (other than genuine basin outlets, whose `source_network`
+#'     toid is also the sentinel) appear, with `toid`s intact, in some
+#'     basin's `domain_connectivity` overlay. See [hy_domain()] for
+#'     the dual-ownership rule behind this duplication.
+#'   \item **Inter-domain cycle** — the derived domain graph
+#'     ([get_domain_graph()] with `relations = "flow"`) is acyclic;
+#'     checked by delegating to [check_hy_graph()].
 #'   \item **Nexus existence** — every `nexus_id` referenced by a
-#'     `domain_graph` edge is registered in `nexus_registry`.
+#'     derived domain-graph edge is registered in `nexus_registry`.
 #'   \item **Containment resolution** — every non-NA
 #'     `containing_domain_id` resolves to a key of `decomposition$domains`.
 #'   \item **Override references** — every row in `overrides` (when
 #'     present) names a known source/sink domain via `id`/`toid` and a
 #'     known source/sink nexus via `source_nexus_id`/`sink_nexus_id`.
 #' }
-#'
-#' Mass-balance checks (compact-domain outflows match trunk lateral
-#' inflows) and at-scale closed-basin counts are deferred until
-#' `recompose()` is implemented; the corresponding negative oracles
-#' are pinned by Layer 5 and Layer 9 of the decomposition test scaffold.
 #'
 #' @param decomposition object of class `domain_decomposition`.
 #' @returns list with elements `valid` (logical scalar) and `issues`
@@ -195,17 +155,18 @@ hy_domain <- function(domain_id,
 #'   topo_sort = 3:1, levelpath = c(1L, 1L, 1L),
 #'   levelpath_outlet_id = c(3L, 3L, 3L)))
 #'
-#' trunk <- hy_domain(
-#'   domain_id = "T1", domain_type = "trunk",
-#'   outlet_nexus_id = "n_out", inlet_nexus_ids = character(0),
-#'   trunk_domain_id = NA_character_, containing_domain_id = NA_character_,
-#'   catchments = lev, topo_sort_offset = 0L)
+#' dom <- hy_domain(
+#'   domain_id = "T1",
+#'   outlet_nexus_id = "n_out",
+#'   inlet_nexus_ids = character(0),
+#'   containing_domain_id = NA_character_,
+#'   catchments = lev,
+#'   topo_sort_offset = 0L)
 #'
 #' d <- structure(
 #'   list(
-#'     domains = list(T1 = trunk),
-#'     domain_graph = data.frame(id = character(0), toid = character(0),
-#'       relation_type = character(0)),
+#'     domains = list(T1 = dom),
+#'     domain_connectivity = list(),
 #'     overrides = NULL,
 #'     catchment_domain_index = setNames(rep("T1", 3), c("1", "2", "3")),
 #'     nexus_registry = data.frame(nexus_id = "n_out"),
@@ -219,32 +180,17 @@ validate_decomposition <- function(decomposition) {
   issues <- character(0)
 
   domains <- decomposition$domains %||% list()
+  conn    <- decomposition$domain_connectivity %||% list()
 
-  # ---- Check 1: trunk class invariant ----------------------------------
+  # ---- Check 1: outlet count per basin connectivity overlay -----------
+  # Each basin's connectivity overlay must resolve to exactly one outlet
+  # via sort_network(split = TRUE). Compact domains may have multiple
+  # outlets by design (lateral subgroups detoid'd to the sentinel),
+  # so they are not checked here.
 
-  for (d in domains) {
+  for (basin_id in names(conn)) {
 
-    if (identical(d$domain_type, "trunk") &&
-        !inherits(d$catchments, "hy_leveled")) {
-
-      issues <- c(issues, sprintf(
-        "domain '%s': trunk catchments must be hy_leveled (class is %s)",
-        d$domain_id, paste(class(d$catchments), collapse = "/")))
-
-    }
-
-  }
-
-  # ---- Check 2: outlet count per domain --------------------------------
-  # Trunk domains must have exactly one outlet. Compact domains may have
-  # multiple outlets (disconnected tributary groups draining into
-  # different trunk catchments along the same trunk segment).
-
-  for (d in domains) {
-
-    if (d$domain_type != "trunk") next
-
-    catch <- d$catchments
+    catch <- conn[[basin_id]]
 
     if (is.null(catch) || nrow(catch) == 0) next
 
@@ -258,160 +204,139 @@ validate_decomposition <- function(decomposition) {
     if (is.na(n_out)) {
 
       issues <- c(issues, sprintf(
-        "domain '%s': could not determine outlet count (sort_network failed)",
-        d$domain_id))
+        "basin '%s': could not determine outlet count (sort_network failed)",
+        basin_id))
 
     } else if (n_out != 1L) {
 
       issues <- c(issues, sprintf(
-        "domain '%s': expected exactly one outlet, found %d",
-        d$domain_id, n_out))
+        "basin '%s': expected exactly one outlet, found %d",
+        basin_id, n_out))
 
     }
 
   }
 
-  # ---- Check 3: coverage / partition -----------------------------------
-  # Compacts form the partition: every source id appears in exactly one
-  # compact domain's catchments. Trunk catchments are checked in the trunk-subset
-  # sub-check below (they duplicate compact-resident trunk-feature rows).
+  # ---- Check 2: coverage / partition -----------------------------------
+  # Every source id appears in exactly one domain's catchments.
 
   src <- decomposition$source_network
 
   if (!is.null(src) && "id" %in% names(src)) {
 
-    is_compact <- vapply(domains,
-      function(d) identical(d$domain_type, "compact"), logical(1))
-
-    compact_catch_ids <- unlist(
-      lapply(domains[is_compact], function(d) d$catchments$id),
+    dom_catch_ids <- unlist(
+      lapply(domains, function(d) d$catchments$id),
       use.names = FALSE)
 
     src_ids <- src$id
 
-    missing_ids <- setdiff(src_ids, compact_catch_ids)
+    missing_ids <- setdiff(src_ids, dom_catch_ids)
 
     if (length(missing_ids) > 0) {
 
       issues <- c(issues, sprintf(
-        "coverage: %d source catchments not assigned to any compact domain",
+        "coverage: %d source catchments not assigned to any domain",
         length(missing_ids)))
 
     }
 
-    dup_ids <- compact_catch_ids[duplicated(compact_catch_ids)]
+    dup_ids <- dom_catch_ids[duplicated(dom_catch_ids)]
 
     if (length(dup_ids) > 0) {
 
       issues <- c(issues, sprintf(
-        "coverage: %d catchment ids appear in more than one compact domain",
+        "coverage: %d catchment ids appear in more than one domain",
         length(unique(dup_ids))))
 
     }
 
-    # Trunk-subset sub-check: every trunk catchment must also appear in
-    # some compact domain, with its compact-side `toid` set to the outlet
-    # sentinel (i.e. detoid'd into the decomposed compact form).
-    trunk_domains <- domains[!is_compact &
-      vapply(domains, function(d) identical(d$domain_type, "trunk"),
-        logical(1))]
+  }
 
-    if (length(trunk_domains) > 0L) {
+  # ---- Check 3: connectivity membership -------------------------------
+  # Each domain's sentinel-toid rows (other than genuine basin
+  # outlets, whose source_network toid is also sentinel) must appear,
+  # with toids intact, in some basin's domain_connectivity overlay.
 
-      # Per-id toid lookup across compact domains (last write wins on
-      # duplicates -- the partition coverage check above flags those
-      # separately). Sentinel: "" for character ids, 0 for numeric.
-      compact_toid_lookup <- list()
+  if (!is.null(src) && all(c("id", "toid") %in% names(src)) &&
+      length(domains) > 0L) {
 
-      for (d in domains[is_compact]) {
+    conn_ids_pool <- unlist(
+      lapply(conn, function(o) as.character(o$id)),
+      use.names = FALSE)
 
-        catch <- d$catchments
+    src_toid_by_id <- setNames(as.character(src$toid), as.character(src$id))
+    src_sentinel   <- as.character(get_outlet_value(src))
 
-        if (is.null(catch) || nrow(catch) == 0L) next
+    missing_total <- 0L
 
-        ids <- as.character(catch$id)
+    for (d in domains) {
 
-        for (i in seq_along(ids)) {
-          compact_toid_lookup[[ids[i]]] <- catch$toid[i]
-        }
-      }
+      catch <- d$catchments
 
-      id_is_char <- is.character(src$id)
+      if (is.null(catch) || nrow(catch) == 0L) next
 
-      missing_trunk <- character(0)
-      bad_toid      <- character(0)
+      cs_sentinel <- as.character(get_outlet_value(catch))
+      is_seg      <- as.character(catch$toid) == cs_sentinel
 
-      for (td in trunk_domains) {
+      if (!any(is_seg)) next
 
-        for (tid in as.character(td$catchments$id)) {
+      seg_ids   <- as.character(catch$id[is_seg])
+      src_toids <- src_toid_by_id[seg_ids]
 
-          tval <- compact_toid_lookup[[tid]]
+      is_genuine_outlet <- !is.na(src_toids) & src_toids == src_sentinel
 
-          if (is.null(tval)) {
-            missing_trunk <- c(missing_trunk, tid)
-            next
-          }
+      detoid_ids <- seg_ids[!is_genuine_outlet]
 
-          is_sentinel <- !is.na(tval) && (
-            if (id_is_char) identical(as.character(tval), "")
-            else identical(as.numeric(tval), 0))
+      if (length(detoid_ids) == 0L) next
 
-          if (!is_sentinel) bad_toid <- c(bad_toid, tid)
-        }
-      }
+      missing <- setdiff(detoid_ids, conn_ids_pool)
+      missing_total <- missing_total + length(missing)
+    }
 
-      if (length(missing_trunk) > 0L) {
+    if (missing_total > 0L) {
 
-        issues <- c(issues, sprintf(
-          paste0("trunk-subset: %d trunk catchment ids do not appear in ",
-            "any compact domain's catchments"),
-          length(missing_trunk)))
-      }
-
-      if (length(bad_toid) > 0L) {
-
-        issues <- c(issues, sprintf(
-          paste0("trunk-subset: %d trunk catchment rows in compact domains have ",
-            "non-sentinel toid"),
-          length(bad_toid)))
-      }
+      issues <- c(issues, sprintf(
+        paste0("connectivity: %d sentinel-toid rows not present ",
+          "in any domain_connectivity overlay"),
+        missing_total))
 
     }
 
   }
 
-  # ---- Check 4: inter-domain cycle -------------------------------------
+  # ---- Check 4: inter-domain cycle (derived graph) --------------------
 
-  g <- decomposition$domain_graph
+  g_flow <- tryCatch(
+    get_domain_graph(decomposition, relations = "flow"),
+    error = function(e) NULL)
 
-  if (!is.null(g) && nrow(g) > 0 && "relation_type" %in% names(g)) {
+  if (!is.null(g_flow) && nrow(g_flow) > 0 &&
+      all(c("id", "toid") %in% names(g_flow))) {
 
-    flow <- g[g$relation_type == "flow", , drop = FALSE]
+    chk <- tryCatch(
+      check_hy_graph(g_flow[, c("id", "toid")]),
+      error = function(e) e)
 
-    if (nrow(flow) > 0 && all(c("id", "toid") %in% names(flow))) {
+    if (!isTRUE(chk)) {
 
-      chk <- tryCatch(
-        check_hy_graph(flow[, c("id", "toid")]),
-        error = function(e) e)
-
-      if (!isTRUE(chk)) {
-
-        issues <- c(issues,
-          "domain_graph cycle: flow edges contain a cycle (failed check_hy_graph)")
-
-      }
+      issues <- c(issues,
+        "domain_graph cycle: flow edges contain a cycle (failed check_hy_graph)")
 
     }
 
   }
 
-  # ---- Check 5: nexus existence in domain_graph edges ------------------
+  # ---- Check 5: nexus existence in derived domain graph ---------------
 
-  if (!is.null(g) && nrow(g) > 0 && "nexus_id" %in% names(g)) {
+  g_all <- tryCatch(
+    get_domain_graph(decomposition),
+    error = function(e) NULL)
+
+  if (!is.null(g_all) && nrow(g_all) > 0 && "nexus_id" %in% names(g_all)) {
 
     reg_ids <- decomposition$nexus_registry$nexus_id %||% character(0)
 
-    unknown <- setdiff(g$nexus_id, reg_ids)
+    unknown <- setdiff(g_all$nexus_id, reg_ids)
 
     if (length(unknown) > 0) {
 
