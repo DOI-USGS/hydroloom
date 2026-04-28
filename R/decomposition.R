@@ -19,12 +19,46 @@
 #' Two domain types are supported:
 #'
 #' * **Trunk** domains are realized by a major mainstem flowpath. They
-#'   require a `hy_leveled` `catchments` slot because the trunk-aware
-#'   recomposition step keys off `levelpath` and topo sort identity.
-#' * **Compact** domains are headwater or tributary aggregates that
-#'   contribute to a trunk. Their `catchments` slot may be `hy_topo`
-#'   (or `hy_leveled`) for dendritic internal connectivity, or
-#'   `hy_flownetwork` to preserve internal divergences.
+#'   require a `hy_leveled` `catchments` slot with toids intact, so the
+#'   connected mainstem can be drawn, named, and walked end-to-end. A
+#'   trunk catchment is also present, in its decomposed form, in the
+#'   surrounding compact (the row with its `toid` set to the outlet
+#'   sentinel); the trunk's catchments slot is a duplicate view used
+#'   for visualization and explicit naming.
+#' * **Compact** domains carry the segment's lateral tributaries plus
+#'   the trunk-mainstem rows that flow through the segment. The
+#'   trunk-mainstem rows have a sentinel `toid`, so each is a local
+#'   outlet of its own contributing sub-basin. Membership in the
+#'   trunk-mainstem set is recoverable from the parent trunk domain's
+#'   `catchments$id`. The slot may be `hy_topo` (or `hy_leveled`) for
+#'   dendritic internal connectivity, or `hy_flownetwork` to preserve
+#'   internal divergences.
+#'
+#' **Trunk and compact ownership.** The trunk is not itself a catchment.
+#' It carries accumulated values from one compact domain to the next. The
+#' catchments along the trunk's mainstem are, by catchment aggregate
+#' semantics (HY_Features), part of the surrounding compact domain's drainage
+#' area. The implementation puts them in the compact domain's `catchments`
+#' slot (with sentinel toids) and also duplicates them in the trunk's
+#' `catchments` slot (with toids intact) so the connected mainstem
+#' stays addressable for drawing and naming. With the two ownerships
+#' kept distinct, per-compact processing runs in parallel and
+#' recomposition lands in a single pass.
+#'
+#' **Decomposed and recomposed modes.** The decomposed compact form
+#' is the default mode: each trunk-mainstem row is an outlet of its own
+#' contributing sub-basin, so a single
+#' [accumulate_downstream()][accumulate_downstream] call on the
+#' compact domain's catchments produces, for every trunk catchment in the
+#' segment, the locally-incremental drainage area (or any other
+#' accumulable) that belongs there. To switch to recomposed mode, join
+#' `source_network[, c("id", "toid")]` onto the compact domain's catchments
+#' where `toid` is the outlet sentinel, replacing it with the original
+#' value; the segment is a connected sub-basin again. See
+#' `vignette("domain_decomposition")` for the full framing.
+#'
+#' Recomposition restores the trunk-mainstem rows' toids in each
+#' compact from `source_network`, reconnecting the mainstem.
 #'
 #' The constructor returns a plain S3 list. Slot mutation after
 #' construction is permitted; downstream invariants are re-checked by
@@ -36,7 +70,7 @@
 #'   nexus where this domain discharges.
 #' @param inlet_nexus_ids character. For trunk domains, the nexus ids where
 #'   compact domains inject lateral inflow along the mainstem. Always
-#'   `character(0)` for compact domains — compacts have no upstream domain
+#'   `character(0)` for compact domains — they have no upstream domain
 #'   connections; they connect only to their parent trunk.
 #' @param trunk_domain_id character(1). For compact domains, the id of
 #'   the receiving trunk; for trunks, self or `NA_character_`.
@@ -45,7 +79,7 @@
 #'   contained.
 #' @param catchments hydroloom object carrying the domain's catchment
 #'   network. Must be `hy_leveled` for trunks; `hy_topo`, `hy_leveled`,
-#'   or `hy_flownetwork` for compacts.
+#'   or `hy_flownetwork` for compact domains.
 #' @param topo_sort_offset integer(1). Global topo_sort base enabling
 #'   cross-domain ordering after recomposition.
 #' @returns object of class `hy_domain` — a list with the eight named
@@ -128,8 +162,11 @@ hy_domain <- function(domain_id,
 #'     resolves to exactly one outlet sub-network via [sort_network()]
 #'     with `split = TRUE`. Compact domains may have multiple outlets.
 #'   \item **Coverage / partition** — every `source_network` id appears
-#'     in exactly one domain's catchments slot. No orphans, no
-#'     duplicates.
+#'     in exactly one compact domain's catchments slot. The
+#'     trunk-subset sub-check then confirms every trunk row is also
+#'     present in a compact domain with its `toid` set to the outlet sentinel
+#'     returned by `get_outlet_value()`. See [hy_domain()] for the
+#'     ownership rules behind this duplication.
 #'   \item **Inter-domain cycle** — `domain_graph` flow edges form an
 #'     acyclic graph; checked by delegating to [check_hy_graph()].
 #'   \item **Nexus existence** — every `nexus_id` referenced by a
@@ -144,11 +181,13 @@ hy_domain <- function(domain_id,
 #' Mass-balance checks (compact-domain outflows match trunk lateral
 #' inflows) and at-scale closed-basin counts are deferred until
 #' `recompose()` is implemented; the corresponding negative oracles
-#' live in Layer 5 and Layer 9 of the decomposition test scaffold.
+#' are pinned by Layer 5 and Layer 9 of the decomposition test scaffold.
 #'
 #' @param decomposition object of class `domain_decomposition`.
 #' @returns list with elements `valid` (logical scalar) and `issues`
 #'   (character vector — empty when `valid` is TRUE).
+#' @seealso [domain_decomposition] for the object's slots,
+#'   [hy_domain()] for the per-domain object, [decompose_network()].
 #' @export
 #' @examples
 #' lev <- hy(data.frame(
@@ -233,34 +272,109 @@ validate_decomposition <- function(decomposition) {
   }
 
   # ---- Check 3: coverage / partition -----------------------------------
+  # Compacts form the partition: every source id appears in exactly one
+  # compact domain's catchments. Trunk catchments are checked in the trunk-subset
+  # sub-check below (they duplicate compact-resident trunk-feature rows).
 
   src <- decomposition$source_network
 
   if (!is.null(src) && "id" %in% names(src)) {
 
-    domain_catch_ids <- unlist(lapply(domains,
-      function(d) d$catchments$id),
+    is_compact <- vapply(domains,
+      function(d) identical(d$domain_type, "compact"), logical(1))
+
+    compact_catch_ids <- unlist(
+      lapply(domains[is_compact], function(d) d$catchments$id),
       use.names = FALSE)
 
     src_ids <- src$id
 
-    missing_ids <- setdiff(src_ids, domain_catch_ids)
+    missing_ids <- setdiff(src_ids, compact_catch_ids)
 
     if (length(missing_ids) > 0) {
 
       issues <- c(issues, sprintf(
-        "coverage: %d source catchments not assigned to any domain",
+        "coverage: %d source catchments not assigned to any compact domain",
         length(missing_ids)))
 
     }
 
-    dup_ids <- domain_catch_ids[duplicated(domain_catch_ids)]
+    dup_ids <- compact_catch_ids[duplicated(compact_catch_ids)]
 
     if (length(dup_ids) > 0) {
 
       issues <- c(issues, sprintf(
-        "coverage: %d catchment ids appear in more than one domain",
+        "coverage: %d catchment ids appear in more than one compact domain",
         length(unique(dup_ids))))
+
+    }
+
+    # Trunk-subset sub-check: every trunk catchment must also appear in
+    # some compact domain, with its compact-side `toid` set to the outlet
+    # sentinel (i.e. detoid'd into the decomposed compact form).
+    trunk_domains <- domains[!is_compact &
+      vapply(domains, function(d) identical(d$domain_type, "trunk"),
+        logical(1))]
+
+    if (length(trunk_domains) > 0L) {
+
+      # Per-id toid lookup across compact domains (last write wins on
+      # duplicates -- the partition coverage check above flags those
+      # separately). Sentinel: "" for character ids, 0 for numeric.
+      compact_toid_lookup <- list()
+
+      for (d in domains[is_compact]) {
+
+        catch <- d$catchments
+
+        if (is.null(catch) || nrow(catch) == 0L) next
+
+        ids <- as.character(catch$id)
+
+        for (i in seq_along(ids)) {
+          compact_toid_lookup[[ids[i]]] <- catch$toid[i]
+        }
+      }
+
+      id_is_char <- is.character(src$id)
+
+      missing_trunk <- character(0)
+      bad_toid      <- character(0)
+
+      for (td in trunk_domains) {
+
+        for (tid in as.character(td$catchments$id)) {
+
+          tval <- compact_toid_lookup[[tid]]
+
+          if (is.null(tval)) {
+            missing_trunk <- c(missing_trunk, tid)
+            next
+          }
+
+          is_sentinel <- !is.na(tval) && (
+            if (id_is_char) identical(as.character(tval), "")
+            else identical(as.numeric(tval), 0))
+
+          if (!is_sentinel) bad_toid <- c(bad_toid, tid)
+        }
+      }
+
+      if (length(missing_trunk) > 0L) {
+
+        issues <- c(issues, sprintf(
+          paste0("trunk-subset: %d trunk catchment ids do not appear in ",
+            "any compact domain's catchments"),
+          length(missing_trunk)))
+      }
+
+      if (length(bad_toid) > 0L) {
+
+        issues <- c(issues, sprintf(
+          paste0("trunk-subset: %d trunk catchment rows in compact domains have ",
+            "non-sentinel toid"),
+          length(bad_toid)))
+      }
 
     }
 

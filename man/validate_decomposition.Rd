@@ -29,8 +29,11 @@ mutation after construction is permitted.
 resolves to exactly one outlet sub-network via \code{\link[=sort_network]{sort_network()}}
 with \code{split = TRUE}. Compact domains may have multiple outlets.
 \item \strong{Coverage / partition} — every \code{source_network} id appears
-in exactly one domain's catchments slot. No orphans, no
-duplicates.
+in exactly one compact domain's catchments slot. The
+trunk-subset sub-check then confirms every trunk row is also
+present in a compact domain with its \code{toid} set to the outlet sentinel
+returned by \code{get_outlet_value()}. See \code{\link[=hy_domain]{hy_domain()}} for the
+ownership rules behind this duplication.
 \item \strong{Inter-domain cycle} — \code{domain_graph} flow edges form an
 acyclic graph; checked by delegating to \code{\link[=check_hy_graph]{check_hy_graph()}}.
 \item \strong{Nexus existence} — every \code{nexus_id} referenced by a
@@ -45,7 +48,7 @@ known source/sink nexus via \code{source_nexus_id}/\code{sink_nexus_id}.
 Mass-balance checks (compact-domain outflows match trunk lateral
 inflows) and at-scale closed-basin counts are deferred until
 \code{recompose()} is implemented; the corresponding negative oracles
-live in Layer 5 and Layer 9 of the decomposition test scaffold.
+are pinned by Layer 5 and Layer 9 of the decomposition test scaffold.
 }
 \examples{
 lev <- hy(data.frame(
@@ -72,4 +75,8 @@ d <- structure(
 
 validate_decomposition(d)
 
+}
+\seealso{
+\link{domain_decomposition} for the object's slots,
+\code{\link[=hy_domain]{hy_domain()}} for the per-domain object, \code{\link[=decompose_network]{decompose_network()}}.
 }

@@ -10,10 +10,7 @@ decompose_network(
   trunk_threshold = NULL,
   trunk_levelpaths = NULL,
   domain_breaks = NULL,
-  trunk_promotion_ratio = 2,
-  headwater_collapse_fraction = NULL,
-  overrides = NULL,
-  contained_basins = NULL
+  overrides = NULL
 )
 }
 \arguments{
@@ -44,81 +41,27 @@ are silently ignored. When \code{NULL} (default), trunk segmentation
 is determined automatically from trunk confluences and (if
 available) bridge flowlines.}
 
-\item{trunk_promotion_ratio}{numeric. Guards against thin trunks:
-demote a trunk candidate whose outlet metric is below
-\code{trunk_threshold * trunk_promotion_ratio}. Reserved for a future
-layer; ignored in the current implementation. Default \code{2}.}
-
-\item{headwater_collapse_fraction}{numeric or \code{NULL}. Fraction of
-\code{trunk_threshold} below which the headwater end of a confirmed
-trunk is carved off as a compact domain. Reserved for a future
-layer; ignored in the current implementation.}
-
 \item{overrides}{data.frame. Non-dendritic inter-domain transfer
 table; pass-through to \code{decomposition$overrides}.}
-
-\item{contained_basins}{data.frame. Containment relations; reserved
-for a later layer and ignored here.}
 }
 \value{
-object of class \code{domain_decomposition} with slots
-\code{domains}, \code{domain_graph}, \code{overrides}, \code{catchment_domain_index},
-\code{nexus_registry}, and \code{source_network}.
+a \link{domain_decomposition} object.
 }
 \description{
 Partitions a hydrologic network into \code{hy_domain} objects for
-independent or parallel resolution. Each drainage basin is split
-by extracting its primary flowpath catchments into a trunk domain and
-grouping the remaining lateral sub-networks into compact domains.
-Each compact domain corresponds to an HY_Features catchment
-aggregate -- the segment of trunk that flows through it is the
-aggregate's flowpath. Compact domains are grouped by trunk segment
-and may connect to the trunk at multiple nexus points.
-
-The trunk and the compacts share catchments along the trunk's
-mainstem, but they own them differently. The mainstem catchments are
-part of the surrounding compact's drainage area (by catchment
-aggregate semantics); the accumulated quantities flowing through
-them belong to the trunk. A compact holds its tributaries' outlet
-values until recomposition, when those values pass to the trunk.
-Per-compact processing runs in parallel and editing stays local
-because of this split. See \code{vignette("domain_decomposition")} for
-the full framing.
+independent or parallel computation. Each drainage basin is split
+into compact domains that contribute to a single trunk domain. See
+\code{\link[=hy_domain]{hy_domain()}} for details.
 }
 \details{
-Input must be \code{hy_leveled} -- the network must already carry
-\code{levelpath}, \code{levelpath_outlet_id}, and \code{topo_sort} columns.
-Call \code{\link[=add_levelpaths]{add_levelpaths()}} first. Non-dendritic sources
-(\code{hy_flownetwork}) are deferred to a later layer and currently
-error.
+\strong{Input.} Input must be \code{hy_leveled} -- the network must already
+carry \code{levelpath}, \code{levelpath_outlet_id}, and \code{topo_sort} columns.
+Call \code{\link[=add_levelpaths]{add_levelpaths()}} to add. Non-dendritic sources
+(\code{hy_flownetwork}) are not supported at this time.
 
 \strong{Trunk selection.} Each drainage basin gets at most one trunk
-domain, selected by one of three paths:
-
-\itemize{
-\item When \code{trunk_threshold} is supplied, the basin's outlet
-metric must exceed the threshold to receive a trunk. The trunk
-domain contains all catchments in the basin whose metric
-exceeds the threshold. Basins at or below the threshold get
-no trunk; the entire basin becomes a single compact domain.
-\item When \code{trunk_levelpaths} is supplied (and \code{trunk_threshold}
-is \code{NULL}), catchments on those levelpaths (plus the outlet
-levelpath) form the single trunk domain.
-\item When both are \code{NULL} (the default), the trunk contains
-catchments on the basin's terminal-outlet levelpath.
-}
-
-\strong{Metric auto-computation.} When \code{trunk_metric = "drainage_area"}
-and the input lacks a \code{total_da_sqkm} column but carries \code{da_sqkm},
-\code{decompose_network} computes \code{total_da_sqkm} internally via
-\code{\link[=accumulate_downstream]{accumulate_downstream()}}. When \code{trunk_metric = "arbolate_sum"},
-the \code{arbolate_sum} column must be present on the input.
-
-The arguments \code{trunk_promotion_ratio}, \code{headwater_collapse_fraction},
-and \code{contained_basins} are accepted for signature stability with the
-design document but only their defaults are honored in this version.
-\code{overrides} is passed through to the returned
-\code{domain_decomposition$overrides} slot unchanged.
+domain, selected from \code{trunk_metric}, \code{trunk_threshold}, and
+\code{trunk_levelpaths} (see arguments).
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
@@ -134,6 +77,7 @@ length(d$domains)
 
 }
 \seealso{
-\code{\link[=hy_domain]{hy_domain()}}, \code{\link[=validate_decomposition]{validate_decomposition()}},
+\link{domain_decomposition} for the returned object's slots,
+\code{\link[=hy_domain]{hy_domain()}} for the per-domain object, \code{\link[=validate_decomposition]{validate_decomposition()}},
 \code{\link[=get_domain_graph]{get_domain_graph()}}, \code{\link[=get_domain_for_catchment]{get_domain_for_catchment()}}.
 }

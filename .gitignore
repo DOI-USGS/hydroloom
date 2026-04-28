@@ -10,3 +10,4 @@ CRAN-SUBMISSION
 revdep/
 CLAUDE.md
 dev
+vignettes/*.html

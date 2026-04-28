@@ -40,5 +40,6 @@ get_domain_graph(d, relations = "flow")
 
 }
 \seealso{
+\link{domain_decomposition} for the wrapper object,
 \code{\link[=decompose_network]{decompose_network()}}.
 }

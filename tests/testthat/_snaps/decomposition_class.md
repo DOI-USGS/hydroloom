@@ -5,8 +5,8 @@
     Output
       <domain_decomposition: 1 trunks, 1 compacts, 62 catchments>
         domains:         2  (1 trunks, 1 compacts)
-        domain_graph:    15 edges
-        nexus_registry:  16 nexuses
+        domain_graph:    0 edges
+        nexus_registry:  2 nexuses
         overrides:       0 rows
         source_network:  62 catchments
       
@@ -27,15 +27,12 @@
       │  │     dendritic     TRUE  (1)
       │  │
       │  └─ <1 compact domains>
-      │        catchments    min     44   median     44   max     44   total 44
-      │        stream_order  min      3   median      3   max      3
+      │        catchments    min     62   median     62   max     62   total 62
+      │        stream_order  min      4   median      4   max      4
       │        dendritic     TRUE  (1)
       │
-      ├─ domain_graph           <data.frame>       15 rows
-      │     relation_type flow (15)
-      │     nexus_position (not yet populated)
-      │
-      ├─ nexus_registry         <data.frame>       16 rows
+      ├─ domain_graph           <data.frame>       0 rows
+      ├─ nexus_registry         <data.frame>       2 rows
       ├─ catchment_domain_index <named character>  62 entries
       └─ overrides              <NULL>             0 rows   (none)
       

@@ -131,36 +131,27 @@ trunk_size_dist <- trunk_size_dist[order(trunk_size_dist$n_catchments), ]
 cat("\n=== trunk size distribution ===\n")
 print(trunk_size_dist, row.names = FALSE)
 
-# ---- join domain_id back to catchment polygons -------------------------
+# ---- join compact domain_id back to catchment polygons -----------------
 
 idx <- d$catchment_domain_index
 
-# Map catchment featureid -> domain_id through the enriched src ids.
-# src$id is the hy-canonical id (was comid); catchments_sf$featureid
-# is the raw NHDPlusV2 key. Both are integer-valued.
+# Under the decomposed compact form every catchment lives in some compact
+# (the trunk domain is a viz duplicate). Map featureid -> compact id.
 catch_id_chr <- as.character(catchments_sf$featureid)
 
 domain_for_catch <- unname(idx[catch_id_chr])
-
-type_for_domain <- setNames(summary_df$type, summary_df$domain_id)
 
 plot_sf <- catchments_sf
 
 plot_sf$domain_id <- domain_for_catch
 
-plot_sf$domain_type <- unname(type_for_domain[domain_for_catch])
-
-# Drop any catchments that didn't map (shouldn't happen, but be safe).
 plot_sf <- plot_sf[!is.na(plot_sf$domain_id), ]
-
-# Order so trunks draw on top of compacts.
-plot_sf <- plot_sf[order(plot_sf$domain_type == "trunk"), ]
 
 # ---- color palette -----------------------------------------------------
 
 set.seed(20260408)
 
-domain_levels <- unique(plot_sf$domain_id)
+domain_levels <- sort(unique(plot_sf$domain_id))
 
 pal <- grDevices::hcl.colors(length(domain_levels), palette = "Spectral")
 
@@ -170,15 +161,17 @@ names(pal) <- domain_levels
 
 plot_sf$color <- pal[plot_sf$domain_id]
 
+# ---- collect trunk-feature catchment ids for the overlay --------------
+
+trunk_ids <- unlist(lapply(
+  Filter(\(x) x$domain_type == "trunk", d$domains),
+  \(x) as.character(x$catchments$id)),
+  use.names = FALSE)
+
+trunk_lines <- flowlines_sf[
+  as.character(flowlines_sf$comid) %in% trunk_ids, ]
+
 # ---- render ------------------------------------------------------------
-
-# out_png <- normalizePath(
-#   file.path("hydroloom_decomposition_at_scale.png"),
-#   mustWork = FALSE)
-
-# dir.create(dirname(out_png), showWarnings = FALSE, recursive = TRUE)
-
-# grDevices::png(out_png, width = 1600, height = 1600, res = 150)
 
 par(mar = c(0, 0, 2, 0))
 
@@ -186,11 +179,12 @@ plot(sf::st_geometry(plot_sf),
   col = plot_sf$color,
   border = NA,
   main = sprintf(
-    "decompose_network(trunk_threshold=2000): %d domains (%d trunk, %d compact) on %d catchments",
-    length(d$domains),
-    sum(summary_df$type == "trunk"),
+    "decompose_network(trunk_threshold=2000): %d compacts on %d catchments (trunk overlay in black)",
     sum(summary_df$type == "compact"),
     nrow(plot_sf)))
+
+plot(sf::st_geometry(trunk_lines),
+  col = "black", lwd = 1.2, add = TRUE)
 
 # grDevices::dev.off()
 

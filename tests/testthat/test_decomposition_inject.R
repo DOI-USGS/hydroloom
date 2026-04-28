@@ -58,7 +58,7 @@ test_that("inject_lateral on synthetic unit results sums correctly per trunk", {
       expect_true(all(is.na(inj$lateral_inflow) |
         inj$lateral_inflow == 0),
         label = paste0("trunk ", trunk_id,
-          " has no lateral inflow when no compacts feed it"))
+          " has no lateral inflow when no compact domains feed it"))
 
     }
 

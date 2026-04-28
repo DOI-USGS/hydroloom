@@ -120,7 +120,7 @@ test_that("validate_decomposition accepts a hand-built valid decomposition", {
   decomposition_pending(c("hy_domain", "validate_decomposition"))
 
   # build the smallest possible valid decomposition: one trunk wrapping
-  # the 3-row leveled fixture, no compacts, no overrides.
+  # the 3-row leveled fixture, no compact domains, no overrides.
   lev <- make_lev()
 
   trunk <- make_minimal_hy_domain(lev, domain_type = "trunk")

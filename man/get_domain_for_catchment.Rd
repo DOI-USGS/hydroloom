@@ -33,5 +33,6 @@ get_domain_for_catchment(d, h$id[1])
 
 }
 \seealso{
+\link{domain_decomposition} for the wrapper object,
 \code{\link[=decompose_network]{decompose_network()}}.
 }
