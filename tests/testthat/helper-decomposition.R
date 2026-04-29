@@ -508,7 +508,7 @@ inflow_seeds_for_domain <- function(decomposition, domain_id) {
 
   reg <- reg[reg$to_domain_id == domain_id, , drop = FALSE]
 
-  unique(reg$trunk_catchment_id)
+  unique(reg$stem_catchment_id)
 
 }
 

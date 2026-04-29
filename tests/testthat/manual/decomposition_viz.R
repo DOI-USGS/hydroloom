@@ -79,9 +79,9 @@ src <- add_levelpaths(src,
 
 src <- add_streamorder(src, status = FALSE)
 
-message("decomposing network (trunk_threshold = 2000 sqkm)")
+message("decomposing network (stem_threshold = 2000 sqkm)")
 
-d <- decompose_network(src, trunk_threshold = 2000)
+d <- decompose_network(src, stem_threshold = 2000)
 
 message("decomposition built: ", length(d$domains), " domains")
 
@@ -108,7 +108,7 @@ cat("source rows:      ", nrow(src), "\n")
 # ---- connectivity-overlay size distribution ----------------------------
 #
 # Tabulates per-basin extensive-connectivity overlay sizes. With
-# trunk_threshold = 2000, each basin whose outlet total_da_sqkm exceeds
+# stem_threshold = 2000, each basin whose outlet total_da_sqkm exceeds
 # 2000 km² gets a connectivity overlay covering all main-path
 # catchments above the threshold. Sub-threshold basins get no overlay.
 
@@ -176,7 +176,7 @@ plot(sf::st_geometry(plot_sf),
   col = plot_sf$color,
   border = NA,
   main = sprintf(
-    "decompose_network(trunk_threshold=2000): %d domains on %d catchments (extensive connectivity in black)",
+    "decompose_network(stem_threshold=2000): %d domains on %d catchments (extensive connectivity in black)",
     length(d$domains),
     nrow(plot_sf)))
 

@@ -38,14 +38,13 @@ test_that("a 50% fraction override moves exactly 50% from source to sink", {
   src <- enrich_for_decomposition(load_new_hope())
   d <- hydroloom::decompose_network(src)
 
-  compacts <- names(d$domains)[
-    vapply(d$domains, \(x) x$domain_type == "compact", logical(1))]
+  domain_ids <- names(d$domains)
 
-  if (length(compacts) < 2)
-    skip("need at least two compact domains for an override")
+  if (length(domain_ids) < 2)
+    skip("need at least two domains for an override")
 
-  source_id <- compacts[1]
-  sink_id <- compacts[2]
+  source_id <- domain_ids[1]
+  sink_id <- domain_ids[2]
 
   override <- data.frame(
     id = source_id,

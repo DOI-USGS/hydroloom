@@ -1,10 +1,10 @@
 # Layer 7 — contained-basin policy.
 #
 # No real contained-basin example exists in the package's small test
-# data, so the fixture is built inline here. The fixture is one trunk
-# of 7 features plus a 3-feature endorheic subgraph; a hand-built
-# domain_decomposition wraps both as separate domains and links them
-# via a "contained" relation row in domain_graph.
+# data, so the fixture is built inline here. The fixture is one
+# 7-feature outlet basin plus a 3-feature endorheic subgraph; a
+# hand-built domain_decomposition wraps both as separate domains and
+# links them via the contained domain's `containing_domain_id`.
 #
 # These tests pin the include_contained policy flag semantics: with
 # the flag off, contained basins do not contribute; with the flag on,
@@ -12,11 +12,11 @@
 
 # ---- inline fixture builders ------------------------------------------
 
-#' Build the contained-basin fixture: trunk (7 rows) + endorheic
+#' Build the contained-basin fixture: outlet basin (7 rows) + endorheic
 #' subgraph (3 rows). Returns the source hy_leveled.
 make_contained_source <- function() {
 
-  trunk <- data.frame(
+  outlet_basin <- data.frame(
     id = 1:7,
     toid = c(2L, 3L, 4L, 5L, 6L, 7L, 0L),
     topo_sort = 7:1,
@@ -32,7 +32,7 @@ make_contained_source <- function() {
     levelpath_outlet_id = rep(10L, 3),
     da_sqkm = rep(1.0, 3))
 
-  hydroloom::hy(rbind(trunk, endo))
+  hydroloom::hy(rbind(outlet_basin, endo))
 
 }
 
@@ -92,7 +92,7 @@ test_that("accumulate_domains excludes contained by default", {
   res <- hydroloom::accumulate_domains(d, values, fun = sum,
     include_contained = FALSE)
 
-  # at the trunk outlet, only the trunk itself contributes -> 1
+  # at the outlet domain, only the outlet basin itself contributes -> 1
   expect_equal(max(res, na.rm = TRUE), 1)
 
 })
@@ -108,7 +108,7 @@ test_that("accumulate_domains includes contained when requested", {
   res <- hydroloom::accumulate_domains(d, values, fun = sum,
     include_contained = TRUE)
 
-  # trunk + endorheic -> 2
+  # outlet basin + endorheic -> 2
   expect_equal(max(res, na.rm = TRUE), 2)
 
 })

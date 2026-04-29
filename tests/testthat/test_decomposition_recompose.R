@@ -12,7 +12,7 @@
 #   3. levelpath identity preservation (integer equality)
 #
 # Walker exercises exact arithmetic on the dendritic baseline; new_hope
-# exercises the multi-trunk + divergent path. Both fixtures are lifted
+# exercises the multi-stem + divergent path. Both fixtures are lifted
 # to file scope so each is enriched and decomposed exactly once.
 
 # ---- shared fixtures (file scope) --------------------------------------

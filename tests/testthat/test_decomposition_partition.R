@@ -7,7 +7,7 @@
 #
 # Datasets:
 #   - walker.gpkg : degenerate baseline (62 features, dendritic).
-#   - new_hope.gpkg : primary multi-trunk + divergent fixture.
+#   - new_hope.gpkg : primary multi-stem + divergent fixture.
 #   - network.rds : non-dendritic, forces hy_flownetwork.
 
 test_that("decompose_network partitions walker.gpkg", {
@@ -103,7 +103,7 @@ test_that("decompose_network handles non-dendritic network.rds", {
 
 })
 
-# ---- trunk_threshold / trunk_levelpaths tests -------------------------
+# ---- stem_threshold / stem_levelpaths tests -------------------------
 
 test_that("decompose_network main path includes all above-threshold catchments", {
 
@@ -113,8 +113,8 @@ test_that("decompose_network main path includes all above-threshold catchments",
 
   # threshold=15: main path spans 2 levelpaths, 3 domains (segments)
   d <- hydroloom::decompose_network(src,
-    trunk_metric    = "drainage_area",
-    trunk_threshold = 15)
+    stem_metric    = "drainage_area",
+    stem_threshold = 15)
 
   expect_true(hydroloom::validate_decomposition(d)$valid,
     label = "walker threshold decomposition is valid")
@@ -141,14 +141,14 @@ test_that("decompose_network main path includes all above-threshold catchments",
 
 })
 
-test_that("decompose_network trunk_threshold on new_hope", {
+test_that("decompose_network stem_threshold on new_hope", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_new_hope())
 
   # threshold=100: main path spans many levelpaths, at least 2 segments
-  d <- hydroloom::decompose_network(src, trunk_threshold = 100)
+  d <- hydroloom::decompose_network(src, stem_threshold = 100)
 
   expect_true(hydroloom::validate_decomposition(d)$valid)
   assert_partition_coverage(d, src)
@@ -167,7 +167,7 @@ test_that("decompose_network trunk_threshold on new_hope", {
 
 })
 
-test_that("decompose_network trunk_levelpaths explicit override on walker", {
+test_that("decompose_network stem_levelpaths explicit override on walker", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -177,7 +177,7 @@ test_that("decompose_network trunk_levelpaths explicit override on walker", {
   top_lps <- lp_outlets$levelpath[
     order(-lp_outlets$total_da_sqkm)][1:2]
 
-  d <- hydroloom::decompose_network(src, trunk_levelpaths = top_lps)
+  d <- hydroloom::decompose_network(src, stem_levelpaths = top_lps)
 
   expect_true(hydroloom::validate_decomposition(d)$valid)
   assert_partition_coverage(d, src)
@@ -192,7 +192,7 @@ test_that("decompose_network trunk_levelpaths explicit override on walker", {
 
 })
 
-test_that("decompose_network trunk_metric = arbolate_sum on walker", {
+test_that("decompose_network stem_metric = arbolate_sum on walker", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -205,8 +205,8 @@ test_that("decompose_network trunk_metric = arbolate_sum on walker", {
   threshold <- stats::median(lp_outlets$arbolate_sum, na.rm = TRUE)
 
   d <- hydroloom::decompose_network(src,
-    trunk_metric    = "arbolate_sum",
-    trunk_threshold = threshold)
+    stem_metric    = "arbolate_sum",
+    stem_threshold = threshold)
 
   expect_true(hydroloom::validate_decomposition(d)$valid)
   assert_partition_coverage(d, src)
@@ -225,12 +225,12 @@ test_that("decompose_network errors on missing drainage_area metric", {
 
   expect_error(
     hydroloom::decompose_network(src,
-      trunk_metric = "drainage_area", trunk_threshold = 50),
+      stem_metric = "drainage_area", stem_threshold = 50),
     "total_da_sqkm")
 
 })
 
-test_that("decompose_network errors on unknown trunk_levelpaths", {
+test_that("decompose_network errors on unknown stem_levelpaths", {
 
   decomposition_pending("decompose_network")
 
@@ -238,7 +238,7 @@ test_that("decompose_network errors on unknown trunk_levelpaths", {
 
   expect_error(
     hydroloom::decompose_network(src,
-      trunk_levelpaths = c(999999999)),
+      stem_levelpaths = c(999999999)),
     "unknown levelpath")
 
 })
@@ -262,8 +262,8 @@ test_that("decompose_network omits connectivity for sub-threshold basins", {
   src <- hydroloom::hy(pair)
 
   d <- hydroloom::decompose_network(src,
-    trunk_metric    = "drainage_area",
-    trunk_threshold = 50)
+    stem_metric    = "drainage_area",
+    stem_threshold = 50)
 
   expect_true(hydroloom::validate_decomposition(d)$valid)
   assert_partition_coverage(d, src)
@@ -313,7 +313,7 @@ test_that("decompose_network domain_breaks splits main path at specified ids", {
 
 })
 
-test_that("decompose_network domain_breaks ignores non-trunk ids", {
+test_that("decompose_network domain_breaks ignores non-stem ids", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -327,7 +327,7 @@ test_that("decompose_network domain_breaks ignores non-trunk ids", {
 
 })
 
-test_that("decompose_network domain_breaks composes with trunk_levelpaths", {
+test_that("decompose_network domain_breaks composes with stem_levelpaths", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -337,12 +337,12 @@ test_that("decompose_network domain_breaks composes with trunk_levelpaths", {
   top_lps <- lp_outlets$levelpath[order(-lp_outlets$total_da_sqkm)][1:2]
 
   # Pick a mid-main-path id from the multi-levelpath connectivity overlay.
-  d_lp <- hydroloom::decompose_network(src, trunk_levelpaths = top_lps)
+  d_lp <- hydroloom::decompose_network(src, stem_levelpaths = top_lps)
   conn <- d_lp$domain_connectivity[[1]]
   mid_id <- conn$id[ceiling(nrow(conn) / 2)]
 
   d_both <- hydroloom::decompose_network(src,
-    trunk_levelpaths = top_lps,
+    stem_levelpaths = top_lps,
     domain_breaks = mid_id)
 
   expect_true(hydroloom::validate_decomposition(d_both)$valid)

@@ -9,9 +9,9 @@
 #
 # Implemented:
 #   - require hy_leveled input; error for hy_topo / hy_flownetwork
-#   - trunk selection: single-outlet-levelpath default, trunk_threshold
-#     metric-based multi-trunk, trunk_levelpaths explicit override
-#   - one domain per lateral inflow point on a trunk, carrying the
+#   - stem selection: single-outlet-levelpath default, stem_threshold
+#     metric-based multi-stem, stem_levelpaths explicit override
+#   - one domain per lateral inflow point on a stem, carrying the
 #     maximal upstream sub-network of that lateral
 #   - synthetic nexus ids; inter-domain edges derived from nexus_registry
 #   - print method (cheap + full modes)
@@ -31,36 +31,37 @@
 #' Call [add_levelpaths()] to add. Non-dendritic sources
 #' (`hy_flownetwork`) are not supported at this time.
 #'
-#' **Extensive connectivity selection.** Each drainage basin's extensive network is selected
-#' from `trunk_metric`, `trunk_threshold`, and `trunk_levelpaths` (see
-#' arguments). The extensive connectivity is materialized as the basin's
-#' `domain_connectivity[[basin_id]]` overlay (a `hy_leveled`). The
-#' `trunk_*` parameter names retain the word 'trunk' for hydrologic
-#' continuity even though the resulting object is the basin's
-#' extensive connectivity.
+#' **Extensive connectivity selection.** Each drainage basin's extensive
+#' network is selected from `stem_metric`, `stem_threshold`, and
+#' `stem_levelpaths` (see arguments). The extensive connectivity is
+#' materialized as the basin's `domain_connectivity[[basin_id]]` overlay
+#' (a `hy_leveled`). The `stem_*` naming reflects the cross-scale view:
+#' the basin's main path is the trunk, but with a threshold or explicit
+#' override it can pull in branches as well — every selected path is a
+#' *stem* in the cross-scale sense (trunks and branches are both stems).
 #'
 #' @param x `hy_leveled` object (dendritic network already enriched
 #'   with levelpaths).
-#' @param trunk_metric character. Metric evaluated at each levelpath
-#'   outlet to decide trunk eligibility. `"drainage_area"` reads
+#' @param stem_metric character. Metric evaluated at each levelpath
+#'   outlet to decide stem eligibility. `"drainage_area"` reads
 #'   `total_da_sqkm`; `"arbolate_sum"` reads `arbolate_sum`. Only
-#'   consulted when `trunk_threshold` is non-NULL.
-#' @param trunk_threshold numeric scalar or `NULL`. Value of
-#'   `trunk_metric` at a levelpath outlet above which the levelpath is
-#'   a trunk candidate. `NULL` (default) falls back to one trunk per
-#'   drainage basin.
-#' @param trunk_levelpaths vector of levelpath ids or `NULL`. When
+#'   consulted when `stem_threshold` is non-NULL.
+#' @param stem_threshold numeric scalar or `NULL`. Value of
+#'   `stem_metric` at a levelpath outlet above which the levelpath is
+#'   a stem candidate. `NULL` (default) falls back to one stem per
+#'   drainage basin (the basin's outlet levelpath).
+#' @param stem_levelpaths vector of levelpath ids or `NULL`. When
 #'   non-NULL, bypasses the threshold rule and forces these levelpaths
-#'   to be trunks (the basin's terminal-outlet levelpath is always unioned
+#'   to be stems (the basin's terminal-outlet levelpath is always unioned
 #'   in). Every id must exist in `x$levelpath`.
 #' @param domain_breaks vector of catchment ids or `NULL`. When
-#'   non-NULL, these trunk catchment ids define where the trunk is
-#'   segmented into domain groups. Each break id becomes a
+#'   non-NULL, these stem catchment ids define where the stem network
+#'   is segmented into domain groups. Each break id becomes a
 #'   segment terminal in addition to the auto-detected confluences and
-#'   outlets. Breaks that are not trunk catchments in a given basin
-#'   are silently ignored. When `NULL` (default), trunk segmentation
-#'   is determined automatically from trunk confluences and (if
-#'   available) bridge flowlines.
+#'   outlets. Breaks that are not stem catchments in a given basin
+#'   are silently ignored. When `NULL` (default), segmentation is
+#'   determined automatically from stem confluences and (if available)
+#'   bridge flowlines.
 #' @param overrides data.frame. Non-dendritic inter-domain transfer
 #'   table; pass-through to `decomposition$overrides`.
 #' @returns a [domain_decomposition] object.
@@ -81,9 +82,9 @@
 #' length(d$domains)
 #'
 decompose_network <- function(x,
-                              trunk_metric = "drainage_area",
-                              trunk_threshold = NULL,
-                              trunk_levelpaths = NULL,
+                              stem_metric = "drainage_area",
+                              stem_threshold = NULL,
+                              stem_levelpaths = NULL,
                               domain_breaks = NULL,
                               overrides = NULL) {
 
@@ -112,8 +113,8 @@ decompose_network <- function(x,
       call. = FALSE)
   }
 
-  x <- decompose_resolve_metric(x, trunk_metric, trunk_threshold,
-    trunk_levelpaths)
+  x <- decompose_resolve_metric(x, stem_metric, stem_threshold,
+    stem_levelpaths)
 
   if (nrow(x) == 0) {
     return(structure(
@@ -126,7 +127,7 @@ decompose_network <- function(x,
           nexus_id = character(0),
           from_domain_id = character(0),
           to_domain_id = character(0),
-          trunk_catchment_id = character(0),
+          stem_catchment_id = character(0),
           aggregate_id_measure = numeric(0),
           stringsAsFactors = FALSE),
         source_network = x
@@ -135,7 +136,7 @@ decompose_network <- function(x,
     ))
   }
 
-  # Compute bridge ids from the non-dendritic network for trunk
+  # Compute bridge ids from the non-dendritic network for stem
   # segment boundary restriction. Confluences that are not bridges
   # (within diversion loops) do not create segment breaks.
   if (all(c("fromnode", "tonode") %in% names(x))) {
@@ -170,7 +171,7 @@ decompose_network <- function(x,
     nexus_id = character(0),
     from_domain_id = character(0),
     to_domain_id = character(0),
-    trunk_catchment_id = character(0),
+    stem_catchment_id = character(0),
     aggregate_id_measure = numeric(0),
     stringsAsFactors = FALSE))
 
@@ -188,10 +189,10 @@ decompose_network <- function(x,
     # join stripped off.
     component <- classify_hy(component)
 
-    trunk_ids <- select_trunk_ids(component, tid,
-      trunk_metric, trunk_threshold, trunk_levelpaths)
+    stem_ids <- select_stem_ids(component, tid,
+      stem_metric, stem_threshold, stem_levelpaths)
 
-    built <- decompose_build_component(component, tid, trunk_ids,
+    built <- decompose_build_component(component, tid, stem_ids,
       nd_bridge_ids, domain_breaks)
 
     domains <- c(domains, built$domains)
@@ -235,59 +236,59 @@ decompose_network <- function(x,
   out
 }
 
-#' Resolve and validate the metric column for trunk thresholding
+#' Resolve and validate the metric column for stem thresholding
 #'
 #' Runs once on the whole network before sort_network splits it into
-#' components. Validates trunk_levelpaths entries, validates
-#' trunk_threshold type, and ensures the metric column is present
+#' components. Validates stem_levelpaths entries, validates
+#' stem_threshold type, and ensures the metric column is present
 #' (auto-computing total_da_sqkm from da_sqkm when possible).
 #'
 #' @param x hy_leveled network.
-#' @param trunk_metric character. "drainage_area" or "arbolate_sum".
-#' @param trunk_threshold numeric scalar or NULL.
-#' @param trunk_levelpaths vector of levelpath ids or NULL.
+#' @param stem_metric character. "drainage_area" or "arbolate_sum".
+#' @param stem_threshold numeric scalar or NULL.
+#' @param stem_levelpaths vector of levelpath ids or NULL.
 #' @returns x, possibly with total_da_sqkm added.
 #' @noRd
-decompose_resolve_metric <- function(x, trunk_metric, trunk_threshold,
-                                     trunk_levelpaths) {
+decompose_resolve_metric <- function(x, stem_metric, stem_threshold,
+                                     stem_levelpaths) {
 
-  if (is.null(trunk_threshold) && is.null(trunk_levelpaths)) {
+  if (is.null(stem_threshold) && is.null(stem_levelpaths)) {
     return(x)
   }
 
-  trunk_metric <- match.arg(trunk_metric,
+  stem_metric <- match.arg(stem_metric,
     c("drainage_area", "arbolate_sum"))
 
-  if (!is.null(trunk_levelpaths)) {
+  if (!is.null(stem_levelpaths)) {
 
-    unknown <- setdiff(trunk_levelpaths, unique(x$levelpath))
+    unknown <- setdiff(stem_levelpaths, unique(x$levelpath))
 
     if (length(unknown) > 0) {
-      stop("decompose_network: trunk_levelpaths contains unknown ",
+      stop("decompose_network: stem_levelpaths contains unknown ",
         "levelpath ids: ", paste(unknown, collapse = ", "),
         call. = FALSE)
     }
   }
 
-  if (is.null(trunk_threshold)) {
+  if (is.null(stem_threshold)) {
     return(x)
   }
 
-  if (!is.numeric(trunk_threshold) || length(trunk_threshold) != 1L ||
-      !is.finite(trunk_threshold)) {
-    stop("decompose_network: trunk_threshold must be a finite numeric ",
+  if (!is.numeric(stem_threshold) || length(stem_threshold) != 1L ||
+      !is.finite(stem_threshold)) {
+    stop("decompose_network: stem_threshold must be a finite numeric ",
       "scalar.", call. = FALSE)
   }
 
   if (!"stream_calculator" %in% names(x)) {
-    stop("decompose_network: trunk_threshold requires a ",
+    stop("decompose_network: stem_threshold requires a ",
       "'stream_calculator' column to exclude diverted paths. ",
       "This column is typically provided by the source dataset ",
       "(e.g. NHDPlus StreamCalc).",
       call. = FALSE)
   }
 
-  metric_col <- switch(trunk_metric,
+  metric_col <- switch(stem_metric,
     drainage_area = "total_da_sqkm",
     arbolate_sum  = "arbolate_sum")
 
@@ -295,10 +296,10 @@ decompose_resolve_metric <- function(x, trunk_metric, trunk_threshold,
     return(x)
   }
 
-  if (trunk_metric == "drainage_area") {
+  if (stem_metric == "drainage_area") {
 
     if (!"da_sqkm" %in% names(x)) {
-      stop("decompose_network: trunk_metric = \"drainage_area\" requires ",
+      stop("decompose_network: stem_metric = \"drainage_area\" requires ",
         "either a 'total_da_sqkm' column or a 'da_sqkm' local-area ",
         "column on the input. Compute total_da_sqkm via:\n",
         "  x$total_da_sqkm <- accumulate_downstream(x, \"da_sqkm\")",
@@ -310,29 +311,29 @@ decompose_resolve_metric <- function(x, trunk_metric, trunk_threshold,
     return(x)
   }
 
-  stop("decompose_network: trunk_metric = \"arbolate_sum\" requires an ",
+  stop("decompose_network: stem_metric = \"arbolate_sum\" requires an ",
     "'arbolate_sum' column on the input. It is not auto-computed. Supply ",
     "it via add_levelpaths(weight_attribute = \"arbolate_sum\") or from ",
     "the source dataset's ArbolateSu column.",
     call. = FALSE)
 }
 
-#' Select trunk catchment ids for a single drainage basin
+#' Select stem catchment ids for a single drainage basin
 #'
-#' Returns a character vector of catchment ids that belong in the
-#' single trunk domain for this basin. Empty means the basin is too
-#' small for a trunk (sub-threshold).
+#' Returns a character vector of catchment ids that lie on the basin's
+#' stem network. Empty means the basin is too small (sub-threshold) and
+#' should become a single domain with no extensive connectivity overlay.
 #'
 #' @param component hy_leveled slice for a single drainage basin.
 #' @param terminal_id scalar terminal outlet id of the basin.
-#' @param trunk_metric character. "drainage_area" or "arbolate_sum".
-#' @param trunk_threshold numeric scalar or NULL.
-#' @param trunk_levelpaths vector of levelpath ids or NULL.
+#' @param stem_metric character. "drainage_area" or "arbolate_sum".
+#' @param stem_threshold numeric scalar or NULL.
+#' @param stem_levelpaths vector of levelpath ids or NULL.
 #' @returns character vector of catchment ids.
 #' @noRd
-select_trunk_ids <- function(component, terminal_id,
-                             trunk_metric, trunk_threshold,
-                             trunk_levelpaths) {
+select_stem_ids <- function(component, terminal_id,
+                             stem_metric, stem_threshold,
+                             stem_levelpaths) {
 
   outlet_row <- component[component$id == terminal_id, , drop = FALSE]
 
@@ -344,36 +345,36 @@ select_trunk_ids <- function(component, terminal_id,
 
   outlet_lp <- outlet_row$levelpath
 
-  # No-arg fallback: one trunk per basin = the outlet's levelpath.
-  if (is.null(trunk_threshold) && is.null(trunk_levelpaths)) {
+  # No-arg fallback: stem network is the basin's outlet levelpath.
+  if (is.null(stem_threshold) && is.null(stem_levelpaths)) {
     return(as.character(component$id[component$levelpath == outlet_lp]))
   }
 
   # Explicit override path: all catchments on the forced levelpaths.
-  if (!is.null(trunk_levelpaths)) {
+  if (!is.null(stem_levelpaths)) {
 
-    forced <- intersect(trunk_levelpaths, unique(component$levelpath))
+    forced <- intersect(stem_levelpaths, unique(component$levelpath))
     lps <- unique(c(forced, outlet_lp))
 
     return(as.character(component$id[component$levelpath %in% lps]))
   }
 
   # Threshold rule.
-  metric_col <- switch(trunk_metric,
+  metric_col <- switch(stem_metric,
     drainage_area = "total_da_sqkm",
     arbolate_sum  = "arbolate_sum")
 
-  # Basin too small for a trunk -- return empty so the component becomes
-  # a single domain.
+  # Basin sub-threshold -- return empty so the component becomes a
+  # single domain with no extensive connectivity overlay.
   outlet_metric <- outlet_row[[metric_col]]
 
-  if (is.na(outlet_metric) || outlet_metric <= trunk_threshold) {
+  if (is.na(outlet_metric) || outlet_metric <= stem_threshold) {
     return(character(0))
   }
 
   # All catchments whose metric exceeds the threshold, excluding
   # diverted paths (stream_calculator == 0).
-  above <- component[[metric_col]] > trunk_threshold
+  above <- component[[metric_col]] > stem_threshold
 
   sc <- component$stream_calculator
   above <- above & !is.na(sc) & sc != 0
@@ -779,30 +780,30 @@ print_override_breakdown <- function(overrides) {
   paste0("(", paste(parts, collapse = ", "), ")")
 }
 
-#' Assign trunk catchments to segments between confluences
+#' Assign stem catchments to segments between confluences
 #'
-#' A segment is a maximal linear chain of trunk catchments between two
-#' trunk confluences (or between a headwater and the first confluence,
+#' A segment is a maximal linear chain of stem catchments between two
+#' stem confluences (or between a headwater and the first confluence,
 #' or the last confluence and the outlet). Returns a named character
-#' vector mapping each trunk catchment id to its segment id (the
+#' vector mapping each stem catchment id to its segment id (the
 #' downstream confluence or outlet that terminates the segment).
 #'
-#' @param trunk_ids_chr character vector of trunk catchment ids.
-#' @param trunk_toids_chr character vector of toid for each trunk
-#'   catchment (parallel to trunk_ids_chr).
+#' @param stem_ids_chr character vector of stem catchment ids.
+#' @param stem_toids_chr character vector of toid for each stem
+#'   catchment (parallel to stem_ids_chr).
 #' @param bridge_ids character vector of bridge flowline ids from
 #'   the non-dendritic network, or NULL. When supplied, only
 #'   confluences that are also bridges create segment breaks.
-#' @returns named character vector: names = trunk catchment ids,
+#' @returns named character vector: names = stem catchment ids,
 #'   values = segment id (confluence or outlet catchment id).
 #' @noRd
-trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr,
+stem_segment_ids <- function(stem_ids_chr, stem_toids_chr,
                               bridge_ids = NULL,
                               extra_terminals = NULL) {
 
-  # In-degree within the trunk subgraph.
-  targets_in_trunk <- trunk_toids_chr[trunk_toids_chr %in% trunk_ids_chr]
-  in_deg <- table(targets_in_trunk)
+  # In-degree within the stem subgraph.
+  targets_in_stem <- stem_toids_chr[stem_toids_chr %in% stem_ids_chr]
+  in_deg <- table(targets_in_stem)
   confluences <- names(in_deg[in_deg >= 2L])
 
   # Restrict to bridge confluences when bridge ids are available.
@@ -812,8 +813,8 @@ trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr,
     confluences <- confluences[confluences %in% bridge_ids]
   }
 
-  # Terminals: confluences + outlets (toid not in trunk).
-  outlets <- trunk_ids_chr[!trunk_toids_chr %in% trunk_ids_chr]
+  # Terminals: confluences + outlets (toid not in stem).
+  outlets <- stem_ids_chr[!stem_toids_chr %in% stem_ids_chr]
   terminals <- union(confluences, outlets)
 
   # Layer user-supplied breaks on top of auto-detected terminals.
@@ -821,11 +822,11 @@ trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr,
     terminals <- union(terminals, extra_terminals)
   }
 
-  # Walk each trunk catchment downstream to the first terminal.
-  seg <- setNames(rep(NA_character_, length(trunk_ids_chr)), trunk_ids_chr)
-  toid_lookup <- setNames(trunk_toids_chr, trunk_ids_chr)
+  # Walk each stem catchment downstream to the first terminal.
+  seg <- setNames(rep(NA_character_, length(stem_ids_chr)), stem_ids_chr)
+  toid_lookup <- setNames(stem_toids_chr, stem_ids_chr)
 
-  for (tid in trunk_ids_chr) {
+  for (tid in stem_ids_chr) {
 
     cur <- tid
     while (!cur %in% terminals) {
@@ -840,7 +841,7 @@ trunk_segment_ids <- function(trunk_ids_chr, trunk_toids_chr,
 #' Compute bridge flowline ids from the non-dendritic network
 #'
 #' Rebuilds non-dendritic edges from `fromnode`/`tonode` and runs
-#' `get_bridge_flowlines()`. Used to restrict trunk segment breaks
+#' `get_bridge_flowlines()`. Used to restrict stem segment breaks
 #' to confluences that are also bridge flowlines.
 #'
 #' @param x hy_leveled with fromnode and tonode columns.
@@ -872,7 +873,7 @@ compute_nd_bridge_ids <- function(x) {
 #'
 #' @param component hy_leveled slice for a single drainage basin.
 #' @param terminal_id scalar terminal outlet id of the basin.
-#' @param trunk_ids character vector of catchment ids that lie on the
+#' @param stem_ids character vector of catchment ids that lie on the
 #'   basin's main path. Empty means the basin is sub-threshold (no
 #'   main-path-based segmentation; the whole component is one domain).
 #' @param nd_bridge_ids character vector of bridge flowline ids from
@@ -886,13 +887,13 @@ compute_nd_bridge_ids <- function(x) {
 #'   basin is sub-threshold.
 #' @noRd
 decompose_build_component <- function(component, terminal_id,
-                                      trunk_ids,
+                                      stem_ids,
                                       nd_bridge_ids = NULL,
                                       domain_breaks = NULL) {
 
-  # --- Zero-trunk shortcut: entire component is one domain. ---------
+  # --- Zero-stem shortcut: entire component is one domain. ---------
 
-  if (length(trunk_ids) == 0L) {
+  if (length(stem_ids) == 0L) {
 
     domain_id    <- paste0("domain_", terminal_id)
     outlet_nx <- paste0("nx_outlet_", terminal_id)
@@ -913,7 +914,7 @@ decompose_build_component <- function(component, terminal_id,
       nexus_id             = outlet_nx,
       from_domain_id       = domain_id,
       to_domain_id         = NA_character_,
-      trunk_catchment_id   = as.character(terminal_id),
+      stem_catchment_id   = as.character(terminal_id),
       aggregate_id_measure = NA_real_,
       stringsAsFactors     = FALSE)
 
@@ -926,10 +927,10 @@ decompose_build_component <- function(component, terminal_id,
     ))
   }
 
-  # --- A. Trunk / residual split. ----------------------------------
+  # --- A. Stem / residual split. -----------------------------------
 
-  trunk_mask <- as.character(component$id) %in% trunk_ids
-  residual   <- component[!trunk_mask, , drop = FALSE]
+  stem_mask <- as.character(component$id) %in% stem_ids
+  residual   <- component[!stem_mask, , drop = FALSE]
 
   # Original toid of every catchment in the component, before any
   # rewriting to the reserved outlet value. Used to determine
@@ -944,14 +945,14 @@ decompose_build_component <- function(component, terminal_id,
   # In the decomposed form, every segment becomes a domain -- including
   # segments with no lateral tributaries.
 
-  trunk_ids_chr   <- as.character(component$id[trunk_mask])
-  trunk_toids_chr <- as.character(component$toid[trunk_mask])
+  stem_ids_chr   <- as.character(component$id[stem_mask])
+  stem_toids_chr <- as.character(component$toid[stem_mask])
 
   if (!is.null(domain_breaks)) {
-    seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr,
+    seg_map <- stem_segment_ids(stem_ids_chr, stem_toids_chr,
       extra_terminals = domain_breaks)
   } else {
-    seg_map <- trunk_segment_ids(trunk_ids_chr, trunk_toids_chr,
+    seg_map <- stem_segment_ids(stem_ids_chr, stem_toids_chr,
       nd_bridge_ids)
   }
 
@@ -961,11 +962,11 @@ decompose_build_component <- function(component, terminal_id,
   # An hy_leveled view of the main path with toids intact except for
   # the basin outlet, which carries the reserved outlet toid value.
 
-  trunk_slice <- component[trunk_mask, , drop = FALSE]
+  stem_slice <- component[stem_mask, , drop = FALSE]
 
-  trunk_outlet_value <- get_outlet_value(trunk_slice)
-  trunk_slice$toid[trunk_slice$id == terminal_id] <- trunk_outlet_value
-  trunk_slice <- classify_hy(trunk_slice)
+  stem_outlet_value <- get_outlet_value(stem_slice)
+  stem_slice$toid[stem_slice$id == terminal_id] <- stem_outlet_value
+  stem_slice <- classify_hy(stem_slice)
 
   # --- D. Build a domain for each segment. --------------------------
 
@@ -979,9 +980,9 @@ decompose_build_component <- function(component, terminal_id,
   # for each segment.
   seeds_per_segment <- if (nrow(residual) > 0L) {
     seed_targets <- as.character(residual$toid[
-      as.character(residual$toid) %in% trunk_ids_chr])
+      as.character(residual$toid) %in% stem_ids_chr])
     seed_ids     <- residual$id[
-      as.character(residual$toid) %in% trunk_ids_chr]
+      as.character(residual$toid) %in% stem_ids_chr]
     seed_segs    <- seg_map[seed_targets]
     split(as.character(seed_ids), seed_segs)
   } else {
@@ -997,7 +998,7 @@ decompose_build_component <- function(component, terminal_id,
     seg_id_chr <- as.character(seg_id)
 
     # Main-path catchments belonging to this segment.
-    seg_trunk_ids <- names(seg_map)[seg_map == seg_id]
+    seg_stem_ids <- names(seg_map)[seg_map == seg_id]
 
     # Lateral seeds draining into this segment (may be empty).
     seeds_in_seg <- seeds_per_segment[[seg_id_chr]]
@@ -1012,7 +1013,7 @@ decompose_build_component <- function(component, terminal_id,
     }
 
     # Domain slice = laterals + main-path catchments in segment.
-    domain_catch_ids <- c(lateral_ids, seg_trunk_ids)
+    domain_catch_ids <- c(lateral_ids, seg_stem_ids)
 
     domain_slice <- component[
       as.character(component$id) %in% domain_catch_ids, , drop = FALSE]
@@ -1025,7 +1026,7 @@ decompose_build_component <- function(component, terminal_id,
     # marker column is needed.
     domain_outlet_value <- get_outlet_value(domain_slice)
     domain_slice$toid[
-      as.character(domain_slice$id) %in% seg_trunk_ids] <- domain_outlet_value
+      as.character(domain_slice$id) %in% seg_stem_ids] <- domain_outlet_value
 
     domain_slice <- classify_hy(domain_slice)
 
@@ -1036,7 +1037,7 @@ decompose_build_component <- function(component, terminal_id,
     # original toid is where the domain hands off.
     seg_terminal_toid <- comp_toid_lookup[[seg_id_chr]]
 
-    is_basin_outlet <- !(seg_terminal_toid %in% trunk_ids_chr)
+    is_basin_outlet <- !(seg_terminal_toid %in% stem_ids_chr)
 
     if (is_basin_outlet) {
 
@@ -1046,7 +1047,7 @@ decompose_build_component <- function(component, terminal_id,
         nexus_id             = primary_nexus_id,
         from_domain_id       = domain_id,
         to_domain_id         = NA_character_,
-        trunk_catchment_id   = seg_id_chr,
+        stem_catchment_id   = seg_id_chr,
         aggregate_id_measure = NA_real_,
         stringsAsFactors     = FALSE)
 
@@ -1063,7 +1064,7 @@ decompose_build_component <- function(component, terminal_id,
         nexus_id             = primary_nexus_id,
         from_domain_id       = domain_id,
         to_domain_id         = downstream_domain_id,
-        trunk_catchment_id   = seg_terminal_toid,
+        stem_catchment_id   = seg_terminal_toid,
         aggregate_id_measure = NA_real_,
         stringsAsFactors     = FALSE)
 
@@ -1108,7 +1109,7 @@ decompose_build_component <- function(component, terminal_id,
 
   list(
     domains      = domains,
-    connectivity = trunk_slice,
+    connectivity = stem_slice,
     nexuses      = do.call(rbind,
       nexuses_list[vapply(nexuses_list, is.data.frame, logical(1))]),
     index_names  = index_names,
@@ -1128,7 +1129,7 @@ decompose_build_component <- function(component, terminal_id,
 #' Uses a pre-built inverted index (toid -> id) for O(n) total work
 #' instead of repeated `%in%` scans.
 #'
-#' @param residual data.frame with id, toid columns (the non-trunk
+#' @param residual data.frame with id, toid columns (the non-stem
 #'   rows of a drainage basin).
 #' @param seed scalar catchment id to start from.
 #' @param from_idx pre-built inverted index (output of

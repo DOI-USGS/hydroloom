@@ -41,7 +41,7 @@
 #' default mode: each main-path row is an outlet of its own
 #' contributing sub-basin, so a single
 #' [accumulate_downstream()][accumulate_downstream] call on the
-#' domain's catchments produces, for every trunk catchment in the
+#' domain's catchments produces, for every main-path catchment in the
 #' segment, the locally-incremental drainage area (or any other
 #' accumulable) that belongs there. To switch to recomposed mode, join
 #' `source_network[, c("id", "toid")]` onto the domain's catchments

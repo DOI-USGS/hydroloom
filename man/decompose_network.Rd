@@ -6,9 +6,9 @@
 \usage{
 decompose_network(
   x,
-  trunk_metric = "drainage_area",
-  trunk_threshold = NULL,
-  trunk_levelpaths = NULL,
+  stem_metric = "drainage_area",
+  stem_threshold = NULL,
+  stem_levelpaths = NULL,
   domain_breaks = NULL,
   overrides = NULL
 )
@@ -17,29 +17,29 @@ decompose_network(
 \item{x}{\code{hy_leveled} object (dendritic network already enriched
 with levelpaths).}
 
-\item{trunk_metric}{character. Metric evaluated at each levelpath
-outlet to decide trunk eligibility. \code{"drainage_area"} reads
+\item{stem_metric}{character. Metric evaluated at each levelpath
+outlet to decide stem eligibility. \code{"drainage_area"} reads
 \code{total_da_sqkm}; \code{"arbolate_sum"} reads \code{arbolate_sum}. Only
-consulted when \code{trunk_threshold} is non-NULL.}
+consulted when \code{stem_threshold} is non-NULL.}
 
-\item{trunk_threshold}{numeric scalar or \code{NULL}. Value of
-\code{trunk_metric} at a levelpath outlet above which the levelpath is
-a trunk candidate. \code{NULL} (default) falls back to one trunk per
-drainage basin.}
+\item{stem_threshold}{numeric scalar or \code{NULL}. Value of
+\code{stem_metric} at a levelpath outlet above which the levelpath is
+a stem candidate. \code{NULL} (default) falls back to one stem per
+drainage basin (the basin's outlet levelpath).}
 
-\item{trunk_levelpaths}{vector of levelpath ids or \code{NULL}. When
+\item{stem_levelpaths}{vector of levelpath ids or \code{NULL}. When
 non-NULL, bypasses the threshold rule and forces these levelpaths
-to be trunks (the basin's terminal-outlet levelpath is always unioned
+to be stems (the basin's terminal-outlet levelpath is always unioned
 in). Every id must exist in \code{x$levelpath}.}
 
 \item{domain_breaks}{vector of catchment ids or \code{NULL}. When
-non-NULL, these trunk catchment ids define where the trunk is
-segmented into domain groups. Each break id becomes a
+non-NULL, these stem catchment ids define where the stem network
+is segmented into domain groups. Each break id becomes a
 segment terminal in addition to the auto-detected confluences and
-outlets. Breaks that are not trunk catchments in a given basin
-are silently ignored. When \code{NULL} (default), trunk segmentation
-is determined automatically from trunk confluences and (if
-available) bridge flowlines.}
+outlets. Breaks that are not stem catchments in a given basin
+are silently ignored. When \code{NULL} (default), segmentation is
+determined automatically from stem confluences and (if available)
+bridge flowlines.}
 
 \item{overrides}{data.frame. Non-dendritic inter-domain transfer
 table; pass-through to \code{decomposition$overrides}.}
@@ -60,13 +60,14 @@ carry \code{levelpath}, \code{levelpath_outlet_id}, and \code{topo_sort} columns
 Call \code{\link[=add_levelpaths]{add_levelpaths()}} to add. Non-dendritic sources
 (\code{hy_flownetwork}) are not supported at this time.
 
-\strong{Extensive connectivity selection.} Each drainage basin's extensive network is selected
-from \code{trunk_metric}, \code{trunk_threshold}, and \code{trunk_levelpaths} (see
-arguments). The extensive connectivity is materialized as the basin's
-\code{domain_connectivity[[basin_id]]} overlay (a \code{hy_leveled}). The
-\verb{trunk_*} parameter names retain the word 'trunk' for hydrologic
-continuity even though the resulting object is the basin's
-extensive connectivity.
+\strong{Extensive connectivity selection.} Each drainage basin's extensive
+network is selected from \code{stem_metric}, \code{stem_threshold}, and
+\code{stem_levelpaths} (see arguments). The extensive connectivity is
+materialized as the basin's \code{domain_connectivity[[basin_id]]} overlay
+(a \code{hy_leveled}). The \verb{stem_*} naming reflects the cross-scale view:
+the basin's main path is the trunk, but with a threshold or explicit
+override it can pull in branches as well — every selected path is a
+\emph{stem} in the cross-scale sense (trunks and branches are both stems).
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))

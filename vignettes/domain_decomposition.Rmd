@@ -27,192 +27,189 @@ knitr::opts_chunk$set(
 oldoption <- options(scipen = 9999)
 ```
 
-# The trunk--compact relationship
+# Domains and the extensive connectivity
 
-The domain decomposition model implemented in hydroloom splits a network
-into two types of domains: trunk domains and compact (leaf or stem) domains.
+`decompose_network()` partitions a hydrologic network into independent
+sub-basins called *domains* and stores each basin's main path
+separately as the basin's *extensive connectivity*. Every `hy_domain`
+is functionally the same: a self-contained piece of one drainage
+basin, holding the segment's lateral tributaries together with the
+main-path rows that flow through the segment.
 
-A trunk is the set of main rivers that connect and flow through compact domains. The 
-incremental flowlines and catchments that make up a trunk belong to the
-compact domain that the trunk flows through. The accumulated values
-that reflect the broader network connectivity of the trunk belongs to
-the trunk domain only. 
+The extensive connectivity is the basin's main paths with its `toid`s
+intact — a `hy_leveled` view of the connected main paths, addressable
+end-to-end for drawing, naming, or any operation that wants the full
+network. The main-path rows that appear in the extensive connectivity also appear inside the
+domains, but with their `toid`s set to the reserved outlet value
+returned by `get_outlet_value()`. Each becomes a local outlet of its
+own contributing sub-basin.
 
-A compact domain is a catchment aggregate (HY_Features): its drainage
-area is the full contributing area to the trunk segment that passes
-through it, including the trunk's own incremental catchments along that
-segment. So the catchments along the trunk's mainstem are, by area, part
-of the surrounding compact domain. The trunk itself is not a catchment. It
-carries accumulated values from one compact domain to the next.
-
-The trunk carries accumulated values along its incremental catchments.
-A compact domain accumulates internally -- every tributary inside it drains to
-the compact domain's outlet for headwater compact domains, or to many outlets 
-along the trunk. The compact-to-trunk outlets hold accumulated values
-until recomposition. At recomposition, the compact domain passes its outlet
-values to the trunk, and the trunk continues the basin's downstream
-accumulation from there.
-
-In practice, this split has three consequences:
-
-- A compact domain's catchment network is self-contained, so per-domain
-  processing can be run in parallel. Similarly, one compact domain can be edited
-  or re-attributed without invalidating any of the others.
-- Recomposition is a single pass through the domain graph. Trunk-level
-  accumulation regenerates from per-compact outlet values; catchment-level
-  data does not need to be revisited.
-- Editing and updating decouple. A new modeled result, a corrected
-  geometry, or a re-derived attribute lands in one compact domain at a time, and
-  the trunk catches up by replaying recomposition.
+The duplication is deliberate. With the same rows held both ways, a
+domain's accumulation runs as a single pass over its catchments and
+the basin's main paths stay queryable as one object. Editing or
+re-attributing a single domain does not invalidate any other.
 
 # Use case
 
-A catchment network that covers a large area contains many features with
-complex upstream-downstream dependencies. `decompose_network()` partitions
-such a network into self-contained sub-networks -- called domains -- so that
-each domain can be resolved independently. 
+A catchment network covering a large area carries many features with upstream-downstream dependencies. `decompose_network()`
+splits such a network into self-contained sub-basins so that each
+domain can be processed independently, then recomposed into a single
+result.
 
-**"Compact"** domains make up the entire contributing area that flows to a trunk 
-domain but do not include the connectivity of the trunk domain. **"Trunk"** domains 
-span an entire drainage basin, do not include local contributing area information but 
-do include connectivity of major rivers.  
+In practice, this gives three things:
+
+- A domain's catchment network is self-contained, so per-domain
+  processing can be run in parallel.
+- Recomposition is a single pass through the inter-domain graph
+  derived from the nexus registry. Per-domain results combine through
+  the basin's extensive connectivity to produce basin-wide answer.
+- Editing is decoupled. A new modeled result, a corrected geometry, or a
+  re-derived attribute lands in one domain at a time, and the basin
+  catches up by replaying recomposition.
 
 # Decomposed and recomposed modes
 
-A compact domain's `catchments` slot holds two kinds of rows: the lateral
-tributary rows and the trunk-mainstem rows that flow through the
-compact domain's segment. On the trunk-mainstem rows, the `toid` is dropped to
-the outlet sentinel returned by `get_outlet_value()`, so each becomes a
-local outlet of its own little contributing sub-basin. This is the
-*decomposed* mode -- the default form `decompose_network()` returns.
-Trunk-mainstem membership is recoverable from the parent trunk domain's
-`catchments$id`; no marker column on the compact domain is needed.
+A domain's `catchments` slot holds two kinds of rows: the lateral
+tributary rows and the main-path rows that flow through the
+domain's main-path. On the main-path rows, the `toid` is set to the reserved
+outlet value returned by `get_outlet_value()`, so each becomes a local
+outlet of its own contributing sub-basin. This is the *decomposed*
+mode — the default form `decompose_network()` returns. Main-path
+membership inside a domain is recoverable by intersecting the domain's
+`catchments$id` with the basin's connectivity overlay's `id`.
 
 In decomposed mode a single `accumulate_downstream()` call on a
-compact domain's catchments produces, for every trunk-mainstem row, the
+domain's catchments produces, for every main-path row, the
 locally-incremental drainage area (or any other accumulable) belonging
-there: the trunk row's own incremental plus the lateral tributaries that
-drain into it. Per-compact processing is independent and runs in
+there: the row's own incremental plus the lateral tributaries that
+drain into it. Per-domain processing is independent and runs in
 parallel.
 
-To switch to *recomposed* mode, restore the trunk-mainstem rows' toids
+To switch to *recomposed* mode, restore the main-path rows' toids
 from `source_network`:
 
 ```r
-restored <- compact$catchments
+restored <- domain$catchments
 src_lookup <- setNames(source_network$toid, source_network$id)
-sentinel <- get_outlet_value(restored)
-detoid_idx <- which(restored$toid == sentinel)
+outlet_value <- get_outlet_value(restored)
+detoid_idx <- which(restored$toid == outlet_value)
 restored$toid[detoid_idx] <- src_lookup[as.character(restored$id[detoid_idx])]
 ```
 
-The compact domain's segment is now a connected sub-basin again; standard
+The domain's segment is now a connected sub-basin again; standard
 hydroloom operations (model coupling, hydraulic routing, end-to-end
 visualization) work unchanged. Switching back is a one-column
 assignment.
 
 # Functional characteristics
 
-The decomposition operates on drainage basins. A drainage basin
-(an HY_Features concept) is the total upstream area draining to an
-outlet, with a single mainstem connecting its headwater to that outlet.
-The input network may contain one or more drainage basins, each composed
-of incremental catchments connected in an upstream-downstream topology.
+The decomposition operates on drainage basins. A drainage basin is the
+total upstream area draining to an outlet, with a single mainstem
+connecting its headwater to that outlet. The input network may contain
+one or more drainage basins, each composed of incremental catchments
+connected in an upstream-downstream topology.
 
-For each drainage basin, `decompose_network()` identifies the trunk
-catchments -- the basin's mainstem (outlet levelpath) by default, or
-the catchments above a threshold when `trunk_threshold` is set -- and
-divides the trunk into segments at confluences. Each segment becomes a
-compact domain whose catchments slot holds the lateral tributaries
-draining into the segment together with the segment's trunk-mainstem
-rows in their decomposed (detoid'd) form. Even segments with no
-lateral tributaries
-become compact domains -- the trunk-mainstem rows alone constitute the
-compact domain's contributing area.
+For each drainage basin, `decompose_network()` identifies the
+basin's main path — the outlet levelpath by default, or the union of
+levelpaths whose outlet metric exceeds `stem_threshold` — and divides
+it into segments at confluences. Each segment becomes a domain whose
+catchments slot holds the lateral tributaries draining into the
+segment together with the segment's main-path rows in their decomposed
+form. Even segments with no lateral tributaries become
+domains — the main-path rows alone constitute the segment's
+contributing area.
 
-A trunk domain is built alongside the compact domains. It carries the
-mainstem catchments with their toids intact, so the connected mainstem
-is addressable for drawing, naming, or any operation that wants the
-end-to-end flowpath. The trunk is the same set of catchments that
-appear, in their decomposed form, across the compact domains. The duplication
-keeps the mainstem queryable as a single object without forcing readers
-to reassemble it from compact domains.
+The basin's extensive connectivity is built alongside the domains. It
+is a `hy_leveled` view of the same main path, with `toid`s intact, so
+the connected mainstem is addressable end-to-end. The same rows appear
+in their decomposed form across the segment domains.
 
-A compact domain corresponds to an HY_Features catchment aggregate.
-Its drainage area is the full contributing area to its trunk segment.
-The decomposition does not materialize catchment aggregate objects
-directly; the alignment is by construction, with the compact domain's
+A domain corresponds to an HY_Features catchment aggregate. Its
+drainage area is the full contributing area to its segment. The
+decomposition does not materialize catchment aggregate objects
+directly; the alignment is by construction, with the domain's
 catchments slot holding the rows the aggregate would.
 
-The trunk domain discharges at the outlet of the drainage basin. The
-inter-domain graph records flow between compact domains through synthetic
-nexus identifiers, with one edge per inter-segment handoff.
+The inter-domain graph records flow between domains through synthetic
+nexus identifiers, with one edge per inter-segment handoff. The graph
+is derived on demand from `nexus_registry`; see `get_domain_graph()`.
 
 # Separation of concerns
 
 The decomposition separates three concerns:
 
 1. **Per-domain computation.** Each domain's catchment network is
-   self-contained. Processing a domain requires no information from any
-   other domain beyond what arrives at inlet nexuses.
-2. **Inter-domain connectivity.** The domain graph captures which domains
-   flow into which, and at what nexus -- a coarser-resolution network
-   that can be traversed independently of catchment-level detail.
+   self-contained. Processing a domain requires no information from
+   any other domain beyond what arrives at inlet nexuses.
+2. **Inter-domain connectivity.** The derived domain graph captures
+   which domains flow into which, and at what nexus — a
+   coarser-resolution network that can be traversed independently of
+   catchment-level detail.
 3. **Global ordering.** Each domain carries a `topo_sort_offset` that
    anchors its internal topological sort within a global sequence, so
    cross-domain ordering is recoverable after independent resolution.
 
 # Data model
 
-The decomposition produces a `domain_decomposition` object with six slots:
+The decomposition produces a `domain_decomposition` object with six
+slots:
 
-- **`domains`** -- named list of `hy_domain` objects, one per sub-network.
-- **`domain_graph`** -- inter-domain flow edges (`id`, `toid`, `nexus_id`,
-  `relation_type`).
-- **`overrides`** -- non-dendritic inter-domain transfer table, or `NULL`.
-- **`catchment_domain_index`** -- named character vector mapping each
+- **`domains`** — named list of `hy_domain` objects, one per
+  sub-basin segment.
+- **`domain_connectivity`** — named list of `hy_leveled` overlays
+  keyed by basin id. Each overlay is the basin's *extensive
+  connectivity*: a `hy_leveled` view of the main path with `toid`s
+  intact except at the basin outlet, which carries the reserved
+  outlet `toid` value. Sub-threshold basins have no overlay.
+- **`overrides`** — non-dendritic inter-domain transfer table, or
+  `NULL`.
+- **`catchment_domain_index`** — named character vector mapping each
   catchment id to its domain id.
-- **`nexus_registry`** -- synthetic nexus identifiers and the domains they
-  connect.
-- **`source_network`** -- the original enriched input network.
+- **`nexus_registry`** — synthetic nexus identifiers and the domains
+  they connect.
+- **`source_network`** — the original enriched input network.
+
+The inter-domain edge list is not stored; `get_domain_graph()` derives
+it from `nexus_registry` on demand.
 
 ## `hy_domain`
 
-A `hy_domain` bundles a domain's catchment network with the connectivity
-metadata that recomposition needs:
+A `hy_domain` bundles a domain's catchment network with the
+connectivity metadata that recomposition needs:
 
-- `domain_id` -- unique identifier.
-- `domain_type` -- `"trunk"` or `"compact"`.
-- `outlet_nexus_id` -- primary outlet nexus (trunk domains have one; compact
-  domains may discharge at additional nexuses recorded in the domain graph).
-- `inlet_nexus_ids` -- nexuses where compact domains inject lateral inflow
-  (empty for compact domains themselves).
-- `trunk_domain_id` -- the receiving trunk (for compact domains), or `NA` for trunks.
-- `containing_domain_id` -- the enclosing domain for endorheic basins,
-  or `NA`.
-- `catchments` -- hydroloom object carrying the domain's catchment network.
-  Compact catchments include both lateral tributary rows and the segment's
-  trunk-mainstem rows; the trunk-mainstem rows have a `toid` set to
-  `get_outlet_value()`. To tell the two apart, intersect the compact domain's
-  `catchments$id` with the parent trunk domain's `catchments$id`.
-- `topo_sort_offset` -- global topo_sort base for cross-domain ordering.
+- `domain_id` — unique identifier.
+- `outlet_nexus_id` — the hydro nexus where this domain discharges.
+- `inlet_nexus_ids` — hydro nexus ids where upstream domains feed
+  into this one. `character(0)` for leaf domains; populated for stem
+  and root domains.
+- `containing_domain_id` — the enclosing domain for endorheic
+  basins, or `NA`.
+- `catchments` — hydroloom object carrying the domain's catchment
+  network. Catchments include both lateral tributary rows and the
+  segment's main-path rows; the main-path rows have a `toid` set to
+  `get_outlet_value()`. To tell the two apart, intersect the domain's
+  `catchments$id` with the basin's connectivity overlay's `id`.
+- `topo_sort_offset` — global topo_sort base for cross-domain
+  ordering.
 
-Trunk domains require `hy_leveled` catchments. Compact domains accept
-`hy_topo`, `hy_leveled`, or `hy_flownetwork`.
+The `catchments` slot accepts `hy_topo`, `hy_leveled`, or
+`hy_flownetwork`.
 
 # S3 classes
 
 The decomposition builds on the hydroloom S3 class hierarchy described
 in `vignette("hydroloom")`. The relevant classes are:
 
-- **`hy_topo`** -- self-referencing edge list (`id`, `toid`; unique `id`).
-- **`hy_leveled`** -- subclass of `hy_topo` enriched with `topo_sort`,
+- **`hy_topo`** — self-referencing edge list (`id`, `toid`; unique
+  `id`).
+- **`hy_leveled`** — subclass of `hy_topo` enriched with `topo_sort`,
   `levelpath`, and `levelpath_outlet_id`. Required input for
-  `decompose_network()`, because the partition uses `levelpath` to identify
-  trunk membership and `topo_sort` to establish processing order.
-- **`hy_flownetwork`** -- non-dendritic edge list (`id`, `toid`; non-unique
-  `id` allowed). Compact domains may hold `hy_flownetwork` catchments to
-  preserve internal divergences.
+  `decompose_network()`, because the partition uses `levelpath` to
+  identify main-path membership and `topo_sort` to establish
+  processing order.
+- **`hy_flownetwork`** — non-dendritic edge list (`id`, `toid`;
+  non-unique `id` allowed). Domains may hold `hy_flownetwork`
+  catchments to preserve internal divergences.
 
 # Running a decomposition
 
@@ -238,29 +235,32 @@ The returned `domain_decomposition` prints a summary of the partition:
 d
 ```
 
-## Trunk selection
+## Extensive Network selection
 
-`decompose_network()` determines trunk membership through one of three paths:
+`decompose_network()` determines which catchments carry the basin's
+extensive network through one of three paths:
 
-- **Default** (both `trunk_threshold` and `trunk_levelpaths` are `NULL`) --
-  the trunk contains catchments on the basin's terminal-outlet levelpath.
-- **Threshold-based** -- when `trunk_threshold` is supplied, a basin's outlet
-  metric must exceed the threshold to receive a trunk. Basins below the
-  threshold become a single compact domain with no trunk extraction.
-- **Explicit** -- when `trunk_levelpaths` is supplied, those levelpaths
-  (plus the outlet levelpath) form the trunk.
+- **Default** (both `stem_threshold` and `stem_levelpaths` are
+  `NULL`) — the main path is the basin's outlet levelpath.
+- **Threshold-based** — when `stem_threshold` is supplied, a basin's
+  outlet metric must exceed the threshold for the basin to be split
+  along its main path. Sub-threshold basins become a single domain
+  with no extensive connectivity overlay.
+- **Explicit** — when `stem_levelpaths` is supplied, those
+  levelpaths (plus the outlet levelpath) form the main path.
 
 ```{r threshold}
-d_thresh <- decompose_network(src, trunk_threshold = 100)
+d_thresh <- decompose_network(src, stem_threshold = 100)
 
 d_thresh
 ```
 
-The map below colors each flowline by the compact domain it belongs to and overlays the
-trunk in black. Every flowline belongs to some compact domain (the partition
-covers the network); the trunk overlay highlights the rows that are
-*also* in a trunk domain -- the connected mainstem that the compact domains
-turn into local outlets.
+The map below colors each flowline by the domain it belongs to and
+overlays the basin's extensive connectivity in black. Every flowline
+belongs to some domain (the partition covers the network); the
+connectivity overlay highlights the rows that are *also* in the
+basin's extensive connectivity — the main path that the domains turn
+into local outlets.
 
 ```{r plot-domains, fig.width = 7, fig.height = 7}
 # Build a domain_id column on the source flowlines.
@@ -268,68 +268,68 @@ domain_idx <- d_thresh$catchment_domain_index
 plot_net <- d_thresh$source_network
 plot_net$domain_id <- unname(domain_idx[as.character(plot_net$id)])
 
-# Pull all trunk-mainstem ids from every trunk domain.
-trunk_ids <- unlist(lapply(
-  Filter(\(x) x$domain_type == "trunk", d_thresh$domains),
-  \(x) as.character(x$catchments$id)),
+# Pull all main-path ids from every basin's extensive connectivity overlay.
+conn_ids <- unlist(lapply(d_thresh$domain_connectivity,
+  \(o) as.character(o$id)),
   use.names = FALSE)
 
-compact_ids <- sort(unique(plot_net$domain_id))
+domain_ids <- sort(unique(plot_net$domain_id))
 
 set.seed(42)
-pal <- sample(grDevices::hcl.colors(length(compact_ids), palette = "Set 2"))
-names(pal) <- compact_ids
+pal <- sample(grDevices::hcl.colors(length(domain_ids), palette = "Set 2"))
+names(pal) <- domain_ids
 
 par(mar = c(0, 0, 1, 0))
 plot(sf::st_geometry(plot_net),
   col = pal[plot_net$domain_id],
-  lwd = 2, main = "Domain decomposition (trunk_threshold = 100)")
-plot(sf::st_geometry(plot_net[as.character(plot_net$id) %in% trunk_ids, ]),
+  lwd = 2, main = "Domain decomposition (stem_threshold = 100)")
+plot(sf::st_geometry(plot_net[as.character(plot_net$id) %in% conn_ids, ]),
   col = "black", lwd = 2, add = TRUE)
-legend("topright", legend = c("trunk overlay",
-  "compact (each color = one domain)"),
+legend("topright", legend = c("extensive connectivity overlay",
+  "domain (each color = one)"),
   col = c("black", "grey60"), lwd = 2, bty = "n", cex = 0.8)
 ```
 
 ## Manual domain breaks
 
-The automatic segmentation splits the trunk at confluences -- every point
-where a tributary enters the trunk starts a new segment. A large threshold
-pulls more levelpaths into the trunk and produces fewer, larger compact
-domains. The `domain_breaks` parameter gives direct control over where the
-trunk is segmented, independent of the confluence structure.
+The automatic segmentation splits at confluences —
+every point where a tributary enters starts a new
+segment. A large threshold pulls more rivers into domains 
+producing fewer, larger domains. The `domain_breaks` parameter
+gives direct control over where the network is segmented,
+independent of the confluence structure.
 
 In practice, this is useful when domain boundaries need to align with
-modeling sub-basins, gauge locations, or administrative units rather than
-the topology's natural confluence points. The approach is to set a high
-threshold (so the trunk absorbs most of the network) and then pass specific
-catchment ids as break points.
+modeling sub-basins, gauge locations, or administrative units rather
+than the topology's natural confluence points. The approach is to set
+a high threshold and
+then pass specific catchment ids as break points.
 
 ```{r manual-breaks}
-# A high threshold pulls many levelpaths into the trunk. Without
-# domain_breaks the trunk is segmented at every confluence, which
-# may produce more compact domains than desired.
-d_high <- decompose_network(src, trunk_threshold = 25)
+# A high threshold pulls many levelpaths into the main path. Without
+# domain_breaks the main path is segmented at every confluence,
+# which may produce more domains than desired.
+d_high <- decompose_network(src, stem_threshold = 25)
 d_high
 
-# Identify trunk catchments where we want to force segment boundaries.
-# Here we pick two catchments roughly in the middle of the trunk.
-trunk_dom <- Filter(\(x) x$domain_type == "trunk", d_high$domains)[[1]]
-trunk_catch <- trunk_dom$catchments
+# Identify main-path catchments where we want to force segment
+# boundaries. Here we pick two catchments roughly in the middle of
+# the connectivity overlay.
+conn <- d_high$domain_connectivity[[1]]
 
-# Choose break points at the 1/3 and 2/3 marks along the trunk.
-break_ids <- trunk_catch$id[
-  c(floor(nrow(trunk_catch) / 3), floor(2 * nrow(trunk_catch) / 3))]
+# Choose break points at the 1/3 and 2/3 marks along the main path.
+break_ids <- conn$id[
+  c(floor(nrow(conn) / 3), floor(2 * nrow(conn) / 3))]
 
 d_manual <- decompose_network(src,
-  trunk_threshold = 25,
+  stem_threshold = 25,
   domain_breaks = break_ids)
 d_manual
 ```
 
 The map below compares the automatic segmentation (left) with the
-manual-break segmentation (right). Both use the same trunk threshold; the
-difference is where compact domains attach along the trunk.
+manual-break segmentation (right). Both use the same threshold; the
+difference is where domains attach along the extensive network.
 
 ```{r plot-manual-breaks, fig.width = 10, fig.height = 5}
 plot_decomp <- function(d, title) {
@@ -338,22 +338,21 @@ plot_decomp <- function(d, title) {
   net <- d$source_network
   net$domain_id <- unname(domain_idx[as.character(net$id)])
 
-  trunk_ids <- unlist(lapply(
-    Filter(\(x) x$domain_type == "trunk", d$domains),
-    \(x) as.character(x$catchments$id)),
+  conn_ids <- unlist(lapply(d$domain_connectivity,
+    \(o) as.character(o$id)),
     use.names = FALSE)
 
-  compact_ids <- sort(unique(net$domain_id))
+  domain_ids <- sort(unique(net$domain_id))
 
   set.seed(42)
   pal <- sample(grDevices::hcl.colors(
-    max(length(compact_ids), 1), palette = "Set 2"))
-  names(pal) <- compact_ids
+    max(length(domain_ids), 1), palette = "Set 2"))
+  names(pal) <- domain_ids
 
   plot(sf::st_geometry(net),
     col = pal[net$domain_id],
     lwd = 2, main = title)
-  plot(sf::st_geometry(net[as.character(net$id) %in% trunk_ids, ]),
+  plot(sf::st_geometry(net[as.character(net$id) %in% conn_ids, ]),
     col = "black", lwd = 2, add = TRUE)
 
 }
@@ -365,16 +364,25 @@ plot_decomp(d_manual, "Manual domain_breaks")
 
 ## Accessing domains
 
-Individual domains, the domain graph, and the catchment-to-domain mapping are
-accessible through the slots of the returned object:
+Individual domains, the inter-domain graph, the connectivity
+overlays, and the catchment-to-domain mapping are accessible through
+dedicated accessors:
 
 ```{r access}
-# number and types of domains
-types <- vapply(d$domains, \(x) x$domain_type, character(1))
-table(types)
+# look up a domain by id
+get_domain(d, names(d$domains)[[1]])$domain_id
 
-# inter-domain flow edges
-head(d$domain_graph)
+# classify domains as leaves, stems, or roots
+domain_ids <- names(d$domains)
+roles <- vapply(domain_ids, function(id) {
+  if (is_root_domain(d, id)) "root"
+  else if (is_leaf_domain(d, id)) "leaf"
+  else "stem"
+}, character(1))
+table(roles)
+
+# inter-domain flow edges (derived from nexus_registry)
+head(get_domain_graph(d, relations = "flow"))
 
 # look up which domain owns a catchment
 get_domain_for_catchment(d, d$source_network$id[1:5])

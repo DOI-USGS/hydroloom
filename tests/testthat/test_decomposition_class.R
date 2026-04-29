@@ -267,7 +267,7 @@ test_that("print.domain_decomposition handles empty decomposition", {
         nexus_id = character(0),
         from_domain_id = character(0),
         to_domain_id = character(0),
-        trunk_catchment_id = character(0),
+        stem_catchment_id = character(0),
         aggregate_id_measure = numeric(0)),
       source_network = make_lev()),
     class = "domain_decomposition")
