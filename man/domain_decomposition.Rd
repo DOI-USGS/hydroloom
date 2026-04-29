@@ -6,7 +6,7 @@
 \description{
 A \code{domain_decomposition} is the wrapper object returned by
 \code{\link[=decompose_network]{decompose_network()}}. It bundles a list of \code{\link[=hy_domain]{hy_domain()}} objects
-with the basin-level extensive connectivity overlays and the
+with the basin-level extensive network overlays and the
 nexus metadata that recomposition needs.
 }
 \details{
@@ -17,7 +17,7 @@ The object is a plain S3 list with six slots:
 sub-network.}
 \item{\code{domain_connectivity}}{named list of \code{hy_leveled} overlays
 keyed by basin id. Each overlay is the basin's \emph{extensive
-connectivity} — a \code{hy_leveled} view of the main path with
+network} — a \code{hy_leveled} view of the connecting flowlines with
 \code{toid}s intact except at the basin outlet, which carries the
 reserved outlet \code{toid} value. Sub-threshold basins have no
 overlay.}

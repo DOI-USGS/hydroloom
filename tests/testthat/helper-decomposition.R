@@ -202,8 +202,8 @@ decomposition_pending <- function(fn) {
 #' Assert that the domains form a partition of the source.
 #'
 #' Every source catchment id appears in exactly one domain's
-#' catchments slot. Main-path rows are duplicated in the basin's
-#' extensive connectivity overlay and are checked separately by
+#' catchments slot. Extensive network rows are duplicated in the
+#' basin's extensive network overlay and are checked separately by
 #' `assert_segments_in_connectivity`.
 #'
 #' @param decomposition object returned by decompose_network.
@@ -223,14 +223,15 @@ assert_partition_coverage <- function(decomposition, src) {
 
 }
 
-#' Assert that every domain's main-path rows (those carrying the
-#' reserved outlet `toid` value) appear in some basin's
+#' Assert that every domain's extensive network rows (those carrying
+#' the reserved outlet `toid` value) appear in some basin's
 #' domain_connectivity overlay with `toid`s intact.
 #'
 #' Mirrors the validator's connectivity-membership sub-check.
-#' Main-path membership inside a domain is recoverable by intersecting
-#' the domain's `catchments$id` with a basin's extensive connectivity overlay's
-#' `id`; this assertion pins that the duplication is consistent.
+#' Extensive network membership inside a domain is recoverable by
+#' intersecting the domain's `catchments$id` with a basin's extensive
+#' network overlay's `id`; this assertion pins that the duplication is
+#' consistent.
 #'
 #' @param decomposition object returned by decompose_network.
 assert_segments_in_connectivity <- function(decomposition) {
@@ -258,13 +259,13 @@ assert_segments_in_connectivity <- function(decomposition) {
 
     testthat::expect_true(all(seg_ids %in% conn_ids),
       label = paste0("domain ", d$domain_id,
-        " segment main-path rows appear in some connectivity overlay"))
+        " segment extensive network rows appear in some connectivity overlay"))
   }
 
   invisible(NULL)
 }
 
-#' Assert that each basin's extensive connectivity overlay has exactly
+#' Assert that each basin's extensive network overlay has exactly
 #' one outlet.
 #'
 #' Uses sort_network(split = TRUE) which adds a terminal_id column —
@@ -317,12 +318,13 @@ assert_dendritic_inter_domain <- function(decomposition) {
 }
 
 #' Walk upstream from `seed` through a domain's catchments, following
-#' rows whose toid points back into the table. Main-path rows carry
-#' the reserved outlet toid value and so terminate the walk -- the
-#' seed itself is the only main-path row included in the result.
+#' rows whose toid points back into the table. Extensive network rows
+#' carry the reserved outlet toid value and so terminate the walk --
+#' the seed itself is the only extensive network row included in the
+#' result.
 #'
 #' @param catch domain's catchments data.frame.
-#' @param seed scalar id (the main-path row to start at).
+#' @param seed scalar id (the extensive network row to start at).
 #' @returns character vector of contributing ids (including seed).
 collect_upstream_in_domain <- function(catch, seed) {
 

@@ -21,9 +21,9 @@
 #' @description
 #' Partitions a hydrologic network into `hy_domain` objects for
 #' independent or parallel computation. Each drainage basin is split
-#' into domains along its main path; the main path itself is returned
-#' separately as the basin's *extensive connectivity* overlay. See
-#' [hy_domain()] and [domain_decomposition] for details.
+#' into domains along its extensive network; the extensive network
+#' itself is returned separately as the basin's *domain_connectivity*
+#' overlay. See [hy_domain()] and [domain_decomposition] for details.
 #'
 #' @details
 #' **Input.** Input must be `hy_leveled` -- the network must already
@@ -31,14 +31,16 @@
 #' Call [add_levelpaths()] to add. Non-dendritic sources
 #' (`hy_flownetwork`) are not supported at this time.
 #'
-#' **Extensive connectivity selection.** Each drainage basin's extensive
+#' **Extensive network selection.** Each drainage basin's extensive
 #' network is selected from `stem_metric`, `stem_threshold`, and
-#' `stem_levelpaths` (see arguments). The extensive connectivity is
+#' `stem_levelpaths` (see arguments). The basin's extensive connectivity
+#' (the regional relationship that ties its drainage pieces together) is
 #' materialized as the basin's `domain_connectivity[[basin_id]]` overlay
-#' (a `hy_leveled`). The `stem_*` naming reflects the cross-scale view:
-#' the basin's main path is the trunk, but with a threshold or explicit
-#' override it can pull in branches as well — every selected path is a
-#' *stem* in the cross-scale sense (trunks and branches are both stems).
+#' — a `hy_leveled` view of the extensive network. The `stem_*` naming
+#' reflects the cross-scale view: a basin's outlet levelpath is a trunk,
+#' but with a threshold or explicit override the selection can pull in
+#' branches as well — every selected path is a *stem* in the cross-scale
+#' sense (trunks and branches are both stems).
 #'
 #' @param x `hy_leveled` object (dendritic network already enriched
 #'   with levelpaths).
@@ -322,7 +324,7 @@ decompose_resolve_metric <- function(x, stem_metric, stem_threshold,
 #'
 #' Returns a character vector of catchment ids that lie on the basin's
 #' stem network. Empty means the basin is too small (sub-threshold) and
-#' should become a single domain with no extensive connectivity overlay.
+#' should become a single domain with no extensive network overlay.
 #'
 #' @param component hy_leveled slice for a single drainage basin.
 #' @param terminal_id scalar terminal outlet id of the basin.
@@ -365,7 +367,7 @@ select_stem_ids <- function(component, terminal_id,
     arbolate_sum  = "arbolate_sum")
 
   # Basin sub-threshold -- return empty so the component becomes a
-  # single domain with no extensive connectivity overlay.
+  # single domain with no extensive network overlay.
   outlet_metric <- outlet_row[[metric_col]]
 
   if (is.na(outlet_metric) || outlet_metric <= stem_threshold) {
@@ -387,7 +389,7 @@ select_stem_ids <- function(component, terminal_id,
 #' @description
 #' A `domain_decomposition` is the wrapper object returned by
 #' [decompose_network()]. It bundles a list of [hy_domain()] objects
-#' with the basin-level extensive connectivity overlays and the
+#' with the basin-level extensive network overlays and the
 #' nexus metadata that recomposition needs.
 #'
 #' @details
@@ -398,7 +400,7 @@ select_stem_ids <- function(component, terminal_id,
 #'     sub-network.}
 #'   \item{`domain_connectivity`}{named list of `hy_leveled` overlays
 #'     keyed by basin id. Each overlay is the basin's *extensive
-#'     connectivity* — a `hy_leveled` view of the main path with
+#'     network* — a `hy_leveled` view of the connecting flowlines with
 #'     `toid`s intact except at the basin outlet, which carries the
 #'     reserved outlet `toid` value. Sub-threshold basins have no
 #'     overlay.}
@@ -869,22 +871,23 @@ compute_nd_bridge_ids <- function(x) {
   as.character(get_bridge_flowlines(nd_edges, quiet = TRUE))
 }
 
-#' Build one drainage basin's domains and extensive connectivity overlay
+#' Build one drainage basin's domains and extensive network overlay
 #'
 #' @param component hy_leveled slice for a single drainage basin.
 #' @param terminal_id scalar terminal outlet id of the basin.
 #' @param stem_ids character vector of catchment ids that lie on the
-#'   basin's main path. Empty means the basin is sub-threshold (no
-#'   main-path-based segmentation; the whole component is one domain).
+#'   basin's extensive network. Empty means the basin is sub-threshold
+#'   (no extensive-network-based segmentation; the whole component is
+#'   one domain).
 #' @param nd_bridge_ids character vector of bridge flowline ids from
-#'   the non-dendritic network, or NULL. When supplied, main-path
+#'   the non-dendritic network, or NULL. When supplied, extensive-network
 #'   segment breaks are restricted to confluences that are also bridges.
 #' @returns list with `domains`, `connectivity`, `nexuses`, and two
 #'   parallel vectors for the catchment_domain_index. `connectivity` is
-#'   the basin's extensive connectivity overlay (a `hy_leveled` view of
-#'   the main path with toids intact except for the basin outlet,
-#'   which carries the reserved outlet `toid` value) or `NULL` when the
-#'   basin is sub-threshold.
+#'   the basin's extensive network overlay (a `hy_leveled` view of
+#'   the connecting flowlines with toids intact except for the basin
+#'   outlet, which carries the reserved outlet `toid` value) or `NULL`
+#'   when the basin is sub-threshold.
 #' @noRd
 decompose_build_component <- function(component, terminal_id,
                                       stem_ids,
@@ -939,11 +942,11 @@ decompose_build_component <- function(component, terminal_id,
   comp_toid_lookup <- setNames(
     as.character(component$toid), as.character(component$id))
 
-  # --- B. Compute main-path segments. --------------------------------
-  # A segment is a maximal linear chain of main-path catchments between
-  # two confluences (or between a headwater/confluence and the outlet).
-  # In the decomposed form, every segment becomes a domain -- including
-  # segments with no lateral tributaries.
+  # --- B. Compute extensive network segments. ------------------------
+  # A segment is a maximal linear chain of extensive network catchments
+  # between two confluences (or between a headwater/confluence and the
+  # outlet). In the decomposed form, every segment becomes a domain --
+  # including segments with no lateral tributaries.
 
   stem_ids_chr   <- as.character(component$id[stem_mask])
   stem_toids_chr <- as.character(component$toid[stem_mask])
@@ -958,9 +961,10 @@ decompose_build_component <- function(component, terminal_id,
 
   segment_ids <- unique(unname(seg_map))
 
-  # --- C. Build the basin's extensive connectivity overlay. ---------
-  # An hy_leveled view of the main path with toids intact except for
-  # the basin outlet, which carries the reserved outlet toid value.
+  # --- C. Build the basin's extensive network overlay. --------------
+  # An hy_leveled view of the connecting flowlines with toids intact
+  # except for the basin outlet, which carries the reserved outlet
+  # toid value.
 
   stem_slice <- component[stem_mask, , drop = FALSE]
 
@@ -997,7 +1001,7 @@ decompose_build_component <- function(component, terminal_id,
 
     seg_id_chr <- as.character(seg_id)
 
-    # Main-path catchments belonging to this segment.
+    # Extensive network catchments belonging to this segment.
     seg_stem_ids <- names(seg_map)[seg_map == seg_id]
 
     # Lateral seeds draining into this segment (may be empty).
@@ -1012,18 +1016,18 @@ decompose_build_component <- function(component, terminal_id,
       lateral_ids <- union(lateral_ids, as.character(up))
     }
 
-    # Domain slice = laterals + main-path catchments in segment.
+    # Domain slice = laterals + extensive network catchments in segment.
     domain_catch_ids <- c(lateral_ids, seg_stem_ids)
 
     domain_slice <- component[
       as.character(component$id) %in% domain_catch_ids, , drop = FALSE]
 
-    # Set main-path rows' toids to the reserved outlet value. Each
-    # becomes a local outlet of its own contributing sub-basin. Lateral
-    # rows keep their natural toids -- they point to in-domain main-path
-    # rows. Main-path membership is recoverable by intersecting the
-    # domain's ids with the basin's domain_connectivity overlay; no
-    # marker column is needed.
+    # Set extensive network rows' toids to the reserved outlet value.
+    # Each becomes a local outlet of its own contributing sub-basin.
+    # Lateral rows keep their natural toids -- they point to in-domain
+    # extensive network rows. Extensive network membership is
+    # recoverable by intersecting the domain's ids with the basin's
+    # domain_connectivity overlay; no marker column is needed.
     domain_outlet_value <- get_outlet_value(domain_slice)
     domain_slice$toid[
       as.character(domain_slice$id) %in% seg_stem_ids] <- domain_outlet_value
@@ -1033,8 +1037,8 @@ decompose_build_component <- function(component, terminal_id,
     domain_id <- paste0("domain_", terminal_id, "_", seg_id)
 
     # Determine the segment's outflow target. The segment's
-    # downstream-most main-path catchment is the segment id itself; its
-    # original toid is where the domain hands off.
+    # downstream-most extensive network catchment is the segment id
+    # itself; its original toid is where the domain hands off.
     seg_terminal_toid <- comp_toid_lookup[[seg_id_chr]]
 
     is_basin_outlet <- !(seg_terminal_toid %in% stem_ids_chr)
@@ -1333,15 +1337,15 @@ get_domain <- function(decomposition, domain_id) {
   domains[[domain_id]]
 }
 
-#' Get a basin's extensive connectivity overlay
+#' Get a basin's extensive network overlay
 #'
 #' @description
 #' Returns the `hy_leveled` overlay stored under `basin_id` in
 #' `decomposition$domain_connectivity`, or — when `basin_id` is `NULL`
 #' (the default) — the full named list of overlays. The overlay is the
-#' basin's *extensive connectivity*: a `hy_leveled` view of the main
-#' path with `toid`s intact except at the basin outlet, which carries
-#' the reserved outlet `toid` value.
+#' basin's *extensive network*: a `hy_leveled` view of the connecting
+#' flowlines with `toid`s intact except at the basin outlet, which
+#' carries the reserved outlet `toid` value.
 #'
 #' @param decomposition object of class `domain_decomposition`.
 #' @param basin_id character(1) or `NULL`. Basin id to look up.

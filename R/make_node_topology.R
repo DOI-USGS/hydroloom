@@ -182,6 +182,8 @@ make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
   }
 }
 
+#' @importFrom data.table setorder rbindlist
+#' @noRd
 make_nondendritic_topology <- function(x) {
 
   network_ids <- x$id
@@ -197,17 +199,30 @@ make_nondendritic_topology <- function(x) {
   # identified by membership (toid not present in network_ids) so this
   # works for any outlet convention, including unique-per-outlet identifiers.
   n <- select(x, all_of(c(fromid = id, toid))) |>
-    filter(!is.na(.data$fromid) & !is.na(.data$toid)) |>
-    group_by(.data$fromid) |>
-    mutate(node_id = {
-      non_outlet <- toid[toid %in% network_ids]
-      if (length(non_outlet) == 0L) {
-        paste0("__tl__", .data$fromid[1])
-      } else {
-        paste(sort(non_outlet), collapse = "-")
-      }
-    }) |>
-    ungroup()
+    filter(!is.na(.data$fromid) & !is.na(.data$toid))
+
+  # Vectorized key construction: a single %in% over the full toid vector and
+  # a single data.table grouped paste, replacing a group_by + mutate that
+  # recomputed `toid %in% network_ids` per group and didn't scale to
+  # multi-million-edge networks. Pre-sorting by (fromid, toid) means the
+  # grouped paste produces sorted-collapsed keys without per-group sort().
+  dt <- as.data.table(n)
+  setorder(dt, fromid, toid)
+  keyed <- dt[toid %in% network_ids,
+    .(node_id = paste(toid, collapse = "-")),
+    by = fromid]
+
+  # Fromids whose only edges are to outlets get a per-fromid "__tl__" key so
+  # they remain independent pendant endpoints (see comment block above).
+  tl_fromids <- setdiff(unique(n$fromid), keyed$fromid)
+  if (length(tl_fromids)) {
+    keyed <- rbindlist(list(
+      keyed,
+      data.table(fromid = tl_fromids,
+        node_id = paste0("__tl__", tl_fromids))))
+  }
+
+  n <- left_join(n, as_tibble(keyed), by = "fromid")
 
   hw <- unique(n$fromid[!n$fromid %in% n$toid])
   tl <- unique(n$toid[!n$toid %in% n$fromid])

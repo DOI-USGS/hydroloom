@@ -41,35 +41,35 @@ slots above.
 A \code{hy_domain} is the unit of independent computation in a network
 decomposition. Every \code{hy_domain} is compact — a partitioned piece
 of a drainage basin that bundles the segment's lateral tributaries
-with the main-path rows flowing through the segment (the latter
-in their decomposed form, with reserved-\code{toid} values that mark each
-as a local outlet). The basin's \emph{extensive connectivity} — a
-\code{hy_leveled} view of the main path with \code{toid}s intact — is stored
-separately in \code{domain_decomposition$domain_connectivity}.
+with the extensive network rows flowing through the segment (the
+latter in their decomposed form, with reserved-\code{toid} values that
+mark each as a local outlet). The basin's \emph{extensive network} — a
+\code{hy_leveled} view of the connecting flowlines with \code{toid}s intact —
+is stored separately in \code{domain_decomposition$domain_connectivity}.
 }
 \details{
 The \code{catchments} slot may be \code{hy_topo} (or \code{hy_leveled}) for
 dendritic internal connectivity, or \code{hy_flownetwork} to preserve
 internal divergences.
 
-\strong{Compact and extensive duality.} The main-path rows in a
+\strong{Compact and extensive duality.} The extensive network rows in a
 domain's \code{catchments} carry the reserved outlet \code{toid} value (the
 value \code{get_outlet_value()} returns), so each becomes a local outlet
 of its own contributing sub-basin. Those same ids appear, with
 \code{toid}s intact, in the basin's \code{domain_connectivity[[basin_id]]}
-overlay so the basin's main path stays addressable end-to-end. With
-the two ownerships kept distinct, per-domain processing runs in
-parallel and recomposition lands in a single pass. Main-path
-membership inside a domain is recoverable by intersecting the
-domain's \code{catchments$id} with the parent basin's
+overlay so the basin's extensive network stays addressable
+end-to-end. With the two ownerships kept distinct, per-domain
+processing runs in parallel and recomposition lands in a single pass.
+Extensive network membership inside a domain is recoverable by
+intersecting the domain's \code{catchments$id} with the parent basin's
 connectivity-overlay \code{id}.
 
 \strong{Decomposed and recomposed modes.} The decomposed form is the
-default mode: each main-path row is an outlet of its own
+default mode: each extensive network row is an outlet of its own
 contributing sub-basin, so a single
 \link[=accumulate_downstream]{accumulate_downstream()} call on the
-domain's catchments produces, for every main-path catchment in the
-segment, the locally-incremental drainage area (or any other
+domain's catchments produces, for every extensive network catchment
+in the segment, the locally-incremental drainage area (or any other
 accumulable) that belongs there. To switch to recomposed mode, join
 \code{source_network[, c("id", "toid")]} onto the domain's catchments
 where \code{toid} carries the reserved outlet value, replacing it with

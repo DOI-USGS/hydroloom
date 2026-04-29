@@ -107,10 +107,10 @@ cat("source rows:      ", nrow(src), "\n")
 
 # ---- connectivity-overlay size distribution ----------------------------
 #
-# Tabulates per-basin extensive-connectivity overlay sizes. With
+# Tabulates per-basin extensive network overlay sizes. With
 # stem_threshold = 2000, each basin whose outlet total_da_sqkm exceeds
-# 2000 km² gets a connectivity overlay covering all main-path
-# catchments above the threshold. Sub-threshold basins get no overlay.
+# 2000 km² gets an overlay covering all extensive network catchments
+# above the threshold. Sub-threshold basins get no overlay.
 
 conn_sizes <- vapply(d$domain_connectivity,
   \(o) nrow(o), integer(1))

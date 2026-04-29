@@ -14,35 +14,35 @@
 #' A `hy_domain` is the unit of independent computation in a network
 #' decomposition. Every `hy_domain` is compact — a partitioned piece
 #' of a drainage basin that bundles the segment's lateral tributaries
-#' with the main-path rows flowing through the segment (the latter
-#' in their decomposed form, with reserved-`toid` values that mark each
-#' as a local outlet). The basin's *extensive connectivity* — a
-#' `hy_leveled` view of the main path with `toid`s intact — is stored
-#' separately in `domain_decomposition$domain_connectivity`.
+#' with the extensive network rows flowing through the segment (the
+#' latter in their decomposed form, with reserved-`toid` values that
+#' mark each as a local outlet). The basin's *extensive network* — a
+#' `hy_leveled` view of the connecting flowlines with `toid`s intact —
+#' is stored separately in `domain_decomposition$domain_connectivity`.
 #'
 #' @details
 #' The `catchments` slot may be `hy_topo` (or `hy_leveled`) for
 #' dendritic internal connectivity, or `hy_flownetwork` to preserve
 #' internal divergences.
 #'
-#' **Compact and extensive duality.** The main-path rows in a
+#' **Compact and extensive duality.** The extensive network rows in a
 #' domain's `catchments` carry the reserved outlet `toid` value (the
 #' value `get_outlet_value()` returns), so each becomes a local outlet
 #' of its own contributing sub-basin. Those same ids appear, with
 #' `toid`s intact, in the basin's `domain_connectivity[[basin_id]]`
-#' overlay so the basin's main path stays addressable end-to-end. With
-#' the two ownerships kept distinct, per-domain processing runs in
-#' parallel and recomposition lands in a single pass. Main-path
-#' membership inside a domain is recoverable by intersecting the
-#' domain's `catchments$id` with the parent basin's
+#' overlay so the basin's extensive network stays addressable
+#' end-to-end. With the two ownerships kept distinct, per-domain
+#' processing runs in parallel and recomposition lands in a single pass.
+#' Extensive network membership inside a domain is recoverable by
+#' intersecting the domain's `catchments$id` with the parent basin's
 #' connectivity-overlay `id`.
 #'
 #' **Decomposed and recomposed modes.** The decomposed form is the
-#' default mode: each main-path row is an outlet of its own
+#' default mode: each extensive network row is an outlet of its own
 #' contributing sub-basin, so a single
 #' [accumulate_downstream()][accumulate_downstream] call on the
-#' domain's catchments produces, for every main-path catchment in the
-#' segment, the locally-incremental drainage area (or any other
+#' domain's catchments produces, for every extensive network catchment
+#' in the segment, the locally-incremental drainage area (or any other
 #' accumulable) that belongs there. To switch to recomposed mode, join
 #' `source_network[, c("id", "toid")]` onto the domain's catchments
 #' where `toid` carries the reserved outlet value, replacing it with

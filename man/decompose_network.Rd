@@ -50,9 +50,9 @@ a \link{domain_decomposition} object.
 \description{
 Partitions a hydrologic network into \code{hy_domain} objects for
 independent or parallel computation. Each drainage basin is split
-into domains along its main path; the main path itself is returned
-separately as the basin's \emph{extensive connectivity} overlay. See
-\code{\link[=hy_domain]{hy_domain()}} and \link{domain_decomposition} for details.
+into domains along its extensive network; the extensive network
+itself is returned separately as the basin's \emph{domain_connectivity}
+overlay. See \code{\link[=hy_domain]{hy_domain()}} and \link{domain_decomposition} for details.
 }
 \details{
 \strong{Input.} Input must be \code{hy_leveled} -- the network must already
@@ -60,14 +60,16 @@ carry \code{levelpath}, \code{levelpath_outlet_id}, and \code{topo_sort} columns
 Call \code{\link[=add_levelpaths]{add_levelpaths()}} to add. Non-dendritic sources
 (\code{hy_flownetwork}) are not supported at this time.
 
-\strong{Extensive connectivity selection.} Each drainage basin's extensive
+\strong{Extensive network selection.} Each drainage basin's extensive
 network is selected from \code{stem_metric}, \code{stem_threshold}, and
-\code{stem_levelpaths} (see arguments). The extensive connectivity is
+\code{stem_levelpaths} (see arguments). The basin's extensive connectivity
+(the regional relationship that ties its drainage pieces together) is
 materialized as the basin's \code{domain_connectivity[[basin_id]]} overlay
-(a \code{hy_leveled}). The \verb{stem_*} naming reflects the cross-scale view:
-the basin's main path is the trunk, but with a threshold or explicit
-override it can pull in branches as well — every selected path is a
-\emph{stem} in the cross-scale sense (trunks and branches are both stems).
+— a \code{hy_leveled} view of the extensive network. The \verb{stem_*} naming
+reflects the cross-scale view: a basin's outlet levelpath is a trunk,
+but with a threshold or explicit override the selection can pull in
+branches as well — every selected path is a \emph{stem} in the cross-scale
+sense (trunks and branches are both stems).
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))

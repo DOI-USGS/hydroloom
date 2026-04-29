@@ -105,13 +105,13 @@ test_that("decompose_network handles non-dendritic network.rds", {
 
 # ---- stem_threshold / stem_levelpaths tests -------------------------
 
-test_that("decompose_network main path includes all above-threshold catchments", {
+test_that("decompose_network extensive network includes all above-threshold catchments", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 
-  # threshold=15: main path spans 2 levelpaths, 3 domains (segments)
+  # threshold=15: extensive network spans 2 levelpaths, 3 domains (segments)
   d <- hydroloom::decompose_network(src,
     stem_metric    = "drainage_area",
     stem_threshold = 15)
@@ -147,7 +147,7 @@ test_that("decompose_network stem_threshold on new_hope", {
 
   src <- enrich_for_decomposition(load_new_hope())
 
-  # threshold=100: main path spans many levelpaths, at least 2 segments
+  # threshold=100: extensive network spans many levelpaths, at least 2 segments
   d <- hydroloom::decompose_network(src, stem_threshold = 100)
 
   expect_true(hydroloom::validate_decomposition(d)$valid)
@@ -288,7 +288,7 @@ test_that("decompose_network omits connectivity for sub-threshold basins", {
 
 # ---- domain_breaks parameter --------------------------------------------
 
-test_that("decompose_network domain_breaks splits main path at specified ids", {
+test_that("decompose_network domain_breaks splits extensive network at specified ids", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -296,7 +296,7 @@ test_that("decompose_network domain_breaks splits main path at specified ids", {
 
   d_default <- hydroloom::decompose_network(src)
 
-  # Pick a mid-main-path catchment from the basin's connectivity overlay.
+  # Pick a mid-extensive-network catchment from the basin's overlay.
   conn <- d_default$domain_connectivity[[1]]
   mid_id <- conn$id[ceiling(nrow(conn) / 2)]
 
@@ -336,7 +336,7 @@ test_that("decompose_network domain_breaks composes with stem_levelpaths", {
   lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
   top_lps <- lp_outlets$levelpath[order(-lp_outlets$total_da_sqkm)][1:2]
 
-  # Pick a mid-main-path id from the multi-levelpath connectivity overlay.
+  # Pick a mid-extensive-network id from the multi-levelpath overlay.
   d_lp <- hydroloom::decompose_network(src, stem_levelpaths = top_lps)
   conn <- d_lp$domain_connectivity[[1]]
   mid_id <- conn$id[ceiling(nrow(conn) / 2)]
@@ -352,7 +352,7 @@ test_that("decompose_network domain_breaks composes with stem_levelpaths", {
 
 # ---- decomposed compact form ------------------------------------------
 
-test_that("domain catchments include main-path rows as detoid'd outlets", {
+test_that("domain catchments include extensive network rows as detoid'd outlets", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -363,9 +363,9 @@ test_that("domain catchments include main-path rows as detoid'd outlets", {
   expect_gte(length(d$domain_connectivity), 1L)
   expect_gte(length(d$domains), 1L)
 
-  # Main-path catchment ids -- pulled from the basin's extensive
-  # connectivity overlay so we can tell main-path rows from laterals
-  # without a marker column.
+  # Extensive network catchment ids -- pulled from the basin's
+  # extensive network overlay so we can tell extensive network rows
+  # from laterals without a marker column.
   conn_ids <- unlist(lapply(d$domain_connectivity,
     \(o) as.character(o$id)),
     use.names = FALSE)
@@ -381,7 +381,7 @@ test_that("domain catchments include main-path rows as detoid'd outlets", {
     if (any(in_main)) {
       expect_true(all(catch$toid[in_main] == outlet_value),
         label = paste0("domain ", domain$domain_id,
-          " main-path rows have the reserved outlet toid value"))
+          " extensive network rows have the reserved outlet toid value"))
     }
   }
 
@@ -392,7 +392,7 @@ test_that("domain catchments include main-path rows as detoid'd outlets", {
 
 })
 
-test_that("domain accumulate_downstream gives per-main-path incremental DA", {
+test_that("domain accumulate_downstream gives per-extensive-network incremental DA", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -417,9 +417,9 @@ test_that("domain accumulate_downstream gives per-main-path incremental DA", {
 
     acc <- hydroloom::accumulate_downstream(catch, "da_sqkm")
 
-    # Each main-path row is its own outlet inside the domain. Its
-    # accumulated value should equal its own incremental plus the sum
-    # of every lateral row that drains (transitively) to it.
+    # Each extensive network row is its own outlet inside the domain.
+    # Its accumulated value should equal its own incremental plus the
+    # sum of every lateral row that drains (transitively) to it.
     for (i in in_main) {
 
       tf_id <- catch$id[i]
@@ -431,13 +431,13 @@ test_that("domain accumulate_downstream gives per-main-path incremental DA", {
 
       expect_equal(acc[i], expected,
         label = paste0("domain ", domain$domain_id,
-          " main-path row ", tf_id, " accumulated DA"))
+          " extensive network row ", tf_id, " accumulated DA"))
     }
   }
 
 })
 
-test_that("main-path toids restored from source produce a connected main path", {
+test_that("extensive network toids restored from source produce a connected extensive network", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -459,7 +459,7 @@ test_that("main-path toids restored from source produce a connected main path", 
 
     if (length(in_main_idx) == 0L) next
 
-    # Restore main-path rows' toids from source_network.
+    # Restore extensive network rows' toids from source_network.
     restored <- catch
     restored$toid[in_main_idx] <-
       src_lookup[as.character(restored$id[in_main_idx])]

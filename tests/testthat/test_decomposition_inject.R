@@ -1,8 +1,8 @@
 # Layer 4 — basin-overlay coordination via inject_lateral.
 #
-# Tests that domain results map to main-path segments via the nexus
-# registry's measure positions, and that inject_lateral writes to the
-# right rows. Uses new_hope.gpkg only — walker is too small to have
+# Tests that domain results map to extensive network segments via the
+# nexus registry's measure positions, and that inject_lateral writes to
+# the right rows. Uses new_hope.gpkg only — walker is too small to have
 # multi-nexus connectivity overlays worth testing.
 
 test_that("nexus_position values lie in [0, 1] and within their basin's measures", {

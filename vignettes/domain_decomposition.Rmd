@@ -30,24 +30,25 @@ oldoption <- options(scipen = 9999)
 # Domains and the extensive connectivity
 
 `decompose_network()` partitions a hydrologic network into independent
-sub-basins called *domains* and stores each basin's main path
-separately as the basin's *extensive connectivity*. Every `hy_domain`
-is functionally the same: a self-contained piece of one drainage
-basin, holding the segment's lateral tributaries together with the
-main-path rows that flow through the segment.
+sub-basins called *domains* and stores each basin's regionally-connecting
+flowlines separately as the basin's *extensive network* — the features
+that realize its *extensive connectivity*. Every `hy_domain` is
+functionally the same: a self-contained piece of one drainage basin,
+holding the segment's lateral tributaries together with the extensive
+network rows that flow through the segment.
 
-The extensive connectivity is the basin's main paths with its `toid`s
-intact — a `hy_leveled` view of the connected main paths, addressable
-end-to-end for drawing, naming, or any operation that wants the full
-network. The main-path rows that appear in the extensive connectivity also appear inside the
-domains, but with their `toid`s set to the reserved outlet value
+The extensive network is the basin's connecting flowlines with their
+`toid`s intact — a `hy_leveled` view, addressable end-to-end for
+drawing, naming, or any operation that wants the full network. The
+extensive network rows that appear in the overlay also appear inside
+the domains, but with their `toid`s set to the reserved outlet value
 returned by `get_outlet_value()`. Each becomes a local outlet of its
 own contributing sub-basin.
 
 The duplication is deliberate. With the same rows held both ways, a
 domain's accumulation runs as a single pass over its catchments and
-the basin's main paths stay queryable as one object. Editing or
-re-attributing a single domain does not invalidate any other.
+the basin's extensive network stays queryable as one object. Editing
+or re-attributing a single domain does not invalidate any other.
 
 # Use case
 
@@ -62,7 +63,7 @@ In practice, this gives three things:
   processing can be run in parallel.
 - Recomposition is a single pass through the inter-domain graph
   derived from the nexus registry. Per-domain results combine through
-  the basin's extensive connectivity to produce basin-wide answer.
+  the basin's extensive network to produce basin-wide answer.
 - Editing is decoupled. A new modeled result, a corrected geometry, or a
   re-derived attribute lands in one domain at a time, and the basin
   catches up by replaying recomposition.
@@ -70,23 +71,24 @@ In practice, this gives three things:
 # Decomposed and recomposed modes
 
 A domain's `catchments` slot holds two kinds of rows: the lateral
-tributary rows and the main-path rows that flow through the
-domain's main-path. On the main-path rows, the `toid` is set to the reserved
-outlet value returned by `get_outlet_value()`, so each becomes a local
-outlet of its own contributing sub-basin. This is the *decomposed*
-mode — the default form `decompose_network()` returns. Main-path
-membership inside a domain is recoverable by intersecting the domain's
-`catchments$id` with the basin's connectivity overlay's `id`.
+tributary rows and the extensive network rows that flow through the
+domain's segment. On the extensive network rows, the `toid` is set to
+the reserved outlet value returned by `get_outlet_value()`, so each
+becomes a local outlet of its own contributing sub-basin. This is the
+*decomposed* mode — the default form `decompose_network()` returns.
+Extensive network membership inside a domain is recoverable by
+intersecting the domain's `catchments$id` with the basin's extensive
+network overlay's `id`.
 
 In decomposed mode a single `accumulate_downstream()` call on a
-domain's catchments produces, for every main-path row, the
+domain's catchments produces, for every extensive network row, the
 locally-incremental drainage area (or any other accumulable) belonging
 there: the row's own incremental plus the lateral tributaries that
 drain into it. Per-domain processing is independent and runs in
 parallel.
 
-To switch to *recomposed* mode, restore the main-path rows' toids
-from `source_network`:
+To switch to *recomposed* mode, restore the extensive network rows'
+toids from `source_network`:
 
 ```r
 restored <- domain$catchments
@@ -110,19 +112,20 @@ one or more drainage basins, each composed of incremental catchments
 connected in an upstream-downstream topology.
 
 For each drainage basin, `decompose_network()` identifies the
-basin's main path — the outlet levelpath by default, or the union of
-levelpaths whose outlet metric exceeds `stem_threshold` — and divides
-it into segments at confluences. Each segment becomes a domain whose
-catchments slot holds the lateral tributaries draining into the
-segment together with the segment's main-path rows in their decomposed
-form. Even segments with no lateral tributaries become
-domains — the main-path rows alone constitute the segment's
+basin's extensive network — the outlet levelpath by default, or the
+union of levelpaths whose outlet metric exceeds `stem_threshold` — and
+divides it into segments at confluences. Each segment becomes a domain
+whose catchments slot holds the lateral tributaries draining into the
+segment together with the segment's extensive network rows in their
+decomposed form. Even segments with no lateral tributaries become
+domains — the extensive network rows alone constitute the segment's
 contributing area.
 
-The basin's extensive connectivity is built alongside the domains. It
-is a `hy_leveled` view of the same main path, with `toid`s intact, so
-the connected mainstem is addressable end-to-end. The same rows appear
-in their decomposed form across the segment domains.
+The basin's extensive network overlay is built alongside the domains.
+It is a `hy_leveled` view of the same connecting flowlines, with
+`toid`s intact, so the connected mainstem is addressable end-to-end.
+The same rows appear in their decomposed form across the segment
+domains.
 
 A domain corresponds to an HY_Features catchment aggregate. Its
 drainage area is the full contributing area to its segment. The
@@ -158,9 +161,9 @@ slots:
   sub-basin segment.
 - **`domain_connectivity`** — named list of `hy_leveled` overlays
   keyed by basin id. Each overlay is the basin's *extensive
-  connectivity*: a `hy_leveled` view of the main path with `toid`s
-  intact except at the basin outlet, which carries the reserved
-  outlet `toid` value. Sub-threshold basins have no overlay.
+  network*: a `hy_leveled` view of the connecting flowlines with
+  `toid`s intact except at the basin outlet, which carries the
+  reserved outlet `toid` value. Sub-threshold basins have no overlay.
 - **`overrides`** — non-dendritic inter-domain transfer table, or
   `NULL`.
 - **`catchment_domain_index`** — named character vector mapping each
@@ -186,9 +189,10 @@ connectivity metadata that recomposition needs:
   basins, or `NA`.
 - `catchments` — hydroloom object carrying the domain's catchment
   network. Catchments include both lateral tributary rows and the
-  segment's main-path rows; the main-path rows have a `toid` set to
-  `get_outlet_value()`. To tell the two apart, intersect the domain's
-  `catchments$id` with the basin's connectivity overlay's `id`.
+  segment's extensive network rows; the extensive network rows have
+  a `toid` set to `get_outlet_value()`. To tell the two apart,
+  intersect the domain's `catchments$id` with the basin's extensive
+  network overlay's `id`.
 - `topo_sort_offset` — global topo_sort base for cross-domain
   ordering.
 
@@ -205,7 +209,7 @@ in `vignette("hydroloom")`. The relevant classes are:
 - **`hy_leveled`** — subclass of `hy_topo` enriched with `topo_sort`,
   `levelpath`, and `levelpath_outlet_id`. Required input for
   `decompose_network()`, because the partition uses `levelpath` to
-  identify main-path membership and `topo_sort` to establish
+  identify extensive network membership and `topo_sort` to establish
   processing order.
 - **`hy_flownetwork`** — non-dendritic edge list (`id`, `toid`;
   non-unique `id` allowed). Domains may hold `hy_flownetwork`
@@ -241,13 +245,13 @@ d
 extensive network through one of three paths:
 
 - **Default** (both `stem_threshold` and `stem_levelpaths` are
-  `NULL`) — the main path is the basin's outlet levelpath.
+  `NULL`) — the extensive network is the basin's outlet levelpath.
 - **Threshold-based** — when `stem_threshold` is supplied, a basin's
   outlet metric must exceed the threshold for the basin to be split
-  along its main path. Sub-threshold basins become a single domain
-  with no extensive connectivity overlay.
+  along its extensive network. Sub-threshold basins become a single
+  domain with no extensive network overlay.
 - **Explicit** — when `stem_levelpaths` is supplied, those
-  levelpaths (plus the outlet levelpath) form the main path.
+  levelpaths (plus the outlet levelpath) form the extensive network.
 
 ```{r threshold}
 d_thresh <- decompose_network(src, stem_threshold = 100)
@@ -256,11 +260,11 @@ d_thresh
 ```
 
 The map below colors each flowline by the domain it belongs to and
-overlays the basin's extensive connectivity in black. Every flowline
+overlays the basin's extensive network in black. Every flowline
 belongs to some domain (the partition covers the network); the
-connectivity overlay highlights the rows that are *also* in the
-basin's extensive connectivity — the main path that the domains turn
-into local outlets.
+overlay highlights the rows that are *also* in the basin's extensive
+network — the connecting flowlines that the domains turn into local
+outlets.
 
 ```{r plot-domains, fig.width = 7, fig.height = 7}
 # Build a domain_id column on the source flowlines.
@@ -268,7 +272,7 @@ domain_idx <- d_thresh$catchment_domain_index
 plot_net <- d_thresh$source_network
 plot_net$domain_id <- unname(domain_idx[as.character(plot_net$id)])
 
-# Pull all main-path ids from every basin's extensive connectivity overlay.
+# Pull all extensive network ids from every basin's overlay.
 conn_ids <- unlist(lapply(d_thresh$domain_connectivity,
   \(o) as.character(o$id)),
   use.names = FALSE)
@@ -285,7 +289,7 @@ plot(sf::st_geometry(plot_net),
   lwd = 2, main = "Domain decomposition (stem_threshold = 100)")
 plot(sf::st_geometry(plot_net[as.character(plot_net$id) %in% conn_ids, ]),
   col = "black", lwd = 2, add = TRUE)
-legend("topright", legend = c("extensive connectivity overlay",
+legend("topright", legend = c("extensive network overlay",
   "domain (each color = one)"),
   col = c("black", "grey60"), lwd = 2, bty = "n", cex = 0.8)
 ```
@@ -306,18 +310,19 @@ a high threshold and
 then pass specific catchment ids as break points.
 
 ```{r manual-breaks}
-# A high threshold pulls many levelpaths into the main path. Without
-# domain_breaks the main path is segmented at every confluence,
-# which may produce more domains than desired.
+# A high threshold pulls many levelpaths into the extensive network.
+# Without domain_breaks the extensive network is segmented at every
+# confluence, which may produce more domains than desired.
 d_high <- decompose_network(src, stem_threshold = 25)
 d_high
 
-# Identify main-path catchments where we want to force segment
+# Identify extensive network catchments where we want to force segment
 # boundaries. Here we pick two catchments roughly in the middle of
-# the connectivity overlay.
+# the extensive network overlay.
 conn <- d_high$domain_connectivity[[1]]
 
-# Choose break points at the 1/3 and 2/3 marks along the main path.
+# Choose break points at the 1/3 and 2/3 marks along the extensive
+# network.
 break_ids <- conn$id[
   c(floor(nrow(conn) / 3), floor(2 * nrow(conn) / 3))]
 

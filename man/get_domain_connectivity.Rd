@@ -2,7 +2,7 @@
 % Please edit documentation in R/decompose_network.R
 \name{get_domain_connectivity}
 \alias{get_domain_connectivity}
-\title{Get a basin's extensive connectivity overlay}
+\title{Get a basin's extensive network overlay}
 \usage{
 get_domain_connectivity(decomposition, basin_id = NULL)
 }
@@ -20,9 +20,9 @@ named list of overlays when \code{basin_id} is \code{NULL}.
 Returns the \code{hy_leveled} overlay stored under \code{basin_id} in
 \code{decomposition$domain_connectivity}, or — when \code{basin_id} is \code{NULL}
 (the default) — the full named list of overlays. The overlay is the
-basin's \emph{extensive connectivity}: a \code{hy_leveled} view of the main
-path with \code{toid}s intact except at the basin outlet, which carries
-the reserved outlet \code{toid} value.
+basin's \emph{extensive network}: a \code{hy_leveled} view of the connecting
+flowlines with \code{toid}s intact except at the basin outlet, which
+carries the reserved outlet \code{toid} value.
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
