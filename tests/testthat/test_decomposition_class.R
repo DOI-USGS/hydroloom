@@ -34,60 +34,33 @@ make_fn <- function() {
 
 # ---- hy_domain() constructor ------------------------------------------
 
-test_that("hy_domain accepts a hy_leveled trunk", {
+test_that("hy_domain accepts a hy_leveled domain", {
 
   decomposition_pending("hy_domain")
 
-  d <- make_minimal_hy_domain(make_lev(), domain_type = "trunk")
+  d <- make_minimal_hy_domain(make_lev())
 
   expect_s3_class(d, "hy_domain")
-  expect_equal(d$domain_type, "trunk")
   expect_s3_class(d$catchments, "hy_leveled")
 
 })
 
-test_that("hy_domain rejects a non-leveled trunk and points at add_levelpaths", {
+test_that("hy_domain accepts a hy_topo domain", {
 
   decomposition_pending("hy_domain")
 
-  expect_error(
-    make_minimal_hy_domain(make_topo(), domain_type = "trunk"),
-    "hy_leveled|add_levelpaths")
-
-})
-
-test_that("hy_domain accepts a leveled compact", {
-
-  decomposition_pending("hy_domain")
-
-  d <- make_minimal_hy_domain(make_lev(),
-    domain_type = "compact",
-    domain_id = "C1",
-    trunk_domain_id = "T1")
+  d <- make_minimal_hy_domain(make_topo(), domain_id = "C1")
 
   expect_s3_class(d, "hy_domain")
-  expect_equal(d$domain_type, "compact")
+  expect_s3_class(d$catchments, "hy_topo")
 
 })
 
-test_that("hy_domain rejects a flownetwork trunk", {
+test_that("hy_domain accepts a flownetwork domain", {
 
   decomposition_pending("hy_domain")
 
-  expect_error(
-    make_minimal_hy_domain(make_fn(), domain_type = "trunk"),
-    "hy_leveled|trunk")
-
-})
-
-test_that("hy_domain accepts a flownetwork compact", {
-
-  decomposition_pending("hy_domain")
-
-  d <- make_minimal_hy_domain(make_fn(),
-    domain_type = "compact",
-    domain_id = "C1",
-    trunk_domain_id = "T1")
+  d <- make_minimal_hy_domain(make_fn(), domain_id = "C1")
 
   expect_s3_class(d, "hy_domain")
   expect_s3_class(d$catchments, "hy_flownetwork")
@@ -98,18 +71,17 @@ test_that("hy_domain carries all required slots", {
 
   decomposition_pending("hy_domain")
 
-  d <- make_minimal_hy_domain(make_lev(), domain_type = "trunk")
+  d <- make_minimal_hy_domain(make_lev())
 
-  required <- c("domain_id", "domain_type", "outlet_nexus_id",
-    "inlet_nexus_ids", "trunk_domain_id", "containing_domain_id",
-    "catchments", "topo_sort_offset")
+  required <- c("domain_id", "outlet_nexus_id", "inlet_nexus_ids",
+    "containing_domain_id", "catchments", "topo_sort_offset")
 
   expect_named(d, required, ignore.order = TRUE)
 
   caps <- hydroloom::hy_capabilities(d$catchments)
 
   expect_true(caps[["accumulate_downstream"]],
-    label = "trunk domain catchments support accumulate_downstream")
+    label = "domain catchments support accumulate_downstream")
 
 })
 
@@ -119,14 +91,16 @@ test_that("validate_decomposition accepts a hand-built valid decomposition", {
 
   decomposition_pending(c("hy_domain", "validate_decomposition"))
 
-  # build the smallest possible valid decomposition: one trunk wrapping
-  # the 3-row leveled fixture, no compact domains, no overrides.
+  # build the smallest possible valid decomposition: one domain wrapping
+  # the 3-row leveled fixture and the same fixture as the basin's
+  # extensive connectivity overlay.
   lev <- make_lev()
 
-  trunk <- make_minimal_hy_domain(lev, domain_type = "trunk")
+  domain <- make_minimal_hy_domain(lev)
 
   d <- make_minimal_decomposition(
-    domains = list(T1 = trunk),
+    domains = list(T1 = domain),
+    domain_connectivity = list("3" = lev),
     nexus_registry = data.frame(nexus_id = "n_out"),
     source_network = lev)
 
@@ -141,7 +115,7 @@ test_that("validate_decomposition flags coverage failure", {
 
   decomposition_pending(c("hy_domain", "validate_decomposition"))
 
-  # drop one catchment row from the trunk so the partition no longer
+  # drop one catchment row from the domain so the partition no longer
   # covers the source network. validate must detect that the missing
   # id is not in any domain. Re-wrap with hy() because data.frame `[`
   # subsetting strips the hy_leveled / hy_topo / hy classes.
@@ -149,10 +123,10 @@ test_that("validate_decomposition flags coverage failure", {
 
   partial_lev <- hydroloom::hy(lev[1:2, ])
 
-  trunk <- make_minimal_hy_domain(partial_lev, domain_type = "trunk")
+  domain <- make_minimal_hy_domain(partial_lev)
 
   d <- make_minimal_decomposition(
-    domains = list(T1 = trunk),
+    domains = list(T1 = domain),
     nexus_registry = data.frame(nexus_id = "n_out"),
     source_network = lev)
 
@@ -168,22 +142,24 @@ test_that("validate_decomposition flags an inter-domain cycle", {
 
   decomposition_pending(c("hy_domain", "validate_decomposition"))
 
-  # two trunks pointing at each other in domain_graph -> cycle
+  # two domains whose nexus_registry rows form a cycle when projected
+  # through get_domain_graph(): T1 -> T2 via n1, T2 -> T1 via n2.
   lev <- make_lev()
 
-  t1 <- make_minimal_hy_domain(lev, domain_type = "trunk",
-    domain_id = "T1", outlet_nexus_id = "n1")
+  t1 <- make_minimal_hy_domain(lev, domain_id = "T1",
+    outlet_nexus_id = "n1")
 
-  t2 <- make_minimal_hy_domain(lev, domain_type = "trunk",
-    domain_id = "T2", outlet_nexus_id = "n2")
+  t2 <- make_minimal_hy_domain(lev, domain_id = "T2",
+    outlet_nexus_id = "n2")
 
   d <- make_minimal_decomposition(
     domains = list(T1 = t1, T2 = t2),
-    domain_graph = data.frame(
-      id = c("T1", "T2"), toid = c("T2", "T1"),
-      nexus_id = c("n1", "n2"), nexus_position = c(0, 0),
-      relation_type = c("flow", "flow")),
-    nexus_registry = data.frame(nexus_id = c("n1", "n2")),
+    nexus_registry = data.frame(
+      nexus_id = c("n1", "n2"),
+      from_domain_id = c("T1", "T2"),
+      to_domain_id = c("T2", "T1"),
+      aggregate_id_measure = c(NA_real_, NA_real_),
+      stringsAsFactors = FALSE),
     source_network = lev)
 
   res <- hydroloom::validate_decomposition(d)
@@ -194,20 +170,22 @@ test_that("validate_decomposition flags an inter-domain cycle", {
 
 })
 
-test_that("validate_decomposition flags a multi-outlet domain", {
+test_that("validate_decomposition flags a multi-outlet basin overlay", {
 
   decomposition_pending(c("hy_domain", "validate_decomposition"))
 
-  # two unrelated rows pointing at sentinel -> two outlets in one domain
+  # two unrelated rows carrying the reserved outlet toid value -> two
+  # outlets in the basin's extensive connectivity overlay.
   bad_lev <- hydroloom::hy(data.frame(
     id = 1:4, toid = c(2L, 0L, 4L, 0L),
     topo_sort = 4:1, levelpath = c(1L, 1L, 2L, 2L),
     levelpath_outlet_id = c(2L, 2L, 4L, 4L)))
 
-  trunk <- make_minimal_hy_domain(bad_lev, domain_type = "trunk")
+  domain <- make_minimal_hy_domain(bad_lev)
 
   d <- make_minimal_decomposition(
-    domains = list(T1 = trunk),
+    domains = list(T1 = domain),
+    domain_connectivity = list("4" = bad_lev),
     nexus_registry = data.frame(nexus_id = "n_out"),
     source_network = bad_lev)
 
@@ -218,39 +196,13 @@ test_that("validate_decomposition flags a multi-outlet domain", {
 
 })
 
-test_that("validate_decomposition flags an inter-domain edge with unknown nexus", {
-
-  decomposition_pending(c("hy_domain", "validate_decomposition"))
-
-  lev <- make_lev()
-
-  t1 <- make_minimal_hy_domain(lev, domain_type = "trunk",
-    outlet_nexus_id = "n1")
-
-  d <- make_minimal_decomposition(
-    domains = list(T1 = t1),
-    domain_graph = data.frame(
-      id = "T1", toid = "T2",
-      nexus_id = "n_missing", nexus_position = 0,
-      relation_type = "flow"),
-    nexus_registry = data.frame(nexus_id = "n1"),
-    source_network = lev)
-
-  res <- hydroloom::validate_decomposition(d)
-
-  expect_false(res$valid)
-  expect_true(any(grepl("nexus|connectivity|unknown",
-    res$issues, ignore.case = TRUE)))
-
-})
-
 test_that("validate_decomposition flags an unknown containing_domain_id", {
 
   decomposition_pending(c("hy_domain", "validate_decomposition"))
 
   lev <- make_lev()
 
-  contained <- make_minimal_hy_domain(lev, domain_type = "compact",
+  contained <- make_minimal_hy_domain(lev,
     domain_id = "C1",
     containing_domain_id = "T_phantom")
 
@@ -263,33 +215,6 @@ test_that("validate_decomposition flags an unknown containing_domain_id", {
 
   expect_false(res$valid)
   expect_true(any(grepl("contain", res$issues, ignore.case = TRUE)))
-
-})
-
-test_that("validate_decomposition flags a non-leveled trunk", {
-
-  decomposition_pending(c("hy_domain", "validate_decomposition"))
-
-  # build a normally-constructed valid trunk first, then mutate the
-  # catchments slot to a hy_topo to simulate a corrupted decomposition
-  # — the constructor's class check would otherwise reject this up front.
-  topo <- make_topo()
-  lev <- make_lev()
-
-  trunk <- make_minimal_hy_domain(lev, domain_type = "trunk")
-
-  trunk$catchments <- topo
-
-  d <- make_minimal_decomposition(
-    domains = list(T1 = trunk),
-    nexus_registry = data.frame(nexus_id = "n_out"),
-    source_network = topo)
-
-  res <- hydroloom::validate_decomposition(d)
-
-  expect_false(res$valid)
-  expect_true(any(grepl("hy_leveled|trunk|class",
-    res$issues, ignore.case = TRUE)))
 
 })
 
@@ -335,10 +260,7 @@ test_that("print.domain_decomposition handles empty decomposition", {
   empty <- structure(
     list(
       domains = list(),
-      domain_graph = data.frame(
-        id = character(0), toid = character(0),
-        nexus_id = character(0), nexus_position = numeric(0),
-        relation_type = character(0)),
+      domain_connectivity = list(),
       overrides = NULL,
       catchment_domain_index = setNames(character(0), character(0)),
       nexus_registry = data.frame(
@@ -352,8 +274,8 @@ test_that("print.domain_decomposition handles empty decomposition", {
 
   out_cheap <- capture.output(print(empty))
 
-  expect_match(out_cheap, "0 trunks", all = FALSE, fixed = TRUE)
-  expect_match(out_cheap, "0 compacts", all = FALSE, fixed = TRUE)
+  expect_match(out_cheap, "0 basins", all = FALSE, fixed = TRUE)
+  expect_match(out_cheap, "0 domains", all = FALSE, fixed = TRUE)
 
   # Full mode should not error on an empty decomposition either.
   out_full <- capture.output(print(empty, full = TRUE))

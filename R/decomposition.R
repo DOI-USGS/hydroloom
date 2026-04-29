@@ -15,10 +15,10 @@
 #' decomposition. Every `hy_domain` is compact — a partitioned piece
 #' of a drainage basin that bundles the segment's lateral tributaries
 #' with the main-path rows flowing through the segment (the latter
-#' in their decomposed form, with sentinel toids). The basin's
-#' *extensive connectivity* — a `hy_leveled` view of the main path
-#' with toids intact — is stored separately in
-#' `domain_decomposition$domain_connectivity`.
+#' in their decomposed form, with reserved-`toid` values that mark each
+#' as a local outlet). The basin's *extensive connectivity* — a
+#' `hy_leveled` view of the main path with `toid`s intact — is stored
+#' separately in `domain_decomposition$domain_connectivity`.
 #'
 #' @details
 #' The `catchments` slot may be `hy_topo` (or `hy_leveled`) for
@@ -26,9 +26,10 @@
 #' internal divergences.
 #'
 #' **Compact and extensive duality.** The main-path rows in a
-#' domain's `catchments` carry a sentinel `toid`, so each is a local
-#' outlet of its own contributing sub-basin. Those same ids appear,
-#' with toids intact, in the basin's `domain_connectivity[[basin_id]]`
+#' domain's `catchments` carry the reserved outlet `toid` value (the
+#' value `get_outlet_value()` returns), so each becomes a local outlet
+#' of its own contributing sub-basin. Those same ids appear, with
+#' `toid`s intact, in the basin's `domain_connectivity[[basin_id]]`
 #' overlay so the basin's main path stays addressable end-to-end. With
 #' the two ownerships kept distinct, per-domain processing runs in
 #' parallel and recomposition lands in a single pass. Main-path
@@ -44,8 +45,8 @@
 #' segment, the locally-incremental drainage area (or any other
 #' accumulable) that belongs there. To switch to recomposed mode, join
 #' `source_network[, c("id", "toid")]` onto the domain's catchments
-#' where `toid` is the outlet sentinel, replacing it with the original
-#' value; the segment is a connected sub-basin again. See
+#' where `toid` carries the reserved outlet value, replacing it with
+#' the original `toid`; the segment is a connected sub-basin again. See
 #' `vignette("domain_decomposition")` for the full framing.
 #'
 #' The constructor returns a plain S3 list. Slot mutation after
@@ -126,11 +127,12 @@ hy_domain <- function(domain_id,
 #'     outlets by design and are not checked.
 #'   \item **Coverage / partition** — every `source_network` id
 #'     appears in exactly one domain's `catchments` slot.
-#'   \item **Connectivity membership** — each domain's sentinel-`toid`
-#'     rows (other than genuine basin outlets, whose `source_network`
-#'     toid is also the sentinel) appear, with `toid`s intact, in some
-#'     basin's `domain_connectivity` overlay. See [hy_domain()] for
-#'     the dual-ownership rule behind this duplication.
+#'   \item **Connectivity membership** — each domain's rows that carry
+#'     the reserved outlet `toid` value (other than genuine basin
+#'     outlets, whose `source_network` `toid` carries the same reserved
+#'     value) appear, with `toid`s intact, in some basin's
+#'     `domain_connectivity` overlay. See [hy_domain()] for the
+#'     dual-ownership rule behind this duplication.
 #'   \item **Inter-domain cycle** — the derived domain graph
 #'     ([get_domain_graph()] with `relations = "flow"`) is acyclic;
 #'     checked by delegating to [check_hy_graph()].
@@ -155,7 +157,7 @@ hy_domain <- function(domain_id,
 #'   topo_sort = 3:1, levelpath = c(1L, 1L, 1L),
 #'   levelpath_outlet_id = c(3L, 3L, 3L)))
 #'
-#' dom <- hy_domain(
+#' domain <- hy_domain(
 #'   domain_id = "T1",
 #'   outlet_nexus_id = "n_out",
 #'   inlet_nexus_ids = character(0),
@@ -165,7 +167,7 @@ hy_domain <- function(domain_id,
 #'
 #' d <- structure(
 #'   list(
-#'     domains = list(T1 = dom),
+#'     domains = list(T1 = domain),
 #'     domain_connectivity = list(),
 #'     overrides = NULL,
 #'     catchment_domain_index = setNames(rep("T1", 3), c("1", "2", "3")),
@@ -184,9 +186,9 @@ validate_decomposition <- function(decomposition) {
 
   # ---- Check 1: outlet count per basin connectivity overlay -----------
   # Each basin's connectivity overlay must resolve to exactly one outlet
-  # via sort_network(split = TRUE). Compact domains may have multiple
-  # outlets by design (lateral subgroups detoid'd to the sentinel),
-  # so they are not checked here.
+  # via sort_network(split = TRUE). Domains may carry multiple outlets
+  # by design (lateral subgroups whose toids have been set to the
+  # reserved outlet value), so they are not checked here.
 
   for (basin_id in names(conn)) {
 
@@ -224,13 +226,13 @@ validate_decomposition <- function(decomposition) {
 
   if (!is.null(src) && "id" %in% names(src)) {
 
-    dom_catch_ids <- unlist(
+    domain_catch_ids <- unlist(
       lapply(domains, function(d) d$catchments$id),
       use.names = FALSE)
 
     src_ids <- src$id
 
-    missing_ids <- setdiff(src_ids, dom_catch_ids)
+    missing_ids <- setdiff(src_ids, domain_catch_ids)
 
     if (length(missing_ids) > 0) {
 
@@ -240,7 +242,7 @@ validate_decomposition <- function(decomposition) {
 
     }
 
-    dup_ids <- dom_catch_ids[duplicated(dom_catch_ids)]
+    dup_ids <- domain_catch_ids[duplicated(domain_catch_ids)]
 
     if (length(dup_ids) > 0) {
 
@@ -253,9 +255,10 @@ validate_decomposition <- function(decomposition) {
   }
 
   # ---- Check 3: connectivity membership -------------------------------
-  # Each domain's sentinel-toid rows (other than genuine basin
-  # outlets, whose source_network toid is also sentinel) must appear,
-  # with toids intact, in some basin's domain_connectivity overlay.
+  # Each domain's rows that carry the reserved outlet toid value
+  # (other than genuine basin outlets, whose source_network toid
+  # carries the same reserved value) must appear, with toids intact,
+  # in some basin's domain_connectivity overlay.
 
   if (!is.null(src) && all(c("id", "toid") %in% names(src)) &&
       length(domains) > 0L) {
@@ -265,7 +268,7 @@ validate_decomposition <- function(decomposition) {
       use.names = FALSE)
 
     src_toid_by_id <- setNames(as.character(src$toid), as.character(src$id))
-    src_sentinel   <- as.character(get_outlet_value(src))
+    src_outlet_value <- as.character(get_outlet_value(src))
 
     missing_total <- 0L
 
@@ -275,15 +278,15 @@ validate_decomposition <- function(decomposition) {
 
       if (is.null(catch) || nrow(catch) == 0L) next
 
-      cs_sentinel <- as.character(get_outlet_value(catch))
-      is_seg      <- as.character(catch$toid) == cs_sentinel
+      catch_outlet_value <- as.character(get_outlet_value(catch))
+      is_seg <- as.character(catch$toid) == catch_outlet_value
 
       if (!any(is_seg)) next
 
       seg_ids   <- as.character(catch$id[is_seg])
       src_toids <- src_toid_by_id[seg_ids]
 
-      is_genuine_outlet <- !is.na(src_toids) & src_toids == src_sentinel
+      is_genuine_outlet <- !is.na(src_toids) & src_toids == src_outlet_value
 
       detoid_ids <- seg_ids[!is_genuine_outlet]
 
@@ -296,7 +299,7 @@ validate_decomposition <- function(decomposition) {
     if (missing_total > 0L) {
 
       issues <- c(issues, sprintf(
-        paste0("connectivity: %d sentinel-toid rows not present ",
+        paste0("connectivity: %d reserved-toid rows not present ",
           "in any domain_connectivity overlay"),
         missing_total))
 

@@ -1,11 +1,11 @@
-# Layer 4 — trunk-compact coordination via inject_lateral.
+# Layer 4 — basin-overlay coordination via inject_lateral.
 #
-# Tests that compact-domain results map to trunk segments via the
-# nexus registry's measure positions, and that inject_lateral writes to
-# the right rows. Uses new_hope.gpkg only — walker is too small to have
-# multi-nexus trunks worth testing.
+# Tests that domain results map to main-path segments via the nexus
+# registry's measure positions, and that inject_lateral writes to the
+# right rows. Uses new_hope.gpkg only — walker is too small to have
+# multi-nexus connectivity overlays worth testing.
 
-test_that("nexus_position values lie in [0, 1] and within their trunk's measures", {
+test_that("nexus_position values lie in [0, 1] and within their basin's measures", {
 
   decomposition_pending(c("decompose_network", "get_nexus_registry"))
 
@@ -23,42 +23,41 @@ test_that("nexus_position values lie in [0, 1] and within their trunk's measures
 
 })
 
-test_that("inject_lateral on synthetic unit results sums correctly per trunk", {
+test_that("inject_lateral on synthetic unit results sums correctly per basin", {
 
   decomposition_pending(c("decompose_network", "inject_lateral"))
 
   src <- enrich_for_decomposition(load_new_hope())
   d <- hydroloom::decompose_network(src)
 
-  trunks <- names(d$domains)[
-    vapply(d$domains, \(x) x$domain_type == "trunk", logical(1))]
+  basins <- names(d$domain_connectivity)
 
-  if (length(trunks) == 0)
-    skip("decomposition produced no trunk domains")
+  if (length(basins) == 0)
+    skip("decomposition produced no basin connectivity overlays")
 
-  results <- synthetic_compact_results(d, value_per_domain = 1)
+  results <- synthetic_results(d, value_per_domain = 1)
 
-  for (trunk_id in trunks) {
+  for (bid in basins) {
 
-    inj <- hydroloom::inject_lateral(d, results, trunk_id)
+    inj <- hydroloom::inject_lateral(d, results, basin_id = bid)
 
     if (!"lateral_inflow" %in% names(inj)) next
 
-    contributing <- length(trunk_lateral_recipients(d, trunk_id))
+    contributing <- length(inflow_seeds_for_domain(d, bid))
 
     if (contributing > 0) {
 
       expect_equal(sum(inj$lateral_inflow, na.rm = TRUE),
         contributing,
-        label = paste0("trunk ", trunk_id,
+        label = paste0("basin ", bid,
           " lateral_inflow sums to contributor count"))
 
     } else {
 
       expect_true(all(is.na(inj$lateral_inflow) |
         inj$lateral_inflow == 0),
-        label = paste0("trunk ", trunk_id,
-          " has no lateral inflow when no compact domains feed it"))
+        label = paste0("basin ", bid,
+          " has no lateral inflow when no domains feed it"))
 
     }
 
@@ -66,7 +65,7 @@ test_that("inject_lateral on synthetic unit results sums correctly per trunk", {
 
 })
 
-test_that("inject_lateral writes only to rows in trunk_lateral_recipients", {
+test_that("inject_lateral writes only to rows in inflow_seeds_for_domain", {
 
   decomposition_pending(c("decompose_network", "inject_lateral",
     "get_nexus_registry"))
@@ -74,22 +73,21 @@ test_that("inject_lateral writes only to rows in trunk_lateral_recipients", {
   src <- enrich_for_decomposition(load_new_hope())
   d <- hydroloom::decompose_network(src)
 
-  trunks <- names(d$domains)[
-    vapply(d$domains, \(x) x$domain_type == "trunk", logical(1))]
+  basins <- names(d$domain_connectivity)
 
-  if (length(trunks) == 0)
-    skip("decomposition produced no trunk domains")
+  if (length(basins) == 0)
+    skip("decomposition produced no basin connectivity overlays")
 
-  trunk_id <- trunks[1]
+  bid <- basins[1]
 
-  recipients <- trunk_lateral_recipients(d, trunk_id)
+  recipients <- inflow_seeds_for_domain(d, bid)
 
   if (length(recipients) == 0)
-    skip(paste0("trunk ", trunk_id, " has no lateral recipients"))
+    skip(paste0("basin ", bid, " has no lateral recipients"))
 
-  results <- synthetic_compact_results(d, value_per_domain = 1)
+  results <- synthetic_results(d, value_per_domain = 1)
 
-  inj <- hydroloom::inject_lateral(d, results, trunk_id)
+  inj <- hydroloom::inject_lateral(d, results, basin_id = bid)
 
   if (!"lateral_inflow" %in% names(inj))
     skip("inject_lateral did not produce a lateral_inflow column")

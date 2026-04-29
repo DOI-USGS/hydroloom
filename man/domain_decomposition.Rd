@@ -6,8 +6,8 @@
 \description{
 A \code{domain_decomposition} is the wrapper object returned by
 \code{\link[=decompose_network]{decompose_network()}}. It bundles a list of \code{\link[=hy_domain]{hy_domain()}} objects
-with the inter-domain connectivity metadata that recomposition
-needs.
+with the basin-level extensive connectivity overlays and the
+nexus metadata that recomposition needs.
 }
 \details{
 The object is a plain S3 list with six slots:
@@ -15,16 +15,24 @@ The object is a plain S3 list with six slots:
 \describe{
 \item{\code{domains}}{named list of \code{hy_domain} objects, one per
 sub-network.}
-\item{\code{domain_graph}}{inter-domain flow edges (\code{id}, \code{toid},
-\code{nexus_id}, \code{relation_type}).}
+\item{\code{domain_connectivity}}{named list of \code{hy_leveled} overlays
+keyed by basin id. Each overlay is the basin's \emph{extensive
+connectivity} — a \code{hy_leveled} view of the main path with
+\code{toid}s intact except at the basin outlet, which carries the
+reserved outlet \code{toid} value. Sub-threshold basins have no
+overlay.}
 \item{\code{overrides}}{non-dendritic inter-domain transfer table, or
 \code{NULL}.}
 \item{\code{catchment_domain_index}}{named character vector mapping
-each catchment id to its compact domain id.}
+each catchment id to its domain id.}
 \item{\code{nexus_registry}}{synthetic nexus identifiers and the
 domains they connect.}
 \item{\code{source_network}}{the original enriched input network.}
 }
+
+Inter-domain topology is not stored as a slot; \code{\link[=get_domain_graph]{get_domain_graph()}}
+is the canonical derived accessor and rebuilds the edge list from
+\code{nexus_registry} on demand.
 }
 \seealso{
 \code{\link[=decompose_network]{decompose_network()}} for construction, \code{\link[=hy_domain]{hy_domain()}} for

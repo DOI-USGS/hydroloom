@@ -21,9 +21,9 @@
 }
 \description{
 Two-mode S3 print method for \code{domain_decomposition}. The default
-(cheap) form prints a fixed-size summary of slot counts: trunks,
-compacts, catchments, edges, nexuses, and overrides. Cost is bounded
-by the number of domains, so it stays fast on 50,000-catchment
+(cheap) form prints a fixed-size summary of slot counts: basins,
+domains, catchments, nexuses, and overrides. Cost is bounded by the
+number of domains, so it stays fast on 50,000-catchment
 decompositions. The full form prints a hierarchical tree summary
 with per-block roll-up statistics and is intended for verifying the
 shape of a freshly-built decomposition before running analysis on it.

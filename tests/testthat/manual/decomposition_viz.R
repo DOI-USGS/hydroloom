@@ -89,54 +89,52 @@ message("decomposition built: ", length(d$domains), " domains")
 
 summary_df <- data.frame(
   domain_id = vapply(d$domains, \(x) x$domain_id, character(1)),
-  type = vapply(d$domains, \(x) x$domain_type, character(1)),
   n_catchments = vapply(d$domains, \(x) nrow(x$catchments), integer(1)),
-  trunk_parent = vapply(d$domains,
-    \(x) x$trunk_domain_id %||% NA_character_, character(1)),
   stringsAsFactors = FALSE,
   row.names = NULL
 )
 
-summary_df <- summary_df[order(summary_df$type, -summary_df$n_catchments), ]
+summary_df <- summary_df[order(-summary_df$n_catchments), ]
 
 cat("\n=== domain summary ===\n")
 print(summary_df, row.names = FALSE)
 
 cat("\n=== totals ===\n")
-cat("trunk domains:   ", sum(summary_df$type == "trunk"), "\n")
-cat("compact domains: ", sum(summary_df$type == "compact"), "\n")
-cat("total catchments:", sum(summary_df$n_catchments), "\n")
-cat("source rows:     ", nrow(src), "\n")
+cat("basins:           ", length(d$domain_connectivity), "\n")
+cat("domains:          ", length(d$domains), "\n")
+cat("total catchments: ", sum(summary_df$n_catchments), "\n")
+cat("source rows:      ", nrow(src), "\n")
 
-# ---- trunk size distribution -------------------------------------------
+# ---- connectivity-overlay size distribution ----------------------------
 #
-# Tabulates trunk-domain catchment counts. With trunk_threshold = 100,
-# each basin whose outlet total_da_sqkm exceeds 100 km² gets one trunk
-# domain containing all catchments above the threshold. Basins at or
-# below the threshold get no trunk -- just a single compact domain.
+# Tabulates per-basin extensive-connectivity overlay sizes. With
+# trunk_threshold = 2000, each basin whose outlet total_da_sqkm exceeds
+# 2000 km² gets a connectivity overlay covering all main-path
+# catchments above the threshold. Sub-threshold basins get no overlay.
 
-trunk_sizes <- summary_df$n_catchments[summary_df$type == "trunk"]
+conn_sizes <- vapply(d$domain_connectivity,
+  \(o) nrow(o), integer(1))
 
-trunk_size_dist <- as.data.frame(
-  table(n_catchments = trunk_sizes),
+conn_size_dist <- as.data.frame(
+  table(n_catchments = conn_sizes),
   stringsAsFactors = FALSE,
-  responseName = "n_trunks"
+  responseName = "n_basins"
 )
 
-trunk_size_dist$n_catchments <- as.integer(
-  as.character(trunk_size_dist$n_catchments))
+conn_size_dist$n_catchments <- as.integer(
+  as.character(conn_size_dist$n_catchments))
 
-trunk_size_dist <- trunk_size_dist[order(trunk_size_dist$n_catchments), ]
+conn_size_dist <- conn_size_dist[order(conn_size_dist$n_catchments), ]
 
-cat("\n=== trunk size distribution ===\n")
-print(trunk_size_dist, row.names = FALSE)
+cat("\n=== connectivity overlay size distribution ===\n")
+print(conn_size_dist, row.names = FALSE)
 
-# ---- join compact domain_id back to catchment polygons -----------------
+# ---- join domain_id back to catchment polygons -------------------------
 
 idx <- d$catchment_domain_index
 
-# Under the decomposed compact form every catchment lives in some compact
-# (the trunk domain is a viz duplicate). Map featureid -> compact id.
+# Every catchment is in exactly one domain (the connectivity overlay
+# is a separate basin-level object).
 catch_id_chr <- as.character(catchments_sf$featureid)
 
 domain_for_catch <- unname(idx[catch_id_chr])
@@ -161,15 +159,14 @@ names(pal) <- domain_levels
 
 plot_sf$color <- pal[plot_sf$domain_id]
 
-# ---- collect trunk-feature catchment ids for the overlay --------------
+# ---- collect connectivity-overlay ids for the overlay -----------------
 
-trunk_ids <- unlist(lapply(
-  Filter(\(x) x$domain_type == "trunk", d$domains),
-  \(x) as.character(x$catchments$id)),
+conn_ids <- unlist(lapply(d$domain_connectivity,
+  \(o) as.character(o$id)),
   use.names = FALSE)
 
-trunk_lines <- flowlines_sf[
-  as.character(flowlines_sf$comid) %in% trunk_ids, ]
+connectivity_lines <- flowlines_sf[
+  as.character(flowlines_sf$comid) %in% conn_ids, ]
 
 # ---- render ------------------------------------------------------------
 
@@ -179,11 +176,11 @@ plot(sf::st_geometry(plot_sf),
   col = plot_sf$color,
   border = NA,
   main = sprintf(
-    "decompose_network(trunk_threshold=2000): %d compacts on %d catchments (trunk overlay in black)",
-    sum(summary_df$type == "compact"),
+    "decompose_network(trunk_threshold=2000): %d domains on %d catchments (extensive connectivity in black)",
+    length(d$domains),
     nrow(plot_sf)))
 
-plot(sf::st_geometry(trunk_lines),
+plot(sf::st_geometry(connectivity_lines),
   col = "black", lwd = 1.2, add = TRUE)
 
 # grDevices::dev.off()

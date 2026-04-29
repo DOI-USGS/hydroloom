@@ -235,8 +235,8 @@ make_nondendritic_topology <- function(x) {
   # The c(x$id, x$toid) anchor pulls outlet pseudo-ids into the join so the
   # synthetic terminal nodes get joined; the trailing filter drops them.
   # Filtering by membership in the original network ids (rather than equality
-  # to a sentinel) supports any outlet convention, including unique-per-outlet
-  # identifiers.
+  # to a reserved value) supports any outlet convention, including
+  # unique-per-outlet identifiers.
   out <- distinct(data.frame(id = c(x$id, x$toid))) |>
     left_join(to, by = id) |>
     left_join(from, by = id) |>

@@ -98,17 +98,12 @@ test_that("at-scale recomposed levelpath matches the source", {
 
 })
 
-test_that("at-scale decomposition contains both trunk and compact domains", {
+test_that("at-scale decomposition produces basins and segment domains", {
 
   decomposition_pending("decompose_network")
 
-  trunk_count <- sum(vapply(at_scale_d$domains,
-    \(x) x$domain_type == "trunk", logical(1)))
-  compact_count <- sum(vapply(at_scale_d$domains,
-    \(x) x$domain_type == "compact", logical(1)))
-
-  expect_gte(trunk_count, 1L)
-  expect_gte(compact_count, 1L)
+  expect_gte(length(at_scale_d$domain_connectivity), 1L)
+  expect_gte(length(at_scale_d$domains), 1L)
 
 })
 

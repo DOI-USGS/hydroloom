@@ -43,13 +43,14 @@ test_that("decompose_network handles a single-flowline network", {
 
   expect_true(hydroloom::validate_decomposition(d)$valid)
 
-  # Under the decomposed compact form a single-flowline basin produces
-  # one trunk (viz duplicate, toids intact) plus one compact domain whose
-  # catchments slot is the single row in its decomposed form.
-  expect_length(d$domains, 2L)
+  # A single-flowline basin produces one domain (the row in its
+  # decomposed form) and one connectivity overlay (the row with
+  # toids intact).
+  expect_length(d$domains, 1L)
+  expect_length(d$domain_connectivity, 1L)
 
-  types <- unname(vapply(d$domains, \(x) x$domain_type, character(1)))
-  expect_setequal(types, c("compact", "trunk"))
+  expect_s3_class(d$domains[[1]]$catchments, "hy_topo")
+  expect_s3_class(d$domain_connectivity[[1]], "hy_leveled")
 
 })
 

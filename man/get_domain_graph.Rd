@@ -16,9 +16,13 @@ include. Default is both \code{"flow"} and \code{"contained"}.}
 hydroloom edge list (\code{hy_topo} or \code{hy_flownetwork}).
 }
 \description{
-Returns the inter-domain graph as a hydroloom edge list, filtered by
-relation type. The default returns both flow and containment edges;
-pass \code{relations = "flow"} to get the dendritic flow DAG only.
+Derives the inter-domain graph from \code{decomposition$nexus_registry}
+and returns it as a hydroloom edge list, filtered by relation type.
+Each registry row whose \code{to_domain_id} is non-NA contributes one
+flow edge from \code{from_domain_id} to \code{to_domain_id}. Containment edges
+are not yet emitted. The default includes both flow and containment
+relations; pass \code{relations = "flow"} to get the dendritic flow DAG
+only.
 
 The returned object is passed through \code{classify_hy()} so it carries
 the most-specific hydroloom class (\code{hy_topo} when the inter-domain

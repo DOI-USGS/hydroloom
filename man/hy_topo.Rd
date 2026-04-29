@@ -40,7 +40,8 @@ on a particular object, use \code{\link[=hy_capabilities]{hy_capabilities()}}.
 \itemize{
 \item \code{id} — catchment or flowline identifier, unique across rows
 \item \code{toid} — \code{id} of the immediately downstream feature; network
-outlets carry a sentinel value
+outlets carry the reserved outlet value (\code{0} for numeric ids,
+\code{""} for character)
 }
 
 See \link{hydroloom_name_definitions} for the canonical column definitions

@@ -26,16 +26,9 @@ test_that("decompose_network partitions walker.gpkg", {
   assert_one_outlet_per_domain(d)
   assert_dendritic_inter_domain(d)
 
-  # trunks must carry hy_leveled; compact domains at least hy_topo or hy_flownetwork
-  for (dom in d$domains) {
-
-    if (dom$domain_type == "trunk") {
-      expect_s3_class(dom$catchments, "hy_leveled")
-    } else {
-      expect_true(hydroloom::hy_network_type(dom$catchments) %in%
-        c("hy_topo", "hy_leveled", "hy_flownetwork"))
-    }
-
+  for (domain in d$domains) {
+    expect_true(hydroloom::hy_network_type(domain$catchments) %in%
+      c("hy_topo", "hy_leveled", "hy_flownetwork"))
   }
 
   # round trip: catchment id -> domain id -> contains catchment
@@ -69,21 +62,15 @@ test_that("decompose_network partitions new_hope.gpkg", {
   assert_one_outlet_per_domain(d)
   assert_dendritic_inter_domain(d)
 
-  # new_hope is the primary multi-trunk fixture; expect more than one
-  # trunk and at least one compact domain.
-  trunk_count <- sum(vapply(d$domains,
-    \(dom) dom$domain_type == "trunk", logical(1)))
-  compact_count <- sum(vapply(d$domains,
-    \(dom) dom$domain_type == "compact", logical(1)))
+  n_basins  <- length(d$domain_connectivity)
+  n_domains <- length(d$domains)
 
-  expect_gte(trunk_count, 1L)
-  expect_gte(compact_count, 1L)
+  expect_gte(n_basins, 1L)
+  expect_gte(n_domains, 1L)
 
-  # every trunk's catchments must be hy_leveled
-  for (dom in d$domains) {
-    if (dom$domain_type == "trunk")
-      expect_s3_class(dom$catchments, "hy_leveled")
-  }
+  # every connectivity overlay must be hy_leveled
+  expect_true(all(vapply(d$domain_connectivity,
+    \(o) inherits(o, "hy_leveled"), logical(1))))
 
 })
 
@@ -105,10 +92,10 @@ test_that("decompose_network handles non-dendritic network.rds", {
   assert_partition_coverage(d, src)
   assert_one_outlet_per_domain(d)
 
-  # at least one domain — trunk or compact — should land on
-  # hy_flownetwork because the source is non-dendritic.
+  # at least one domain should land on hy_flownetwork because the
+  # source is non-dendritic.
   has_fn <- any(vapply(d$domains,
-    \(dom) inherits(dom$catchments, "hy_flownetwork"),
+    \(domain) inherits(domain$catchments, "hy_flownetwork"),
     logical(1)))
 
   expect_true(has_fn,
@@ -118,13 +105,13 @@ test_that("decompose_network handles non-dendritic network.rds", {
 
 # ---- trunk_threshold / trunk_levelpaths tests -------------------------
 
-test_that("decompose_network trunk includes all above-threshold catchments", {
+test_that("decompose_network main path includes all above-threshold catchments", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 
-  # threshold=15: trunk spans 2 levelpaths, 2 compact domains
+  # threshold=15: main path spans 2 levelpaths, 3 domains (segments)
   d <- hydroloom::decompose_network(src,
     trunk_metric    = "drainage_area",
     trunk_threshold = 15)
@@ -136,32 +123,21 @@ test_that("decompose_network trunk includes all above-threshold catchments", {
   assert_one_outlet_per_domain(d)
   assert_dendritic_inter_domain(d)
 
-  types <- vapply(d$domains, \(dom) dom$domain_type, character(1))
+  expect_equal(length(d$domain_connectivity), 1L,
+    label = "walker is one basin")
 
-  # One basin -> exactly one trunk.
-  expect_equal(sum(types == "trunk"), 1L,
-    label = "walker (one basin) produces exactly one trunk")
+  conn <- d$domain_connectivity[[1]]
 
-  # Two compact domains (one per trunk segment between confluences).
-  expect_equal(sum(types == "compact"), 2L,
-    label = "walker with threshold = 15 produces two compact domains")
-
-  # The trunk should contain all catchments whose total_da_sqkm > 15,
-  # spanning multiple levelpaths.
-  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d$domains)[[1]]
-  trunk_catchment_ids <- as.character(trunk_dom$catchments$id)
+  conn_ids <- as.character(conn$id)
 
   expected_ids <- as.character(
     src$id[src$total_da_sqkm > 15])
 
-  expect_true(all(expected_ids %in% trunk_catchment_ids),
-    label = "all above-threshold catchments are in the trunk")
+  expect_true(all(expected_ids %in% conn_ids),
+    label = "all above-threshold catchments are in the connectivity overlay")
 
-  # The trunk spans more than one levelpath.
-  trunk_lps <- unique(trunk_dom$catchments$levelpath)
-
-  expect_gt(length(trunk_lps), 1L,
-    label = "trunk includes catchments from multiple levelpaths")
+  expect_gt(length(unique(conn$levelpath)), 1L,
+    label = "connectivity overlay includes catchments from multiple levelpaths")
 
 })
 
@@ -171,28 +147,23 @@ test_that("decompose_network trunk_threshold on new_hope", {
 
   src <- enrich_for_decomposition(load_new_hope())
 
-  # threshold=100: trunk spans many levelpaths, at least 5 compact domains
+  # threshold=100: main path spans many levelpaths, at least 2 segments
   d <- hydroloom::decompose_network(src, trunk_threshold = 100)
 
   expect_true(hydroloom::validate_decomposition(d)$valid)
   assert_partition_coverage(d, src)
   assert_dendritic_inter_domain(d)
 
-  types <- vapply(d$domains, \(dom) dom$domain_type, character(1))
+  expect_equal(length(d$domain_connectivity), 1L,
+    label = "new_hope is one basin")
 
-  expect_equal(sum(types == "trunk"), 1L,
-    label = "new_hope (one basin) produces exactly one trunk")
+  conn <- d$domain_connectivity[[1]]
 
-  # Trunk spans at least 2 tributary levelpaths.
-  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d$domains)[[1]]
-  trunk_lps <- unique(trunk_dom$catchments$levelpath)
+  expect_gt(length(unique(conn$levelpath)), 2L,
+    label = "connectivity overlay includes tributaries beyond the outlet levelpath")
 
-  expect_gt(length(trunk_lps), 2L,
-    label = "trunk includes tributaries beyond the outlet levelpath")
-
-  # At least 2 compact domains (segments between trunk confluences).
-  expect_gte(sum(types == "compact"), 2L,
-    label = "new_hope with threshold = 100 produces at least 2 compact domains")
+  expect_gte(length(d$domains), 2L,
+    label = "new_hope with threshold = 100 produces at least 2 domains")
 
 })
 
@@ -212,14 +183,12 @@ test_that("decompose_network trunk_levelpaths explicit override on walker", {
   assert_partition_coverage(d, src)
   assert_dendritic_inter_domain(d)
 
-  # One basin -> one trunk containing catchments from the forced LPs.
-  trunk_dom <- Filter(
-    \(dom) dom$domain_type == "trunk", d$domains)[[1]]
+  conn <- d$domain_connectivity[[1]]
 
-  found_lps <- unique(trunk_dom$catchments$levelpath)
+  found_lps <- unique(conn$levelpath)
 
   expect_true(all(top_lps %in% found_lps),
-    label = "both override levelpaths appear in the trunk")
+    label = "both override levelpaths appear in the connectivity overlay")
 
 })
 
@@ -274,7 +243,7 @@ test_that("decompose_network errors on unknown trunk_levelpaths", {
 
 })
 
-test_that("decompose_network omits trunks for sub-threshold basins", {
+test_that("decompose_network omits connectivity for sub-threshold basins", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -299,20 +268,18 @@ test_that("decompose_network omits trunks for sub-threshold basins", {
   expect_true(hydroloom::validate_decomposition(d)$valid)
   assert_partition_coverage(d, src)
 
-  types <- vapply(d$domains,
-    \(dom) dom$domain_type, character(1))
+  # Basin B (DA = 100) should have a connectivity overlay.
+  expect_true("6" %in% names(d$domain_connectivity),
+    label = "above-threshold basin has a connectivity overlay")
 
-  # Basin B (DA = 100) should have at least one trunk.
-  expect_gte(sum(types == "trunk"), 1L)
+  # Basin A (DA = 30) should have NO connectivity overlay -- whole
+  # basin becomes a single domain.
+  expect_false("3" %in% names(d$domain_connectivity),
+    label = "sub-threshold basin has no connectivity overlay")
 
-  # Basin A (DA = 30) should have NO trunk -- only a compact domain.
   basin_a_domain <- d$catchment_domain_index[["3"]]
-  basin_a_type <- d$domains[[basin_a_domain]]$domain_type
 
-  expect_equal(basin_a_type, "compact",
-    label = "sub-threshold basin is a compact domain, not a trunk")
-
-  # The compact domain for basin A should contain all three catchments.
+  # The single domain for basin A should contain all three catchments.
   expect_setequal(
     as.character(d$domains[[basin_a_domain]]$catchments$id),
     c("1", "2", "3"))
@@ -321,7 +288,7 @@ test_that("decompose_network omits trunks for sub-threshold basins", {
 
 # ---- domain_breaks parameter --------------------------------------------
 
-test_that("decompose_network domain_breaks splits trunk at specified ids", {
+test_that("decompose_network domain_breaks splits main path at specified ids", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -329,24 +296,20 @@ test_that("decompose_network domain_breaks splits trunk at specified ids", {
 
   d_default <- hydroloom::decompose_network(src)
 
-  # Find the trunk domain and pick a mid-trunk catchment that is not
-  # already a confluence or outlet.
-  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d_default$domains)[[1]]
-  trunk_catch <- trunk_dom$catchments
-  mid_id <- trunk_catch$id[ceiling(nrow(trunk_catch) / 2)]
+  # Pick a mid-main-path catchment from the basin's connectivity overlay.
+  conn <- d_default$domain_connectivity[[1]]
+  mid_id <- conn$id[ceiling(nrow(conn) / 2)]
 
   d_breaks <- hydroloom::decompose_network(src, domain_breaks = mid_id)
 
   expect_true(hydroloom::validate_decomposition(d_breaks)$valid)
   assert_partition_coverage(d_breaks, src)
 
-  n_compact_default <- sum(vapply(d_default$domains,
-    \(d) d$domain_type == "compact", logical(1)))
-  n_compact_breaks <- sum(vapply(d_breaks$domains,
-    \(d) d$domain_type == "compact", logical(1)))
+  n_default <- length(d_default$domains)
+  n_breaks  <- length(d_breaks$domains)
 
-  expect_gte(n_compact_breaks, n_compact_default,
-    label = "explicit break produces at least as many compact domains")
+  expect_gte(n_breaks, n_default,
+    label = "explicit break produces at least as many domains")
 
 })
 
@@ -373,10 +336,10 @@ test_that("decompose_network domain_breaks composes with trunk_levelpaths", {
   lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
   top_lps <- lp_outlets$levelpath[order(-lp_outlets$total_da_sqkm)][1:2]
 
-  # Pick a mid-trunk id from the multi-levelpath trunk.
+  # Pick a mid-main-path id from the multi-levelpath connectivity overlay.
   d_lp <- hydroloom::decompose_network(src, trunk_levelpaths = top_lps)
-  trunk_dom <- Filter(\(dom) dom$domain_type == "trunk", d_lp$domains)[[1]]
-  mid_id <- trunk_dom$catchments$id[ceiling(nrow(trunk_dom$catchments) / 2)]
+  conn <- d_lp$domain_connectivity[[1]]
+  mid_id <- conn$id[ceiling(nrow(conn) / 2)]
 
   d_both <- hydroloom::decompose_network(src,
     trunk_levelpaths = top_lps,
@@ -389,7 +352,7 @@ test_that("decompose_network domain_breaks composes with trunk_levelpaths", {
 
 # ---- decomposed compact form ------------------------------------------
 
-test_that("compact catchments include trunk-mainstem rows as detoid'd outlets", {
+test_that("domain catchments include main-path rows as detoid'd outlets", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -397,53 +360,39 @@ test_that("compact catchments include trunk-mainstem rows as detoid'd outlets", 
 
   d <- hydroloom::decompose_network(src)
 
-  trunks   <- Filter(\(x) x$domain_type == "trunk",   d$domains)
-  compacts <- Filter(\(x) x$domain_type == "compact", d$domains)
+  expect_gte(length(d$domain_connectivity), 1L)
+  expect_gte(length(d$domains), 1L)
 
-  expect_gte(length(trunks),   1L)
-  expect_gte(length(compacts), 1L)
-
-  # Trunk catchment ids -- pulled from the trunk domain so we can
-  # tell trunk-mainstem rows from laterals without a marker column.
-  trunk_row_ids <- unlist(lapply(trunks,
-    \(x) as.character(x$catchments$id)),
+  # Main-path catchment ids -- pulled from the basin's extensive
+  # connectivity overlay so we can tell main-path rows from laterals
+  # without a marker column.
+  conn_ids <- unlist(lapply(d$domain_connectivity,
+    \(o) as.character(o$id)),
     use.names = FALSE)
 
-  for (cd in compacts) {
+  for (domain in d$domains) {
 
-    catch <- cd$catchments
+    catch <- domain$catchments
 
-    sentinel <- hydroloom:::get_outlet_value(catch)
+    outlet_value <- hydroloom:::get_outlet_value(catch)
 
-    in_trunk <- as.character(catch$id) %in% trunk_row_ids
+    in_main <- as.character(catch$id) %in% conn_ids
 
-    if (any(in_trunk)) {
-      expect_true(all(catch$toid[in_trunk] == sentinel),
-        label = paste0("compact ", cd$domain_id,
-          " trunk-mainstem rows have sentinel toid"))
-    }
-
-    # Lateral rows that point to an in-compact trunk row keep their
-    # natural toid (no rewriting). At least one lateral somewhere in
-    # the decomposition should fit this -- otherwise the basin is
-    # all-trunk.
-    laterals <- catch[!in_trunk, , drop = FALSE]
-
-    if (nrow(laterals) > 0L) {
-      lat_pointing_to_trunk <- as.character(laterals$toid) %in% trunk_row_ids
-      # No assertion required per compact domain -- some compact domains might be
-      # trunk-only -- but the next test exercises a lateral path.
-      invisible(lat_pointing_to_trunk)
+    if (any(in_main)) {
+      expect_true(all(catch$toid[in_main] == outlet_value),
+        label = paste0("domain ", domain$domain_id,
+          " main-path rows have the reserved outlet toid value"))
     }
   }
 
-  # Trunk-subset invariant: every trunk row appears in some compact
-  # as a sentinel-toid outlet.
-  assert_trunk_subset_of_compact_features(d)
+  # Connectivity-membership invariant: every row in some domain
+  # carrying the reserved outlet toid value appears in some basin's
+  # connectivity overlay.
+  assert_segments_in_connectivity(d)
 
 })
 
-test_that("compact accumulate_downstream gives per-trunk-row incremental DA", {
+test_that("domain accumulate_downstream gives per-main-path incremental DA", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -454,44 +403,41 @@ test_that("compact accumulate_downstream gives per-trunk-row incremental DA", {
 
   d <- hydroloom::decompose_network(src)
 
-  trunks   <- Filter(\(x) x$domain_type == "trunk",   d$domains)
-  compacts <- Filter(\(x) x$domain_type == "compact", d$domains)
-
-  trunk_row_ids <- unlist(lapply(trunks,
-    \(x) as.character(x$catchments$id)),
+  conn_ids <- unlist(lapply(d$domain_connectivity,
+    \(o) as.character(o$id)),
     use.names = FALSE)
 
-  for (cd in compacts) {
+  for (domain in d$domains) {
 
-    catch <- cd$catchments
+    catch <- domain$catchments
 
-    in_trunk <- which(as.character(catch$id) %in% trunk_row_ids)
+    in_main <- which(as.character(catch$id) %in% conn_ids)
 
-    if (length(in_trunk) == 0L) next
+    if (length(in_main) == 0L) next
 
     acc <- hydroloom::accumulate_downstream(catch, "da_sqkm")
 
-    # Each trunk-mainstem row is its own outlet inside the compact domain.
-    # Its accumulated value should equal its own incremental plus
-    # the sum of every lateral row that drains (transitively) to it.
-    for (i in in_trunk) {
+    # Each main-path row is its own outlet inside the domain. Its
+    # accumulated value should equal its own incremental plus the sum
+    # of every lateral row that drains (transitively) to it.
+    for (i in in_main) {
 
       tf_id <- catch$id[i]
 
-      contributing <- collect_upstream_in_compact(catch, tf_id)
+      contributing <- collect_upstream_in_domain(catch, tf_id)
 
       expected <- sum(catch$da_sqkm[
         as.character(catch$id) %in% contributing], na.rm = TRUE)
 
       expect_equal(acc[i], expected,
-        label = paste0("compact ", cd$domain_id,
-          " trunk row ", tf_id, " accumulated DA"))
+        label = paste0("domain ", domain$domain_id,
+          " main-path row ", tf_id, " accumulated DA"))
     }
   }
 
 })
 
-test_that("trunk toids restored from source produce a connected mainstem", {
+test_that("main-path toids restored from source produce a connected main path", {
 
   decomposition_pending(c("decompose_network", "validate_decomposition"))
 
@@ -499,38 +445,35 @@ test_that("trunk toids restored from source produce a connected mainstem", {
 
   d <- hydroloom::decompose_network(src)
 
-  trunks   <- Filter(\(x) x$domain_type == "trunk",   d$domains)
-  compacts <- Filter(\(x) x$domain_type == "compact", d$domains)
-
-  trunk_row_ids <- unlist(lapply(trunks,
-    \(x) as.character(x$catchments$id)),
+  conn_ids <- unlist(lapply(d$domain_connectivity,
+    \(o) as.character(o$id)),
     use.names = FALSE)
 
   src_lookup <- setNames(as.character(src$toid), as.character(src$id))
 
-  for (cd in compacts) {
+  for (domain in d$domains) {
 
-    catch <- cd$catchments
+    catch <- domain$catchments
 
-    in_trunk_idx <- which(as.character(catch$id) %in% trunk_row_ids)
+    in_main_idx <- which(as.character(catch$id) %in% conn_ids)
 
-    if (length(in_trunk_idx) == 0L) next
+    if (length(in_main_idx) == 0L) next
 
-    # Restore trunk-mainstem rows' toids from source_network.
+    # Restore main-path rows' toids from source_network.
     restored <- catch
-    restored$toid[in_trunk_idx] <-
-      src_lookup[as.character(restored$id[in_trunk_idx])]
+    restored$toid[in_main_idx] <-
+      src_lookup[as.character(restored$id[in_main_idx])]
 
     # Re-detoid: dropping toids again should match the original
     # decomposed form.
     re_dropped <- restored
-    re_dropped$toid[in_trunk_idx] <-
+    re_dropped$toid[in_main_idx] <-
       hydroloom:::get_outlet_value(re_dropped)
 
     expect_equal(
       as.character(re_dropped$toid),
       as.character(catch$toid),
-      label = paste0("compact ", cd$domain_id,
+      label = paste0("domain ", domain$domain_id,
         " round-trip restore -> drop matches original"))
   }
 

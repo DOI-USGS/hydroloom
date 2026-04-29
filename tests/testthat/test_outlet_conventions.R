@@ -1,9 +1,9 @@
 # Tests covering the six outlet conventions hydroloom accepts:
-#   1. numeric 0 (canonical numeric sentinel)
-#   2. character "" (canonical character sentinel)
+#   1. numeric 0 (canonical numeric reserved value)
+#   2. character "" (canonical character reserved value)
 #   3. NA
-#   4. implicit absence (toid = a value not in id, no special sentinel)
-#   5. foreign sentinel (e.g., -1)
+#   4. implicit absence (toid = a value not in id, no special reserved value)
+#   5. foreign reserved value (e.g., -1)
 #   6. unique-per-outlet identifiers (each outlet has a distinct toid value
 #      that is not present in id; useful for keeping outlets individually
 #      addressable)
@@ -19,7 +19,7 @@ build_dendritic <- function(id_vec, toid_vec, var = c(1, 2, 3, 4, 1)) {
   data.frame(id = id_vec, toid = toid_vec, var = var)
 }
 
-test_that("numeric 0 sentinel: full pipeline", {
+test_that("numeric 0 reserved value: full pipeline", {
   x <- build_dendritic(1:5, c(2, 3, 5, 5, 0))
   h <- hy(x)
   expect_equal(hydroloom:::is_outlet(h), c(FALSE, FALSE, FALSE, FALSE, TRUE))
@@ -27,7 +27,7 @@ test_that("numeric 0 sentinel: full pipeline", {
   expect_equal(tail(s$id, 1), 5)
 })
 
-test_that("character '' sentinel: full pipeline", {
+test_that("character '' reserved value: full pipeline", {
   x <- build_dendritic(as.character(1:5), c("2", "3", "5", "5", ""))
   h <- hy(x)
   expect_equal(hydroloom:::is_outlet(h), c(FALSE, FALSE, FALSE, FALSE, TRUE))
@@ -35,10 +35,10 @@ test_that("character '' sentinel: full pipeline", {
   expect_equal(tail(s$id, 1), "5")
 })
 
-test_that("NA outlet: full pipeline (hy() normalizes NA -> sentinel)", {
+test_that("NA outlet: full pipeline (hy() normalizes NA -> reserved value)", {
   x <- build_dendritic(1:5, c(2, 3, 5, 5, NA))
   h <- hy(x)
-  # hy() preserves backward-compat by replacing NA with the canonical sentinel.
+  # hy() preserves backward-compat by replacing NA with the canonical reserved value.
   expect_equal(h$toid[5], 0)
   expect_true(hydroloom:::is_outlet(h)[5])
   expect_no_warning(s <- sort_network(h))
@@ -59,7 +59,7 @@ test_that("implicit absence (toid points to non-existent id)", {
   expect_equal(tail(s$id, 1), 5)
 })
 
-test_that("foreign sentinel (-1)", {
+test_that("foreign reserved value (-1)", {
   x <- build_dendritic(1:5, c(2, 3, 5, 5, -1))
   h <- hy(x)
   expect_equal(hydroloom:::is_outlet(h), c(FALSE, FALSE, FALSE, FALSE, TRUE))
@@ -136,8 +136,8 @@ test_that("check_hy_outlets warns on type mismatch", {
 })
 
 test_that("check_hy_outlets does NOT warn on non-canonical valid outlets", {
-  # A foreign sentinel in a type-consistent table is a valid outlet marker
-  # under the is_outlet() rule.
+  # A foreign reserved value in a type-consistent table is a valid outlet
+  # marker under the is_outlet() rule.
   x <- build_dendritic(1:5, c(2, 3, 5, 5, -1))
   expect_no_warning(hydroloom:::check_hy_outlets(hy(x)))
 })
@@ -148,6 +148,6 @@ test_that("check_hy_outlets fix=TRUE canonicalizes outlets (destroys per-outlet 
     toid = c("A", "t1", "OUT_001", "OUT_002")
   )
   fixed <- hydroloom:::check_hy_outlets(hy(x), fix = TRUE)
-  # All outlet markers collapsed to "" (canonical character sentinel).
+  # All outlet markers collapsed to "" (canonical character reserved value).
   expect_equal(fixed$toid[fixed$id %in% c("t1", "t2")], c("", ""))
 })

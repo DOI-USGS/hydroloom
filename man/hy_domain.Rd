@@ -6,10 +6,8 @@
 \usage{
 hy_domain(
   domain_id,
-  domain_type,
   outlet_nexus_id,
   inlet_nexus_ids,
-  trunk_domain_id,
   containing_domain_id,
   catchments,
   topo_sort_offset
@@ -18,84 +16,65 @@ hy_domain(
 \arguments{
 \item{domain_id}{character(1). Unique identifier for this domain.}
 
-\item{domain_type}{character(1). Either \code{"trunk"} or \code{"compact"}.}
-
 \item{outlet_nexus_id}{character(1). Identifier of the outlet hydro
 nexus where this domain discharges.}
 
-\item{inlet_nexus_ids}{character. For trunk domains, the nexus ids where
-compact domains inject lateral inflow along the mainstem. Always
-\code{character(0)} for compact domains — they have no upstream domain
-connections; they connect only to their parent trunk.}
+\item{inlet_nexus_ids}{character. Hydro nexus ids where upstream
+domains feed into this one. \code{character(0)} for leaf domains;
+populated for stem and root domains.}
 
-\item{trunk_domain_id}{character(1). For compact domains, the id of
-the receiving trunk; for trunks, self or \code{NA_character_}.}
-
-\item{containing_domain_id}{character(1). For contained (e.g. endorheic)
-domains, the id of the enclosing domain. \code{NA_character_} if not
-contained.}
+\item{containing_domain_id}{character(1). For contained (e.g.
+endorheic) domains, the id of the enclosing domain.
+\code{NA_character_} if not contained.}
 
 \item{catchments}{hydroloom object carrying the domain's catchment
-network. Must be \code{hy_leveled} for trunks; \code{hy_topo}, \code{hy_leveled},
-or \code{hy_flownetwork} for compact domains.}
+network. Must be \code{hy_topo}, \code{hy_leveled}, or \code{hy_flownetwork}.}
 
 \item{topo_sort_offset}{integer(1). Global topo_sort base enabling
 cross-domain ordering after recomposition.}
 }
 \value{
-object of class \code{hy_domain} — a list with the eight named
+object of class \code{hy_domain} — a list with the six named
 slots above.
 }
 \description{
 A \code{hy_domain} is the unit of independent computation in a network
-decomposition. It bundles a domain's catchment network with the
-connectivity metadata that recomposition needs.
+decomposition. Every \code{hy_domain} is compact — a partitioned piece
+of a drainage basin that bundles the segment's lateral tributaries
+with the main-path rows flowing through the segment (the latter
+in their decomposed form, with reserved-\code{toid} values that mark each
+as a local outlet). The basin's \emph{extensive connectivity} — a
+\code{hy_leveled} view of the main path with \code{toid}s intact — is stored
+separately in \code{domain_decomposition$domain_connectivity}.
 }
 \details{
-Two domain types are supported:
-\itemize{
-\item \strong{Trunk} domains are realized by a major mainstem flowpath. They
-require a \code{hy_leveled} \code{catchments} slot with toids intact, so the
-connected mainstem can be drawn, named, and walked end-to-end. A
-trunk catchment is also present, in its decomposed form, in the
-surrounding compact (the row with its \code{toid} set to the outlet
-sentinel); the trunk's catchments slot is a duplicate view used
-for visualization and explicit naming.
-\item \strong{Compact} domains carry the segment's lateral tributaries plus
-the trunk-mainstem rows that flow through the segment. The
-trunk-mainstem rows have a sentinel \code{toid}, so each is a local
-outlet of its own contributing sub-basin. Membership in the
-trunk-mainstem set is recoverable from the parent trunk domain's
-\code{catchments$id}. The slot may be \code{hy_topo} (or \code{hy_leveled}) for
+The \code{catchments} slot may be \code{hy_topo} (or \code{hy_leveled}) for
 dendritic internal connectivity, or \code{hy_flownetwork} to preserve
 internal divergences.
-}
 
-\strong{Trunk and compact ownership.} The trunk is not itself a catchment.
-It carries accumulated values from one compact domain to the next. The
-catchments along the trunk's mainstem are, by catchment aggregate
-semantics (HY_Features), part of the surrounding compact domain's drainage
-area. The implementation puts them in the compact domain's \code{catchments}
-slot (with sentinel toids) and also duplicates them in the trunk's
-\code{catchments} slot (with toids intact) so the connected mainstem
-stays addressable for drawing and naming. With the two ownerships
-kept distinct, per-compact processing runs in parallel and
-recomposition lands in a single pass.
+\strong{Compact and extensive duality.} The main-path rows in a
+domain's \code{catchments} carry the reserved outlet \code{toid} value (the
+value \code{get_outlet_value()} returns), so each becomes a local outlet
+of its own contributing sub-basin. Those same ids appear, with
+\code{toid}s intact, in the basin's \code{domain_connectivity[[basin_id]]}
+overlay so the basin's main path stays addressable end-to-end. With
+the two ownerships kept distinct, per-domain processing runs in
+parallel and recomposition lands in a single pass. Main-path
+membership inside a domain is recoverable by intersecting the
+domain's \code{catchments$id} with the parent basin's
+connectivity-overlay \code{id}.
 
-\strong{Decomposed and recomposed modes.} The decomposed compact form
-is the default mode: each trunk-mainstem row is an outlet of its own
+\strong{Decomposed and recomposed modes.} The decomposed form is the
+default mode: each main-path row is an outlet of its own
 contributing sub-basin, so a single
 \link[=accumulate_downstream]{accumulate_downstream()} call on the
-compact domain's catchments produces, for every trunk catchment in the
+domain's catchments produces, for every trunk catchment in the
 segment, the locally-incremental drainage area (or any other
 accumulable) that belongs there. To switch to recomposed mode, join
-\code{source_network[, c("id", "toid")]} onto the compact domain's catchments
-where \code{toid} is the outlet sentinel, replacing it with the original
-value; the segment is a connected sub-basin again. See
+\code{source_network[, c("id", "toid")]} onto the domain's catchments
+where \code{toid} carries the reserved outlet value, replacing it with
+the original \code{toid}; the segment is a connected sub-basin again. See
 \code{vignette("domain_decomposition")} for the full framing.
-
-Recomposition restores the trunk-mainstem rows' toids in each
-compact from \code{source_network}, reconnecting the mainstem.
 
 The constructor returns a plain S3 list. Slot mutation after
 construction is permitted; downstream invariants are re-checked by
@@ -109,10 +88,8 @@ lev <- hy(data.frame(
 
 hy_domain(
   domain_id = "T1",
-  domain_type = "trunk",
   outlet_nexus_id = "n_out",
   inlet_nexus_ids = character(0),
-  trunk_domain_id = NA_character_,
   containing_domain_id = NA_character_,
   catchments = lev,
   topo_sort_offset = 0L)

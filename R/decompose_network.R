@@ -399,7 +399,8 @@ select_trunk_ids <- function(component, terminal_id,
 #'     keyed by basin id. Each overlay is the basin's *extensive
 #'     connectivity* — a `hy_leveled` view of the main path with
 #'     `toid`s intact except at the basin outlet, which carries the
-#'     outlet sentinel. Sub-threshold basins have no overlay.}
+#'     reserved outlet `toid` value. Sub-threshold basins have no
+#'     overlay.}
 #'   \item{`overrides`}{non-dendritic inter-domain transfer table, or
 #'     `NULL`.}
 #'   \item{`catchment_domain_index`}{named character vector mapping
@@ -880,8 +881,9 @@ compute_nd_bridge_ids <- function(x) {
 #' @returns list with `domains`, `connectivity`, `nexuses`, and two
 #'   parallel vectors for the catchment_domain_index. `connectivity` is
 #'   the basin's extensive connectivity overlay (a `hy_leveled` view of
-#'   the main path with toids intact except for the basin outlet
-#'   sentinel) or `NULL` when the basin is sub-threshold.
+#'   the main path with toids intact except for the basin outlet,
+#'   which carries the reserved outlet `toid` value) or `NULL` when the
+#'   basin is sub-threshold.
 #' @noRd
 decompose_build_component <- function(component, terminal_id,
                                       trunk_ids,
@@ -892,15 +894,15 @@ decompose_build_component <- function(component, terminal_id,
 
   if (length(trunk_ids) == 0L) {
 
-    dom_id    <- paste0("domain_", terminal_id)
+    domain_id    <- paste0("domain_", terminal_id)
     outlet_nx <- paste0("nx_outlet_", terminal_id)
 
-    out_sentinel <- get_outlet_value(component)
-    component$toid[component$id == terminal_id] <- out_sentinel
+    outlet_value <- get_outlet_value(component)
+    component$toid[component$id == terminal_id] <- outlet_value
     component <- classify_hy(component)
 
-    dom <- hy_domain(
-      domain_id            = dom_id,
+    domain <- hy_domain(
+      domain_id            = domain_id,
       outlet_nexus_id      = outlet_nx,
       inlet_nexus_ids      = character(0),
       containing_domain_id = NA_character_,
@@ -909,18 +911,18 @@ decompose_build_component <- function(component, terminal_id,
 
     nexus_row <- data.frame(
       nexus_id             = outlet_nx,
-      from_domain_id       = dom_id,
+      from_domain_id       = domain_id,
       to_domain_id         = NA_character_,
       trunk_catchment_id   = as.character(terminal_id),
       aggregate_id_measure = NA_real_,
       stringsAsFactors     = FALSE)
 
     return(list(
-      domains      = setNames(list(dom), dom_id),
+      domains      = setNames(list(domain), domain_id),
       connectivity = NULL,
       nexuses      = nexus_row,
       index_names  = as.character(component$id),
-      index_values = rep(dom_id, nrow(component))
+      index_values = rep(domain_id, nrow(component))
     ))
   }
 
@@ -930,8 +932,9 @@ decompose_build_component <- function(component, terminal_id,
   residual   <- component[!trunk_mask, , drop = FALSE]
 
   # Original toid of every catchment in the component, before any
-  # outlet-sentinel rewriting. Used to determine inter-domain handoff
-  # targets and to drive recomposition's toid restoration.
+  # rewriting to the reserved outlet value. Used to determine
+  # inter-domain handoff targets and to drive recomposition's toid
+  # restoration.
   comp_toid_lookup <- setNames(
     as.character(component$toid), as.character(component$id))
 
@@ -956,12 +959,12 @@ decompose_build_component <- function(component, terminal_id,
 
   # --- C. Build the basin's extensive connectivity overlay. ---------
   # An hy_leveled view of the main path with toids intact except for
-  # the basin outlet, which carries the outlet sentinel.
+  # the basin outlet, which carries the reserved outlet toid value.
 
   trunk_slice <- component[trunk_mask, , drop = FALSE]
 
-  out_sentinel_trunk <- get_outlet_value(trunk_slice)
-  trunk_slice$toid[trunk_slice$id == terminal_id] <- out_sentinel_trunk
+  trunk_outlet_value <- get_outlet_value(trunk_slice)
+  trunk_slice$toid[trunk_slice$id == terminal_id] <- trunk_outlet_value
   trunk_slice <- classify_hy(trunk_slice)
 
   # --- D. Build a domain for each segment. --------------------------
@@ -986,7 +989,7 @@ decompose_build_component <- function(component, terminal_id,
   }
 
   nexuses_list <- list()
-  inlet_by_dom <- list()
+  inlet_by_domain <- list()
   seg_data     <- list()
 
   for (seg_id in segment_ids) {
@@ -1009,24 +1012,24 @@ decompose_build_component <- function(component, terminal_id,
     }
 
     # Domain slice = laterals + main-path catchments in segment.
-    dom_catch_ids <- c(lateral_ids, seg_trunk_ids)
+    domain_catch_ids <- c(lateral_ids, seg_trunk_ids)
 
-    dom_slice <- component[
-      as.character(component$id) %in% dom_catch_ids, , drop = FALSE]
+    domain_slice <- component[
+      as.character(component$id) %in% domain_catch_ids, , drop = FALSE]
 
-    # Drop main-path rows' toids to the outlet sentinel. Each becomes a
-    # local outlet of its own contributing sub-basin. Lateral rows keep
-    # their natural toids -- they point to in-domain main-path rows.
-    # Main-path membership is recoverable by intersecting the domain's
-    # ids with the basin's domain_connectivity overlay; no marker
-    # column is needed.
-    cs_sentinel <- get_outlet_value(dom_slice)
-    dom_slice$toid[
-      as.character(dom_slice$id) %in% seg_trunk_ids] <- cs_sentinel
+    # Set main-path rows' toids to the reserved outlet value. Each
+    # becomes a local outlet of its own contributing sub-basin. Lateral
+    # rows keep their natural toids -- they point to in-domain main-path
+    # rows. Main-path membership is recoverable by intersecting the
+    # domain's ids with the basin's domain_connectivity overlay; no
+    # marker column is needed.
+    domain_outlet_value <- get_outlet_value(domain_slice)
+    domain_slice$toid[
+      as.character(domain_slice$id) %in% seg_trunk_ids] <- domain_outlet_value
 
-    dom_slice <- classify_hy(dom_slice)
+    domain_slice <- classify_hy(domain_slice)
 
-    dom_id <- paste0("domain_", terminal_id, "_", seg_id)
+    domain_id <- paste0("domain_", terminal_id, "_", seg_id)
 
     # Determine the segment's outflow target. The segment's
     # downstream-most main-path catchment is the segment id itself; its
@@ -1041,7 +1044,7 @@ decompose_build_component <- function(component, terminal_id,
 
       nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
         nexus_id             = primary_nexus_id,
-        from_domain_id       = dom_id,
+        from_domain_id       = domain_id,
         to_domain_id         = NA_character_,
         trunk_catchment_id   = seg_id_chr,
         aggregate_id_measure = NA_real_,
@@ -1050,7 +1053,7 @@ decompose_build_component <- function(component, terminal_id,
     } else {
 
       downstream_seg_id <- unname(seg_map[seg_terminal_toid])
-      downstream_dom_id <- paste0("domain_", terminal_id,
+      downstream_domain_id <- paste0("domain_", terminal_id,
         "_", downstream_seg_id)
 
       primary_nexus_id <- paste0("nx_", seg_id_chr,
@@ -1058,47 +1061,47 @@ decompose_build_component <- function(component, terminal_id,
 
       nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
         nexus_id             = primary_nexus_id,
-        from_domain_id       = dom_id,
-        to_domain_id         = downstream_dom_id,
+        from_domain_id       = domain_id,
+        to_domain_id         = downstream_domain_id,
         trunk_catchment_id   = seg_terminal_toid,
         aggregate_id_measure = NA_real_,
         stringsAsFactors     = FALSE)
 
-      inlet_by_dom[[downstream_dom_id]] <- c(
-        inlet_by_dom[[downstream_dom_id]] %||% character(0),
+      inlet_by_domain[[downstream_domain_id]] <- c(
+        inlet_by_domain[[downstream_domain_id]] %||% character(0),
         primary_nexus_id)
     }
 
-    seg_data[[dom_id]] <- list(
-      domain_id       = dom_id,
+    seg_data[[domain_id]] <- list(
+      domain_id       = domain_id,
       outlet_nexus_id = primary_nexus_id,
-      catchments      = dom_slice,
-      catch_ids       = dom_catch_ids
+      catchments      = domain_slice,
+      catch_ids       = domain_catch_ids
     )
   }
 
   # --- E. Second pass: build hy_domain instances now that
-  # inlet_by_dom is fully populated. --------------------------------
+  # inlet_by_domain is fully populated. --------------------------------
 
   domains      <- list()
   index_names  <- character(0)
   index_values <- character(0)
 
-  for (dom_id in names(seg_data)) {
+  for (domain_id in names(seg_data)) {
 
-    info <- seg_data[[dom_id]]
+    info <- seg_data[[domain_id]]
 
-    domains[[dom_id]] <- hy_domain(
-      domain_id            = dom_id,
+    domains[[domain_id]] <- hy_domain(
+      domain_id            = domain_id,
       outlet_nexus_id      = info$outlet_nexus_id,
-      inlet_nexus_ids      = inlet_by_dom[[dom_id]] %||% character(0),
+      inlet_nexus_ids      = inlet_by_domain[[domain_id]] %||% character(0),
       containing_domain_id = NA_character_,
       catchments           = info$catchments,
       topo_sort_offset     = 0L)
 
     index_names  <- c(index_names, info$catch_ids)
     index_values <- c(index_values,
-      rep(dom_id, length(info$catch_ids)))
+      rep(domain_id, length(info$catch_ids)))
   }
 
   # --- F. Return. --------------------------------------------------
@@ -1283,4 +1286,198 @@ get_domain_for_catchment <- function(decomposition, catchment_id) {
   }
 
   unname(hit)
+}
+
+#' Get a domain by id
+#'
+#' @description
+#' Returns the [hy_domain()] object stored under `domain_id` in a
+#' decomposition. Errors when `domain_id` is not a key of
+#' `decomposition$domains`.
+#'
+#' @param decomposition object of class `domain_decomposition`.
+#' @param domain_id character(1). Domain id to look up.
+#' @returns object of class `hy_domain` — the named list with all six
+#'   slots described in [hy_domain()].
+#' @seealso [hy_domain()] for the per-domain object,
+#'   [get_domain_connectivity()], [get_domain_for_catchment()],
+#'   [get_domain_graph()].
+#' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
+#'
+#' h <- hy(g) |>
+#'   add_toids() |>
+#'   add_levelpaths(name_attribute = "GNIS_ID",
+#'     weight_attribute = "arbolate_sum")
+#'
+#' d <- decompose_network(h)
+#'
+#' get_domain(d, names(d$domains)[[1]])
+#'
+get_domain <- function(decomposition, domain_id) {
+
+  domain_id <- as.character(domain_id)
+
+  if (length(domain_id) != 1L)
+    stop("get_domain: domain_id must be a single id, got length ",
+      length(domain_id), call. = FALSE)
+
+  domains <- decomposition$domains %||% list()
+
+  if (!domain_id %in% names(domains))
+    stop("get_domain: unknown domain id '", domain_id, "'",
+      call. = FALSE)
+
+  domains[[domain_id]]
+}
+
+#' Get a basin's extensive connectivity overlay
+#'
+#' @description
+#' Returns the `hy_leveled` overlay stored under `basin_id` in
+#' `decomposition$domain_connectivity`, or — when `basin_id` is `NULL`
+#' (the default) — the full named list of overlays. The overlay is the
+#' basin's *extensive connectivity*: a `hy_leveled` view of the main
+#' path with `toid`s intact except at the basin outlet, which carries
+#' the reserved outlet `toid` value.
+#'
+#' @param decomposition object of class `domain_decomposition`.
+#' @param basin_id character(1) or `NULL`. Basin id to look up.
+#'   `NULL` (default) returns the full named list.
+#' @returns single `hy_leveled` overlay when `basin_id` is supplied;
+#'   named list of overlays when `basin_id` is `NULL`.
+#' @seealso [hy_domain()] for the dual-ownership rule that motivates
+#'   the overlay, [domain_decomposition], [get_domain()],
+#'   [get_domain_graph()].
+#' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
+#'
+#' h <- hy(g) |>
+#'   add_toids() |>
+#'   add_levelpaths(name_attribute = "GNIS_ID",
+#'     weight_attribute = "arbolate_sum")
+#'
+#' d <- decompose_network(h)
+#'
+#' get_domain_connectivity(d, names(d$domain_connectivity)[[1]])
+#'
+get_domain_connectivity <- function(decomposition, basin_id = NULL) {
+
+  conn <- decomposition$domain_connectivity %||% list()
+
+  if (is.null(basin_id)) return(conn)
+
+  basin_id <- as.character(basin_id)
+
+  if (length(basin_id) != 1L)
+    stop("get_domain_connectivity: basin_id must be a single id, got length ",
+      length(basin_id), call. = FALSE)
+
+  if (!basin_id %in% names(conn))
+    stop("get_domain_connectivity: unknown basin id '", basin_id, "'",
+      call. = FALSE)
+
+  conn[[basin_id]]
+}
+
+#' Test whether a domain is a leaf
+#'
+#' @description
+#' A domain is a *leaf* when no upstream domain feeds into it — its
+#' `inlet_nexus_ids` slot is empty.
+#'
+#' @param decomposition object of class `domain_decomposition`.
+#' @param domain_id character(1). Domain id to test.
+#' @returns logical(1).
+#' @seealso [is_stem_domain()], [is_root_domain()], [hy_domain()].
+#' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
+#'
+#' h <- hy(g) |>
+#'   add_toids() |>
+#'   add_levelpaths(name_attribute = "GNIS_ID",
+#'     weight_attribute = "arbolate_sum")
+#'
+#' d <- decompose_network(h)
+#'
+#' is_leaf_domain(d, names(d$domains)[[1]])
+#'
+is_leaf_domain <- function(decomposition, domain_id) {
+
+  d <- get_domain(decomposition, domain_id)
+
+  length(d$inlet_nexus_ids) == 0L
+}
+
+#' Test whether a domain is the root of its basin
+#'
+#' @description
+#' A domain is the *root* when its outlet nexus has no downstream
+#' domain — the registry row for its `outlet_nexus_id` carries
+#' `to_domain_id = NA`. The root is the basin's most-downstream domain.
+#'
+#' @inheritParams is_leaf_domain
+#' @returns logical(1).
+#' @seealso [is_leaf_domain()], [is_stem_domain()], [hy_domain()].
+#' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
+#'
+#' h <- hy(g) |>
+#'   add_toids() |>
+#'   add_levelpaths(name_attribute = "GNIS_ID",
+#'     weight_attribute = "arbolate_sum")
+#'
+#' d <- decompose_network(h)
+#'
+#' is_root_domain(d, names(d$domains)[[1]])
+#'
+is_root_domain <- function(decomposition, domain_id) {
+
+  d <- get_domain(decomposition, domain_id)
+
+  out_nx <- d$outlet_nexus_id
+
+  if (is.null(out_nx) || length(out_nx) == 0L) return(FALSE)
+
+  reg <- decomposition$nexus_registry
+
+  if (is.null(reg) || nrow(reg) == 0L) return(TRUE)
+
+  outgoing <- reg[reg$nexus_id == out_nx & !is.na(reg$to_domain_id),
+    , drop = FALSE]
+
+  nrow(outgoing) == 0L
+}
+
+#' Test whether a domain is a stem
+#'
+#' @description
+#' A domain is a *stem* when it is neither a leaf nor a root — both
+#' upstream domains feed into it and its outlet hands off to a
+#' downstream domain.
+#'
+#' @inheritParams is_leaf_domain
+#' @returns logical(1).
+#' @seealso [is_leaf_domain()], [is_root_domain()], [hy_domain()].
+#' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
+#'
+#' h <- hy(g) |>
+#'   add_toids() |>
+#'   add_levelpaths(name_attribute = "GNIS_ID",
+#'     weight_attribute = "arbolate_sum")
+#'
+#' d <- decompose_network(h)
+#'
+#' is_stem_domain(d, names(d$domains)[[1]])
+#'
+is_stem_domain <- function(decomposition, domain_id) {
+
+  !is_leaf_domain(decomposition, domain_id) &&
+    !is_root_domain(decomposition, domain_id)
 }

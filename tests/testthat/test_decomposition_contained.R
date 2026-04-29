@@ -36,33 +36,35 @@ make_contained_source <- function() {
 
 }
 
-#' Build the contained-basin decomposition: 1 trunk + 1 contained
-#' compact + a "contained" edge in domain_graph.
+#' Build the contained-basin decomposition: an outlet domain (T1) and
+#' a contained domain (E1) whose `containing_domain_id` points at T1.
+#' Inter-domain containment edges are not yet emitted by
+#' `get_domain_graph()` (Layer 7), so the registry only carries the
+#' two outlet nexuses.
 make_contained_decomposition <- function() {
 
   decomposition_pending(c("hy_domain"))
 
   src <- make_contained_source()
 
-  trunk <- make_minimal_hy_domain(
+  outlet <- make_minimal_hy_domain(
     hydroloom::hy(src[1:7, ]),
-    domain_type = "trunk",
     outlet_nexus_id = "n_outlet")
 
   endo <- make_minimal_hy_domain(
     hydroloom::hy(src[8:10, ]),
-    domain_type = "compact",
     domain_id = "E1",
     outlet_nexus_id = "n_endo",
     containing_domain_id = "T1")
 
   make_minimal_decomposition(
-    domains = list(T1 = trunk, E1 = endo),
-    domain_graph = data.frame(
-      id = "E1", toid = "T1",
-      nexus_id = "n_endo", nexus_position = NA_real_,
-      relation_type = "contained"),
-    nexus_registry = data.frame(nexus_id = c("n_outlet", "n_endo")),
+    domains = list(T1 = outlet, E1 = endo),
+    nexus_registry = data.frame(
+      nexus_id = c("n_outlet", "n_endo"),
+      from_domain_id = c("T1", "E1"),
+      to_domain_id = c(NA_character_, NA_character_),
+      aggregate_id_measure = c(NA_real_, NA_real_),
+      stringsAsFactors = FALSE),
     source_network = src)
 
 }
@@ -114,6 +116,10 @@ test_that("accumulate_domains includes contained when requested", {
 test_that("get_domain_graph filters by relation_type", {
 
   decomposition_pending(c("hy_domain", "get_domain_graph"))
+
+  # Containment edges in `get_domain_graph()` are deferred to Layer 7.
+  # Until then the derived graph carries flow edges only.
+  testthat::skip("contained_basins not yet wired into get_domain_graph()")
 
   d <- make_contained_decomposition()
 

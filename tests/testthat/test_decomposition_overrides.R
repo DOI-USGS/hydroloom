@@ -123,17 +123,16 @@ test_that("validator accepts a decomposition carrying a valid override table", {
   src <- enrich_for_decomposition(load_new_hope())
   d <- hydroloom::decompose_network(src)
 
-  compacts <- names(d$domains)[
-    vapply(d$domains, \(x) x$domain_type == "compact", logical(1))]
+  domain_ids <- names(d$domains)
 
-  if (length(compacts) < 2)
-    skip("need at least two compact domains for a valid override")
+  if (length(domain_ids) < 2)
+    skip("need at least two domains for a valid override")
 
   override <- data.frame(
-    id = compacts[1],
-    toid = compacts[2],
-    source_nexus_id = d$domains[[compacts[1]]]$outlet_nexus_id,
-    sink_nexus_id = d$domains[[compacts[2]]]$outlet_nexus_id,
+    id = domain_ids[1],
+    toid = domain_ids[2],
+    source_nexus_id = d$domains[[domain_ids[1]]]$outlet_nexus_id,
+    sink_nexus_id = d$domains[[domain_ids[2]]]$outlet_nexus_id,
     transfer_type = "fraction",
     transfer_spec = I(list(list(fraction = 0.25))))
 

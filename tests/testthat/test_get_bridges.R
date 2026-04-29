@@ -117,7 +117,7 @@ test_that("get_bridge_flowlines independent terminals do not collapse", {
   #           --> C --> t3
   #
   # All seven flowlines are bridges (pure dendritic tree). Before this was
-  # fixed, t1/t2/t3 each had toid == outlet-sentinel after add_toids() and
+  # fixed, t1/t2/t3 each had toid == the reserved outlet value after add_toids() and
   # make_nondendritic_topology() gave them identical node_ids from
   # paste(sort(toid), collapse = "-") == "" (character ids) or "0" (numeric).
   # That collapsed them into a single synthetic node and produced wrong

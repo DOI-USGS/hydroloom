@@ -199,110 +199,93 @@ decomposition_pending <- function(fn) {
 
 # ---- reusable assertions on decomposition objects ----------------------
 
-#' Assert that the compact domains form a partition of the source.
+#' Assert that the domains form a partition of the source.
 #'
-#' Every source catchment id appears in exactly one compact domain's
-#' catchments slot. Trunk domains duplicate the trunk-mainstem rows
-#' for visualization and are checked separately by
-#' `assert_trunk_subset_of_compact_features`.
+#' Every source catchment id appears in exactly one domain's
+#' catchments slot. Main-path rows are duplicated in the basin's
+#' extensive connectivity overlay and are checked separately by
+#' `assert_segments_in_connectivity`.
 #'
 #' @param decomposition object returned by decompose_network.
 #' @param src the un-decomposed network passed in.
 assert_partition_coverage <- function(decomposition, src) {
 
-  compacts <- Filter(\(d) identical(d$domain_type, "compact"),
-    decomposition$domains)
-
-  compact_ids <- unlist(lapply(compacts, \(d) d$catchments$id),
+  domain_catch_ids <- unlist(
+    lapply(decomposition$domains, \(d) d$catchments$id),
     use.names = FALSE)
 
   source_ids <- src$id
 
-  testthat::expect_setequal(compact_ids, source_ids)
+  testthat::expect_setequal(domain_catch_ids, source_ids)
 
-  testthat::expect_equal(sum(duplicated(compact_ids)), 0L,
-    label = "duplicated catchment ids across compact domains")
+  testthat::expect_equal(sum(duplicated(domain_catch_ids)), 0L,
+    label = "duplicated catchment ids across domains")
 
 }
 
-#' Assert that every trunk row also appears in a compact domain's catchments
-#' with its `toid` set to the outlet sentinel.
+#' Assert that every domain's main-path rows (those carrying the
+#' reserved outlet `toid` value) appear in some basin's
+#' domain_connectivity overlay with `toid`s intact.
 #'
-#' Mirrors the validator's trunk-subset sub-check. Trunk-mainstem
-#' membership is recovered from the trunk domain's catchments slot;
-#' the compact domain only needs to carry the row with a sentinel `toid`.
+#' Mirrors the validator's connectivity-membership sub-check.
+#' Main-path membership inside a domain is recoverable by intersecting
+#' the domain's `catchments$id` with a basin's extensive connectivity overlay's
+#' `id`; this assertion pins that the duplication is consistent.
 #'
 #' @param decomposition object returned by decompose_network.
-assert_trunk_subset_of_compact_features <- function(decomposition) {
+assert_segments_in_connectivity <- function(decomposition) {
 
-  trunks   <- Filter(\(d) identical(d$domain_type, "trunk"),
-    decomposition$domains)
-  compacts <- Filter(\(d) identical(d$domain_type, "compact"),
-    decomposition$domains)
+  conn <- decomposition$domain_connectivity
 
-  if (length(trunks) == 0L) return(invisible(NULL))
+  if (length(conn) == 0L) return(invisible(NULL))
 
-  pieces <- lapply(compacts, function(d) {
+  conn_ids <- unlist(lapply(conn, \(o) as.character(o$id)),
+    use.names = FALSE)
+
+  for (d in decomposition$domains) {
+
     catch <- d$catchments
-    if (is.null(catch) || nrow(catch) == 0L) return(NULL)
-    data.frame(
-      id   = as.character(catch$id),
-      toid = as.character(catch$toid),
-      stringsAsFactors = FALSE)
-  })
 
-  pieces <- pieces[!vapply(pieces, is.null, logical(1))]
+    if (is.null(catch) || nrow(catch) == 0L) next
 
-  flat <- if (length(pieces) > 0L) do.call(rbind, pieces) else
-    data.frame(id = character(0), toid = character(0),
-      stringsAsFactors = FALSE)
+    outlet_value <- as.character(hydroloom:::get_outlet_value(catch))
 
-  for (td in trunks) {
+    is_seg <- as.character(catch$toid) == outlet_value
 
-    trunk_row_ids <- as.character(td$catchments$id)
+    if (!any(is_seg)) next
 
-    sentinel <- as.character(hydroloom:::get_outlet_value(td$catchments))
+    seg_ids <- as.character(catch$id[is_seg])
 
-    in_flat <- match(trunk_row_ids, flat$id)
-
-    testthat::expect_true(all(!is.na(in_flat)),
-      label = paste0("trunk '", td$domain_id,
-        "' rows present in some compact"))
-
-    if (any(is.na(in_flat))) next
-
-    testthat::expect_true(
-      all(flat$toid[in_flat] == sentinel),
-      label = paste0("trunk '", td$domain_id,
-        "' compact rows have sentinel toid"))
+    testthat::expect_true(all(seg_ids %in% conn_ids),
+      label = paste0("domain ", d$domain_id,
+        " segment main-path rows appear in some connectivity overlay"))
   }
 
   invisible(NULL)
 }
 
-#' Assert that each domain's catchments slot has exactly one outlet.
+#' Assert that each basin's extensive connectivity overlay has exactly
+#' one outlet.
 #'
 #' Uses sort_network(split = TRUE) which adds a terminal_id column —
-#' one per outlet sub-network. A valid decomposition domain must contain
-#' exactly one terminal_id, i.e. one outlet sub-network.
+#' one per outlet sub-network. A basin's connectivity overlay must
+#' resolve to exactly one terminal_id. Domains by design may carry
+#' multiple outlets (lateral subgroups whose toids have been set to
+#' the reserved outlet value) and are not checked.
 #'
 #' @param decomposition object returned by decompose_network.
 assert_one_outlet_per_domain <- function(decomposition) {
 
-  for (d in decomposition$domains) {
+  for (basin_id in names(decomposition$domain_connectivity)) {
 
-    # Compact domains may have multiple outlets (disconnected
-    # tributary groups in a trunk-segment-based compact domain).
-    if (d$domain_type != "trunk") next
-
-    catch <- d$catchments
+    catch <- decomposition$domain_connectivity[[basin_id]]
 
     if (is.null(catch) || nrow(catch) == 0) next
 
     sorted <- hydroloom::sort_network(catch, split = TRUE)
 
     testthat::expect_equal(length(unique(sorted$terminal_id)), 1L,
-      label = paste0("domain ", d$domain_id, " outlet count"))
+      label = paste0("basin ", basin_id, " outlet count"))
 
   }
 
@@ -333,15 +316,15 @@ assert_dendritic_inter_domain <- function(decomposition) {
 
 }
 
-#' Walk upstream from `seed` through a compact domain's catchments, following
-#' rows whose toid points back into the table. Trunk-mainstem rows have
-#' sentinel toids and so terminate the walk -- the seed itself is the
-#' only trunk-mainstem row included in the result.
+#' Walk upstream from `seed` through a domain's catchments, following
+#' rows whose toid points back into the table. Main-path rows carry
+#' the reserved outlet toid value and so terminate the walk -- the
+#' seed itself is the only main-path row included in the result.
 #'
-#' @param catch compact domain's catchments data.frame.
-#' @param seed scalar id (the trunk-mainstem row to start at).
+#' @param catch domain's catchments data.frame.
+#' @param seed scalar id (the main-path row to start at).
 #' @returns character vector of contributing ids (including seed).
-collect_upstream_in_compact <- function(catch, seed) {
+collect_upstream_in_domain <- function(catch, seed) {
 
   ids       <- as.character(catch$id)
   toids     <- as.character(catch$toid)
@@ -487,47 +470,43 @@ unit_accumulation_check <- function(decomposition,
     fun = sum,
     include_contained = include_contained)
 
-  # outlet domain: the one whose to_domain_id is the sentinel
-  # (or NA), or — if the helper output is positional — the maximum.
+  # outlet domain: the one whose to_domain_id is NA (no downstream
+  # domain), or — if the helper output is positional — the maximum.
   max(res, na.rm = TRUE)
 
 }
 
-#' Build a unit-value compact_results list for inject_lateral testing.
+#' Build a unit-value domain_results list for inject_lateral testing.
 #'
-#' For each compact domain in the decomposition, produce a single
+#' For each domain in the decomposition, produce a single
 #' "outlet contribution = 1" entry keyed by domain_id. The exact shape
-#' of compact_results is design-dependent; this helper assumes a list
+#' of domain_results is design-dependent; this helper assumes a list
 #' of numeric scalars and will need updating once the contract firms up.
 #'
 #' @param decomposition object returned by decompose_network.
 #' @param value_per_domain numeric scalar.
 #' @returns named list.
-synthetic_compact_results <- function(decomposition, value_per_domain = 1) {
+synthetic_results <- function(decomposition, value_per_domain = 1) {
 
   domain_ids <- vapply(decomposition$domains, \(d) d$domain_id, character(1))
 
-  types <- vapply(decomposition$domains, \(d) d$domain_type, character(1))
-
-  compacts <- domain_ids[types == "compact"]
-
-  setNames(as.list(rep(value_per_domain, length(compacts))), compacts)
+  setNames(as.list(rep(value_per_domain, length(domain_ids))), domain_ids)
 
 }
 
-#' Look up the trunk catchment ids that should receive lateral inflow
-#' for a given trunk, according to the nexus registry.
+#' Look up the catchment ids that should receive lateral inflow for a
+#' given domain, according to the nexus registry.
 #'
 #' @param decomposition object returned by decompose_network.
-#' @param trunk_id character. Domain id of the trunk.
+#' @param domain_id character. Domain id whose inflow seeds to look up.
 #' @returns vector of catchment ids.
-trunk_lateral_recipients <- function(decomposition, trunk_id) {
+inflow_seeds_for_domain <- function(decomposition, domain_id) {
 
   decomposition_pending("get_nexus_registry")
 
   reg <- hydroloom::get_nexus_registry(decomposition)
 
-  reg <- reg[reg$to_domain_id == trunk_id, , drop = FALSE]
+  reg <- reg[reg$to_domain_id == domain_id, , drop = FALSE]
 
   unique(reg$trunk_catchment_id)
 
@@ -537,25 +516,20 @@ trunk_lateral_recipients <- function(decomposition, trunk_id) {
 
 #' Build a minimal hy_domain for constructor tests.
 #'
-#' Centralizes the 8-keyword `hy_domain()` invocation used across Layer 1
-#' so individual tests only need to override the field that's relevant
-#' to what they're asserting. Defaults wire a 1-trunk decomposition with
-#' no inlets and no containment.
+#' Centralizes the six-keyword `hy_domain()` invocation used across
+#' Layer 1 so individual tests only need to override the field that's
+#' relevant to what they're asserting. Defaults wire a single domain
+#' with no inlets and no containment.
 #'
 #' @param catchments hy_topo / hy_leveled / hy_flownetwork to wrap.
-#' @param domain_type "trunk" or "compact".
 #' @param ... fields to override (domain_id, outlet_nexus_id, etc.).
 #' @returns hy_domain object (whatever the constructor returns).
-make_minimal_hy_domain <- function(catchments,
-                                   domain_type = "trunk",
-                                   ...) {
+make_minimal_hy_domain <- function(catchments, ...) {
 
   defaults <- list(
     domain_id = "T1",
-    domain_type = domain_type,
     outlet_nexus_id = "n_out",
     inlet_nexus_ids = character(0),
-    trunk_domain_id = NA_character_,
     containing_domain_id = NA_character_,
     catchments = catchments,
     topo_sort_offset = 0L
@@ -580,27 +554,19 @@ make_minimal_hy_domain <- function(catchments,
 #' the documented shape.
 #'
 #' @param domains named list of domain entries.
-#' @param domain_graph data.frame with id/toid/relation_type rows.
+#' @param domain_connectivity named list of `hy_leveled` overlays
+#'   keyed by basin id.
 #' @param nexus_registry data.frame with nexus_id rows.
 #' @param source_network the original enriched network.
 #' @param ... extra slots merged into the returned structure.
 #' @returns object inheriting from "domain_decomposition".
 make_minimal_decomposition <- function(domains,
-                                       domain_graph = data.frame(
-                                         id = character(0),
-                                         toid = character(0),
-                                         relation_type = character(0),
-                                         stringsAsFactors = FALSE),
+                                       domain_connectivity = list(),
                                        nexus_registry = data.frame(
                                          nexus_id = character(0),
                                          stringsAsFactors = FALSE),
                                        source_network = NULL,
-                                       add_shadow_compacts = TRUE,
                                        ...) {
-
-  if (add_shadow_compacts) {
-    domains <- add_shadow_trunk_compact(domains)
-  }
 
   catchment_index <- unlist(lapply(names(domains),
     \(dn) setNames(rep(dn, nrow(domains[[dn]]$catchments)),
@@ -608,7 +574,7 @@ make_minimal_decomposition <- function(domains,
 
   base <- list(
     domains = domains,
-    domain_graph = domain_graph,
+    domain_connectivity = domain_connectivity,
     overrides = NULL,
     catchment_domain_index = catchment_index,
     nexus_registry = nexus_registry,
@@ -617,71 +583,6 @@ make_minimal_decomposition <- function(domains,
 
   structure(modifyList(base, list(...)),
     class = "domain_decomposition")
-
-}
-
-#' Append a single shadow compact that holds the union of trunk
-#' catchments not already present in some compact domain, in decomposed form.
-#'
-#' Under the new partition rule every source row lives in some
-#' compact domain (compact domains hold the partition; trunks are duplicates for
-#' visualization). Hand-built fixtures expressed in the legacy
-#' "trunk-owns-catchments" idiom would otherwise fail Check 3, so this
-#' helper makes them valid by construction.
-#'
-#' @param domains named list of `hy_domain` objects.
-#' @returns the same list with a `_shadow` compact appended when needed.
-add_shadow_trunk_compact <- function(domains) {
-
-  trunks   <- Filter(\(d) identical(d$domain_type, "trunk"),   domains)
-  compacts <- Filter(\(d) identical(d$domain_type, "compact"), domains)
-
-  if (length(trunks) == 0L) return(domains)
-
-  in_compacts <- unlist(lapply(compacts,
-    \(d) as.character(d$catchments$id)),
-    use.names = FALSE)
-
-  rows_needed <- list()
-  seen        <- character(0)
-
-  for (td in trunks) {
-
-    catch <- td$catchments
-
-    if (is.null(catch) || nrow(catch) == 0L) next
-
-    ids <- as.character(catch$id)
-    take <- !ids %in% c(in_compacts, seen)
-
-    if (!any(take)) next
-
-    rows_needed[[length(rows_needed) + 1L]] <- catch[take, , drop = FALSE]
-
-    seen <- c(seen, ids[take])
-  }
-
-  if (length(rows_needed) == 0L) return(domains)
-
-  shadow_catch <- do.call(rbind, rows_needed)
-
-  shadow_catch <- as.data.frame(shadow_catch)
-
-  shadow_catch$toid <- hydroloom:::get_outlet_value(shadow_catch)
-
-  shadow_catch <- hydroloom::hy(shadow_catch)
-
-  shadow <- hydroloom::hy_domain(
-    domain_id            = "_shadow",
-    domain_type          = "compact",
-    outlet_nexus_id      = "n_shadow",
-    inlet_nexus_ids      = character(0),
-    trunk_domain_id      = NA_character_,
-    containing_domain_id = NA_character_,
-    catchments           = shadow_catch,
-    topo_sort_offset     = 0L)
-
-  c(domains, list(`_shadow` = shadow))
 
 }
 

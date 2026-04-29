@@ -19,36 +19,32 @@ returns a list of \code{valid} (logical) and \code{issues} (character vector
 of human-readable problem descriptions).
 }
 \details{
-Layer 1 structural checks, run in order:
+Structural checks, run in order:
 
 \enumerate{
-\item \strong{Trunk class invariant} — every trunk domain's \code{catchments}
-slot inherits from \code{hy_leveled}. Re-checked here because slot
-mutation after construction is permitted.
-\item \strong{Outlet count} — each trunk domain's \code{catchments}
-resolves to exactly one outlet sub-network via \code{\link[=sort_network]{sort_network()}}
-with \code{split = TRUE}. Compact domains may have multiple outlets.
-\item \strong{Coverage / partition} — every \code{source_network} id appears
-in exactly one compact domain's catchments slot. The
-trunk-subset sub-check then confirms every trunk row is also
-present in a compact domain with its \code{toid} set to the outlet sentinel
-returned by \code{get_outlet_value()}. See \code{\link[=hy_domain]{hy_domain()}} for the
-ownership rules behind this duplication.
-\item \strong{Inter-domain cycle} — \code{domain_graph} flow edges form an
-acyclic graph; checked by delegating to \code{\link[=check_hy_graph]{check_hy_graph()}}.
+\item \strong{Outlet count} — each basin's \code{domain_connectivity}
+overlay resolves to exactly one outlet sub-network via
+\code{\link[=sort_network]{sort_network()}} with \code{split = TRUE}. Domains may have multiple
+outlets by design and are not checked.
+\item \strong{Coverage / partition} — every \code{source_network} id
+appears in exactly one domain's \code{catchments} slot.
+\item \strong{Connectivity membership} — each domain's rows that carry
+the reserved outlet \code{toid} value (other than genuine basin
+outlets, whose \code{source_network} \code{toid} carries the same reserved
+value) appear, with \code{toid}s intact, in some basin's
+\code{domain_connectivity} overlay. See \code{\link[=hy_domain]{hy_domain()}} for the
+dual-ownership rule behind this duplication.
+\item \strong{Inter-domain cycle} — the derived domain graph
+(\code{\link[=get_domain_graph]{get_domain_graph()}} with \code{relations = "flow"}) is acyclic;
+checked by delegating to \code{\link[=check_hy_graph]{check_hy_graph()}}.
 \item \strong{Nexus existence} — every \code{nexus_id} referenced by a
-\code{domain_graph} edge is registered in \code{nexus_registry}.
+derived domain-graph edge is registered in \code{nexus_registry}.
 \item \strong{Containment resolution} — every non-NA
 \code{containing_domain_id} resolves to a key of \code{decomposition$domains}.
 \item \strong{Override references} — every row in \code{overrides} (when
 present) names a known source/sink domain via \code{id}/\code{toid} and a
 known source/sink nexus via \code{source_nexus_id}/\code{sink_nexus_id}.
 }
-
-Mass-balance checks (compact-domain outflows match trunk lateral
-inflows) and at-scale closed-basin counts are deferred until
-\code{recompose()} is implemented; the corresponding negative oracles
-are pinned by Layer 5 and Layer 9 of the decomposition test scaffold.
 }
 \examples{
 lev <- hy(data.frame(
@@ -56,17 +52,18 @@ lev <- hy(data.frame(
   topo_sort = 3:1, levelpath = c(1L, 1L, 1L),
   levelpath_outlet_id = c(3L, 3L, 3L)))
 
-trunk <- hy_domain(
-  domain_id = "T1", domain_type = "trunk",
-  outlet_nexus_id = "n_out", inlet_nexus_ids = character(0),
-  trunk_domain_id = NA_character_, containing_domain_id = NA_character_,
-  catchments = lev, topo_sort_offset = 0L)
+domain <- hy_domain(
+  domain_id = "T1",
+  outlet_nexus_id = "n_out",
+  inlet_nexus_ids = character(0),
+  containing_domain_id = NA_character_,
+  catchments = lev,
+  topo_sort_offset = 0L)
 
 d <- structure(
   list(
-    domains = list(T1 = trunk),
-    domain_graph = data.frame(id = character(0), toid = character(0),
-      relation_type = character(0)),
+    domains = list(T1 = domain),
+    domain_connectivity = list(),
     overrides = NULL,
     catchment_domain_index = setNames(rep("T1", 3), c("1", "2", "3")),
     nexus_registry = data.frame(nexus_id = "n_out"),
