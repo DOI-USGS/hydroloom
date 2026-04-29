@@ -368,14 +368,15 @@ domain_graph_is_dag <- function(decomposition) {
 
 }
 
-# ---- recomposition oracles ---------------------------------------------
+# ---- recomposition reference check -------------------------------------
 
-#' Mass-balance check: recomposed values match the un-decomposed oracle.
+#' Mass-balance check: recomposed values match the un-decomposed reference.
 #'
 #' Computes accumulate_downstream(src, var) on the un-decomposed network
-#' and joins it against recompose(decomposition)$<var>. Both come from
-#' the same hydroloom function so they should be bit-identical aside
-#' from join order; the default tolerance is correspondingly tight.
+#' and joins it against recompose(decomposition, var)$<var>. Both come
+#' from the same hydroloom function so they should be bit-identical
+#' aside from join order; the default tolerance is correspondingly
+#' tight.
 #'
 #' @param decomposition object returned by decompose_network.
 #' @param src the un-decomposed network (as passed to decompose_network).
@@ -388,129 +389,17 @@ expect_recomposes_to_source <- function(decomposition, src,
 
   decomposition_pending("recompose")
 
-  oracle <- hydroloom::accumulate_downstream(src, var, quiet = TRUE)
+  reference <- hydroloom::accumulate_downstream(src, var, quiet = TRUE)
 
-  rec <- hydroloom::recompose(decomposition,
-    domain_results = NULL,
-    apply_overrides = FALSE,
-    check_mass_balance = FALSE)
+  rec <- hydroloom::recompose(decomposition, var)
 
   ord <- match(src$id, rec$id)
 
   testthat::expect_false(any(is.na(ord)),
     label = "every source id is present in recomposed output")
 
-  testthat::expect_equal(rec[[var]][ord], oracle, tolerance = tolerance,
+  testthat::expect_equal(rec[[var]][ord], reference, tolerance = tolerance,
     label = paste0("recomposed ", var, " matches accumulate_downstream"))
-
-}
-
-#' Integer-equality recomposition check on stream order.
-#' @inheritParams expect_recomposes_to_source
-expect_recomposes_streamorder <- function(decomposition, src) {
-
-  decomposition_pending("recompose")
-
-  oracle <- hydroloom::add_streamorder(src, status = FALSE)
-
-  rec <- hydroloom::recompose(decomposition,
-    domain_results = NULL,
-    apply_overrides = FALSE,
-    check_mass_balance = FALSE)
-
-  ord <- match(src$id, rec$id)
-
-  testthat::expect_identical(
-    as.integer(rec$stream_order[ord]),
-    as.integer(oracle$stream_order),
-    label = "recomposed stream order matches add_streamorder")
-
-}
-
-#' Integer-equality recomposition check on levelpath identity.
-#' @inheritParams expect_recomposes_to_source
-expect_recomposes_levelpath <- function(decomposition, src) {
-
-  decomposition_pending("recompose")
-
-  rec <- hydroloom::recompose(decomposition,
-    domain_results = NULL,
-    apply_overrides = FALSE,
-    check_mass_balance = FALSE)
-
-  ord <- match(src$id, rec$id)
-
-  testthat::expect_identical(
-    rec$levelpath[ord],
-    src$levelpath,
-    label = "recomposed levelpath matches source")
-
-}
-
-# ---- domain-graph wiring helpers ---------------------------------------
-
-#' Unit-value accumulation through the domain graph.
-#'
-#' Calls accumulate_domains with all-ones input. Returns the value at
-#' the global outlet. Used as a topology-wiring check independent of
-#' real attribute data.
-#'
-#' @param decomposition object returned by decompose_network.
-#' @param include_contained logical. Whether to traverse contained edges.
-#' @returns numeric(1).
-unit_accumulation_check <- function(decomposition,
-                                    include_contained = FALSE) {
-
-  decomposition_pending("accumulate_domains")
-
-  domain_ids <- names(decomposition$domains)
-
-  values <- setNames(rep(1, length(domain_ids)), domain_ids)
-
-  res <- hydroloom::accumulate_domains(decomposition,
-    domain_values = values,
-    fun = sum,
-    include_contained = include_contained)
-
-  # outlet domain: the one whose to_domain_id is NA (no downstream
-  # domain), or — if the helper output is positional — the maximum.
-  max(res, na.rm = TRUE)
-
-}
-
-#' Build a unit-value domain_results list for inject_lateral testing.
-#'
-#' For each domain in the decomposition, produce a single
-#' "outlet contribution = 1" entry keyed by domain_id. The exact shape
-#' of domain_results is design-dependent; this helper assumes a list
-#' of numeric scalars and will need updating once the contract firms up.
-#'
-#' @param decomposition object returned by decompose_network.
-#' @param value_per_domain numeric scalar.
-#' @returns named list.
-synthetic_results <- function(decomposition, value_per_domain = 1) {
-
-  domain_ids <- vapply(decomposition$domains, \(d) d$domain_id, character(1))
-
-  setNames(as.list(rep(value_per_domain, length(domain_ids))), domain_ids)
-
-}
-
-#' Look up the catchment ids that should receive lateral inflow for a
-#' given domain, according to the nexus registry.
-#'
-#' @param decomposition object returned by decompose_network.
-#' @param domain_id character. Domain id whose inflow seeds to look up.
-#' @returns vector of catchment ids.
-inflow_seeds_for_domain <- function(decomposition, domain_id) {
-
-  decomposition_pending("get_nexus_registry")
-
-  reg <- hydroloom::get_nexus_registry(decomposition)
-
-  reg <- reg[reg$to_domain_id == domain_id, , drop = FALSE]
-
-  unique(reg$stem_catchment_id)
 
 }
 

@@ -367,6 +367,42 @@ plot_decomp(d_high, "Automatic segmentation")
 plot_decomp(d_manual, "Manual domain_breaks")
 ```
 
+## Recomposition
+
+`recompose(decomposition, var)` accumulates a numeric variable on
+`source_network` through the decomposed fabric and returns the source
+network with the per-row downstream-accumulated value populated.
+
+The function runs in two passes. Pass 1 calls
+`accumulate_downstream()` on each domain — the lateral rows roll up
+within the domain, and each extensive-network row picks up its
+locally-incremental value (own area plus the laterals draining into
+it). Pass 2 walks each basin's extensive-network overlay end-to-end,
+seeded with the pass-1 values, and produces the basin-wide cumulative
+at every extensive-network row.
+
+```{r recompose}
+rec <- recompose(d, "da_sqkm")
+
+head(rec[, c("id", "da_sqkm")])
+```
+
+Recomposing through the decomposed fabric returns the same values
+that `accumulate_downstream()` would produce on the un-decomposed
+network, within float-join tolerance:
+
+```{r recompose-check}
+reference <- accumulate_downstream(src, "da_sqkm", quiet = TRUE)
+
+ord <- match(src$id, rec$id)
+
+max(abs(rec$da_sqkm[ord] - reference))
+```
+
+The decomposed pathway is what makes per-domain parallelism worthwhile:
+each domain's pass-1 work is independent, so the expensive accumulation
+splits cleanly across cores, and the basin-overlay pass is cheap.
+
 ## Accessing domains
 
 Individual domains, the inter-domain graph, the connectivity

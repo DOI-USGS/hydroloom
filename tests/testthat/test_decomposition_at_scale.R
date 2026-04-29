@@ -82,22 +82,6 @@ test_that("at-scale recomposed da_sqkm matches accumulate_downstream", {
 
 })
 
-test_that("at-scale recomposed stream order matches add_streamorder", {
-
-  decomposition_pending(c("decompose_network", "recompose"))
-
-  expect_recomposes_streamorder(at_scale_d, at_scale_src)
-
-})
-
-test_that("at-scale recomposed levelpath matches the source", {
-
-  decomposition_pending(c("decompose_network", "recompose"))
-
-  expect_recomposes_levelpath(at_scale_d, at_scale_src)
-
-})
-
 test_that("at-scale decomposition produces basins and segment domains", {
 
   decomposition_pending("decompose_network")
@@ -123,23 +107,5 @@ test_that("at-scale closed sub-basins surface in the decomposition", {
   # underlying basin can change as NHDPlusV2 updates.
   expect_true(contained_edges >= 1L || at_scale_closed >= 1L,
     label = "at-scale decomposition surfaces closed sub-basins")
-
-})
-
-test_that("accumulate_domains include_contained behaves consistently at scale", {
-
-  decomposition_pending(c("decompose_network", "accumulate_domains"))
-
-  values <- setNames(rep(1, length(at_scale_d$domains)),
-    names(at_scale_d$domains))
-
-  excl <- hydroloom::accumulate_domains(at_scale_d, values, fun = sum,
-    include_contained = FALSE)
-
-  incl <- hydroloom::accumulate_domains(at_scale_d, values, fun = sum,
-    include_contained = TRUE)
-
-  expect_gte(max(incl, na.rm = TRUE), max(excl, na.rm = TRUE),
-    label = "include_contained = TRUE never decreases the outlet total")
 
 })

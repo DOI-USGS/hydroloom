@@ -95,8 +95,10 @@ test_that("hr.rds is a scale smoke for decompose_network", {
 
   hr <- load_test_rds("hr")
 
-  src <- enrich_for_decomposition(hr,
-    name_attribute = "GNIS_ID", weight_attribute = "ArbolateSu")
+  # Let enrich_for_decomposition auto-detect name/weight attributes:
+  # hy() canonicalizes ArbolateSu -> arbolate_sum, so the raw NHDPlus
+  # column name no longer matches by the time add_levelpaths runs.
+  src <- enrich_for_decomposition(hr)
 
   d <- hydroloom::decompose_network(src)
 
