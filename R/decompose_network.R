@@ -817,27 +817,35 @@ stem_segment_ids <- function(stem_ids_chr, stem_toids_chr,
 
   # Terminals: confluences + outlets (toid not in stem).
   outlets <- stem_ids_chr[!stem_toids_chr %in% stem_ids_chr]
-  terminals <- union(confluences, outlets)
+  terminals_set <- union(confluences, outlets)
 
   # Layer user-supplied breaks on top of auto-detected terminals.
   if (!is.null(extra_terminals)) {
-    terminals <- union(terminals, extra_terminals)
+    terminals_set <- union(terminals_set, extra_terminals)
   }
 
-  # Walk each stem catchment downstream to the first terminal.
-  seg <- setNames(rep(NA_character_, length(stem_ids_chr)), stem_ids_chr)
-  toid_lookup <- setNames(stem_toids_chr, stem_ids_chr)
+  is_terminal <- stem_ids_chr %in% terminals_set
 
-  for (tid in stem_ids_chr) {
+  # One-step lookup: for terminals, point at self (fixed point); for
+  # non-terminals, point at toid (always in stem, since otherwise the
+  # row would have been classified as an outlet and is_terminal would
+  # be TRUE).
+  next_hop <- ifelse(is_terminal, stem_ids_chr, stem_toids_chr)
+  step <- setNames(next_hop, stem_ids_chr)
 
-    cur <- tid
-    while (!cur %in% terminals) {
-      cur <- toid_lookup[[cur]]
-    }
-    seg[[tid]] <- cur
+  # Path doubling: each pass squares the per-id traversal distance, so
+  # ceil(log2(L)) iterations resolve every id to its segment terminal.
+  # O(N log L) total vs. the per-id walk's O(N L).
+  repeat {
+
+    new_step <- setNames(step[step], names(step))
+
+    if (identical(unname(new_step), unname(step))) break
+
+    step <- new_step
   }
 
-  seg
+  step
 }
 
 #' Compute bridge flowline ids from the non-dendritic network
@@ -853,20 +861,25 @@ compute_nd_bridge_ids <- function(x) {
 
   from_lookup <- split(x$id, x$fromnode)
 
-  nd_list <- lapply(seq_len(nrow(x)), function(i) {
+  # Look up the downstream id list for every row in one shot rather
+  # than per-row data.frame allocation -- the per-row form was the
+  # decomposition's dominant constant factor at NHDPlus scale.
+  downstream_per_row <- from_lookup[as.character(x$tonode)]
 
-    tn <- as.character(x$tonode[i])
-    downstream <- from_lookup[[tn]]
+  lens <- lengths(downstream_per_row)
 
-    if (is.null(downstream) || length(downstream) == 0) {
-      data.frame(id = x$id[i], toid = 0)
-    } else {
-      data.frame(id = rep(x$id[i], length(downstream)),
-        toid = downstream)
-    }
-  })
+  has_down <- lens > 0L
 
-  nd_edges <- do.call(rbind, nd_list)
+  ids_with_down   <- rep(x$id[has_down], lens[has_down])
+  toids_with_down <- unlist(downstream_per_row[has_down], use.names = FALSE)
+
+  ids_outlets   <- x$id[!has_down]
+  toids_outlets <- rep(0, length(ids_outlets))
+
+  nd_edges <- data.frame(
+    id   = c(ids_with_down, ids_outlets),
+    toid = c(toids_with_down, toids_outlets),
+    stringsAsFactors = FALSE)
 
   as.character(get_bridge_flowlines(nd_edges, quiet = TRUE))
 }
@@ -1010,10 +1023,19 @@ decompose_build_component <- function(component, terminal_id,
     if (is.null(seeds_in_seg)) seeds_in_seg <- character(0)
 
     # Collect residual lateral catchments upstream of the seeds.
-    lateral_ids <- character(0)
-    for (seed in seeds_in_seg) {
-      up <- decompose_collect_upstream(residual, seed, residual_from_idx)
-      lateral_ids <- union(lateral_ids, as.character(up))
+    # Build the per-seed walks into a list and dedupe once at the end --
+    # repeated union() in the loop is the classic O(N^2) accumulator.
+    if (length(seeds_in_seg) > 0L) {
+
+      ups_list <- lapply(seeds_in_seg, function(seed) {
+        as.character(decompose_collect_upstream(residual, seed,
+          residual_from_idx))
+      })
+
+      lateral_ids <- unique(unlist(ups_list, use.names = FALSE))
+
+    } else {
+      lateral_ids <- character(0)
     }
 
     # Domain slice = laterals + extensive network catchments in segment.
@@ -1130,8 +1152,10 @@ decompose_build_component <- function(component, terminal_id,
 #' hy_node / hy_topo round-trip that `subset_network` performs -- the
 #' residual is already a slice and we only need set-of-ids answers.
 #'
-#' Uses a pre-built inverted index (toid -> id) for O(n) total work
-#' instead of repeated `%in%` scans.
+#' Uses a pre-built inverted index (toid -> id) for fast frontier
+#' expansion, a position-based visited mask for O(1) membership, and a
+#' pre-allocated collected buffer (sized to nrow(residual)) so the
+#' walk stays linear in the visited set.
 #'
 #' @param residual data.frame with id, toid columns (the non-stem
 #'   rows of a drainage basin).
@@ -1145,24 +1169,52 @@ decompose_collect_upstream <- function(residual, seed, from_idx) {
 
   if (nrow(residual) == 0L) return(seed)
 
-  collected <- seed
-  frontier  <- seed
+  res_ids   <- as.character(residual$id)
+  pos_by_id <- setNames(seq_along(res_ids), res_ids)
 
-  while (length(frontier) > 0L) {
+  visited       <- logical(length(res_ids))
+  collected_pos <- integer(length(res_ids))
+  n_collected   <- 0L
 
-    next_hop <- unlist(from_idx[as.character(frontier)], use.names = FALSE)
+  seed_pos <- pos_by_id[as.character(seed)]
+  in_res   <- !is.na(seed_pos)
 
-    if (is.null(next_hop) || length(next_hop) == 0L) break
+  if (any(in_res)) {
 
-    next_hop <- next_hop[!next_hop %in% collected]
+    sp <- seed_pos[in_res]
 
-    if (length(next_hop) == 0L) break
+    visited[sp] <- TRUE
+    collected_pos[seq_along(sp)] <- sp
+    n_collected <- length(sp)
 
-    collected <- c(collected, next_hop)
-    frontier  <- next_hop
+    frontier <- res_ids[sp]
+
+    while (length(frontier) > 0L) {
+
+      next_hop <- unlist(from_idx[frontier], use.names = FALSE)
+
+      if (length(next_hop) == 0L) break
+
+      nh_pos <- pos_by_id[as.character(next_hop)]
+      nh_pos <- nh_pos[!is.na(nh_pos) & !visited[nh_pos]]
+
+      if (length(nh_pos) == 0L) break
+
+      visited[nh_pos] <- TRUE
+      new_n <- n_collected + length(nh_pos)
+      collected_pos[(n_collected + 1L):new_n] <- nh_pos
+      n_collected <- new_n
+
+      frontier <- res_ids[nh_pos]
+    }
   }
 
-  collected
+  collected_in_res <- residual$id[collected_pos[seq_len(n_collected)]]
+
+  # The original returns `seed` even when seed is not a residual row;
+  # preserve that behavior so callers see no change in output shape.
+  if (all(in_res)) collected_in_res
+  else c(collected_in_res, seed[!in_res])
 }
 
 #' Empty inter-domain edge data.frame
