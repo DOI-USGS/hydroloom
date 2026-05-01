@@ -64,9 +64,7 @@
 #'   `NA_character_` if not contained.
 #' @param catchments hydroloom object carrying the domain's catchment
 #'   network. Must be `hy_topo`, `hy_leveled`, or `hy_flownetwork`.
-#' @param topo_sort_offset integer(1). Global topo_sort base enabling
-#'   cross-domain ordering after recomposition.
-#' @returns object of class `hy_domain` — a list with the six named
+#' @returns object of class `hy_domain` — a list with the five named
 #'   slots above.
 #' @export
 #' @examples
@@ -80,15 +78,13 @@
 #'   outlet_nexus_id = "n_out",
 #'   inlet_nexus_ids = character(0),
 #'   containing_domain_id = NA_character_,
-#'   catchments = lev,
-#'   topo_sort_offset = 0L)
+#'   catchments = lev)
 #'
 hy_domain <- function(domain_id,
                       outlet_nexus_id,
                       inlet_nexus_ids,
                       containing_domain_id,
-                      catchments,
-                      topo_sort_offset) {
+                      catchments) {
 
   if (!inherits(catchments, "hy_topo") &&
       !inherits(catchments, "hy_flownetwork"))
@@ -103,8 +99,7 @@ hy_domain <- function(domain_id,
       outlet_nexus_id      = outlet_nexus_id,
       inlet_nexus_ids      = inlet_nexus_ids,
       containing_domain_id = containing_domain_id,
-      catchments           = catchments,
-      topo_sort_offset     = topo_sort_offset
+      catchments           = catchments
     ),
     class = "hy_domain"
   )
@@ -162,8 +157,7 @@ hy_domain <- function(domain_id,
 #'   outlet_nexus_id = "n_out",
 #'   inlet_nexus_ids = character(0),
 #'   containing_domain_id = NA_character_,
-#'   catchments = lev,
-#'   topo_sort_offset = 0L)
+#'   catchments = lev)
 #'
 #' d <- structure(
 #'   list(

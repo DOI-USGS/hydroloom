@@ -4,7 +4,7 @@
 \alias{print.domain_decomposition}
 \title{Print a domain_decomposition}
 \usage{
-\method{print}{domain_decomposition}(x, full = FALSE, ..., width = getOption("width"))
+\method{print}{domain_decomposition}(x, full = FALSE, ...)
 }
 \arguments{
 \item{x}{object of class \code{domain_decomposition}.}
@@ -13,8 +13,6 @@
 \code{TRUE} prints the full hierarchical tree.}
 
 \item{...}{ignored.}
-
-\item{width}{integer. Reserved for future use; currently ignored.}
 }
 \value{
 \code{x}, invisibly.
@@ -33,7 +31,4 @@ The cheap form is the default because at the REPL most users want a
 quick "did this come out the way I expected" check, not a full audit.
 The footer line of the cheap form advertises how to call the full
 form.
-
-The \code{width} argument is reserved for future column-wrapping support
-and is currently ignored by both modes.
 }

@@ -422,8 +422,7 @@ make_minimal_hy_domain <- function(catchments, ...) {
     outlet_nexus_id = "n_out",
     inlet_nexus_ids = character(0),
     containing_domain_id = NA_character_,
-    catchments = catchments,
-    topo_sort_offset = 0L
+    catchments = catchments
   )
 
   args <- modifyList(defaults, list(...))

@@ -129,7 +129,6 @@ decompose_network <- function(x,
           nexus_id = character(0),
           from_domain_id = character(0),
           to_domain_id = character(0),
-          stem_catchment_id = character(0),
           stringsAsFactors = FALSE),
         source_network = x
       ),
@@ -172,7 +171,6 @@ decompose_network <- function(x,
     nexus_id = character(0),
     from_domain_id = character(0),
     to_domain_id = character(0),
-    stem_catchment_id = character(0),
     stringsAsFactors = FALSE))
 
   for (tid in terminal_ids) {
@@ -440,21 +438,16 @@ NULL
 #' The footer line of the cheap form advertises how to call the full
 #' form.
 #'
-#' The `width` argument is reserved for future column-wrapping support
-#' and is currently ignored by both modes.
-#'
 #' @param x object of class `domain_decomposition`.
 #' @param full logical. `FALSE` (default) prints the cheap summary;
 #'   `TRUE` prints the full hierarchical tree.
 #' @param ... ignored.
-#' @param width integer. Reserved for future use; currently ignored.
 #' @returns `x`, invisibly.
 #' @export
-print.domain_decomposition <- function(x, full = FALSE, ...,
-                                       width = getOption("width")) {
+print.domain_decomposition <- function(x, full = FALSE, ...) {
 
   if (isTRUE(full)) {
-    print_domain_decomposition_full(x, width = width)
+    print_domain_decomposition_full(x)
   } else {
     print_domain_decomposition_cheap(x)
   }
@@ -516,7 +509,7 @@ decomposition_counts <- function(x) {
 #' catchment_domain_index, overrides. Slot names align at column 4,
 #' type tags at column 26, counts right-aligned after.
 #' @noRd
-print_domain_decomposition_full <- function(x, width) {
+print_domain_decomposition_full <- function(x) {
 
   counts <- decomposition_counts(x)
 
@@ -921,15 +914,13 @@ decompose_build_component <- function(component, terminal_id,
       outlet_nexus_id      = outlet_nx,
       inlet_nexus_ids      = character(0),
       containing_domain_id = NA_character_,
-      catchments           = component,
-      topo_sort_offset     = 0L)
+      catchments           = component)
 
     nexus_row <- data.frame(
-      nexus_id           = outlet_nx,
-      from_domain_id     = domain_id,
-      to_domain_id       = NA_character_,
-      stem_catchment_id  = as.character(terminal_id),
-      stringsAsFactors   = FALSE)
+      nexus_id         = outlet_nx,
+      from_domain_id   = domain_id,
+      to_domain_id     = NA_character_,
+      stringsAsFactors = FALSE)
 
     return(list(
       domains      = setNames(list(domain), domain_id),
@@ -1067,11 +1058,10 @@ decompose_build_component <- function(component, terminal_id,
       primary_nexus_id <- paste0("nx_", seg_id_chr, "_outlet")
 
       nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
-        nexus_id           = primary_nexus_id,
-        from_domain_id     = domain_id,
-        to_domain_id       = NA_character_,
-        stem_catchment_id  = seg_id_chr,
-        stringsAsFactors   = FALSE)
+        nexus_id         = primary_nexus_id,
+        from_domain_id   = domain_id,
+        to_domain_id     = NA_character_,
+        stringsAsFactors = FALSE)
 
     } else {
 
@@ -1083,11 +1073,10 @@ decompose_build_component <- function(component, terminal_id,
         "_", seg_terminal_toid)
 
       nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
-        nexus_id           = primary_nexus_id,
-        from_domain_id     = domain_id,
-        to_domain_id       = downstream_domain_id,
-        stem_catchment_id  = seg_terminal_toid,
-        stringsAsFactors   = FALSE)
+        nexus_id         = primary_nexus_id,
+        from_domain_id   = domain_id,
+        to_domain_id     = downstream_domain_id,
+        stringsAsFactors = FALSE)
 
       inlet_by_domain[[downstream_domain_id]] <- c(
         inlet_by_domain[[downstream_domain_id]] %||% character(0),
@@ -1118,8 +1107,7 @@ decompose_build_component <- function(component, terminal_id,
       outlet_nexus_id      = info$outlet_nexus_id,
       inlet_nexus_ids      = inlet_by_domain[[domain_id]] %||% character(0),
       containing_domain_id = NA_character_,
-      catchments           = info$catchments,
-      topo_sort_offset     = 0L)
+      catchments           = info$catchments)
 
     index_names  <- c(index_names, info$catch_ids)
     index_values <- c(index_values,

@@ -74,7 +74,7 @@ test_that("hy_domain carries all required slots", {
   d <- make_minimal_hy_domain(make_lev())
 
   required <- c("domain_id", "outlet_nexus_id", "inlet_nexus_ids",
-    "containing_domain_id", "catchments", "topo_sort_offset")
+    "containing_domain_id", "catchments")
 
   expect_named(d, required, ignore.order = TRUE)
 
@@ -265,8 +265,7 @@ test_that("print.domain_decomposition handles empty decomposition", {
       nexus_registry = data.frame(
         nexus_id = character(0),
         from_domain_id = character(0),
-        to_domain_id = character(0),
-        stem_catchment_id = character(0)),
+        to_domain_id = character(0)),
       source_network = make_lev()),
     class = "domain_decomposition")
 

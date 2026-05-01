@@ -9,8 +9,7 @@ hy_domain(
   outlet_nexus_id,
   inlet_nexus_ids,
   containing_domain_id,
-  catchments,
-  topo_sort_offset
+  catchments
 )
 }
 \arguments{
@@ -29,12 +28,9 @@ endorheic) domains, the id of the enclosing domain.
 
 \item{catchments}{hydroloom object carrying the domain's catchment
 network. Must be \code{hy_topo}, \code{hy_leveled}, or \code{hy_flownetwork}.}
-
-\item{topo_sort_offset}{integer(1). Global topo_sort base enabling
-cross-domain ordering after recomposition.}
 }
 \value{
-object of class \code{hy_domain} — a list with the six named
+object of class \code{hy_domain} — a list with the five named
 slots above.
 }
 \description{
@@ -91,7 +87,6 @@ hy_domain(
   outlet_nexus_id = "n_out",
   inlet_nexus_ids = character(0),
   containing_domain_id = NA_character_,
-  catchments = lev,
-  topo_sort_offset = 0L)
+  catchments = lev)
 
 }

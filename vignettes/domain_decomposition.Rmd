@@ -139,7 +139,7 @@ is derived on demand from `nexus_registry`; see `get_domain_graph()`.
 
 # Separation of concerns
 
-The decomposition separates three concerns:
+The decomposition separates two concerns:
 
 1. **Per-domain computation.** Each domain's catchment network is
    self-contained. Processing a domain requires no information from
@@ -148,9 +148,6 @@ The decomposition separates three concerns:
    which domains flow into which, and at what nexus — a
    coarser-resolution network that can be traversed independently of
    catchment-level detail.
-3. **Global ordering.** Each domain carries a `topo_sort_offset` that
-   anchors its internal topological sort within a global sequence, so
-   cross-domain ordering is recoverable after independent resolution.
 
 # Data model
 
@@ -193,8 +190,6 @@ connectivity metadata that recomposition needs:
   a `toid` set to `get_outlet_value()`. To tell the two apart,
   intersect the domain's `catchments$id` with the basin's extensive
   network overlay's `id`.
-- `topo_sort_offset` — global topo_sort base for cross-domain
-  ordering.
 
 The `catchments` slot accepts `hy_topo`, `hy_leveled`, or
 `hy_flownetwork`.

@@ -57,8 +57,7 @@ domain <- hy_domain(
   outlet_nexus_id = "n_out",
   inlet_nexus_ids = character(0),
   containing_domain_id = NA_character_,
-  catchments = lev,
-  topo_sort_offset = 0L)
+  catchments = lev)
 
 d <- structure(
   list(
