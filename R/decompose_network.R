@@ -130,7 +130,6 @@ decompose_network <- function(x,
           from_domain_id = character(0),
           to_domain_id = character(0),
           stem_catchment_id = character(0),
-          aggregate_id_measure = numeric(0),
           stringsAsFactors = FALSE),
         source_network = x
       ),
@@ -174,7 +173,6 @@ decompose_network <- function(x,
     from_domain_id = character(0),
     to_domain_id = character(0),
     stem_catchment_id = character(0),
-    aggregate_id_measure = numeric(0),
     stringsAsFactors = FALSE))
 
   for (tid in terminal_ids) {
@@ -927,12 +925,11 @@ decompose_build_component <- function(component, terminal_id,
       topo_sort_offset     = 0L)
 
     nexus_row <- data.frame(
-      nexus_id             = outlet_nx,
-      from_domain_id       = domain_id,
-      to_domain_id         = NA_character_,
-      stem_catchment_id   = as.character(terminal_id),
-      aggregate_id_measure = NA_real_,
-      stringsAsFactors     = FALSE)
+      nexus_id           = outlet_nx,
+      from_domain_id     = domain_id,
+      to_domain_id       = NA_character_,
+      stem_catchment_id  = as.character(terminal_id),
+      stringsAsFactors   = FALSE)
 
     return(list(
       domains      = setNames(list(domain), domain_id),
@@ -1070,12 +1067,11 @@ decompose_build_component <- function(component, terminal_id,
       primary_nexus_id <- paste0("nx_", seg_id_chr, "_outlet")
 
       nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
-        nexus_id             = primary_nexus_id,
-        from_domain_id       = domain_id,
-        to_domain_id         = NA_character_,
-        stem_catchment_id   = seg_id_chr,
-        aggregate_id_measure = NA_real_,
-        stringsAsFactors     = FALSE)
+        nexus_id           = primary_nexus_id,
+        from_domain_id     = domain_id,
+        to_domain_id       = NA_character_,
+        stem_catchment_id  = seg_id_chr,
+        stringsAsFactors   = FALSE)
 
     } else {
 
@@ -1087,12 +1083,11 @@ decompose_build_component <- function(component, terminal_id,
         "_", seg_terminal_toid)
 
       nexuses_list[[length(nexuses_list) + 1L]] <- data.frame(
-        nexus_id             = primary_nexus_id,
-        from_domain_id       = domain_id,
-        to_domain_id         = downstream_domain_id,
-        stem_catchment_id   = seg_terminal_toid,
-        aggregate_id_measure = NA_real_,
-        stringsAsFactors     = FALSE)
+        nexus_id           = primary_nexus_id,
+        from_domain_id     = domain_id,
+        to_domain_id       = downstream_domain_id,
+        stem_catchment_id  = seg_terminal_toid,
+        stringsAsFactors   = FALSE)
 
       inlet_by_domain[[downstream_domain_id]] <- c(
         inlet_by_domain[[downstream_domain_id]] %||% character(0),
@@ -1228,7 +1223,6 @@ empty_graph_df <- function() {
     id = character(0),
     toid = character(0),
     nexus_id = character(0),
-    nexus_position = numeric(0),
     relation_type = character(0),
     stringsAsFactors = FALSE)
 }
@@ -1283,11 +1277,10 @@ get_domain_graph <- function(decomposition,
   is_inter <- !is.na(reg$to_domain_id)
 
   flow <- data.frame(
-    id             = reg$from_domain_id[is_inter],
-    toid           = reg$to_domain_id[is_inter],
-    nexus_id       = reg$nexus_id[is_inter],
-    nexus_position = reg$aggregate_id_measure[is_inter],
-    relation_type  = rep("flow", sum(is_inter)),
+    id            = reg$from_domain_id[is_inter],
+    toid          = reg$to_domain_id[is_inter],
+    nexus_id      = reg$nexus_id[is_inter],
+    relation_type = rep("flow", sum(is_inter)),
     stringsAsFactors = FALSE)
 
   # Containment edges land here once contained_basins is wired in

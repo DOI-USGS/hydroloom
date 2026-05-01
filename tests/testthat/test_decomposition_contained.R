@@ -65,7 +65,6 @@ make_contained_decomposition <- function() {
       nexus_id = c("n_outlet", "n_endo"),
       from_domain_id = c("T1", "E1"),
       to_domain_id = c(NA_character_, NA_character_),
-      aggregate_id_measure = c(NA_real_, NA_real_),
       stringsAsFactors = FALSE),
     source_network = src)
 

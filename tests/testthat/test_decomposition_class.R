@@ -158,7 +158,6 @@ test_that("validate_decomposition flags an inter-domain cycle", {
       nexus_id = c("n1", "n2"),
       from_domain_id = c("T1", "T2"),
       to_domain_id = c("T2", "T1"),
-      aggregate_id_measure = c(NA_real_, NA_real_),
       stringsAsFactors = FALSE),
     source_network = lev)
 
@@ -267,8 +266,7 @@ test_that("print.domain_decomposition handles empty decomposition", {
         nexus_id = character(0),
         from_domain_id = character(0),
         to_domain_id = character(0),
-        stem_catchment_id = character(0),
-        aggregate_id_measure = numeric(0)),
+        stem_catchment_id = character(0)),
       source_network = make_lev()),
     class = "domain_decomposition")
 
