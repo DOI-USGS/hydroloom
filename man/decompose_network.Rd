@@ -25,7 +25,11 @@ consulted when \code{stem_threshold} is non-NULL.}
 \item{stem_threshold}{numeric scalar or \code{NULL}. Value of
 \code{stem_metric} at a levelpath outlet above which the levelpath is
 a stem candidate. \code{NULL} (default) falls back to one stem per
-drainage basin (the basin's outlet levelpath).}
+drainage basin (the basin's outlet levelpath). When non-NULL,
+the input must carry a \code{stream_calculator} column; call
+\code{\link[=add_streamorder]{add_streamorder()}} to add it if the source data does not
+already provide one (NHDPlus \code{StreamCalc}, canonicalized by
+\code{\link[=hy]{hy()}}, counts).}
 
 \item{stem_levelpaths}{vector of levelpath ids or \code{NULL}. When
 non-NULL, bypasses the threshold rule and forces these levelpaths
@@ -70,6 +74,18 @@ reflects the cross-scale view: a basin's outlet levelpath is a trunk,
 but with a threshold or explicit override the selection can pull in
 branches as well — every selected path is a \emph{stem} in the cross-scale
 sense (trunks and branches are both stems).
+
+\strong{Containment.} This function does not detect containment. A
+drainage basin that the caller wants treated as belonging inside
+another -- typically an endorheic basin or a drainage-divide
+remnant -- is partitioned here as an independent basin like any
+other. After decomposition, the caller declares the relationship
+with \code{\link[=set_containment]{set_containment()}}; \code{\link[=recompose]{recompose()}} applies it when called
+with \code{containment = "accumulate"}. The relationship is recorded on
+the contained domain's \code{containing_domain_id} slot and surfaced by
+\code{\link[=get_domain_graph]{get_domain_graph()}} with \code{relations = "contained"}. It does not
+appear in \code{nexus_registry} because no flow crosses a hydro nexus
+between the two basins.
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))

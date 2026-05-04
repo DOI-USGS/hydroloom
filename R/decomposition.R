@@ -59,9 +59,12 @@
 #' @param inlet_nexus_ids character. Hydro nexus ids where upstream
 #'   domains feed into this one. `character(0)` for leaf domains;
 #'   populated for stem and root domains.
-#' @param containing_domain_id character(1). For contained (e.g.
-#'   endorheic) domains, the id of the enclosing domain.
-#'   `NA_character_` if not contained.
+#' @param containing_domain_id character(1). For contained domains,
+#'   the id of the enclosing domain; `NA_character_` if not contained.
+#'   Covers endorheic basins as well as drainage-divide remnants and
+#'   any other case where a domain is to be treated as belonging
+#'   inside another. Declared post-decomposition via
+#'   [set_containment()].
 #' @param catchments hydroloom object carrying the domain's catchment
 #'   network. Must be `hy_topo`, `hy_leveled`, or `hy_flownetwork`.
 #' @returns object of class `hy_domain` — a list with the five named
@@ -132,9 +135,16 @@ hy_domain <- function(domain_id,
 #'     ([get_domain_graph()] with `relations = "flow"`) is acyclic;
 #'     checked by delegating to [check_hy_graph()].
 #'   \item **Nexus existence** — every `nexus_id` referenced by a
-#'     derived domain-graph edge is registered in `nexus_registry`.
+#'     flow row in the derived inter-domain edge list is registered
+#'     in `nexus_registry`. Containment relationships are not checked
+#'     here because no flow crosses a hydro nexus between contained
+#'     and containing domains.
 #'   \item **Containment resolution** — every non-NA
-#'     `containing_domain_id` resolves to a key of `decomposition$domains`.
+#'     `containing_domain_id` resolves to a key of
+#'     `decomposition$domains`, no domain is contained by itself, and
+#'     the sequence of containers (A inside B inside C, ...) does not
+#'     loop back on itself. The acyclic check runs `check_hy_graph()`
+#'     on the containment relationships pulled from each domain.
 #'   \item **Override references** — every row in `overrides` (when
 #'     present) names a known source/sink domain via `id`/`toid` and a
 #'     known source/sink nexus via `source_nexus_id`/`sink_nexus_id`.
@@ -324,6 +334,10 @@ validate_decomposition <- function(decomposition) {
   }
 
   # ---- Check 5: nexus existence in derived domain graph ---------------
+  # Containment edges carry no nexus because no flow crosses a hydro
+  # nexus between contained and containing domains; filter them out
+  # before the registry lookup -- by relation_type when present,
+  # otherwise by NA nexus_id.
 
   g_all <- tryCatch(
     get_domain_graph(decomposition),
@@ -331,35 +345,85 @@ validate_decomposition <- function(decomposition) {
 
   if (!is.null(g_all) && nrow(g_all) > 0 && "nexus_id" %in% names(g_all)) {
 
-    reg_ids <- decomposition$nexus_registry$nexus_id %||% character(0)
+    keep <- !is.na(g_all$nexus_id)
 
-    unknown <- setdiff(g_all$nexus_id, reg_ids)
+    if ("relation_type" %in% names(g_all))
+      keep <- keep & g_all$relation_type != "contained"
 
-    if (length(unknown) > 0) {
+    nx_ids <- g_all$nexus_id[keep]
 
-      issues <- c(issues, sprintf(
-        "domain_graph nexus unknown: %s not present in nexus_registry",
-        paste(shQuote(unknown), collapse = ", ")))
+    if (length(nx_ids) > 0L) {
+
+      reg_ids <- decomposition$nexus_registry$nexus_id %||% character(0)
+
+      unknown <- setdiff(nx_ids, reg_ids)
+
+      if (length(unknown) > 0) {
+
+        issues <- c(issues, sprintf(
+          "domain_graph nexus unknown: %s not present in nexus_registry",
+          paste(shQuote(unknown), collapse = ", ")))
+
+      }
 
     }
 
   }
 
-  # ---- Check 6: containment id resolves --------------------------------
+  # ---- Check 6: containment id resolves, no self, no cycles -----------
+  # Every non-NA containing_domain_id resolves to a known domain, no
+  # domain is contained by itself, and the sequence of containers
+  # (containment is transitive: a contained domain may itself be
+  # contained) does not loop back on itself.
+
+  cont_pairs <- list()
 
   for (d in domains) {
 
     cd <- d$containing_domain_id
 
-    if (length(cd) == 1 && !is.na(cd) && nzchar(cd)) {
+    if (!(length(cd) == 1 && !is.na(cd) && nzchar(cd))) next
 
-      if (!cd %in% names(domains)) {
+    if (!cd %in% names(domains)) {
 
-        issues <- c(issues, sprintf(
-          "domain '%s': containing_domain_id '%s' not in decomposition$domains",
-          d$domain_id, cd))
+      issues <- c(issues, sprintf(
+        "domain '%s': containing_domain_id '%s' not in decomposition$domains",
+        d$domain_id, cd))
 
-      }
+      next
+
+    }
+
+    if (identical(cd, d$domain_id)) {
+
+      issues <- c(issues, sprintf(
+        "domain '%s': contained by itself", d$domain_id))
+
+      next
+
+    }
+
+    cont_pairs[[length(cont_pairs) + 1L]] <-
+      c(d$domain_id, cd)
+
+  }
+
+  if (length(cont_pairs) > 0L) {
+
+    cont_edges <- as.data.frame(
+      do.call(rbind, cont_pairs),
+      stringsAsFactors = FALSE)
+
+    names(cont_edges) <- c("id", "toid")
+
+    chk <- tryCatch(
+      check_hy_graph(cont_edges),
+      error = function(e) e)
+
+    if (!isTRUE(chk)) {
+
+      issues <- c(issues,
+        "containment cycle: containing_domain_id chain forms a cycle (failed check_hy_graph)")
 
     }
 

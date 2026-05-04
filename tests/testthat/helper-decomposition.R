@@ -1,21 +1,15 @@
-# Helpers for the decomposition test layers (0 through 9).
+# Helpers for the decomposition test files.
 #
 # This file is loaded automatically by testthat for every test in
 # tests/testthat/. It is the only shared state across the
 # test_decomposition_*.R files.
 #
-# Helpers fall into three groups:
-#   1. Loaders / enrichment chains that use only existing hydroloom
-#      functions and so work today.
-#   2. Skip-if-pending guards for Layers 1-9 that exercise the
-#      not-yet-implemented decomposition API.
-#   3. Reusable assertion helpers that the layer test files call.
-#
-# When the decomposition implementation lands, replace the
-# `decomposition_pending()` calls inside individual layer files with
-# real fixture construction. The structural test files exist now so
-# that authoring the implementation is purely a matter of removing
-# skips one assertion at a time.
+# Helpers fall into two groups:
+#   1. Loaders / enrichment chains that wrap existing hydroloom
+#      functions (load_walker, enrich_for_decomposition, ...).
+#   2. Reusable assertion helpers that the test files call
+#      (assert_partition_coverage, assert_one_outlet_per_domain,
+#      expect_recomposes_to_source, ...).
 
 # ---- shared loaders -----------------------------------------------------
 
@@ -175,28 +169,6 @@ pick_first_present <- function(candidates, pool) {
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
-# ---- pending-implementation guards -------------------------------------
-
-#' Skip the calling test if a decomposition function does not yet exist.
-#'
-#' Used by Layers 1-9 to keep the test files structurally complete while
-#' the decomposition API is being implemented. As `decompose_network`,
-#' `hy_domain`, `validate_decomposition`, etc. land, the corresponding
-#' guards in the layer files become no-ops.
-#'
-#' @param fn character. Name(s) of decomposition functions required.
-decomposition_pending <- function(fn) {
-
-  missing_fns <- fn[!vapply(fn,
-    \(f) exists(f, envir = asNamespace("hydroloom"), inherits = FALSE),
-    logical(1))]
-
-  if (length(missing_fns) > 0)
-    testthat::skip(paste0("decomposition API not yet implemented: ",
-      paste(missing_fns, collapse = ", ")))
-
-}
-
 # ---- reusable assertions on decomposition objects ----------------------
 
 #' Assert that the domains form a partition of the source.
@@ -300,8 +272,6 @@ assert_one_outlet_per_domain <- function(decomposition) {
 #' @param decomposition object returned by decompose_network.
 assert_dendritic_inter_domain <- function(decomposition) {
 
-  decomposition_pending(c("get_domain_graph"))
-
   g <- hydroloom::get_domain_graph(decomposition, relations = "flow")
 
   # An empty graph (a basin with a single basin-outlet compact and no
@@ -386,8 +356,6 @@ domain_graph_is_dag <- function(decomposition) {
 expect_recomposes_to_source <- function(decomposition, src,
                                         var = "da_sqkm",
                                         tolerance = 1e-9) {
-
-  decomposition_pending("recompose")
 
   reference <- hydroloom::accumulate_downstream(src, var, quiet = TRUE)
 

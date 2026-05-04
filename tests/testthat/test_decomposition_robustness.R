@@ -7,8 +7,6 @@
 
 test_that("decompose_network errors cleanly on loop.rds", {
 
-  decomposition_pending("decompose_network")
-
   lo <- load_test_rds("loop")
 
   expect_error(hydroloom::decompose_network(hydroloom::hy(lo)),
@@ -18,8 +16,6 @@ test_that("decompose_network errors cleanly on loop.rds", {
 
 test_that("decompose_network errors cleanly on loop2.rds", {
 
-  decomposition_pending("decompose_network")
-
   l2 <- load_test_rds("loop2")
 
   expect_error(hydroloom::decompose_network(hydroloom::hy(l2)),
@@ -28,8 +24,6 @@ test_that("decompose_network errors cleanly on loop2.rds", {
 })
 
 test_that("decompose_network handles a single-flowline network", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   one <- data.frame(
     id = 1L, toid = 0L,
@@ -56,7 +50,12 @@ test_that("decompose_network handles a single-flowline network", {
 
 test_that("decompose_network handles a disconnected pair", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
+  # TODO (contract): this test accepts either an error or a valid
+  # result on a multi-outlet input. The single-flowline test pins
+  # the contract for the trivial case; pick one for the
+  # multi-component case (error vs. valid two-domain result) before
+  # downstream code starts depending on it, then narrow this test
+  # to assert that contract.
 
   pair <- data.frame(
     id = 1:4,
@@ -89,9 +88,6 @@ test_that("decompose_network handles a disconnected pair", {
 test_that("hr.rds is a scale smoke for decompose_network", {
 
   testthat::skip_on_cran()
-
-  decomposition_pending(c("decompose_network", "validate_decomposition",
-    "recompose"))
 
   hr <- load_test_rds("hr")
 

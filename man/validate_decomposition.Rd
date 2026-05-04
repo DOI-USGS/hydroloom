@@ -38,9 +38,16 @@ dual-ownership rule behind this duplication.
 (\code{\link[=get_domain_graph]{get_domain_graph()}} with \code{relations = "flow"}) is acyclic;
 checked by delegating to \code{\link[=check_hy_graph]{check_hy_graph()}}.
 \item \strong{Nexus existence} — every \code{nexus_id} referenced by a
-derived domain-graph edge is registered in \code{nexus_registry}.
+flow row in the derived inter-domain edge list is registered
+in \code{nexus_registry}. Containment relationships are not checked
+here because no flow crosses a hydro nexus between contained
+and containing domains.
 \item \strong{Containment resolution} — every non-NA
-\code{containing_domain_id} resolves to a key of \code{decomposition$domains}.
+\code{containing_domain_id} resolves to a key of
+\code{decomposition$domains}, no domain is contained by itself, and
+the sequence of containers (A inside B inside C, ...) does not
+loop back on itself. The acyclic check runs \code{check_hy_graph()}
+on the containment relationships pulled from each domain.
 \item \strong{Override references} — every row in \code{overrides} (when
 present) names a known source/sink domain via \code{id}/\code{toid} and a
 known source/sink nexus via \code{source_nexus_id}/\code{sink_nexus_id}.

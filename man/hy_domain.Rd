@@ -22,9 +22,12 @@ nexus where this domain discharges.}
 domains feed into this one. \code{character(0)} for leaf domains;
 populated for stem and root domains.}
 
-\item{containing_domain_id}{character(1). For contained (e.g.
-endorheic) domains, the id of the enclosing domain.
-\code{NA_character_} if not contained.}
+\item{containing_domain_id}{character(1). For contained domains,
+the id of the enclosing domain; \code{NA_character_} if not contained.
+Covers endorheic basins as well as drainage-divide remnants and
+any other case where a domain is to be treated as belonging
+inside another. Declared post-decomposition via
+\code{\link[=set_containment]{set_containment()}}.}
 
 \item{catchments}{hydroloom object carrying the domain's catchment
 network. Must be \code{hy_topo}, \code{hy_leveled}, or \code{hy_flownetwork}.}

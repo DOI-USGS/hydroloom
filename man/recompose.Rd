@@ -4,7 +4,7 @@
 \alias{recompose}
 \title{Recompose a domain decomposition by accumulating an attribute downstream}
 \usage{
-recompose(decomposition, var)
+recompose(decomposition, var, containment = c("ignore", "accumulate"))
 }
 \arguments{
 \item{decomposition}{A \code{domain_decomposition} returned by
@@ -13,6 +13,12 @@ recompose(decomposition, var)
 \item{var}{character(1). Name of a numeric column on
 \code{decomposition$source_network} to accumulate downstream through
 the fabric.}
+
+\item{containment}{character(1). One of \code{"ignore"} (default -- a
+contained basin's accumulated value stops at its own outlet) or
+\code{"accumulate"} (the contained basin's accumulated value is
+added at the containing domain's outlet and routed downstream
+through the containing basin's extensive network).}
 }
 \value{
 The \code{source_network} tibble with the per-row
@@ -42,6 +48,20 @@ cumulative at every extensive network row.
 
 Sub-threshold basins (no \code{domain_connectivity} overlay) carry their
 single domain's pass 1 values straight through.
+
+\strong{Containment.} With \code{containment = "accumulate"} (opt-in), each
+contained basin's accumulated value at its outlet is added at the
+containing domain's outlet -- the most-downstream row of the
+containing domain's segment of the extensive network -- and
+routed downstream from there through the containing basin's
+extensive network. Transitive containment (A inside B inside C)
+is processed from the most-contained outward, so A's contribution
+is added to B before B's value is read, and B's combined value
+is added to C. With the default \code{containment = "ignore"} a
+contained basin's accumulated value stops at its own outlet --
+the correct behavior for a true endorheic basin and the only
+behavior before this argument was added. See \code{\link[=set_containment]{set_containment()}}
+for how containment is declared.
 }
 \examples{
 g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
@@ -59,5 +79,6 @@ head(rec[, c("id", "da_sqkm")])
 
 }
 \seealso{
-\code{\link[=accumulate_downstream]{accumulate_downstream()}}, \code{\link[=decompose_network]{decompose_network()}}.
+\code{\link[=accumulate_downstream]{accumulate_downstream()}}, \code{\link[=decompose_network]{decompose_network()}},
+\code{\link[=set_containment]{set_containment()}}.
 }

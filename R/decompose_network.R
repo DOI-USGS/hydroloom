@@ -42,6 +42,18 @@
 #' branches as well — every selected path is a *stem* in the cross-scale
 #' sense (trunks and branches are both stems).
 #'
+#' **Containment.** This function does not detect containment. A
+#' drainage basin that the caller wants treated as belonging inside
+#' another -- typically an endorheic basin or a drainage-divide
+#' remnant -- is partitioned here as an independent basin like any
+#' other. After decomposition, the caller declares the relationship
+#' with [set_containment()]; [recompose()] applies it when called
+#' with `containment = "accumulate"`. The relationship is recorded on
+#' the contained domain's `containing_domain_id` slot and surfaced by
+#' [get_domain_graph()] with `relations = "contained"`. It does not
+#' appear in `nexus_registry` because no flow crosses a hydro nexus
+#' between the two basins.
+#'
 #' @param x `hy_leveled` object (dendritic network already enriched
 #'   with levelpaths).
 #' @param stem_metric character. Metric evaluated at each levelpath
@@ -51,7 +63,11 @@
 #' @param stem_threshold numeric scalar or `NULL`. Value of
 #'   `stem_metric` at a levelpath outlet above which the levelpath is
 #'   a stem candidate. `NULL` (default) falls back to one stem per
-#'   drainage basin (the basin's outlet levelpath).
+#'   drainage basin (the basin's outlet levelpath). When non-NULL,
+#'   the input must carry a `stream_calculator` column; call
+#'   [add_streamorder()] to add it if the source data does not
+#'   already provide one (NHDPlus `StreamCalc`, canonicalized by
+#'   [hy()], counts).
 #' @param stem_levelpaths vector of levelpath ids or `NULL`. When
 #'   non-NULL, bypasses the threshold rule and forces these levelpaths
 #'   to be stems (the basin's terminal-outlet levelpath is always unioned
@@ -201,6 +217,11 @@ decompose_network <- function(x,
 
     nexuses_list[[length(nexuses_list) + 1L]] <- built$nexuses
 
+    # NOTE (perf): c()-accumulation per basin is O(n^2) in the total
+    # number of catchments. Fine at the 100-domain target; at finer
+    # grain pre-allocate index_names / index_values to the known
+    # total size (sum of nrow(catchments) across domains) or
+    # collect into a list and unlist() once at the end of the loop.
     index_names  <- c(index_names,  built$index_names)
     index_values <- c(index_values, built$index_values)
   }
@@ -916,6 +937,13 @@ decompose_build_component <- function(component, terminal_id,
       containing_domain_id = NA_character_,
       catchments           = component)
 
+    # NOTE (perf): each branch in this function builds a single-row
+    # data.frame per segment and `do.call(rbind, ...)` concatenates
+    # them at the end of the basin loop. data.frame() construction
+    # dominates the cost at finer-grained decomposition (1000+
+    # domains). Build parallel character / numeric vectors for the
+    # nexus columns and assemble the data.frame once at the end of
+    # the basin loop. Fine at the 100-domain target.
     nexus_row <- data.frame(
       nexus_id         = outlet_nx,
       from_domain_id   = domain_id,
@@ -1202,8 +1230,9 @@ decompose_collect_upstream <- function(residual, seed, from_idx) {
 
 #' Empty inter-domain edge data.frame
 #'
-#' Shared shape for the zero-row return from `get_domain_graph()` and
-#' the placeholder for not-yet-wired containment edges.
+#' Shared shape used as the zero-row return from `get_domain_graph()`
+#' when neither flow nor containment relationships contribute any
+#' rows.
 #' @noRd
 empty_graph_df <- function() {
 
@@ -1218,13 +1247,25 @@ empty_graph_df <- function() {
 #' Get the inter-domain edge list from a decomposition
 #'
 #' @description
-#' Derives the inter-domain graph from `decomposition$nexus_registry`
-#' and returns it as a hydroloom edge list, filtered by relation type.
-#' Each registry row whose `to_domain_id` is non-NA contributes one
-#' flow edge from `from_domain_id` to `to_domain_id`. Containment edges
-#' are not yet emitted. The default includes both flow and containment
-#' relations; pass `relations = "flow"` to get the dendritic flow DAG
-#' only.
+#' Returns the inter-domain edge list as a hydroloom edge list (`hy_topo`
+#' or `hy_flownetwork`). Two kinds of relationships appear in the result,
+#' selected by `relations`:
+#'
+#' - `"flow"` -- pulled from `nexus_registry`. Each row whose
+#'   `to_domain_id` is non-NA contributes one row to the result,
+#'   recording where one domain hands off to the next at a hydro
+#'   nexus. The result row carries that nexus's id in `nexus_id` and
+#'   `relation_type = "flow"`.
+#' - `"contained"` -- pulled from each domain's `containing_domain_id`
+#'   slot. Each non-NA value contributes one row, from the contained
+#'   domain to its container. Containment is declared post-decomposition
+#'   via [set_containment()] and does not pass through a hydro nexus,
+#'   so the result row carries `nexus_id = NA_character_` and
+#'   `relation_type = "contained"`.
+#'
+#' The default returns both kinds; pass `relations = "flow"` for the
+#' inter-domain flow graph only, or `relations = "contained"` for
+#' containment relationships only.
 #'
 #' The returned object is passed through `classify_hy()` so it carries
 #' the most-specific hydroloom class (`hy_topo` when the inter-domain
@@ -1235,9 +1276,10 @@ empty_graph_df <- function() {
 #' @param decomposition object of class `domain_decomposition`.
 #' @param relations character vector. Which `relation_type` values to
 #'   include. Default is both `"flow"` and `"contained"`.
-#' @returns hydroloom edge list (`hy_topo` or `hy_flownetwork`).
+#' @returns hydroloom edge list (`hy_topo` or `hy_flownetwork`) with
+#'   columns `id`, `toid`, `nexus_id`, `relation_type`.
 #' @seealso [domain_decomposition] for the wrapper object,
-#'   [decompose_network()].
+#'   [decompose_network()], [set_containment()].
 #' @export
 #' @examples
 #' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
@@ -1256,24 +1298,57 @@ get_domain_graph <- function(decomposition,
 
   relations <- match.arg(relations, several.ok = TRUE)
 
+  # ---- Flow edges from nexus_registry ---------------------------------
+
   reg <- decomposition$nexus_registry
 
-  if (is.null(reg) || nrow(reg) == 0L) {
-    return(classify_hy(empty_graph_df()))
+  flow <- if (!is.null(reg) && nrow(reg) > 0L) {
+
+    is_inter <- !is.na(reg$to_domain_id)
+
+    data.frame(
+      id            = reg$from_domain_id[is_inter],
+      toid          = reg$to_domain_id[is_inter],
+      nexus_id      = reg$nexus_id[is_inter],
+      relation_type = rep("flow", sum(is_inter)),
+      stringsAsFactors = FALSE)
+
+  } else {
+    empty_graph_df()
   }
 
-  is_inter <- !is.na(reg$to_domain_id)
+  # ---- Containment edges from domain slots ----------------------------
+  # One edge per non-NA containing_domain_id. No flow crosses a hydro
+  # nexus between contained and containing, so nexus_id is NA.
 
-  flow <- data.frame(
-    id            = reg$from_domain_id[is_inter],
-    toid          = reg$to_domain_id[is_inter],
-    nexus_id      = reg$nexus_id[is_inter],
-    relation_type = rep("flow", sum(is_inter)),
-    stringsAsFactors = FALSE)
+  domains <- decomposition$domains %||% list()
 
-  # Containment edges land here once contained_basins is wired in
-  # (Layer 7); for now there are none.
-  contained <- empty_graph_df()
+  cont_pairs <- list()
+
+  for (d in domains) {
+
+    cd <- d$containing_domain_id
+
+    if (length(cd) == 1 && !is.na(cd) && nzchar(cd))
+      cont_pairs[[length(cont_pairs) + 1L]] <-
+        c(d$domain_id, cd)
+
+  }
+
+  contained <- if (length(cont_pairs) > 0L) {
+
+    pairs <- do.call(rbind, cont_pairs)
+
+    data.frame(
+      id            = pairs[, 1],
+      toid          = pairs[, 2],
+      nexus_id      = NA_character_,
+      relation_type = rep("contained", nrow(pairs)),
+      stringsAsFactors = FALSE)
+
+  } else {
+    empty_graph_df()
+  }
 
   combined <- rbind(flow, contained)
 
@@ -1420,6 +1495,74 @@ get_domain_connectivity <- function(decomposition, basin_id = NULL) {
   conn[[basin_id]]
 }
 
+#' Get the nexus registry from a decomposition
+#'
+#' @description
+#' Returns `decomposition$nexus_registry` -- the table that records each
+#' synthetic hydro nexus produced by [decompose_network()] and which
+#' domains it connects. One row per nexus; the columns are `nexus_id`,
+#' `from_domain_id`, and `to_domain_id` (NA at basin outlets where no
+#' downstream domain receives the handoff).
+#'
+#' @param decomposition object of class `domain_decomposition`.
+#' @returns data.frame.
+#' @seealso [domain_decomposition], [get_domain_graph()].
+#' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
+#'
+#' h <- hy(g) |>
+#'   add_toids() |>
+#'   add_levelpaths(name_attribute = "GNIS_ID",
+#'     weight_attribute = "arbolate_sum")
+#'
+#' d <- decompose_network(h)
+#'
+#' head(get_nexus_registry(d))
+#'
+get_nexus_registry <- function(decomposition) {
+
+  if (!inherits(decomposition, "domain_decomposition"))
+    stop("get_nexus_registry: decomposition must be a ",
+      "domain_decomposition.", call. = FALSE)
+
+  decomposition$nexus_registry
+
+}
+
+#' Get the overrides table from a decomposition
+#'
+#' @description
+#' Returns `decomposition$overrides` -- the non-dendritic inter-domain
+#' transfer table passed through from [decompose_network()]. `NULL`
+#' when no overrides were supplied.
+#'
+#' @param decomposition object of class `domain_decomposition`.
+#' @returns data.frame or `NULL`.
+#' @seealso [domain_decomposition], [decompose_network()].
+#' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/walker.gpkg", package = "hydroloom"))
+#'
+#' h <- hy(g) |>
+#'   add_toids() |>
+#'   add_levelpaths(name_attribute = "GNIS_ID",
+#'     weight_attribute = "arbolate_sum")
+#'
+#' d <- decompose_network(h)
+#'
+#' get_overrides(d)
+#'
+get_overrides <- function(decomposition) {
+
+  if (!inherits(decomposition, "domain_decomposition"))
+    stop("get_overrides: decomposition must be a ",
+      "domain_decomposition.", call. = FALSE)
+
+  decomposition$overrides
+
+}
+
 #' Test whether a domain is a leaf
 #'
 #' @description
@@ -1475,6 +1618,12 @@ is_leaf_domain <- function(decomposition, domain_id) {
 #'
 is_root_domain <- function(decomposition, domain_id) {
 
+  # NOTE (perf): linear scan of nexus_registry per call. Fine at
+  # the 100-domain target (10^4 work even when called inside a
+  # vapply() over every domain), but the same scan happens here
+  # and in `is_leaf_domain` / `is_stem_domain`. Drop-in fix is to
+  # precompute one named lookup (e.g. outgoing_by_nexus) and have
+  # all three predicates read from it.
   d <- get_domain(decomposition, domain_id)
 
   out_nx <- d$outlet_nexus_id

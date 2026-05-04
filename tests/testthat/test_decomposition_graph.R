@@ -24,8 +24,6 @@ new_hope_d <- if (exists("decompose_network",
 
 test_that("get_domain_graph(d, 'flow') is acyclic and sortable", {
 
-  decomposition_pending(c("decompose_network", "get_domain_graph"))
-
   g <- hydroloom::get_domain_graph(new_hope_d, relations = "flow")
 
   if (nrow(g) == 0L) skip("decomposition has no inter-domain edges")
@@ -38,8 +36,6 @@ test_that("get_domain_graph(d, 'flow') is acyclic and sortable", {
 })
 
 test_that("every flow edge is honored by the topological order", {
-
-  decomposition_pending(c("decompose_network", "get_domain_graph"))
 
   g <- hydroloom::get_domain_graph(new_hope_d, relations = "flow")
 
@@ -65,8 +61,6 @@ test_that("every flow edge is honored by the topological order", {
 
 test_that("walker domain graph is empty on the degenerate case", {
 
-  decomposition_pending(c("decompose_network", "get_domain_graph"))
-
   src <- enrich_for_decomposition(load_walker())
   d <- hydroloom::decompose_network(src)
 
@@ -81,8 +75,6 @@ test_that("walker domain graph is empty on the degenerate case", {
 })
 
 test_that("non-dendritic network.rds produces a navigable domain graph", {
-
-  decomposition_pending(c("decompose_network", "get_domain_graph"))
 
   # network.rds carries no GNIS or arbolate columns, so the canonical
   # enrichment chain will skip this test via the membership check.

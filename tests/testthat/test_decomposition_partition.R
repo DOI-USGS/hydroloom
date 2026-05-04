@@ -12,9 +12,6 @@
 
 test_that("decompose_network partitions walker.gpkg", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition",
-    "get_domain_for_catchment"))
-
   src <- enrich_for_decomposition(load_walker())
 
   d <- hydroloom::decompose_network(src)
@@ -44,12 +41,13 @@ test_that("decompose_network partitions walker.gpkg", {
 
   }
 
+  # accessor smoke tests
+  expect_identical(hydroloom::get_nexus_registry(d), d$nexus_registry)
+  expect_identical(hydroloom::get_overrides(d), d$overrides)
+
 })
 
 test_that("decompose_network partitions new_hope.gpkg", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition",
-    "get_domain_for_catchment"))
 
   src <- enrich_for_decomposition(load_new_hope())
 
@@ -75,8 +73,6 @@ test_that("decompose_network partitions new_hope.gpkg", {
 })
 
 test_that("decompose_network handles non-dendritic network.rds", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   net <- load_test_rds("network")
 
@@ -106,8 +102,6 @@ test_that("decompose_network handles non-dendritic network.rds", {
 # ---- stem_threshold / stem_levelpaths tests -------------------------
 
 test_that("decompose_network extensive network includes all above-threshold catchments", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 
@@ -143,8 +137,6 @@ test_that("decompose_network extensive network includes all above-threshold catc
 
 test_that("decompose_network stem_threshold on new_hope", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
-
   src <- enrich_for_decomposition(load_new_hope())
 
   # threshold=100: extensive network spans many levelpaths, at least 2 segments
@@ -169,8 +161,6 @@ test_that("decompose_network stem_threshold on new_hope", {
 
 test_that("decompose_network stem_levelpaths explicit override on walker", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
-
   src <- enrich_for_decomposition(load_walker())
 
   lp_outlets <- src[src$id == src$levelpath_outlet_id, ]
@@ -194,8 +184,6 @@ test_that("decompose_network stem_levelpaths explicit override on walker", {
 
 test_that("decompose_network stem_metric = arbolate_sum on walker", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
-
   src <- enrich_for_decomposition(load_walker())
 
   skip_if_not("arbolate_sum" %in% names(src))
@@ -216,8 +204,6 @@ test_that("decompose_network stem_metric = arbolate_sum on walker", {
 
 test_that("decompose_network errors on missing drainage_area metric", {
 
-  decomposition_pending("decompose_network")
-
   src <- enrich_for_decomposition(load_walker())
 
   src$total_da_sqkm <- NULL
@@ -232,8 +218,6 @@ test_that("decompose_network errors on missing drainage_area metric", {
 
 test_that("decompose_network errors on unknown stem_levelpaths", {
 
-  decomposition_pending("decompose_network")
-
   src <- enrich_for_decomposition(load_walker())
 
   expect_error(
@@ -244,8 +228,6 @@ test_that("decompose_network errors on unknown stem_levelpaths", {
 })
 
 test_that("decompose_network omits connectivity for sub-threshold basins", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   # Two disconnected basins:
   #   Basin A (ids 1-3, DA sums to 30) -- below threshold 50
@@ -290,8 +272,6 @@ test_that("decompose_network omits connectivity for sub-threshold basins", {
 
 test_that("decompose_network domain_breaks splits extensive network at specified ids", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
-
   src <- enrich_for_decomposition(load_walker())
 
   d_default <- hydroloom::decompose_network(src)
@@ -315,8 +295,6 @@ test_that("decompose_network domain_breaks splits extensive network at specified
 
 test_that("decompose_network domain_breaks ignores non-stem ids", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
-
   src <- enrich_for_decomposition(load_walker())
 
   d_default <- hydroloom::decompose_network(src)
@@ -328,8 +306,6 @@ test_that("decompose_network domain_breaks ignores non-stem ids", {
 })
 
 test_that("decompose_network domain_breaks composes with stem_levelpaths", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 
@@ -353,8 +329,6 @@ test_that("decompose_network domain_breaks composes with stem_levelpaths", {
 # ---- decomposed compact form ------------------------------------------
 
 test_that("domain catchments include extensive network rows as detoid'd outlets", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 
@@ -393,8 +367,6 @@ test_that("domain catchments include extensive network rows as detoid'd outlets"
 })
 
 test_that("domain accumulate_downstream gives per-extensive-network incremental DA", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 
@@ -438,8 +410,6 @@ test_that("domain accumulate_downstream gives per-extensive-network incremental 
 })
 
 test_that("extensive network toids restored from source produce a connected extensive network", {
-
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
 
   src <- enrich_for_decomposition(load_walker())
 

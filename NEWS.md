@@ -61,6 +61,21 @@ carry subclass attributes (e.g. `hy_topo`) which are stripped by
     `hy` -> `hy_node` -> `hy_topo` -> `hy_leveled` -> `hy_flownetwork`
     progression
   - Style and clarity pass across all vignettes
+- Domain decomposition gains a containment relationship that lets
+  callers declare, post-decomposition, that one domain (a catchment
+  aggregate, in HY_Features terms) is enclosed by another -- endorheic
+  basins, drainage-divide remnants, or any isolated component the
+  caller wants treated as contained. New `set_containment()` records
+  the declaration; `get_containing_domain()` reads it back;
+  `get_domain_graph()` returns one row per declaration (with
+  `nexus_id = NA` and `relation_type = "contained"`); `recompose()`
+  gains a `containment` argument that defaults to `"ignore"` (each
+  basin's accumulated value stops at its own outlet) and optionally
+  `"accumulate"` (the contained basin's accumulated value is added
+  at the containing domain's outlet and routed downstream through the
+  containing basin's extensive network). Containment does not appear
+  in `nexus_registry` because no flow crosses a hydro nexus between
+  the two basins.
 - **Deprecation notice:** A future release will require that `hy_topo` objects
   have unique `id` values (one row per catchment). Non-dendritic connectivity
   with duplicated ids in a toid-based edge list will need to be represented as

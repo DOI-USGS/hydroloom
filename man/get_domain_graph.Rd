@@ -13,16 +13,30 @@ get_domain_graph(decomposition, relations = c("flow", "contained"))
 include. Default is both \code{"flow"} and \code{"contained"}.}
 }
 \value{
-hydroloom edge list (\code{hy_topo} or \code{hy_flownetwork}).
+hydroloom edge list (\code{hy_topo} or \code{hy_flownetwork}) with
+columns \code{id}, \code{toid}, \code{nexus_id}, \code{relation_type}.
 }
 \description{
-Derives the inter-domain graph from \code{decomposition$nexus_registry}
-and returns it as a hydroloom edge list, filtered by relation type.
-Each registry row whose \code{to_domain_id} is non-NA contributes one
-flow edge from \code{from_domain_id} to \code{to_domain_id}. Containment edges
-are not yet emitted. The default includes both flow and containment
-relations; pass \code{relations = "flow"} to get the dendritic flow DAG
-only.
+Returns the inter-domain edge list as a hydroloom edge list (\code{hy_topo}
+or \code{hy_flownetwork}). Two kinds of relationships appear in the result,
+selected by \code{relations}:
+\itemize{
+\item \code{"flow"} -- pulled from \code{nexus_registry}. Each row whose
+\code{to_domain_id} is non-NA contributes one row to the result,
+recording where one domain hands off to the next at a hydro
+nexus. The result row carries that nexus's id in \code{nexus_id} and
+\code{relation_type = "flow"}.
+\item \code{"contained"} -- pulled from each domain's \code{containing_domain_id}
+slot. Each non-NA value contributes one row, from the contained
+domain to its container. Containment is declared post-decomposition
+via \code{\link[=set_containment]{set_containment()}} and does not pass through a hydro nexus,
+so the result row carries \code{nexus_id = NA_character_} and
+\code{relation_type = "contained"}.
+}
+
+The default returns both kinds; pass \code{relations = "flow"} for the
+inter-domain flow graph only, or \code{relations = "contained"} for
+containment relationships only.
 
 The returned object is passed through \code{classify_hy()} so it carries
 the most-specific hydroloom class (\code{hy_topo} when the inter-domain
@@ -45,5 +59,5 @@ get_domain_graph(d, relations = "flow")
 }
 \seealso{
 \link{domain_decomposition} for the wrapper object,
-\code{\link[=decompose_network]{decompose_network()}}.
+\code{\link[=decompose_network]{decompose_network()}}, \code{\link[=set_containment]{set_containment()}}.
 }

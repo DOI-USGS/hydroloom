@@ -64,8 +64,6 @@ test_that("at-scale closed sub-basins are present in the source", {
 
 test_that("decompose_network produces a valid at-scale decomposition", {
 
-  decomposition_pending(c("decompose_network", "validate_decomposition"))
-
   expect_true(hydroloom::validate_decomposition(at_scale_d)$valid,
     label = "at-scale decomposition is valid")
 
@@ -75,8 +73,6 @@ test_that("decompose_network produces a valid at-scale decomposition", {
 
 test_that("at-scale recomposed da_sqkm matches accumulate_downstream", {
 
-  decomposition_pending(c("decompose_network", "recompose"))
-
   expect_recomposes_to_source(at_scale_d, at_scale_src, var = "da_sqkm",
     tolerance = 1e-6)
 
@@ -84,16 +80,12 @@ test_that("at-scale recomposed da_sqkm matches accumulate_downstream", {
 
 test_that("at-scale decomposition produces basins and segment domains", {
 
-  decomposition_pending("decompose_network")
-
   expect_gte(length(at_scale_d$domain_connectivity), 1L)
   expect_gte(length(at_scale_d$domains), 1L)
 
 })
 
 test_that("at-scale closed sub-basins surface in the decomposition", {
-
-  decomposition_pending(c("decompose_network", "get_domain_graph"))
 
   graph_all <- hydroloom::get_domain_graph(at_scale_d,
     relations = c("flow", "contained"))

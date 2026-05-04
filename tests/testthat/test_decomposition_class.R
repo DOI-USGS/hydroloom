@@ -1,17 +1,16 @@
 # Layer 1 — hy_domain constructor + validate_decomposition unit tests.
 #
 # Drives the constructor and validator API entirely from hand-built
-# fixtures. No decompose_network involvement. Tests are skipped via
-# decomposition_pending() until the corresponding API surface lands.
+# fixtures. No decompose_network involvement.
 #
 # Why hand-built fixtures: each test isolates exactly one invariant,
 # making the failing message point at the rule the implementation
 # violated.
 #
-# The 3-row leveled / topo / flownetwork fixtures live inline at the
-# top of this file rather than in helper-decomposition.R because the
-# pattern is already canonical in test_hy_classes.R:36-47 and the
-# helpers add no behavior — just data.frame construction.
+# The 3-row leveled / topo / flownetwork fixtures are defined inline
+# at the top of this file rather than in helper-decomposition.R
+# because the pattern is already canonical in test_hy_classes.R:36-47
+# and the helpers add no behavior — just data.frame construction.
 
 make_lev <- function() {
   hydroloom::hy(data.frame(
@@ -36,8 +35,6 @@ make_fn <- function() {
 
 test_that("hy_domain accepts a hy_leveled domain", {
 
-  decomposition_pending("hy_domain")
-
   d <- make_minimal_hy_domain(make_lev())
 
   expect_s3_class(d, "hy_domain")
@@ -46,8 +43,6 @@ test_that("hy_domain accepts a hy_leveled domain", {
 })
 
 test_that("hy_domain accepts a hy_topo domain", {
-
-  decomposition_pending("hy_domain")
 
   d <- make_minimal_hy_domain(make_topo(), domain_id = "C1")
 
@@ -58,8 +53,6 @@ test_that("hy_domain accepts a hy_topo domain", {
 
 test_that("hy_domain accepts a flownetwork domain", {
 
-  decomposition_pending("hy_domain")
-
   d <- make_minimal_hy_domain(make_fn(), domain_id = "C1")
 
   expect_s3_class(d, "hy_domain")
@@ -68,8 +61,6 @@ test_that("hy_domain accepts a flownetwork domain", {
 })
 
 test_that("hy_domain carries all required slots", {
-
-  decomposition_pending("hy_domain")
 
   d <- make_minimal_hy_domain(make_lev())
 
@@ -88,8 +79,6 @@ test_that("hy_domain carries all required slots", {
 # ---- validate_decomposition() unit cases ------------------------------
 
 test_that("validate_decomposition accepts a hand-built valid decomposition", {
-
-  decomposition_pending(c("hy_domain", "validate_decomposition"))
 
   # build the smallest possible valid decomposition: one domain wrapping
   # the 3-row leveled fixture and the same fixture as the basin's
@@ -112,8 +101,6 @@ test_that("validate_decomposition accepts a hand-built valid decomposition", {
 })
 
 test_that("validate_decomposition flags coverage failure", {
-
-  decomposition_pending(c("hy_domain", "validate_decomposition"))
 
   # drop one catchment row from the domain so the partition no longer
   # covers the source network. validate must detect that the missing
@@ -139,8 +126,6 @@ test_that("validate_decomposition flags coverage failure", {
 })
 
 test_that("validate_decomposition flags an inter-domain cycle", {
-
-  decomposition_pending(c("hy_domain", "validate_decomposition"))
 
   # two domains whose nexus_registry rows form a cycle when projected
   # through get_domain_graph(): T1 -> T2 via n1, T2 -> T1 via n2.
@@ -171,8 +156,6 @@ test_that("validate_decomposition flags an inter-domain cycle", {
 
 test_that("validate_decomposition flags a multi-outlet basin overlay", {
 
-  decomposition_pending(c("hy_domain", "validate_decomposition"))
-
   # two unrelated rows carrying the reserved outlet toid value -> two
   # outlets in the basin's extensive connectivity overlay.
   bad_lev <- hydroloom::hy(data.frame(
@@ -197,8 +180,6 @@ test_that("validate_decomposition flags a multi-outlet basin overlay", {
 
 test_that("validate_decomposition flags an unknown containing_domain_id", {
 
-  decomposition_pending(c("hy_domain", "validate_decomposition"))
-
   lev <- make_lev()
 
   contained <- make_minimal_hy_domain(lev,
@@ -221,8 +202,6 @@ test_that("validate_decomposition flags an unknown containing_domain_id", {
 
 test_that("print.domain_decomposition cheap mode (default) is snapshot-stable", {
 
-  decomposition_pending("decompose_network")
-
   d <- hydroloom::decompose_network(enrich_for_decomposition(load_walker()))
 
   expect_snapshot(print(d))
@@ -231,8 +210,6 @@ test_that("print.domain_decomposition cheap mode (default) is snapshot-stable", 
 
 test_that("print.domain_decomposition full mode is snapshot-stable", {
 
-  decomposition_pending("decompose_network")
-
   d <- hydroloom::decompose_network(enrich_for_decomposition(load_walker()))
 
   expect_snapshot(print(d, full = TRUE))
@@ -240,8 +217,6 @@ test_that("print.domain_decomposition full mode is snapshot-stable", {
 })
 
 test_that("print.domain_decomposition returns x invisibly", {
-
-  decomposition_pending("decompose_network")
 
   d <- hydroloom::decompose_network(enrich_for_decomposition(load_walker()))
 
@@ -253,8 +228,6 @@ test_that("print.domain_decomposition returns x invisibly", {
 })
 
 test_that("print.domain_decomposition handles empty decomposition", {
-
-  decomposition_pending("decompose_network")
 
   empty <- structure(
     list(

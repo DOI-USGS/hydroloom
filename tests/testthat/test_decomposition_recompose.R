@@ -25,8 +25,6 @@ new_hope_d <- decompose_or_null(new_hope_src)
 
 test_that("walker recomposed da_sqkm matches accumulate_downstream", {
 
-  decomposition_pending(c("decompose_network", "recompose"))
-
   expect_recomposes_to_source(walker_d, walker_src, var = "da_sqkm",
     tolerance = 1e-9)
 
@@ -34,16 +32,12 @@ test_that("walker recomposed da_sqkm matches accumulate_downstream", {
 
 test_that("new_hope recomposed da_sqkm matches accumulate_downstream", {
 
-  decomposition_pending(c("decompose_network", "recompose"))
-
   expect_recomposes_to_source(new_hope_d, new_hope_src, var = "da_sqkm",
     tolerance = 1e-9)
 
 })
 
 test_that("recompose on a sub-threshold basin equals accumulate_downstream", {
-
-  decomposition_pending(c("decompose_network", "recompose"))
 
   # A stem_threshold larger than any basin metric falls back to the
   # one-stem-per-basin default (the basin's outlet levelpath). Walker
