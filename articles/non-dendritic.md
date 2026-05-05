@@ -1,0 +1,258 @@
+# Non-dendritic networks
+
+## Introduction
+
+[`vignette("hydroloom")`](https://doi-usgs.github.io/hydroloom/articles/hydroloom.md)
+and
+[`vignette("advanced_network")`](https://doi-usgs.github.io/hydroloom/articles/advanced_network.md)
+cover the basics of network topology representation and the attributes
+that build on a strictly dendritic network. This vignette extends those
+topics to the `hydroloom` functionality that supports non-dendritic
+networks.
+
+The term “non-dendritic” refers to any network that does not follow a
+dendritic flow pattern. Typically that means one or more flowlines
+diverting from a primary flow path. Non-dendritic can also refer to
+endorheic basins nested within an otherwise dendritic basin — but this
+article addresses the diverted-flowline case.
+
+The terms “diversion” and “divergence” are used in similar contexts but
+carry distinct meanings. A **diversion is a diverted flowline**
+(waterbody), whereas a **divergence is where the network diverges**.
+“Diversion” is often associated with anthropogenic features, but a
+diversion can also be a naturally occurring diverted flow.
+
+## Non-dendritic topology attributes
+
+In a non-dendritic network, one downstream path at each divergence is
+treated as primary and the others as secondary. `hydroloom` supports
+several attributes for tracking that primary/secondary categorization.
+
+### fromnode and tonode
+
+`fromnode` and `tonode` store a flow network as an edge-node topology
+where every feature has exactly one upstream node and exactly one
+downstream node. Nodes give every confluence and divergence a single
+identifier, which makes converting a flow network to a graph and many
+downstream analyses cleaner.
+
+### divergence
+
+The `divergence` attribute indicates if a downstream connection is
+primary (1) or secondary (2). If 0, a connection is not downstream of a
+divergence. This attribute is useful as it facilitates following a flow
+network in the “downstream mainstem” direction at every divergence.
+
+### return divergence
+
+The `return divergence` attribute indicates that one or more of the
+features upstream of a given feature originates from a divergence. If 0,
+the upstream features are not part of a diversion. If 1, one or more of
+the upstream features is part of a diversion.
+
+### stream calculator
+
+The `stream calculator` attribute is part of the modified Strahler
+stream order as implemented in the NHDPlus data model. It indicates if a
+given feature is part of the downstream mainstem dendritic network or is
+part of a diverted path. If 0, the path is part of a diversion.
+Otherwise `stream calculator` will be equal to stream order. When
+generating Strahler stream order, if stream calculator is 0 for a given
+feature, that feature is not considered for incrementing downstream
+stream order.
+
+### summary
+
+As a system, `stream calculator`, `divergence` and `return divergence`
+support network navigation and processing in the context of diverted
+paths.
+
+1.  A feature at the top of a diversion will have `divergence` set to 1.
+2.  All features that are part of a diversion that has not yet
+    recombined with a main path, will have `stream calculator` set to 0.
+3.  A feature that is just downstream of where a diversion recombines
+    with a main path will have `return divergence` set to 1.
+
+### Divergence case study: dropped vs preserved secondary paths
+
+Before applying the full pipeline to real data, look at what happens to
+a divergence when a non-dendritic network is forced into the dendritic
+`hy_topo` form. The five-edge example from
+[`vignette("hydroloom")`](https://doi-usgs.github.io/hydroloom/articles/hydroloom.md)
+has one divergence at feature 1 and one confluence at feature 5.
+
+We start in `hy_node` form with `fromnode`/`tonode` and a `divergence`
+column marking the secondary path. The network looks like this, with
+feature 1 flowing into node N2, where it splits into feature 2 (main
+path) and feature 4 (diverted secondary path), both of which rejoin at
+node N4 and flow out through feature 5:
+
+           N1
+            |
+            1
+            | 
+            v
+           N2
+          /  \
+         2    4
+        /      \ (4 is diverted)
+       v        v
+       N3       |
+        \       |
+         3      | 
+          \    /
+           v  v
+            N4
+             |
+             5
+             |
+             v
+             N5
+
+``` r
+
+library(hydroloom)
+
+node_df <- data.frame(
+  id         = c(1, 2, 3, 4, 5),
+  fromnode   = c("N1", "N2", "N3", "N2", "N4"),
+  tonode     = c("N2", "N3", "N4", "N4", "N5"),
+  divergence = c(0,  2,  0,  1,  0)
+)
+
+x_node <- hy(node_df)
+class(x_node)
+#> [1] "hy_node"    "hy"         "tbl_df"     "tbl"        "data.frame"
+nrow(x_node)
+#> [1] 5
+```
+
+Converting to a dendritic edge list with
+`add_toids(return_dendritic = TRUE)` keeps one row per feature and drops
+the secondary downstream connection from feature 1:
+
+``` r
+
+x_topo <- add_toids(x_node, return_dendritic = TRUE)
+class(x_topo)
+#> [1] "hy_topo"    "hy"         "tbl_df"     "tbl"        "data.frame"
+nrow(x_topo)
+#> [1] 5
+x_topo[, c("id", "toid")]
+#> # hydroloom dendritic edge list (self-referencing): 5 features
+#> # A tibble: 5 × 2
+#>      id  toid
+#>   <dbl> <dbl>
+#> 1     1     4
+#> 2     2     3
+#> 3     3     5
+#> 4     4     5
+#> 5     5     0
+```
+
+Setting `return_dendritic = FALSE` preserves both downstream connections
+by repeating `id == 1`. The result is no longer dendritic, so
+[`hy()`](https://doi-usgs.github.io/hydroloom/reference/hy.md)
+classifies it as `hy_flownetwork`:
+
+``` r
+
+x_fn <- add_toids(x_node, return_dendritic = FALSE)
+class(x_fn)
+#> [1] "hy_flownetwork" "tbl_df"         "tbl"            "data.frame"
+nrow(x_fn)
+#> [1] 6
+x_fn[, c("id", "toid")]
+#> # hydroloom flow network: 6 connections, 1 non-dendritic edges
+#> # A tibble: 6 × 2
+#>      id  toid
+#>   <dbl> <dbl>
+#> 1     1     2
+#> 2     1     4
+#> 3     2     3
+#> 4     3     5
+#> 5     4     5
+#> 6     5     0
+```
+
+Both downstream paths from feature 1 are preserved.
+[`hy_capabilities()`](https://doi-usgs.github.io/hydroloom/reference/hy_capabilities.md)
+shows which functions are callable at each stage; that workflow is
+demonstrated end to end in
+[`vignette("network_navigation")`](https://doi-usgs.github.io/hydroloom/articles/network_navigation.md).
+
+### Bringing it all together
+
+The example below shows how we can recreate the non-dendritic attributes
+and use them in practice.
+
+We’ll start with the small sample watershed that’s included in
+`hydroloom` and select only the attributes required to recreate the
+non-dendritic network.
+
+``` r
+
+x <- sf::read_sf(system.file("extdata/new_hope.gpkg",
+  package = "hydroloom"))
+
+# First we select only an id, a name, and a feature type.
+flow_net <- x |>
+  select(COMID, GNIS_ID, FTYPE) |>
+  sf::st_transform(5070)
+
+# Now we convert the geometric network to an attribute topology
+# and convert that to a node topology and join our attributes back
+flow_net <- flow_net |>
+  make_attribute_topology(min_distance = 5) |>
+  hydroloom::make_node_topology(add_div = TRUE) |>
+  left_join(sf::st_drop_geometry(flow_net), by = "COMID")
+
+# We only have one outlet so it doesn't matter if it is coastal
+# or inland but we have to provide it.
+outlets <- filter(flow_net, !tonode %in% fromnode)
+
+# We have these feature types. A larger dataset might include
+# things like canals which would not be considered  "major"
+unique(flow_net$FTYPE)
+
+# compare dendritic vs non-dendritic toid row counts to see how many
+# secondary paths exist in the data
+flow_net_with_div <- add_divergence(flow_net,
+  coastal_outlet_ids = c(),
+  inland_outlet_ids = outlets$COMID,
+  name_attr = "GNIS_ID",
+  type_attr = "FTYPE",
+  major_types = unique(flow_net$FTYPE))
+
+dend <- add_toids(flow_net_with_div, return_dendritic = TRUE)
+nondend <- add_toids(flow_net_with_div, return_dendritic = FALSE)
+
+nrow(dend)
+nrow(nondend)
+nrow(nondend) - nrow(dend)
+
+# now we run the add_divergence, add_toids, and add_streamorder
+flow_net <- add_divergence(flow_net,
+  coastal_outlet_ids = c(),
+  inland_outlet_ids = outlets$COMID,
+  name_attr = "GNIS_ID",
+  type_attr = "FTYPE",
+  major_types = unique(flow_net$FTYPE)) |>
+  add_toids() |>
+  add_streamorder() |>
+  add_return_divergence()
+
+# Make sure we reproduce what came from our source NHDPlus data.
+sum(flow_net$divergence == 2)
+sum(x$Divergence == 2)
+all(flow_net$divergence == x$Divergence)
+sum(flow_net$return_divergence == x$RtnDiv)
+
+names(flow_net)
+```
+
+With the above code, we removed all attributes other than an ID, a name
+and a feature type and recreated both a dendritic (toid) and
+non-dendritic (fromnode tonode) topology. We added `divergence`
+attribute, `stream_order`, `stream_calculator`, and `return_divergence`
+attributes.
