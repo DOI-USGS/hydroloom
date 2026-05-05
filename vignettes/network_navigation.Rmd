@@ -419,7 +419,4 @@ plot(map_prep(down), col = "blue", add = TRUE, lwd = 2)
 ```{r teardown, include=FALSE}
 options(oldoption)
 par(oldpar)
-if (!eval) {
-  unlink(nhdplusTools::nhdplusTools_data_dir(), recursive = TRUE)
-}
 ```
