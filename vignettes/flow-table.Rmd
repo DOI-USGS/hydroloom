@@ -15,7 +15,7 @@ if (!requireNamespace("nhdplusTools", quietly = TRUE)) local <- FALSE
 if (!requireNamespace("mapview", quietly = TRUE)) local <- FALSE
 
 if (local) {
-  nhdplusTools::nhdplusTools_data_dir(tempdir())
+  nhdplusTools::nhdplusTools_data_dir(file.path(tempdir(), "nhd_cache"))
 }
 
 oldoption <- options(scipen = 9999)
