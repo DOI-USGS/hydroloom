@@ -9,3 +9,7 @@ CRAN-SUBMISSION
 .vscode/
 revdep/
 CLAUDE.md
+dev
+vignettes/*.html
+docs/
+

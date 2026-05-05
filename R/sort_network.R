@@ -91,7 +91,7 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
     starts <- which(index_ids$to$to_list$id %in% outlets)
   } else {
     # All the start nodes -- outlets are rows whose toid does not refer to
-    # any id in the network (tolerates any sentinel convention).
+    # any id in the network (tolerates any reserved-value convention).
     starts <- which(index_ids$to$to_list$id %in% x$id[is_outlet(x)])
 
     if (length(starts) == 0L) {

@@ -74,7 +74,8 @@ get_bridge_flowlines.hy_topo <- function(x, quiet = FALSE) {
 
   result <- format_index_ids_internal(make_adj_dt(node_topo))
 
-  # find_bridges expects 0 sentinels; format_index_ids_internal pads with NA
+  # find_bridges expects 0 as the reserved no-edge marker;
+  # format_index_ids_internal pads with NA
   adj_matrix <- result$to
   adj_matrix[is.na(adj_matrix)] <- 0L
   edge_id_matrix <- result$edge_id

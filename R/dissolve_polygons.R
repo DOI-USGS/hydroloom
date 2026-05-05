@@ -111,8 +111,8 @@ dissolve_polygons.sf <- function(polys,
                                  work_crs = 5070,
                                  ...) {
 
-  if(!is.null(group_id)) {
-    if(!group_id %in% names(polys))
+  if (!is.null(group_id)) {
+    if (!group_id %in% names(polys))
       stop("group_id column '", group_id, "' not found in polys")
   }
 
@@ -182,7 +182,7 @@ dissolve_polygons.sfc <- function(polys,
 
   orig_crs <- sf::st_crs(polys)
 
-  if(!is.null(work_crs)) {
+  if (!is.null(work_crs)) {
     work_crs <- sf::st_crs(work_crs)
     polys <- sf::st_transform(polys, work_crs)
   }
@@ -247,7 +247,7 @@ dissolve_impl <- function(geom, gap_tolerance, max_hole_area,
 #' @noRd
 union_geom <- function(geom, use_geos = FALSE) {
 
-  if(use_geos) {
+  if (use_geos) {
     g <- geos::as_geos_geometry(geom)
     g <- geos::geos_make_collection(g)
     g <- geos::geos_unary_union(g)
@@ -261,10 +261,10 @@ union_geom <- function(geom, use_geos = FALSE) {
 #' @noRd
 remove_small_holes <- function(geom, max_hole_area, crs) {
 
-  if(sf::st_is_empty(geom)) return(geom)
+  if (sf::st_is_empty(geom)) return(geom)
 
   # Handle MULTIPOLYGON: process each component
-  if(inherits(geom, "MULTIPOLYGON")) {
+  if (inherits(geom, "MULTIPOLYGON")) {
     parts <- lapply(geom, function(p) {
       remove_holes_from_polygon(p, max_hole_area, crs)
     })
@@ -280,10 +280,10 @@ remove_small_holes <- function(geom, max_hole_area, crs) {
 #' @noRd
 remove_holes_from_polygon <- function(rings, max_hole_area, crs) {
 
-  if(length(rings) <= 1) return(rings)
+  if (length(rings) <= 1) return(rings)
 
   # Fast path: remove all holes
-  if(is.infinite(max_hole_area)) return(rings[1])
+  if (is.infinite(max_hole_area)) return(rings[1])
 
   # Build sfc of hole-ring polygons for batch area computation
   hole_polys <- sf::st_sfc(
@@ -341,15 +341,15 @@ summarise_attrs <- function(polys, group_id, .fns, group_order = NULL) {
 #' @noRd
 keep_largest_polygon <- function(geom, crs) {
 
-  if(sf::st_is_empty(geom)) return(geom)
+  if (sf::st_is_empty(geom)) return(geom)
 
   # Already a single POLYGON
-  if(inherits(geom, "POLYGON")) return(geom)
+  if (inherits(geom, "POLYGON")) return(geom)
 
   # MULTIPOLYGON: find largest component
   parts <- sf::st_cast(sf::st_sfc(geom, crs = crs), "POLYGON")
 
-  if(length(parts) == 1) return(parts[[1]])
+  if (length(parts) == 1) return(parts[[1]])
 
   areas <- as.numeric(sf::st_area(parts))
   parts[[which.max(areas)]]

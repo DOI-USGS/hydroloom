@@ -6,6 +6,13 @@ reference:
     contents:
     - '`hy`'
     - '`is.hy`'
+    - '`hy_topo`'
+    - '`hy_leveled`'
+    - '`hy_node`'
+    - '`hy_flownetwork`'
+    - '`hy_network_type`'
+    - '`hy_capabilities`'
+    - '`is_dendritic`'
     - '`hy_reverse`'
     - '`hydroloom_names`'
     - '`hydroloom_name_definitions`'
@@ -13,6 +20,8 @@ reference:
   - title: Utility Functions
     contents:
     - '`check_hy_graph`'
+    - '`check_valid`'
+    - '`dissolve_polygons`'
     - '`fix_flowdir`'
     - '`get_node`'
     - '`st_compatibalize`'
@@ -52,6 +61,29 @@ reference:
       - '`get_partial_length`'
       - '`rescale_measures`'
       - '`add_measures`'
+  - title: Domain Decomposition
+    desc: >
+      Experimental. Decompose a flowline network into per-segment
+      domains for distributed accumulation and recompose results back
+      to the source network. API may change.
+    contents:
+      - '`decompose_network`'
+      - '`recompose`'
+      - '`hy_domain`'
+      - '`domain_decomposition`'
+      - '`print.domain_decomposition`'
+      - '`validate_decomposition`'
+      - '`get_domain`'
+      - '`get_domain_for_catchment`'
+      - '`get_domain_graph`'
+      - '`get_domain_connectivity`'
+      - '`get_nexus_registry`'
+      - '`get_overrides`'
+      - '`set_containment`'
+      - '`get_containing_domain`'
+      - '`is_leaf_domain`'
+      - '`is_root_domain`'
+      - '`is_stem_domain`'
   - title: Deprecated
     contents:
       - '`make_fromids`'

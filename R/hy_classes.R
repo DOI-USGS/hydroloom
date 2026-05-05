@@ -40,7 +40,8 @@
 #' \itemize{
 #'   \item `id` — catchment or flowline identifier, unique across rows
 #'   \item `toid` — `id` of the immediately downstream feature; network
-#'     outlets carry a sentinel value
+#'     outlets carry the reserved outlet value (`0` for numeric ids,
+#'     `""` for character)
 #' }
 #'
 #' See [hydroloom_name_definitions] for the canonical column definitions

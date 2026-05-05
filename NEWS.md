@@ -12,10 +12,11 @@ carry subclass attributes (e.g. `hy_topo`) which are stripped by
 `hy_reverse()` and by standard dplyr operations.
 
 - Outlet detection is explicit (#85): a row is an outlet when its
-  `toid` is not in `id`. Canonical sentinels (`0` / `""`), `NA`, implicit
-  absence, foreign sentinels, and unique-per-outlet ids are all accepted.
-- `hy()` still normalizes `NA` `toid` to the canonical sentinel, so
-  `x$toid == 0` after `hy()` keeps working.
+  `toid` is not in `id`. Canonical reserved values (`0` / `""`), `NA`,
+  implicit absence, foreign reserved values, and unique-per-outlet ids
+  are all accepted.
+- `hy()` still normalizes `NA` `toid` to the canonical reserved outlet
+  value, so `x$toid == 0` after `hy()` keeps working.
 - `make_node_topology()` and `is.hy()` accept `NA` and orphan `toid`;
   the related errors are removed.
 - `check_hy_outlets()` warns only on `id`/`toid` type mismatch.
@@ -38,9 +39,9 @@ carry subclass attributes (e.g. `hy_topo`) which are stripped by
 - Fix pre-existing bug in `make_to_dt()` where dendritic branch failed on
   tibble input (data.table `with = FALSE` syntax on plain data.frame)
 - Fix `get_bridge_flowlines()` correctness on networks with independent
-  terminals: `make_nondendritic_topology()` collapsed all outlet-sentinel
-  fromids into one synthetic node, misclassifying bridges and exhausting
-  memory on continental networks
+  terminals: `make_nondendritic_topology()` collapsed all rows carrying
+  the reserved outlet value into one synthetic node, misclassifying
+  bridges and exhausting memory on continental networks
 - `to_flownetwork()` and `get_bridge_flowlines()` now accept `hy_node`
   input without `divergence`/`levelpath`, auto-converting to a
   non-dendritic edge list with a warning that main-path info is dropped
@@ -60,6 +61,21 @@ carry subclass attributes (e.g. `hy_topo`) which are stripped by
     `hy` -> `hy_node` -> `hy_topo` -> `hy_leveled` -> `hy_flownetwork`
     progression
   - Style and clarity pass across all vignettes
+- Domain decomposition gains a containment relationship that lets
+  callers declare, post-decomposition, that one domain (a catchment
+  aggregate, in HY_Features terms) is enclosed by another -- endorheic
+  basins, drainage-divide remnants, or any isolated component the
+  caller wants treated as contained. New `set_containment()` records
+  the declaration; `get_containing_domain()` reads it back;
+  `get_domain_graph()` returns one row per declaration (with
+  `nexus_id = NA` and `relation_type = "contained"`); `recompose()`
+  gains a `containment` argument that defaults to `"ignore"` (each
+  basin's accumulated value stops at its own outlet) and optionally
+  `"accumulate"` (the contained basin's accumulated value is added
+  at the containing domain's outlet and routed downstream through the
+  containing basin's extensive network). Containment does not appear
+  in `nexus_registry` because no flow crosses a hydro nexus between
+  the two basins.
 - **Deprecation notice:** A future release will require that `hy_topo` objects
   have unique `id` values (one row per catchment). Non-dendritic connectivity
   with duplicated ids in a toid-based edge list will need to be represented as

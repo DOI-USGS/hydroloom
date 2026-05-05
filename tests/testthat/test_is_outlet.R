@@ -1,9 +1,9 @@
-test_that("is_outlet detects canonical numeric sentinel", {
+test_that("is_outlet detects canonical numeric reserved value", {
   x <- data.frame(id = 1:4, toid = c(2, 3, 4, 0))
   expect_equal(hydroloom:::is_outlet(x), c(FALSE, FALSE, FALSE, TRUE))
 })
 
-test_that("is_outlet detects canonical character sentinel", {
+test_that("is_outlet detects canonical character reserved value", {
   x <- data.frame(id = c("a", "b", "c"), toid = c("b", "c", ""))
   expect_equal(hydroloom:::is_outlet(x), c(FALSE, FALSE, TRUE))
 })
@@ -18,7 +18,7 @@ test_that("is_outlet detects implicit absence", {
   expect_equal(hydroloom:::is_outlet(x), c(FALSE, FALSE, TRUE))
 })
 
-test_that("is_outlet detects foreign sentinel", {
+test_that("is_outlet detects foreign reserved value", {
   x <- data.frame(id = 1:3, toid = c(2, 3, -1))
   expect_equal(hydroloom:::is_outlet(x), c(FALSE, FALSE, TRUE))
 })

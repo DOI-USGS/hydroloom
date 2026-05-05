@@ -3,9 +3,10 @@ future_available <- function() {
     inherits(future::plan(), "sequential")) NULL else "future"
 }
 
-# Writer-side helper: returns the canonical outlet sentinel for the table's id
-# type. Used when a function needs to fill in a value for a row that has no
-# downstream (e.g., add_toids assigning toid to disconnected segments). For
+# Writer-side helper: returns the reserved outlet `toid` value for the table's
+# id type (the canonical hydroloom marker — `0` for numeric ids, `""` for
+# character). Used when a function needs to fill in a value for a row that has
+# no downstream (e.g., add_toids assigning toid to disconnected segments). For
 # outlet *detection*, use is_outlet() instead.
 get_outlet_value <- function(x) {
   if (inherits(x$id, "character")) {
@@ -17,8 +18,8 @@ get_outlet_value <- function(x) {
 
 # Detector: TRUE for rows whose toid does not refer to any id in the table.
 # A row whose downstream is not part of the network is, by definition, an
-# outlet. Independent of any sentinel convention: tolerates 0, "", NA,
-# implicit absence, foreign sentinels, or unique-per-outlet ids.
+# outlet. Independent of any reserved-value convention: tolerates 0, "", NA,
+# implicit absence, foreign reserved values, or unique-per-outlet ids.
 is_outlet <- function(x) {
   !x$toid %in% x$id
 }

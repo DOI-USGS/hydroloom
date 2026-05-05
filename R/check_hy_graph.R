@@ -77,8 +77,8 @@ check_hy_outlets <- function(x, fix = FALSE) {
 
   if (fix) {
 
-    # Canonicalize outlet markers to the sentinel value. This destroys any
-    # unique-per-outlet identifiers in the table -- intentional under
+    # Canonicalize outlet markers to the reserved outlet value. This destroys
+    # any unique-per-outlet identifiers in the table -- intentional under
     # explicit fix = TRUE.
     check <- is_outlet(x)
 
