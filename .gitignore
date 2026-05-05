@@ -11,3 +11,5 @@ revdep/
 CLAUDE.md
 dev
 vignettes/*.html
+docs/
+

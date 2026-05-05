@@ -218,8 +218,8 @@ levelpath enrichment; `add_streamorder()` adds the
 `stream_calculator` column that `decompose_network()` consults when
 `stem_threshold` is supplied (see `Extensive Network selection`
 below). For data carrying a `StreamCalc` column from NHDPlus, the
-column is already canonicalized by `hy()` and `add_streamorder()`
-becomes a no-op; for other sources it is required.
+column is already canonicalized by `hy()` to `stream_calculator`,
+so skip `add_streamorder()`; for other sources it is required.
 
 ```{r decompose}
 library(hydroloom)
@@ -229,8 +229,7 @@ g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
 src <- hy(g) |>
   add_toids(return_dendritic = TRUE) |>
   add_levelpaths(name_attribute = "GNIS_ID",
-    weight_attribute = "arbolate_sum") |>
-  add_streamorder(status = FALSE)
+    weight_attribute = "arbolate_sum")
 
 d <- decompose_network(src)
 ```
