@@ -37,3 +37,4 @@ cran-comments.md
 revdep
 .claude
 CLAUDE.md
+^dev$

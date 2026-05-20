@@ -17,7 +17,7 @@ Unlike the other class pages on this index, \code{hy_flownetwork} does
 key, and a \code{hy_flownetwork} does not pass \code{\link[=is.hy]{is.hy()}}. The user-facing
 producer \code{\link[=to_flownetwork]{to_flownetwork()}} drops the \code{orig_names} round-trip
 metadata that \code{hy} carries; a \code{hy_flownetwork} produced by \code{\link[=hy]{hy()}} or
-\code{\link[=classify_hy]{classify_hy()}} from a non-dendritic data.frame may still have
+\code{classify_hy()} from a non-dendritic data.frame may still have
 \code{orig_names} attached internally so name-aligned dispatch can
 restore the user's column names on return.
 }
