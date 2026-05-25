@@ -250,7 +250,7 @@ NULL
 #' key, and a `hy_flownetwork` does not pass [is.hy()]. The user-facing
 #' producer [to_flownetwork()] drops the `orig_names` round-trip
 #' metadata that `hy` carries; a `hy_flownetwork` produced by [hy()] or
-#' [classify_hy()] from a non-dendritic data.frame may still have
+#' `classify_hy()` from a non-dendritic data.frame may still have
 #' `orig_names` attached internally so name-aligned dispatch can
 #' restore the user's column names on return.
 #'

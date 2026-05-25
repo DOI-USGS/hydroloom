@@ -19,7 +19,6 @@ License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Config/testthat/parallel: true
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-US
