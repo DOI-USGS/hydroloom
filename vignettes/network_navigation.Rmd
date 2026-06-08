@@ -34,7 +34,7 @@ library(sf)
 oldoption <- options(scipen = 9999)
 ```
 
-# Network Navigation
+# Navigation Modes
 
 Network navigation traverses connections according to a set of rules. There are four primary modes: upstream or downstream, and along the main path only or including branches. In `hydroloom`, these are `upmain`, `downmain`, `up`, and `down`. Additional rules — a maximum distance, for example — can be applied to any of the four.
 
@@ -179,8 +179,8 @@ hydroloom_name_definitions[names(hydroloom_name_definitions) == "downmain"]
 ```
 Building on the non-dendritic network example from `vignette("hydroloom")`, the same five-edge network can carry `upmain` and `downmain` attributes. The network has one divergence and one confluence. Where `id` 1 appears twice it has exactly one `downmain == TRUE` (the row connecting to 4), and where `toid` 5 appears twice it has exactly one `upmain == TRUE` (the row from 4). This is the same divergence case study used in `vignette("non-dendritic")`, where it is shown in `hy_node`, `hy_topo`, and `hy_flownetwork` form.
 
-<div class = "row">
-<div class = "column">
+::: {.row}
+::: {.column}
 
 ```{r dend_fig, echo=FALSE}
 x <- c(2, 2, 3, 2, 2)
@@ -204,9 +204,8 @@ plot(a, b, col = NA)
 make_edges()
 par(oldpar)
 ```
-</div>
-
-<div class = "column">
+:::
+::: {.column}
 
 | id | toid | upmain | downmain |
 |----|------|--------|----------|
@@ -217,8 +216,8 @@ par(oldpar)
 | 4 | 5 | TRUE | TRUE |
 | 5 | 0 | TRUE | TRUE |
 
-</div>
-</div>
+:::
+:::
 
 `hydroloom` provides utilities to build this lightweight flownetwork format from a geometric network via `make_attribute_topology()`. `upmain` and `downmain` attributes can be constructed using `add_divergence()`, `add_levelpaths()`, and `to_flownetwork()`. The sample data already carries `divergence` and `levelpath` attributes, but reconstructing them is shown below.
 

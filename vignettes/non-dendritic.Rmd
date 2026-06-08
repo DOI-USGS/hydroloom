@@ -183,7 +183,7 @@ flow_net_with_div <- add_divergence(flow_net,
   major_types = unique(flow_net$FTYPE))
 
 dend <- add_toids(flow_net_with_div, return_dendritic = TRUE)
-nondend <- add_toids(flow_net_with_div, return_dendritic = FALSE)
+nondend <- add_toids(hy(flow_net_with_div), return_dendritic = FALSE)
 
 nrow(dend)
 nrow(nondend)
