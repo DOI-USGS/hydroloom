@@ -1,3 +1,16 @@
+hydroloom 1.2.1
+==========
+
+Maintenance release completing the USGS official software release
+review (#72). No package code changed.
+
+- Cleaned up vignette messages noted in review (#96).
+- Web service walkthroughs are now website-only articles at
+  https://doi-usgs.github.io/hydroloom/; `hydroloom.Rmd` is the only
+  installed vignette.
+- Citation updated to the software release DOI,
+  https://doi.org/10.5066/P16RS3UZ.
+
 hydroloom 1.2.0
 ==========
 

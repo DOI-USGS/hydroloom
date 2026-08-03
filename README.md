@@ -25,8 +25,8 @@ require low level network and network data manipulation utilities.
 
 ## Citation:
 
-    Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics,
-    https://doi.org/10.5066/P9AQCUY0
+    Blodgett, D., 2026, hydroloom: Utilities to Weave Hydrologic Fabrics v1.2,
+    https://doi.org/10.5066/P16RS3UZ
 
 Hydroloom has support for attributes that can be seen in:
 
