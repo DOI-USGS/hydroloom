@@ -99,8 +99,10 @@ each captured by an S3 subclass of `hy`:
 `hy()` inspects the columns present in a data.frame and stamps the
 appropriate subclass automatically. `hy_capabilities()` reports which
 hydroloom functions are callable on a given object; it is demonstrated
-at each pipeline stage in `vignette("network_navigation")`. The
-non-dendritic divergence case study lives in `vignette("non-dendritic")`.
+at each pipeline stage in the [network navigation
+article](https://doi-usgs.github.io/hydroloom/articles/network_navigation.html).
+The non-dendritic divergence case study lives in the [non-dendritic
+networks article](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html).
 
 ## Representing Dendritic Network Topology
 
@@ -141,7 +143,7 @@ In `hydroloom`, edge-to-edge topology is referred to with "id and toid" attribut
 
 ## Representing Non-Dendritic Network Topology
 
-As discussed in the `vignette("non-dendritic")` vignette, a hydrologic flow network can be represented as an edge to edge (e.g. edge list) topology or an edge-node topology. In the case of dendritic networks, an edge list can be stored as a single "toid" attribute on each feature and nodes are redundant as there would be one and only one node for each feature. In non-dendritic networks, an edge list can include multiple "toid" attributes for each feature, necessitating a one to many relationship that can be difficult to interpret. Nevertheless, the U.S. National Hydrography Dataset uses an edge-list format in its "flow table" and the format is capable of storing non-dendritic feature topology.
+As discussed in the [non-dendritic networks article](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html), a hydrologic flow network can be represented as an edge to edge (e.g. edge list) topology or an edge-node topology. In the case of dendritic networks, an edge list can be stored as a single "toid" attribute on each feature and nodes are redundant as there would be one and only one node for each feature. In non-dendritic networks, an edge list can include multiple "toid" attributes for each feature, necessitating a one to many relationship that can be difficult to interpret. Nevertheless, the U.S. National Hydrography Dataset uses an edge-list format in its "flow table" and the format is capable of storing non-dendritic feature topology.
 
 Using a node topology to store a flow network, each feature flows from one and only one node and flows to one and only one node. This one to one relationship between features and their from and to nodes means that the topology fits in a table with one row per feature as is common practice in spatial feature data.
 
@@ -253,7 +255,8 @@ class(hy(fn_df))
 The `hy_node` form preserves both downstream paths from feature 1 via
 `fromnode`/`tonode`. The `hy_topo` form is dendritic and keeps only one
 downstream connection per id. The `hy_flownetwork` form preserves both
-paths by allowing `id` to repeat. See `vignette("non-dendritic")` for a
+paths by allowing `id` to repeat. See the [non-dendritic networks
+article](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html) for a
 worked case study showing how the secondary path is dropped during the
 `hy_node` -> `hy_topo` conversion and preserved in `hy_flownetwork`.
 

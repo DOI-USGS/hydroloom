@@ -213,7 +213,7 @@ try({
 
 This entire process of sorting the network and building topo_sort, levelpath, and derivative variables is wrapped in the nhdplusTools [`add_plus_network_attributes`](https://doi-usgs.github.io/nhdplusTools/reference/add_plus_network_attributes.html) function to provide performance and simplicity. It supports parallelization and will print status updates in the case when the input network is very large. `add_plus_network_attributes` returns NHDPlus attribute names (truncated per shapefile rules as is done in the NHDPlus database).
 
-The attributes described in this vignette assume that diversions in the network have zero flow such that diversions are treated as if they were headwaters. See the `vignette("non-dendritic")` for information about attributes that include connected divergences.
+The attributes described in this vignette assume that diversions in the network have zero flow such that diversions are treated as if they were headwaters. See the [non-dendritic networks article](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html) for information about attributes that include connected divergences.
 
 ```{r teardown, include=FALSE}
 options(oldoption)

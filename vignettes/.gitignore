@@ -1,5 +1,7 @@
-flow-table-fig.jpeg
-levelpath.gif
+articles/flow-table-fig.jpeg
+articles/levelpath.gif
+articles/*.html
+articles/*_files/
 
 /.quarto/
 **/*.quarto_ipynb

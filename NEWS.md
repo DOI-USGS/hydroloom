@@ -9,8 +9,8 @@ working -- the new classes are assigned automatically by `hy()`
 and by producer functions. See `?hy_topo`, `?hy_leveled`,
 `?hy_node`, and `?hy_flownetwork` for representation patterns,
 required columns, and conversion paths;
-`vignette("non-dendritic")` and `vignette("network_navigation")`
-provide end-to-end walkthroughs. Package developers should note
+the non-dendritic networks and network navigation articles at
+https://doi-usgs.github.io/hydroloom/ provide end-to-end walkthroughs. Package developers should note
 that returned objects now carry subclass attributes which are
 stripped by standard dplyr operations.
 
