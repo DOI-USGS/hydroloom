@@ -25,8 +25,8 @@ require low level network and network data manipulation utilities.
 
 ## Citation:
 
-    Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics,
-    https://doi.org/10.5066/P9AQCUY0
+    Blodgett, D., 2026, hydroloom: Utilities to Weave Hydrologic Fabrics v1.2,
+    https://doi.org/10.5066/P16RS3UZ
 
 Hydroloom has support for attributes that can be seen in:
 
@@ -47,7 +47,7 @@ Click to See Definitions
 | toid | indicates to the downstream id. May or may not be dendritic |
 | fromnode | indicates the node representing the nexus upstream of a catchment |
 | tonode | indicates the node representing the nexus downstream of a catchment |
-| divergence | indicates whether a catchment is not downstream of a diversion (0), the primary path downstream of a divergence (1), or a minor path downstream of a diversion (2). |
+| divergence | indicates whether a catchment is not downstream of a divergence (0), the primary path downstream of a divergence (1), or a diversion downstream of a divergence (2). |
 | divergence_fraction | Indicates the fraction of flow to be apportioned to a given diverted path. Should sum to 1 when considering all diverted flowlines downstream of a diversion. |
 | wbid | waterbody id |
 | total_da_sqkm | total drainage area at the outlet of a catchment |
@@ -63,13 +63,13 @@ Click to See Definitions
 | terminal_flag | 1 for network terminous 0 for within network |
 | terminal_id | id of terminal catchment for entire drainage basin |
 | start_flag | 1 for a headwater, 0 otherwise |
-| levelpath | provides an identifier for the collection of flowpaths that make up a single mainstem flowpath of a drainage basin |
+| levelpath | provides an identifier for the collection of flowlines that make up a single mainstem flowpath of a drainage basin |
 | up_levelpath | levelpath value of the upstream mainstem |
 | dn_levelpath | levelpath value of the downstream mainstem |
 | levelpath_outlet_id | id of outlet catchment of a levelpath |
 | stream_level | starting at 1 for coastal terminals and 4 for inland terminals increments by 1 for each smaller tributary level |
 | dn_stream_level | stream level of downstream mainstem network element |
-| stream_order | starting at 1 for headwaters increments by 1 for each larger tributary level, divergences adopt stream order from upstream but returning divergent network does not increment stream order |
+| stream_order | starting at 1 for headwaters increments by 1 for each larger tributary level, diversions adopt stream order from upstream but returning diverted network does not increment stream order |
 | stream_calculator | starting at 1 for headwaters and 0 along diverted paths increments by 1 for each larger tributary level, does no increment along diverted paths. Is equal to stream_order along the dendritic network |
 | feature_type | descriptive feature type moniker |
 | feature_type_code | compact feature type identifier |
@@ -164,6 +164,57 @@ a divergence.
 - graph representation facilitated by `make_index_ids()`
 - names are plural when referring to identifiers and singular when
   referring to a numerical attribute.
+
+### Build and release:
+
+Development happens on GitHub (DOI-USGS/hydroloom). Official builds and
+release candidates are produced on code.usgs.gov
+(code.usgs.gov/water/hydroloom) using GitLab CI.
+
+Vignettes use the `BUILD_VIGNETTES` environment variable to control code
+evaluation. Set `BUILD_VIGNETTES=TRUE` in a local `.Renviron` to build
+them with live code; without it every chunk renders as prose and code
+with no evaluated output. Only `vignettes/hydroloom.Rmd` ships to CRAN.
+Everything under `vignettes/articles/` is website-only — excluded from
+the source tarball by `.Rbuildignore` and built by pkgdown. A vignette
+that needs a web service or a large download belongs in
+`vignettes/articles/`.
+
+Local development does not require building the source package. Use
+`devtools::test()`, `devtools::check()`, and `devtools::document()`
+directly.
+
+Release candidates are built on code.usgs.gov. Push a branch named
+`rc/<version>` (e.g. `rc/1.2.1`) to trigger the GitLab CI pipeline,
+which runs three stages:
+
+1.  **check** — lightweight structural check with no tests, examples, or
+    vignettes. Gates the rest of the pipeline.
+2.  **build** — `R CMD build .` to produce the source tarball, which is
+    uploaded to the GitLab generic package registry.
+3.  **verify** — `R CMD check --as-cran` on the built tarball.
+
+Once the pipeline passes, download the tarball from the package registry
+and submit it to CRAN. The tarball that CRAN receives is the exact
+artifact that passed `--as-cran` in CI.
+
+### Release checklist:
+
+- All checks pass and code coverage is adequate
+- NEWS.md is up to date
+- Disclaimer is in released form
+- Version updated in `code.json`
+- Push `rc/<version>` branch to code.usgs.gov and confirm the pipeline
+  passes
+- Download tarball from the GitLab package registry and submit to CRAN
+- After CRAN acceptance:
+  - Ensure pkgdown is up to date
+  - Commit, push, and PR/MR changes
+  - Create release page and tag
+  - Attach CRAN tar.gz to release page
+  - Update DOI to point to release page
+  - Switch README disclaimer back to “dev” mode
+  - Bump version in DESCRIPTION
 
 # Disclaimer
 
