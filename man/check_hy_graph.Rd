@@ -4,7 +4,12 @@
 \alias{check_hy_graph}
 \title{Check hy Graph}
 \usage{
-check_hy_graph(x, loop_check = FALSE)
+check_hy_graph(
+  x,
+  loop_check = FALSE,
+  divergence_check = FALSE,
+  fraction_tol = 1e-06
+)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
@@ -15,16 +20,62 @@ a node in the network only once all its upstream neighbors have been
 visited. A complete depth first search is performed at each node, searching
 for paths that lead to an already visited (upstream) node. This algorithm
 is often referred to as "recursive depth first search".}
+
+\item{divergence_check}{logical if TRUE, \code{divergence} and, where
+present, \code{divergence_fraction} are checked for internal consistency as
+described in details.}
+
+\item{fraction_tol}{numeric tolerance used when checking that
+\code{divergence_fraction} sums to 1 across a \code{fromnode} group.}
 }
 \value{
-if no localized loops are found, returns TRUE. If localized
-loops are found, problem rows with a row number added.
+if no problems are found, returns TRUE. If problems are found,
+problem rows with a row number added. Rows returned by the divergence
+check carry a \code{divergence_issue} column naming the failed checks. Checks
+run in order and the first one to find a problem returns, so a single
+call reports one class of problem at a time.
 }
 \description{
-check that a network graph doesn't contain localized loops.
+check that a network graph doesn't contain localized loops
+and, optionally, that its divergence attributes are internally consistent.
 }
 \details{
 Required attributes: \code{id}, \code{toid}
+
+For \code{divergence_check}: \code{id}, \code{fromnode}, \code{divergence} and,
+conditionally, \code{divergence_fraction}.
+
+The divergence check enforces the attribute contract that
+\code{\link[=accumulate_downstream]{accumulate_downstream()}} documents and depends on: 0 indicates a
+catchment that is not downstream of a divergence, 1 the primary path
+downstream of a divergence, and 2 a diverted path. Total upstream
+routing needs a complete and consistent \code{divergence} attribute to avoid
+double counting through systems of diverted channels. Use
+\code{\link[=add_divergence]{add_divergence()}} to derive the attribute where it is absent.
+
+Divergence checks, grouping features by shared \code{fromnode}:
+
+\enumerate{
+\item \code{divergence} is populated and in \verb{\{0, 1, 2\}}.
+\item Every node with more than one outgoing feature has exactly one
+\code{divergence == 1}.
+\item No \code{divergence == 0} on a node with more than one outgoing
+feature.
+\item No \code{divergence} of 1 or 2 on a node with a single outgoing
+feature.
+}
+
+A node may have any number of diverted paths, so more than one
+\code{divergence == 2} at a node is valid and is not flagged.
+
+When a \code{divergence_fraction} attribute is present, three further checks
+apply:
+
+\enumerate{
+\item \code{divergence_fraction} is populated and in \verb{[0, 1]}.
+\item \code{divergence_fraction} sums to 1 across each \code{fromnode} group.
+\item No \code{divergence == 2} feature takes the entire flow.
+}
 }
 \examples{
 # notice that row 4 (id = 4, toid = 9) and row 8 (id = 9, toid = 4) is a loop.
@@ -32,4 +83,20 @@ test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
   toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 check_hy_graph(test_data)
 
+# node 2 splits to a main path (id 2) and a diversion (id 3) -- valid
+div_data <- data.frame(id = c(1, 2, 3, 4),
+  toid = c(2, 4, 0, 0),
+  fromnode = c(1, 2, 2, 3),
+  tonode = c(2, 3, 4, 5),
+  divergence = c(0, 1, 2, 0))
+check_hy_graph(div_data, divergence_check = TRUE)
+
+# demote the main path and node 2 has no primary outlet
+div_data$divergence[2] <- 2
+check_hy_graph(div_data, divergence_check = TRUE)
+
+}
+\seealso{
+\code{\link[=accumulate_downstream]{accumulate_downstream()}} for the routing that depends on this
+contract and \code{\link[=add_divergence]{add_divergence()}} for deriving the attribute.
 }
