@@ -1,3 +1,8 @@
+hydroloom 1.2.2
+==========
+
+Performance fix on `accumulate_downstream()`. No user-facing behavior change; output is identical.
+
 hydroloom 1.2.1
 ==========
 
