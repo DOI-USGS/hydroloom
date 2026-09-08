@@ -100,19 +100,16 @@ vignette](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html)
 for more.
 
 `hydroloom` was largely created from components of
-[nhdplusTools](https://doi.org/10.5066/P97AS8JD):
+[nhdplusTools](https://doi.org/10.5066/P97AS8JD), which is now published
+as [hydrogeofetch](https://doi-usgs.github.io/hydrogeofetch/):
 
     Blodgett, D., Johnson, J.M., 2022, nhdplusTools: Tools for
       Accessing and Working with the NHDPlus,
       https://doi.org/10.5066/P97AS8JD
 
-`hydroloom` will support some key functionality of `nhdplusTools`. Some
-components of `nhdplusTools` will be deprecated in a future version of
-the package in favor of the `hydroloom` implementation. In general,
-`nhdplusTools` will continue to support web service functionality and
-particulars of the NHDPlus data model. In contrast, `hydroloom` is
-intended to be more general and focused specifically on hydro fabric
-data functionality.
+`hydrogeofetch` supports web service access and the particulars of the
+NHDPlus data model. In contrast, `hydroloom` is intended to be more
+general and focused specifically on hydro fabric data functionality.
 
 `hydroloom` implements algorithms documented in:
 

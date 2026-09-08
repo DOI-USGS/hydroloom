@@ -1,7 +1,7 @@
 test_that("get location", {
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
 
-  source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+  source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 
   points <- sf::st_sfc(sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
     sf::st_point(c(-76.91711, 39.40884)),

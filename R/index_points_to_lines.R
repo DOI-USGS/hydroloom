@@ -149,8 +149,8 @@ rename_indexed <- function(x, matched) {
 #' @export
 #' @examples
 #' \donttest{
-#' if (require(nhdplusTools)) {
-#'   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+#' if (require(hydrogeofetch)) {
+#'   source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 #'
 #'   if (!any(lengths(sf::st_geometry(sample_flines)) > 1))
 #'     sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
@@ -412,9 +412,9 @@ index_points_to_lines.hy <- function(x, points,
 #' @export
 #' @examples
 #'
-#' if (require(nhdplusTools)) {
+#' if (require(hydrogeofetch)) {
 #'
-#'   source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
+#'   source(system.file("extdata/sample_data.R", package = "hydrogeofetch"))
 #'
 #'   waterbodies <- sf::st_transform(
 #'     sf::read_sf(sample_data, "NHDWaterbody"), 5070)

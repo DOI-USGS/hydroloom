@@ -1,10 +1,10 @@
 test_that("get_pfaf", {
 
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
 
-  work_dir <- nhdplusTools::nhdplusTools_data_dir()
+  work_dir <- hydrogeofetch::hydrogeofetch_data_dir()
 
-  source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
+  source(system.file("extdata/nhdplushr_data.R", package = "hydrogeofetch"))
 
   expect_message(hy(hr_data$NHDFlowline), "defaulting to comid rather than permanent_identifier")
 

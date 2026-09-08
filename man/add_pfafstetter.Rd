@@ -53,13 +53,13 @@ pfaf <- add_pfafstetter(x, max_level = 2)
 plot(pfaf["pf_level_2"], lwd = 2)
 
 \donttest{
-if (require(nhdplusTools)) {
+if (require(hydrogeofetch)) {
 
   # uses tempdir for example
-  work_dir <- nhdplusTools::nhdplusTools_data_dir(tempdir())
+  work_dir <- hydrogeofetch::hydrogeofetch_data_dir(tempdir())
 
   try(
-    source(system.file("extdata/nhdplushr_data.R", package = "nhdplusTools"))
+    source(system.file("extdata/nhdplushr_data.R", package = "hydrogeofetch"))
   )
   if (exists("hr_data")) {
     x <- hy(hr_data$NHDFlowline)
@@ -93,7 +93,7 @@ if (require(nhdplusTools)) {
     plot(hr_catchment["color"], border = NA, reset = FALSE)
     plot(sf::st_geometry(x), col = "blue", add = TRUE)
   } else {
-    message("nhdplusTools > 1.0 required for this example")
+    message("hydrogeofetch required for this example")
   }
 }
 }

@@ -93,8 +93,8 @@ measures) in the output.
 }
 \examples{
 \donttest{
-if (require(nhdplusTools)) {
-  source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+if (require(hydrogeofetch)) {
+  source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 
   if (!any(lengths(sf::st_geometry(sample_flines)) > 1))
     sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
