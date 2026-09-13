@@ -31,7 +31,7 @@ oldoption <- options(scipen = 9999)
 
 A common task in hydrologic network analysis is accumulating a catchment attribute along the network -- summing up a local quantity from headwaters to outlet. For example, adding up the drainage area of every catchment upstream of a given point to get total drainage area, or accumulating precipitation volume to get a basin-wide average.
 
-`accumulate_downstream()` provides three modes for this operation, each handling diversions (non-dendritic flow splits) differently. This article demonstrates all three modes using the sample data included with `hydroloom`. For background on non-dendritic network concepts, see `vignette("non-dendritic")`.
+`accumulate_downstream()` provides three modes for this operation, each handling diversions (non-dendritic flow splits) differently. This article demonstrates all three modes using the sample data included with `hydroloom`. For background on non-dendritic network concepts, see the [non-dendritic networks article](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html).
 
 # Sample data
 

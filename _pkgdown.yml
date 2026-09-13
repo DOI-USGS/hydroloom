@@ -1,6 +1,15 @@
 url: https://doi-usgs.github.io/hydroloom/
 template:
   bootstrap: 5
+articles:
+  - title: Vignettes
+    contents:
+    - hydroloom
+    - articles/advanced_network
+    - articles/non-dendritic
+    - articles/network_navigation
+    - articles/accumulate_downstream
+    - articles/flow-table
 reference:
   - title: hy S3 Object
     contents:

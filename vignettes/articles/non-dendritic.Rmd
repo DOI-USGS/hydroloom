@@ -29,7 +29,7 @@ oldoption <- options(scipen = 9999)
 
 # Introduction
 
-`vignette("hydroloom")` and `vignette("advanced_network")` cover the basics of network topology representation and the attributes that build on a strictly dendritic network. This vignette extends those topics to the `hydroloom` functionality that supports non-dendritic networks.
+`vignette("hydroloom")` and the [topological sort based network attributes article](https://doi-usgs.github.io/hydroloom/articles/advanced_network.html) cover the basics of network topology representation and the attributes that build on a strictly dendritic network. This vignette extends those topics to the `hydroloom` functionality that supports non-dendritic networks.
 
 The term "non-dendritic" refers to any network that does not follow a dendritic flow pattern. Typically that means one or more flowlines diverting from a primary flow path. Non-dendritic can also refer to endorheic basins nested within an otherwise dendritic basin — but this article addresses the diverted-flowline case.
 
@@ -141,7 +141,7 @@ x_fn[, c("id", "toid")]
 Both downstream paths from feature 1 are preserved.
 `hy_capabilities()` shows which functions are callable at each stage;
 that workflow is demonstrated end to end in
-`vignette("network_navigation")`.
+the [network navigation article](https://doi-usgs.github.io/hydroloom/articles/network_navigation.html).
 
 ## Bringing it all together
 

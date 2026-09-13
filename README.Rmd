@@ -32,8 +32,8 @@ Or for latest development: `remotes::install_github("doi-usgs/hydroloom")`
 ## Citation:
 
 ```
-Blodgett, D., 2023, hydroloom: Utilities to Weave Hydrologic Fabrics,
-https://doi.org/10.5066/P9AQCUY0
+Blodgett, D., 2026, hydroloom: Utilities to Weave Hydrologic Fabrics v1.2,
+https://doi.org/10.5066/P16RS3UZ
 ```
 
 Hydroloom has support for attributes that can be seen in:
@@ -127,6 +127,39 @@ Terms for rivers:
 - `hy` class tibble standardizes all attribute names in code.
 - graph representation facilitated by `make_index_ids()`
 - names are plural when referring to identifiers and singular when referring to a numerical attribute.
+
+### Build and release:
+
+Development happens on GitHub (DOI-USGS/hydroloom). Official builds and release candidates are produced on code.usgs.gov (code.usgs.gov/water/hydroloom) using GitLab CI.
+
+Vignettes use the `BUILD_VIGNETTES` environment variable to control code evaluation. Set `BUILD_VIGNETTES=TRUE` in a local `.Renviron` to build them with live code; without it every chunk renders as prose and code with no evaluated output. Only `vignettes/hydroloom.Rmd` ships to CRAN. Everything under `vignettes/articles/` is website-only — excluded from the source tarball by `.Rbuildignore` and built by pkgdown. A vignette that needs a web service or a large download belongs in `vignettes/articles/`.
+
+Local development does not require building the source package. Use `devtools::test()`, `devtools::check()`, and `devtools::document()` directly.
+
+Release candidates are built on code.usgs.gov. Push a branch named `rc/<version>` (e.g. `rc/1.2.1`) to trigger the GitLab CI pipeline, which runs three stages:
+
+1. **check** — lightweight structural check with no tests, examples, or vignettes. Gates the rest of the pipeline.
+2. **build** — `R CMD build .` to produce the source tarball, which is uploaded to the GitLab generic package registry.
+3. **verify** — `R CMD check --as-cran` on the built tarball.
+
+Once the pipeline passes, download the tarball from the package registry and submit it to CRAN. The tarball that CRAN receives is the exact artifact that passed `--as-cran` in CI.
+
+### Release checklist:
+
+- All checks pass and code coverage is adequate
+- NEWS.md is up to date
+- Disclaimer is in released form
+- Version updated in `code.json`
+- Push `rc/<version>` branch to code.usgs.gov and confirm the pipeline passes
+- Download tarball from the GitLab package registry and submit to CRAN
+- After CRAN acceptance:
+  - Ensure pkgdown is up to date
+  - Commit, push, and PR/MR changes
+  - Create release page and tag
+  - Attach CRAN tar.gz to release page
+  - Update DOI to point to release page
+  - Switch README disclaimer back to "dev" mode
+  - Bump version in DESCRIPTION
 
 ```{r disclaimer, child="DISCLAIMER.md", eval=TRUE}
 ```

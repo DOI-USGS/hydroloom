@@ -41,7 +41,7 @@ Network navigation traverses connections according to a set of rules. There are 
 `hydroloom` provides two functions for network navigation.
 
 1. `navigate_network_dfs()` requires the "flownetwork" representation of a hydrologic network (see `to_flownetwork()`) and returns ids encountered along the requested navigation as a list of contiguous paths.
-2. `navigate_hydro_network()` requires the nhdplus representation of a hydrologic network (see `vignette("advanced_network")`) and returns ids encountered along the requested navigation as a single vector.
+2. `navigate_hydro_network()` requires the nhdplus representation of a hydrologic network (see the [topological sort based network attributes article](https://doi-usgs.github.io/hydroloom/articles/advanced_network.html)) and returns ids encountered along the requested navigation as a single vector.
 
 Both functions accept the same navigation mode names: `upmain`, `downmain`, `up`, and `down`. `navigate_hydro_network()` also accepts the NHDPlus shorthand `UM`, `DM`, `UT`, and `DD`.
 
@@ -177,7 +177,7 @@ The definitions of `upmain` and `downmain` in the flow network context are worth
 hydroloom_name_definitions[names(hydroloom_name_definitions) == "upmain"]
 hydroloom_name_definitions[names(hydroloom_name_definitions) == "downmain"]
 ```
-Building on the non-dendritic network example from `vignette("hydroloom")`, the same five-edge network can carry `upmain` and `downmain` attributes. The network has one divergence and one confluence. Where `id` 1 appears twice it has exactly one `downmain == TRUE` (the row connecting to 4), and where `toid` 5 appears twice it has exactly one `upmain == TRUE` (the row from 4). This is the same divergence case study used in `vignette("non-dendritic")`, where it is shown in `hy_node`, `hy_topo`, and `hy_flownetwork` form.
+Building on the non-dendritic network example from `vignette("hydroloom")`, the same five-edge network can carry `upmain` and `downmain` attributes. The network has one divergence and one confluence. Where `id` 1 appears twice it has exactly one `downmain == TRUE` (the row connecting to 4), and where `toid` 5 appears twice it has exactly one `upmain == TRUE` (the row from 4). This is the same divergence case study used in the [non-dendritic networks article](https://doi-usgs.github.io/hydroloom/articles/non-dendritic.html), where it is shown in `hy_node`, `hy_topo`, and `hy_flownetwork` form.
 
 ::: {.row}
 ::: {.column}
