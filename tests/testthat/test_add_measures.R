@@ -26,9 +26,9 @@ test_that("reproduce new_hope", {
 
 test_that("mainstem", {
 
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
 
-  try(source(system.file("extdata", "3dhp_yahara_flowlines.R", package = "nhdplusTools")))
+  try(source(system.file("extdata", "3dhp_yahara_flowlines.R", package = "hydrogeofetch")))
 
   if (!grepl("geojson", sample_3dhp_data)) skip("data not available?")
 

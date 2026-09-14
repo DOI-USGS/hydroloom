@@ -7,8 +7,8 @@
 #' @returns sfc_POINT simple feature geometry list of length `nrow(indexes)`
 #' @export
 #' @examples
-#' if (require(nhdplusTools)) {
-#'   source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+#' if (require(hydrogeofetch)) {
+#'   source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 #'
 #'   indexes <- index_points_to_lines(sample_flines,
 #'     sf::st_sfc(sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),

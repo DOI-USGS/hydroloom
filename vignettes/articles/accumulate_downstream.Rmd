@@ -121,7 +121,7 @@ The example below demonstrates this with the mean annual precipitation attribute
 
 ```{r}
 suppressWarnings(
-ppt7100 <- nhdplusTools::get_catchment_characteristics(c("CAT_PPT7100_ANN", "TOT_PPT7100_ANN"), ids = x$COMID)
+ppt7100 <- hydrogeofetch::get_catchment_characteristics(c("CAT_PPT7100_ANN", "TOT_PPT7100_ANN"), ids = x$COMID)
 )
 
 ppt7100 <- tidyr::pivot_wider(ppt7100, names_from = "characteristic_id", values_from = "characteristic_value")

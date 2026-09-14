@@ -1,3 +1,10 @@
+hydroloom 1.2.2
+==========
+
+Performance fix on `accumulate_downstream()`. No user-facing behavior change; output is identical.
+
+`nhdplusTools` has been renamed `hydrogeofetch`. Examples, tests, and articles that pull sample data now suggest and source from `hydrogeofetch`, and package URLs point at the new repository.
+
 hydroloom 1.2.1
 ==========
 
@@ -120,11 +127,11 @@ hydroloom 1.0.0
 - Complete migration of nhdplusTools functions to hydroloom. #1
 - Support sorting non-dendritic network in `sort_network()`
 - Implemented non-dendritic network support in `add_toids()`
-- Implemented complete stream order / stream calculator attribute `add_streamorder()` and `add_streamcalculator()` https://github.com/DOI-USGS/nhdplusTools/issues/188
+- Implemented complete stream order / stream calculator attribute `add_streamorder()` and `add_streamcalculator()` https://github.com/DOI-USGS/hydrogeofetch/issues/188
 - Support for both numeric and character identifiers #2
 - Support for NHDPlus and NHD 24k naming schemes #5 `hydroloom_names()`
 - Support for linear indexing for lines that do not have measure attributes #6 `index_points_to_lines()`
 - Implemented creation of an attribute topology from a geometric network `make_attribute_topology()`
-- Added vignette showing how to work with the NHD flow table. https://github.com/DOI-USGS/nhdplusTools/issues/340 `vignette("flow-table")`
+- Added vignette showing how to work with the NHD flow table. https://github.com/DOI-USGS/hydrogeofetch/issues/340 `vignette("flow-table")`
 - Implement method to add divergence attribute to a non-dendritic network. `add_divergence()`
 - Implement basic graph and sophisticate loop detection algorithm #7 and #9. `check_hy_graph()`

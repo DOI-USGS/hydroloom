@@ -1,7 +1,7 @@
 test_that("index to waterbodies", {
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
 
-  source(system.file("extdata/sample_data.R", package = "nhdplusTools"))
+  source(system.file("extdata/sample_data.R", package = "hydrogeofetch"))
 
   wb <- sf::read_sf(sample_data, "NHDWaterbody")
   gage <- sf::read_sf(sample_data, "Gage")
@@ -53,15 +53,15 @@ test_that("index to waterbodies", {
 
 sr <- units::set_units(0.1, "degrees")
 
-if (requireNamespace("nhdplusTools", quietly = TRUE)) {
-  source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+if (requireNamespace("hydrogeofetch", quietly = TRUE)) {
+  source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 
   sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
 }
 
 test_that("point indexing to nearest existing node works as expected", {
 
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
   if (!requireNamespace("lwgeom", quietly = TRUE)) skip("Missing lwgeom")
 
   flines_in <- sample_flines
@@ -121,7 +121,7 @@ test_that("point indexing to nearest existing node works as expected", {
 
 test_that("point indexing works without measures", {
 
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
 
   flines_in <- sample_flines
 
@@ -141,7 +141,7 @@ test_that("point indexing works without measures", {
 
 test_that("point indexing to for multiple points works", {
 
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
   if (!requireNamespace("lwgeom", quietly = TRUE)) skip("Missing lwgeom")
   flines_in <- sample_flines
 
@@ -256,9 +256,9 @@ test_that("no duplicates when using precision", {
 
 test_that("disambiguate", {
 
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
 
-  source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+  source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 
   points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
     sf::st_point(c(-76.91711, 39.40884)),
@@ -316,9 +316,9 @@ test_that("disambiguate", {
 })
 
 test_that("3dhp", {
-  if (!requireNamespace("nhdplusTools", quietly = TRUE)) skip("Missing nhdplusTools")
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
 
-  try(source(system.file("extdata", "3dhp_yahara_flowlines.R", package = "nhdplusTools")))
+  try(source(system.file("extdata", "3dhp_yahara_flowlines.R", package = "hydrogeofetch")))
 
   if (!grepl("geojson", sample_3dhp_data)) skip("data not available?")
 
