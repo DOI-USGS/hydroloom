@@ -11,11 +11,11 @@ vignette: >
 ```{r setup, include = FALSE}
 local <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE")
 
-if (!requireNamespace("nhdplusTools", quietly = TRUE)) local <- FALSE
+if (!requireNamespace("hydrogeofetch", quietly = TRUE)) local <- FALSE
 if (!requireNamespace("mapview", quietly = TRUE)) local <- FALSE
 
 if (local) {
-  nhdplusTools::nhdplusTools_data_dir(file.path(tempdir(), "nhd_cache"))
+  hydrogeofetch::hydrogeofetch_data_dir(file.path(tempdir(), "nhd_cache"))
 }
 
 oldoption <- options(scipen = 9999)
@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-This article demonstrates how to work with the NHD flow table using nhdplusTools and hydroloom.
+This article demonstrates how to work with the NHD flow table using hydrogeofetch and hydroloom.
 
 In this first block, we will download, open, and filter the data to prepare to work with it as a network.
 
@@ -39,7 +39,7 @@ In this first block, we will download, open, and filter the data to prepare to w
 library(hydroloom)
 library(dplyr)
 
-dir <- nhdplusTools::download_nhd(nhdplusTools::nhdplusTools_data_dir(),
+dir <- hydrogeofetch::download_nhd(hydrogeofetch::hydrogeofetch_data_dir(),
   "1908", TRUE)
 fs <- list.files(dir, pattern = ".*1908.*.gdb", full.names = TRUE)
 
@@ -105,5 +105,5 @@ Looking for help or want more in this vignette? Submit an issue at: https://gith
 ```{r teardown, include=FALSE}
 options(oldoption)
 
-unlink(nhdplusTools::nhdplusTools_data_dir(), recursive = TRUE)
+unlink(hydrogeofetch::hydrogeofetch_data_dir(), recursive = TRUE)
 ```

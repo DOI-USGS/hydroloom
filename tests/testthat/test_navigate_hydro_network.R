@@ -1,5 +1,5 @@
 #nolint start
-# source(system.file("extdata", "sample_flines.R", package = "nhdplusTools"))
+# source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 #
 # x <- sf::st_drop_geometry(sample_flines[, 1:40])
 #
