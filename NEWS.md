@@ -3,6 +3,15 @@ hydroloom 1.2.2
 
 Performance fix on `accumulate_downstream()`. No user-facing behavior change; output is identical.
 
+Correctness fix on `add_pathlength()` for networks with character ids. The
+terminal test was `toid != 0`, which recognizes only the numeric outlet
+sentinel. With character ids the sentinel is `""`, the comparison is made as
+strings and is `TRUE`, so terminals took the accumulating branch, indexed with
+`NA`, and the `NA` propagated up every path above them — the whole
+`pathlength_km` column came back `NA`. Now uses `get_outlet_value()`, as
+`add_streamorder()` and `add_levelpaths()` do. Networks with numeric ids are
+unaffected.
+
 `nhdplusTools` has been renamed `hydrogeofetch`. Examples, tests, and articles that pull sample data now suggest and source from `hydrogeofetch`, and package URLs point at the new repository.
 
 hydroloom 1.2.1

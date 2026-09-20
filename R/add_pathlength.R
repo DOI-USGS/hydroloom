@@ -59,9 +59,11 @@ add_pathlength.hy_topo <- function(x) {
 
   toids <- match(x$toid, x$id)
 
+  out_val <- get_outlet_value(x)
+
   for (i in seq_along(toid)) {
     tid <- toid[i]
-    if (tid != 0) {
+    if (tid != out_val) {
 
       pathlength_km[i] <- length_km[toids[i]] + pathlength_km[toids[i]]
 
