@@ -1,6 +1,15 @@
 hydroloom 1.2.2
 ==========
 
+Correctness fix on `make_node_topology()` for dendritic networks. Outlet
+`tonode`s were seeded from `max(non-outlet tonode) + 1`. When the highest
+`fromnode`s belonged to outlets (whose `tonode` is NA and excluded from that
+max), the seed fell inside the `fromnode` range and a terminal flowline's
+`tonode` collided with another feature's `fromnode`, fabricating a connection
+that `add_toids()` would then rediscover. Outlet `tonode`s are now seeded above
+every assigned node (`max(c(fromnode, tonode))`), so terminals keep independent
+pendant nodes. Observed on the Alaska reference network (2 of 2,122 outlets).
+
 Performance fix on `accumulate_downstream()`. No user-facing behavior change; output is identical.
 
 Correctness fix on `add_pathlength()` for networks with character ids. The
