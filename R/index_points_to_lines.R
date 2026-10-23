@@ -114,11 +114,19 @@ rename_indexed <- function(x, matched) {
 #'
 #' `search radius` is still used with this option but `max_matches` is overridden.
 #'
-#' @returns data.frame with up to five columns, point_id, id, aggregate_id,
-#' aggregate_id_measure, and offset. point_id is the row or list element in the
-#' point input. If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
+#' @param aggregate_ids vector of aggregate_ids corresponding to the aggregate_id
+#' field of `x` of the same length and order as `points`. If included, index
+#' searching for each point is constrained to the flowlines that carry its
+#' aggregate_id, so a referent on a tributary is placed on the tributary and not
+#' the receiving river. Exclusive with `ids`.
+#'
+#' @returns data.frame with up to six columns, point_id, id, id_measure,
+#' aggregate_id, aggregate_id_measure, and offset. point_id is the row or list
+#' element in the point input. id_measure is the interpolative measure along the
+#' matched flowline (0 at the outlet, 100 at the inlet) and is always returned.
+#' If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
 #' it will not be included in the output. If from and to measures are not included
-#' for each id in x, measures will not be included in the output.
+#' for each id in x, aggregate measures will not be included in the output.
 #'
 #' @details
 #'
@@ -187,7 +195,8 @@ index_points_to_lines <- function(x, points,
                                   search_radius = NULL,
                                   precision = NA,
                                   max_matches = 1,
-                                  ids = NULL) {
+                                  ids = NULL,
+                                  aggregate_ids = NULL) {
 
   UseMethod("index_points_to_lines")
 
@@ -199,7 +208,8 @@ index_points_to_lines.data.frame <- function(x, points,
                                              search_radius = NULL,
                                              precision = NA,
                                              max_matches = 1,
-                                             ids = NULL) {
+                                             ids = NULL,
+                                             aggregate_ids = NULL) {
 
   x <- hy(x)
 
@@ -207,7 +217,8 @@ index_points_to_lines.data.frame <- function(x, points,
     search_radius = search_radius,
     precision = precision,
     max_matches = max_matches,
-    ids = ids)
+    ids = ids,
+    aggregate_ids = aggregate_ids)
 
   rename_indexed(x, matched)
 
@@ -219,9 +230,41 @@ index_points_to_lines.hy <- function(x, points,
                                      search_radius = NULL,
                                      precision = NA,
                                      max_matches = 1,
-                                     ids = NULL) {
+                                     ids = NULL,
+                                     aggregate_ids = NULL) {
 
   check_names(x, c(id), "index_points_to_lines")
+
+  if (!is.null(aggregate_ids)) {
+    if (!is.null(ids)) stop("aggregate_ids and ids are exclusive")
+
+    if (!aggregate_id %in% names(x))
+      stop("aggregate_ids provided but x has no aggregate_id")
+
+    if (length(aggregate_ids) != length(st_geometry(points)))
+      stop("aggregate_ids input must be 1:1 with points")
+
+    point_ids <- seq_along(st_geometry(points))
+
+    matched <- lapply(unique(aggregate_ids), function(a) {
+      in_group <- aggregate_ids == a
+
+      group_matched <- index_points_to_lines(
+        filter(x, .data$aggregate_id == a),
+        st_geometry(points)[in_group],
+        search_radius = search_radius,
+        precision = precision,
+        max_matches = max_matches)
+
+      group_matched$point_id <- point_ids[in_group][group_matched$point_id]
+
+      group_matched
+    })
+
+    matched <- bind_rows(matched)
+
+    return(matched[order(matched$point_id), , drop = FALSE])
+  }
 
   in_crs <- st_crs(points)
 
@@ -360,28 +403,30 @@ index_points_to_lines.hy <- function(x, points,
 
   matched <- select(matched, point_id, node = "nn.idx", offset = "nn.dists", id)
 
-  select_vec <- c("index")
-  select_vec2 <- c(point_id, id, offset)
+  x <- x |>
+    group_by(.data$L1) |>
+    add_len() |>
+    ungroup()
+
+  select_vec <- c("index", id_measure)
+  select_vec2 <- c(point_id, id, id_measure, offset)
 
   if (all(c(aggregate_id_from_measure, aggregate_id) %in% names(fline_atts))) {
     x <- x |>
-      group_by(.data$L1) |>
-      add_len() |>
       mutate(aggregate_id_measure = round(
         .data$aggregate_id_from_measure +
           (.data$aggregate_id_to_measure - .data$aggregate_id_from_measure) *
             (.data$id_measure / 100),
         digits = 4)) |>
-      ungroup() |>
       distinct()
 
-    select_vec <- c("index", aggregate_id, aggregate_id_measure)
-    select_vec2 <- c(point_id, id, aggregate_id, aggregate_id_measure, offset)
+    select_vec <- c("index", id_measure, aggregate_id, aggregate_id_measure)
+    select_vec2 <- c(point_id, id, id_measure, aggregate_id, aggregate_id_measure, offset)
 
   } else if (aggregate_id %in% names(x)) {
 
-    select_vec <- c("index", aggregate_id)
-    select_vec2 <- c(point_id, id, aggregate_id, offset)
+    select_vec <- c("index", id_measure, aggregate_id)
+    select_vec2 <- c(point_id, id, id_measure, aggregate_id, offset)
 
   }
 
