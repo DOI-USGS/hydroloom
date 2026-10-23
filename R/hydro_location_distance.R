@@ -1,0 +1,516 @@
+##### hydro_location_distance.R -- referent distances along mainstems #####
+# The chain frame and the three exported functions it underlies. Nothing
+# here reads coordinates. See the "Internal: the chain frame" and
+# "Step 3. Referent distances" sections of the mainstem translation
+# workplan for the design.
+
+#' Within-chain downstream link for a hy_topo frame
+#' @description For each row, the id of the next flowline down within the
+#' same mainstem: toid where the row toid names has the same aggregate_id,
+#' NA otherwise.
+#' @param x data.frame with id, toid, aggregate_id
+#' @returns vector of links parallel to x, NA at chain bottoms
+#' @noRd
+chain_link_topo <- function(x) {
+
+  agg <- x$aggregate_id
+
+  m <- match(x$toid, x$id)
+
+  same <- !is.na(m) & !is.na(agg) & !is.na(agg[m]) & agg == agg[m]
+
+  link <- x$toid
+  link[!same] <- NA
+
+  link
+}
+
+#' Within-chain downstream link for a hy_node frame
+#' @description For each row, the id of the row in the same chain whose
+#' fromnode equals this row's tonode: a join on (aggregate_id, tonode) to
+#' (aggregate_id, fromnode).
+#' @param x data.frame with id, fromnode, tonode, aggregate_id
+#' @returns vector of links parallel to x, NA at chain bottoms
+#' @noRd
+chain_link_node <- function(x) {
+
+  key_down <- paste(x$aggregate_id, x$tonode)
+  key_up   <- paste(x$aggregate_id, x$fromnode)
+
+  m <- match(key_down, key_up)
+
+  link <- x$id[m]
+  link[is.na(x$aggregate_id)] <- NA
+
+  link
+}
+
+#' Build the chain frame
+#' @description The ordered flowlines of each identified mainstem, with
+#' cumulative kilometers from the bottom flowline present. Reads no
+#' geometry. See the "Internal: the chain frame" section of the workplan.
+#' @param x hy_topo (id, toid, aggregate_id, length_km) or hy_node
+#' (fromnode, tonode in place of toid). Rows with NA aggregate_id are
+#' dropped. If length_km is absent and x is sf, st_length() supplies it.
+#' @returns tibble with id, aggregate_id, topo_sort, length_km, link,
+#' from_km, to_km, one row per identified flowline, ordered bottom first
+#' within each mainstem.
+#' @noRd
+chain_frame <- function(x) {
+
+  if (inherits(x, "hy_flownetwork"))
+    stop("chain_frame() needs a unique link per flowline; a hy_flownetwork ",
+      "has a duplicated id where one flowline has two downstream rows. ",
+      "Drop divergence == 2 rows first.", call. = FALSE)
+
+  check_names(x, aggregate_id, "chain_frame")
+
+  if (!length_km %in% names(x)) {
+    if (inherits(x, "sf")) {
+      x[[length_km]] <- as.numeric(units::set_units(sf::st_length(x),
+        "km", mode = "standard"))
+    } else {
+      stop("chain_frame() requires length_km, or an sf x to measure it from.",
+        call. = FALSE)
+    }
+  }
+
+  if (inherits(x, "hy_node")) {
+    link <- chain_link_node(x)
+  } else {
+    link <- chain_link_topo(x)
+  }
+
+  fr <- as_tibble(sf::st_drop_geometry(x))
+  fr$link <- link
+
+  fr <- fr[!is.na(fr$aggregate_id), c(id, aggregate_id, length_km, "link",
+    intersect(topo_sort, names(fr)))]
+
+  if (!topo_sort %in% names(fr)) {
+
+    sort_in <- data.frame(id = fr$id, toid = fr$link)
+    sort_in$toid[is.na(sort_in$toid)] <- get_outlet_value(sort_in)
+
+    sorted <- sort_network_impl(sort_in)
+
+    fr$topo_sort <- match(fr$id, rev(sorted$id))
+  }
+
+  fr <- arrange(group_by(fr, .data$aggregate_id), .data$topo_sort)
+
+  fr <- mutate(fr,
+    from_km = cumsum(lag(.data$length_km, default = 0)),
+    to_km = .data$from_km + .data$length_km)
+
+  fr <- ungroup(fr)
+
+  broken <- check_chain_continuity(fr)
+
+  if (length(broken) > 0)
+    stop("the chain frame is not continuous on mainstem(s): ",
+      paste(broken, collapse = ", "),
+      ".\n  Each flowline's within-chain link must be the id of the one ",
+      "below it. A missing flowline, a toid down a minor path, one ",
+      "mainstem id on both branches of a divergence, or two runs given ",
+      "one id breaks this. Fix how x was assembled.", call. = FALSE)
+
+  fr
+}
+
+#' Continuity check over an ordered chain frame
+#' @description After ordering bottom first, each flowline's within-chain
+#' link must be the id of the flowline before it, the bottom row excepted
+#' (link NA). One shifted comparison per chain, vectorized over all rows.
+#' @param fr ordered chain frame (grouped output of chain_frame, ungrouped)
+#' @returns character vector of aggregate_ids that fail the check
+#' @noRd
+check_chain_continuity <- function(fr) {
+
+  by_chain <- split(seq_len(nrow(fr)), fr$aggregate_id)
+
+  bad <- vapply(by_chain, function(rows) {
+
+    link <- fr$link[rows]
+    ids  <- fr$id[rows]
+
+    # bottom first: each link should be the id of the row before it
+    expect <- c(NA, ids[-length(ids)])
+
+    bottom_ok <- is.na(link[1])
+    rest_ok <- all(link[-1] == expect[-1])
+
+    !(bottom_ok && isTRUE(rest_ok))
+
+  }, logical(1))
+
+  names(by_chain)[bad]
+}
+
+
+#' Confluences of identified mainstems
+#'
+#' @description Identifies each confluence of two identified mainstems as a
+#' hydrolocation on the receiving mainstem at the outlet of the tributary.
+#' A confluence exists where the bottom flowline of a tributary mainstem
+#' connects downstream to a flowline on a different identified mainstem; the
+#' point is anchored to that downstream flowline, which the link always
+#' names and which is present even when the receiving mainstem is truncated
+#' just above the node. Reads no coordinates.
+#'
+#' This is the `hydrolocation` feature type of OGC 25-045 with `mainstem_id`
+#' as `aggregate_id` and `link` as `hydro_location_id`. Each identified
+#' mainstem yields at most one confluence. A tributary whose downstream
+#' connection is a diversion (`divergence == 2`) is dropped with a warning.
+#'
+#' @param x `hy_topo` or `hy_node` carrying `aggregate_id` on identified
+#' flowlines, or a data.frame coercible with [hy()].
+#' @returns data.frame with one row per confluence: `aggregate_id` (the
+#' receiving mainstem), `hydro_location_id` (the tributary), `id` (the
+#' flowline below the node on the receiving mainstem) and `id_measure`
+#' (100).
+#' @name get_confluences
+#' @export
+get_confluences <- function(x) {
+  UseMethod("get_confluences")
+}
+
+#' @name get_confluences
+#' @export
+get_confluences.data.frame <- function(x) {
+  hy_as_dataframe(x, "get_confluences")
+}
+
+#' @name get_confluences
+#' @export
+get_confluences.hy <- function(x) {
+  hy_classify_and_redispatch(x, "get_confluences", "hy_topo or hy_node",
+    hy_guidance_topo)
+}
+
+#' @name get_confluences
+#' @export
+get_confluences.hy_topo <- function(x) {
+
+  # the frame's continuity check makes the bottom flowline unique per
+  # mainstem, so each tributary yields at most one confluence
+  chain_frame(x)
+
+  agg <- x$aggregate_id
+  m <- match(x$toid, x$id)
+
+  rows <- !is.na(m) & !is.na(agg) & !is.na(agg[m]) & agg != agg[m]
+
+  if (divergence %in% names(x)) {
+    minor <- !is.na(x$divergence[m]) & x$divergence[m] == 2
+    if (any(rows & minor))
+      warning("tributary flowline(s) ", paste(x$id[rows & minor], collapse = ", "),
+        " connect down a divergence (divergence == 2); dropped.",
+        call. = FALSE)
+    rows <- rows & !minor
+  }
+
+  get_confluences_rows(agg[m[rows]], agg[rows], x$id[m[rows]])
+}
+
+#' @name get_confluences
+#' @export
+get_confluences.hy_node <- function(x) {
+
+  # continuity check: makes the bottom flowline unique per mainstem
+  chain_frame(x)
+
+  # bottom rows of each identified chain (within-chain link NA)
+  link <- chain_link_node(x)
+  bottoms <- !is.na(x$aggregate_id) & is.na(link)
+
+  r_agg  <- x$aggregate_id[bottoms]
+  r_node <- x$tonode[bottoms]
+  r_id   <- x$id[bottoms]
+
+  # candidates: identified flowlines of another mainstem starting at the node
+  cand <- x[!is.na(x$aggregate_id), ]
+
+  out_agg <- out_hl <- out_id <- vector("list", length(r_id))
+
+  for (i in seq_along(r_id)) {
+
+    at_node <- cand$fromnode == r_node[i] & cand$aggregate_id != r_agg[i]
+    if (!any(at_node)) next
+
+    sub <- cand[at_node, ]
+
+    # resolve to the flowline whose mainstem enters the node: the one whose
+    # (aggregate_id, node) also appears as a tonode on that mainstem
+    node_key <- paste(sub$aggregate_id, r_node[i])
+    enters <- node_key %in% paste(cand$aggregate_id, cand$tonode)
+
+    if (sum(enters) == 1) {
+      sub <- sub[enters, ]
+    } else if (nrow(sub) > 1) {
+      warning("tributary ", r_agg[i], " enters a node with more than one ",
+        "candidate receiver; dropped.", call. = FALSE)
+      next
+    }
+
+    out_agg[[i]] <- sub$aggregate_id[1]
+    out_hl[[i]]  <- r_agg[i]
+    out_id[[i]]  <- sub$id[1]
+  }
+
+  keep <- !vapply(out_id, is.null, logical(1))
+
+  get_confluences_rows(unlist(out_agg[keep]), unlist(out_hl[keep]),
+    unlist(out_id[keep]))
+}
+
+#' Assemble the confluence output table
+#' @noRd
+get_confluences_rows <- function(aggregate_id, hydro_location_id, id) {
+
+  tibble(aggregate_id = aggregate_id,
+    hydro_location_id = hydro_location_id,
+    id = id,
+    id_measure = rep(100, length(id)))
+}
+
+#' Kilometer value of positions in a chain frame
+#' @description A position (id, id_measure) is at from_km + length_km *
+#' id_measure / 100. Joins by id; positions whose id is not in the frame
+#' get NA.
+#' @param id vector of flowline ids
+#' @param id_measure vector of interpolative measures (0-100)
+#' @param fr chain frame
+#' @returns list with km (numeric) and aggregate_id (the mainstem each id
+#' is on), parallel to id
+#' @noRd
+position_to_km <- function(id, id_measure, fr) {
+
+  m <- match(id, fr$id)
+
+  km <- fr$from_km[m] + fr$length_km[m] * id_measure / 100
+
+  list(km = km, aggregate_id = fr$aggregate_id[m])
+}
+
+#' Map kilometer values back to flowline and measure in a chain frame
+#' @description For each (aggregate_id, km), the flowline whose interval
+#' holds km and the measure within it. A km below the bottom or above the
+#' top of the flowlines present is placed at that end (measure 0 or 100)
+#' and the overshoot returned as past_end_km.
+#' @param aggregate_id vector of mainstem ids
+#' @param km vector of kilometer values
+#' @param fr chain frame
+#' @returns tibble with id, id_measure, past_end_km, status parallel to km
+#' @noRd
+km_to_position <- function(aggregate_id, km, fr) {
+
+  n <- length(km)
+  out_id <- vector(mode = class(fr$id), length = n)
+  out_id[] <- NA
+  out_meas <- rep(NA_real_, n)
+  past <- rep(0, n)
+  status <- rep("placed", n)
+
+  by_chain <- split(seq_len(nrow(fr)), fr$aggregate_id)
+
+  for (i in seq_len(n)) {
+
+    rows <- by_chain[[as.character(aggregate_id[i])]]
+
+    if (is.null(rows) || is.na(km[i])) {
+      status[i] <- "hydro_location_not_in_x"
+      next
+    }
+
+    sub_from <- fr$from_km[rows]
+    sub_to   <- fr$to_km[rows]
+    sub_id   <- fr$id[rows]
+    sub_len  <- fr$length_km[rows]
+
+    bottom <- which.min(sub_from)
+    top    <- which.max(sub_to)
+
+    if (km[i] < sub_from[bottom]) {
+      out_id[i] <- sub_id[bottom]
+      out_meas[i] <- 0
+      past[i] <- sub_from[bottom] - km[i]
+      status[i] <- "past_end"
+    } else if (km[i] > sub_to[top]) {
+      out_id[i] <- sub_id[top]
+      out_meas[i] <- 100
+      past[i] <- km[i] - sub_to[top]
+      status[i] <- "past_end"
+    } else {
+      j <- which(km[i] >= sub_from - 1e-9 & km[i] <= sub_to + 1e-9)[1]
+      out_id[i] <- sub_id[j]
+      out_meas[i] <- (km[i] - sub_from[j]) / sub_len[j] * 100
+    }
+  }
+
+  tibble(id = out_id, id_measure = out_meas, past_end_km = past,
+    status = status)
+}
+
+#' Distance from the nearest referent along a mainstem
+#'
+#' @description Records, for each position, the signed distance along its
+#' mainstem to the nearest referent among those supplied. Through the chain
+#' frame every position and referent on the same mainstem is a kilometer
+#' value; the nearest referent by absolute difference is the one recorded.
+#' Reads no coordinates.
+#'
+#' @param indexes data.frame of positions with `id` and `id_measure`, on `x`.
+#' @param hydro_locations data.frame of referents with `hydro_location_id`,
+#' `id` and `id_measure`, on `x` (for example the output of
+#' [get_confluences()]).
+#' @param x `hy_topo` or `hy_node` carrying `aggregate_id` and `length_km`.
+#' @returns `indexes` with `aggregate_id`, `hydro_location_id` and
+#' `distance_km` added. `distance_km` is negative toward the outlet and
+#' positive toward the head. A position on a mainstem with no referent gets
+#' NA and a message.
+#' @name add_hydro_location_distance
+#' @export
+add_hydro_location_distance <- function(indexes, hydro_locations, x) {
+  UseMethod("add_hydro_location_distance", x)
+}
+
+#' @name add_hydro_location_distance
+#' @export
+add_hydro_location_distance.data.frame <- function(indexes, hydro_locations, x) {
+  add_hydro_location_distance(indexes, hydro_locations, hy(x))
+}
+
+#' @name add_hydro_location_distance
+#' @export
+add_hydro_location_distance.hy_topo <- function(indexes, hydro_locations, x) {
+  add_hydro_location_distance_impl(indexes, hydro_locations, chain_frame(x))
+}
+
+#' @name add_hydro_location_distance
+#' @export
+add_hydro_location_distance.hy_node <- function(indexes, hydro_locations, x) {
+  add_hydro_location_distance_impl(indexes, hydro_locations, chain_frame(x))
+}
+
+#' Shared body for add_hydro_location_distance
+#' @noRd
+add_hydro_location_distance_impl <- function(indexes, hydro_locations, fr) {
+
+  pos <- position_to_km(indexes$id, indexes$id_measure, fr)
+  ref <- position_to_km(hydro_locations$id, hydro_locations$id_measure, fr)
+
+  ref_tbl <- tibble(aggregate_id = ref$aggregate_id,
+    hydro_location_id = hydro_locations$hydro_location_id,
+    ref_km = ref$km)
+
+  ref_tbl <- ref_tbl[!is.na(ref_tbl$aggregate_id) & !is.na(ref_tbl$ref_km), ]
+
+  by_chain <- split(ref_tbl, ref_tbl$aggregate_id)
+
+  n <- length(pos$km)
+  hl <- rep(NA_character_, n)
+  dist <- rep(NA_real_, n)
+
+  for (i in seq_len(n)) {
+
+    cands <- by_chain[[as.character(pos$aggregate_id[i])]]
+
+    if (is.null(cands) || is.na(pos$km[i])) next
+
+    d <- pos$km[i] - cands$ref_km
+
+    # nearest by absolute difference; a tie takes the smaller
+    # hydro_location_id as a string
+    ord <- order(abs(d), as.character(cands$hydro_location_id))
+    hl[i] <- cands$hydro_location_id[ord[1]]
+    dist[i] <- d[ord[1]]
+  }
+
+  if (any(is.na(hl) & !is.na(pos$aggregate_id)))
+    message("some positions are on a mainstem with no referent; ",
+      "distance_km is NA there.")
+
+  indexes[[aggregate_id]] <- pos$aggregate_id
+  indexes[[hydro_location_id]] <- hl
+  indexes[[distance_km]] <- dist
+
+  indexes
+}
+
+#' Position from a referent distance along a mainstem
+#'
+#' @description The inverse of [add_hydro_location_distance()]. For each
+#' record (`aggregate_id`, `hydro_location_id`, `distance_km`) it finds the
+#' referent's kilometer value in `x`'s frame, adds the distance, and maps
+#' the result to `id` and `id_measure`. Reads no coordinates.
+#'
+#' @param positions data.frame of records with `aggregate_id`,
+#' `hydro_location_id` and `distance_km`.
+#' @param hydro_locations data.frame of referents with `aggregate_id`,
+#' `hydro_location_id`, `id` and `id_measure` (for example
+#' [get_confluences()] output).
+#' @param x `hy_topo` or `hy_node` carrying `aggregate_id` and `length_km`.
+#' @returns `positions` with `id`, `id_measure`, `past_end_km` and `status`
+#' added. `status` is `placed`, `hydro_location_not_in_x`, or `past_end`; a
+#' `past_end` row is placed at the end flowline present and `past_end_km`
+#' carries how far past the end the arithmetic went.
+#' @name index_hydro_location_distance
+#' @export
+index_hydro_location_distance <- function(positions, hydro_locations, x) {
+  UseMethod("index_hydro_location_distance", x)
+}
+
+#' @name index_hydro_location_distance
+#' @export
+index_hydro_location_distance.data.frame <- function(positions, hydro_locations, x) {
+  index_hydro_location_distance(positions, hydro_locations, hy(x))
+}
+
+#' @name index_hydro_location_distance
+#' @export
+index_hydro_location_distance.hy_topo <- function(positions, hydro_locations, x) {
+  index_hydro_location_distance_impl(positions, hydro_locations, chain_frame(x))
+}
+
+#' @name index_hydro_location_distance
+#' @export
+index_hydro_location_distance.hy_node <- function(positions, hydro_locations, x) {
+  index_hydro_location_distance_impl(positions, hydro_locations, chain_frame(x))
+}
+
+#' Shared body for index_hydro_location_distance
+#' @noRd
+index_hydro_location_distance_impl <- function(positions, hydro_locations, fr) {
+
+  ref <- position_to_km(hydro_locations$id, hydro_locations$id_measure, fr)
+
+  ref_tbl <- tibble(aggregate_id = hydro_locations$aggregate_id,
+    hydro_location_id = hydro_locations$hydro_location_id,
+    ref_km = ref$km)
+
+  key_in  <- paste(positions$aggregate_id, positions$hydro_location_id)
+  key_ref <- paste(ref_tbl$aggregate_id, ref_tbl$hydro_location_id)
+
+  m <- match(key_in, key_ref)
+  ref_km <- ref_tbl$ref_km[m]
+
+  target_km <- ref_km + positions$distance_km
+
+  placed <- km_to_position(positions$aggregate_id, target_km, fr)
+
+  # a referent that is not in x gives hydro_location_not_in_x, overriding
+  # the km mapping's own status
+  missing_ref <- is.na(ref_km)
+  placed$status[missing_ref] <- "hydro_location_not_in_x"
+  placed$id[missing_ref] <- NA
+  placed$id_measure[missing_ref] <- NA
+  placed$past_end_km[missing_ref] <- 0
+
+  positions[[id]] <- placed$id
+  positions[[id_measure]] <- placed$id_measure
+  positions[[past_end_km]] <- placed$past_end_km
+  positions[["status"]] <- placed$status
+
+  positions
+}
