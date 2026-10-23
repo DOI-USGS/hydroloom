@@ -8,7 +8,6 @@ CRAN-SUBMISSION
 *temp*
 .vscode/
 revdep/
-CLAUDE.md
 dev
 vignettes/*.html
 docs/
