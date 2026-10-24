@@ -6,7 +6,7 @@
 \alias{get_confluences.hy}
 \alias{get_confluences.hy_topo}
 \alias{get_confluences.hy_node}
-\title{Get confluences of identified mainstems}
+\title{Get confluences of aggregate flowpaths}
 \usage{
 get_confluences(x)
 
@@ -19,34 +19,47 @@ get_confluences(x)
 \method{get_confluences}{hy_node}(x)
 }
 \arguments{
-\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} on identified
-flowlines, or a data.frame coercible with \code{\link[=hy]{hy()}}. A \code{topo_sort} column
-keeps building the aggregate flowpath axis cheap; without it the build
-falls back to a full topological sort.}
+\item{x}{\code{hy_topo} or \code{hy_node}, or a data.frame coercible with \code{\link[=hy]{hy()}}.
+\code{aggregate_id} is set on the flowlines of each aggregate flowpath and \code{NA}
+elsewhere. A \code{topo_sort} column keeps building the aggregate flowpath axis
+cheap; without it a full topological sort is run.}
 }
 \value{
 data.frame with one row per confluence: \code{aggregate_id} (the
-receiving mainstem), \code{hydro_location_id} (the tributary), \code{id} (the
-flowline below the node on the receiving mainstem) and \code{id_measure}
-(100).
+receiving aggregate flowpath), \code{hydro_location_id} (the tributary's
+\code{aggregate_id}), \code{id} (the receiving flowline just below the confluence)
+and \code{id_measure} (always 100, the upstream end of that flowline).
 }
 \description{
-Identifies each confluence of two identified mainstems as a
-hydrolocation on the receiving mainstem at the outlet of the tributary.
-A confluence exists where the bottom flowline of a tributary mainstem
-connects downstream to a flowline on a different identified mainstem; the
-point is anchored to that downstream flowline, which the link points to
-and which is present even when the receiving mainstem is truncated just
-above the node. Reads no coordinates.
+Returns a hydro location for each confluence where one
+aggregate flowpath flows into another, such as a tributary mainstem joining
+the mainstem it drains to. An aggregate flowpath is the run of flowlines
+that share an \code{aggregate_id} and link end to end. Each confluence is
+identified by the tributary's \code{aggregate_id} and placed on the first
+flowline of the receiving aggregate flowpath below it.
 
-A mainstem here is one kind of aggregate flowpath: the flowlines that share
-an \code{aggregate_id} and link end to end. Any \code{aggregate_id} whose flowlines
-form one such unbranched path works the same way.
+Confluences work as reference points for distances along a river because
+any network that carries both mainstems has the confluence too. Pass the
+result to \code{\link[=add_hydro_location_distance]{add_hydro_location_distance()}} to record positions as distances
+from these confluences, and to \code{\link[=index_hydro_location_distance]{index_hydro_location_distance()}} to place
+those distances on the same or another network.
+}
+\details{
+A confluence is found where the bottom flowline of one aggregate flowpath
+connects downstream to a flowline with a different \code{aggregate_id}. The
+hydro location goes at the upstream end (\code{id_measure} 100) of that
+downstream flowline rather than at the end of the tributary. That keeps it
+on the receiving aggregate flowpath, and it still exists when the receiving
+flowpath is truncated just above the confluence. Only topology is used; no
+coordinates are read.
 
-This is the \code{hydrolocation} feature type of OGC 25-045 with \code{mainstem_id}
-as \code{aggregate_id} and \code{link} as \code{hydro_location_id}. Each identified
-mainstem yields at most one confluence. A tributary whose downstream
-connection is a diversion (\code{divergence == 2}) is dropped with a warning.
+Each aggregate flowpath has one bottom flowline, so it yields at most one
+confluence. A tributary whose downstream connection is a diversion
+(\code{divergence == 2}) is dropped with a warning.
+
+The output follows the \code{hydrolocation} feature type of OGC 25-045, with
+\code{aggregate_id} in the role of \code{mainstem_id} and \code{hydro_location_id} in the
+role of \code{link}.
 }
 \section{Measures}{
 

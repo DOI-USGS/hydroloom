@@ -23,28 +23,50 @@ index_hydro_location_distance(positions, hydro_locations, x)
 \code{hydro_location_id} and \code{distance_km}.}
 
 \item{hydro_locations}{data.frame. Hydro locations to measure from, with
-\code{aggregate_id}, \code{hydro_location_id}, \code{id} and \code{id_measure} (for example
-\code{\link[=get_confluences]{get_confluences()}} output).}
+\code{aggregate_id}, \code{hydro_location_id}, \code{id} and \code{id_measure}, on \code{x} (for
+example the output of \code{get_confluences(x)}).}
 
-\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} and \code{length_km}.
-A \code{topo_sort} column keeps building the aggregate flowpath axis cheap;
-without it the build falls back to a full topological sort.}
+\item{x}{\code{hy_topo} or \code{hy_node}, or a data.frame coercible with \code{\link[=hy]{hy()}}.
+Carries \code{aggregate_id} and \code{length_km}. A \code{topo_sort} column keeps building
+the aggregate flowpath axis cheap; without it a full topological sort is
+run.}
 }
 \value{
 \code{positions} with \code{id}, \code{id_measure}, \code{past_end_km} and \code{status}
-added. \code{status} is \code{placed}, \code{hydro_location_not_in_x}, or \code{past_end}; a
-\code{past_end} row is placed at the end flowline present and \code{past_end_km}
-carries how far past the end the arithmetic went.
+added. \code{status} is \code{placed}, \code{hydro_location_not_in_x} or \code{past_end}, as
+described in Details.
 }
 \description{
-The inverse of \code{\link[=add_hydro_location_distance]{add_hydro_location_distance()}}. For each
-record (\code{aggregate_id}, \code{hydro_location_id}, \code{distance_km}) it finds the
-hydro location's kilometer value on \code{x}'s aggregate flowpath axis, adds the
-distance, and maps the result to \code{id} and \code{id_measure}.
+Places distances from hydro locations on the flowlines of
+\code{x}, the inverse of \code{\link[=add_hydro_location_distance]{add_hydro_location_distance()}}. Each record gives an
+\code{aggregate_id}, a \code{hydro_location_id} and a \code{distance_km}, and the result
+adds the flowline \code{id} and \code{id_measure} at that distance. An aggregate
+flowpath is the run of flowlines that share an \code{aggregate_id} and link end
+to end, such as an identified mainstem.
 
-\code{distance_km} is negative toward the outlet and positive toward the head;
-the sign is hydroloom's convention, downstream and upstream in
-HY_DistanceDescription terms.
+Because a record points to a hydro location rather than to a flowline, \code{x}
+does not have to be the network the distance was recorded on. A distance
+recorded on NHDPlusV2 can be placed on 3DHP, as long as both carry the same
+\code{aggregate_id} values and \code{hydro_locations} is on \code{x}, for example
+\code{get_confluences(x)}.
+}
+\details{
+Each record's hydro location is converted to kilometers along the
+aggregate flowpath axis of \code{x} (the aggregate flowpath measured from its
+downstream end), \code{distance_km} is added, and the flowline holding the
+result is found. A result that lands on a boundary between two flowlines
+goes to the lower one, at \code{id_measure} 100. \code{distance_km} uses the sign
+convention of \code{\link[=add_hydro_location_distance]{add_hydro_location_distance()}}: negative downstream,
+positive upstream.
+
+\code{status} reports what happened to each record. \code{placed} is a normal
+result. \code{hydro_location_not_in_x} means the \code{aggregate_id} and
+\code{hydro_location_id} pair is not in \code{hydro_locations}, or that hydro
+location is not on \code{x}, and \code{id} and \code{id_measure} are \code{NA}. \code{past_end}
+means the distance runs past the downstream or upstream end of the
+aggregate flowpath's flowlines in \code{x} (a truncated network, for example).
+The record is placed at that end, at \code{id_measure} 0 or 100, and
+\code{past_end_km} gives how far past the end it reached.
 }
 \section{Measures}{
 

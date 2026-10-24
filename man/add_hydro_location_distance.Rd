@@ -25,29 +25,44 @@ add_hydro_location_distance(indexes, hydro_locations, x)
 \code{hydro_location_id}, \code{id} and \code{id_measure}, on \code{x} (for example the output
 of \code{\link[=get_confluences]{get_confluences()}}).}
 
-\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} and \code{length_km}.
-A \code{topo_sort} column keeps building the aggregate flowpath axis cheap;
-without it the build falls back to a full topological sort.}
+\item{x}{\code{hy_topo} or \code{hy_node}, or a data.frame coercible with \code{\link[=hy]{hy()}}.
+Carries \code{aggregate_id} and \code{length_km}. A \code{topo_sort} column keeps building
+the aggregate flowpath axis cheap; without it a full topological sort is
+run.}
 }
 \value{
 \code{indexes} with \code{aggregate_id}, \code{hydro_location_id} and
-\code{distance_km} added. A position on a mainstem with no hydro location gets
-NA and a message.
+\code{distance_km} added. \code{aggregate_id} is \code{NA} for a position on a flowline
+without one. A position on an aggregate flowpath with no hydro location
+gets \code{NA} \code{hydro_location_id} and \code{distance_km}, with a message.
 }
 \description{
-Records, for each position, the signed distance along its
-mainstem to the nearest hydro location among those supplied. On the
-aggregate flowpath axis every position and hydro location on the same
-aggregate_id is a kilometer value; the nearest hydro location by absolute
-difference is the one recorded.
+Records each position as a signed distance along its
+aggregate flowpath from the nearest of a set of hydro locations, such as
+the confluences returned by \code{\link[=get_confluences]{get_confluences()}}. An aggregate flowpath is
+the run of flowlines that share an \code{aggregate_id} and link end to end, such
+as an identified mainstem. Each position is a flowline \code{id} and
+\code{id_measure}. The result adds the \code{aggregate_id} the position is on, the
+\code{hydro_location_id} it is measured from, and \code{distance_km}.
 
-A mainstem here is one kind of aggregate flowpath: the flowlines that share
-an \code{aggregate_id} and link end to end. Any \code{aggregate_id} whose flowlines
-form one such unbranched path works the same way.
+A distance from a confluence does not depend on the flowline ids of the
+network it was recorded on. \code{\link[=index_hydro_location_distance]{index_hydro_location_distance()}} takes the
+same record and places it on any network that carries the same aggregate
+flowpaths, for example to move a gage location from NHDPlusV2 to 3DHP.
+}
+\details{
+Positions and hydro locations are converted to kilometers along the
+aggregate flowpath axis (the aggregate flowpath measured from its
+downstream end in \code{x}). Only hydro locations on the same \code{aggregate_id} as
+a position are candidates, and the one with the smallest absolute
+difference in kilometers is recorded. A position exactly halfway between
+two hydro locations takes the one with the smaller \code{hydro_location_id},
+compared as strings.
 
-\code{distance_km} is negative toward the outlet and positive toward the head;
-the sign is hydroloom's convention, downstream and upstream in
-HY_DistanceDescription terms.
+\code{distance_km} is negative when the position is downstream of the hydro
+location (toward the outlet) and positive when it is upstream (toward the
+headwater). The sign is a hydroloom convention; HY_DistanceDescription in
+HY_Features describes the same two directions as downstream and upstream.
 }
 \section{Measures}{
 

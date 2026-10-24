@@ -153,33 +153,46 @@ check_axis_continuity <- function(axis) {
 }
 
 
-#' Get confluences of identified mainstems
+#' Get confluences of aggregate flowpaths
 #'
-#' @description Identifies each confluence of two identified mainstems as a
-#' hydrolocation on the receiving mainstem at the outlet of the tributary.
-#' A confluence exists where the bottom flowline of a tributary mainstem
-#' connects downstream to a flowline on a different identified mainstem; the
-#' point is anchored to that downstream flowline, which the link points to
-#' and which is present even when the receiving mainstem is truncated just
-#' above the node. Reads no coordinates.
+#' @description Returns a hydro location for each confluence where one
+#' aggregate flowpath flows into another, such as a tributary mainstem joining
+#' the mainstem it drains to. An aggregate flowpath is the run of flowlines
+#' that share an `aggregate_id` and link end to end. Each confluence is
+#' identified by the tributary's `aggregate_id` and placed on the first
+#' flowline of the receiving aggregate flowpath below it.
 #'
-#' A mainstem here is one kind of aggregate flowpath: the flowlines that share
-#' an `aggregate_id` and link end to end. Any `aggregate_id` whose flowlines
-#' form one such unbranched path works the same way.
+#' Confluences work as reference points for distances along a river because
+#' any network that carries both mainstems has the confluence too. Pass the
+#' result to [add_hydro_location_distance()] to record positions as distances
+#' from these confluences, and to [index_hydro_location_distance()] to place
+#' those distances on the same or another network.
 #'
-#' This is the `hydrolocation` feature type of OGC 25-045 with `mainstem_id`
-#' as `aggregate_id` and `link` as `hydro_location_id`. Each identified
-#' mainstem yields at most one confluence. A tributary whose downstream
-#' connection is a diversion (`divergence == 2`) is dropped with a warning.
+#' @details
+#' A confluence is found where the bottom flowline of one aggregate flowpath
+#' connects downstream to a flowline with a different `aggregate_id`. The
+#' hydro location goes at the upstream end (`id_measure` 100) of that
+#' downstream flowline rather than at the end of the tributary. That keeps it
+#' on the receiving aggregate flowpath, and it still exists when the receiving
+#' flowpath is truncated just above the confluence. Only topology is used; no
+#' coordinates are read.
 #'
-#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` on identified
-#' flowlines, or a data.frame coercible with [hy()]. A `topo_sort` column
-#' keeps building the aggregate flowpath axis cheap; without it the build
-#' falls back to a full topological sort.
+#' Each aggregate flowpath has one bottom flowline, so it yields at most one
+#' confluence. A tributary whose downstream connection is a diversion
+#' (`divergence == 2`) is dropped with a warning.
+#'
+#' The output follows the `hydrolocation` feature type of OGC 25-045, with
+#' `aggregate_id` in the role of `mainstem_id` and `hydro_location_id` in the
+#' role of `link`.
+#'
+#' @param x `hy_topo` or `hy_node`, or a data.frame coercible with [hy()].
+#' `aggregate_id` is set on the flowlines of each aggregate flowpath and `NA`
+#' elsewhere. A `topo_sort` column keeps building the aggregate flowpath axis
+#' cheap; without it a full topological sort is run.
 #' @returns data.frame with one row per confluence: `aggregate_id` (the
-#' receiving mainstem), `hydro_location_id` (the tributary), `id` (the
-#' flowline below the node on the receiving mainstem) and `id_measure`
-#' (100).
+#' receiving aggregate flowpath), `hydro_location_id` (the tributary's
+#' `aggregate_id`), `id` (the receiving flowline just below the confluence)
+#' and `id_measure` (always 100, the upstream end of that flowline).
 #' @inheritSection index_points_to_lines Measures
 #' @name get_confluences
 #' @export
@@ -437,30 +450,45 @@ km_to_position <- function(aggregate_id, km, axis) {
 
 #' Add distance from the nearest hydro location
 #'
-#' @description Records, for each position, the signed distance along its
-#' mainstem to the nearest hydro location among those supplied. On the
-#' aggregate flowpath axis every position and hydro location on the same
-#' aggregate_id is a kilometer value; the nearest hydro location by absolute
-#' difference is the one recorded.
+#' @description Records each position as a signed distance along its
+#' aggregate flowpath from the nearest of a set of hydro locations, such as
+#' the confluences returned by [get_confluences()]. An aggregate flowpath is
+#' the run of flowlines that share an `aggregate_id` and link end to end, such
+#' as an identified mainstem. Each position is a flowline `id` and
+#' `id_measure`. The result adds the `aggregate_id` the position is on, the
+#' `hydro_location_id` it is measured from, and `distance_km`.
 #'
-#' A mainstem here is one kind of aggregate flowpath: the flowlines that share
-#' an `aggregate_id` and link end to end. Any `aggregate_id` whose flowlines
-#' form one such unbranched path works the same way.
+#' A distance from a confluence does not depend on the flowline ids of the
+#' network it was recorded on. [index_hydro_location_distance()] takes the
+#' same record and places it on any network that carries the same aggregate
+#' flowpaths, for example to move a gage location from NHDPlusV2 to 3DHP.
 #'
-#' `distance_km` is negative toward the outlet and positive toward the head;
-#' the sign is hydroloom's convention, downstream and upstream in
-#' HY_DistanceDescription terms.
+#' @details
+#' Positions and hydro locations are converted to kilometers along the
+#' aggregate flowpath axis (the aggregate flowpath measured from its
+#' downstream end in `x`). Only hydro locations on the same `aggregate_id` as
+#' a position are candidates, and the one with the smallest absolute
+#' difference in kilometers is recorded. A position exactly halfway between
+#' two hydro locations takes the one with the smaller `hydro_location_id`,
+#' compared as strings.
+#'
+#' `distance_km` is negative when the position is downstream of the hydro
+#' location (toward the outlet) and positive when it is upstream (toward the
+#' headwater). The sign is a hydroloom convention; HY_DistanceDescription in
+#' HY_Features describes the same two directions as downstream and upstream.
 #'
 #' @param indexes data.frame. Positions with `id` and `id_measure`, on `x`.
 #' @param hydro_locations data.frame. Hydro locations to measure from, with
 #' `hydro_location_id`, `id` and `id_measure`, on `x` (for example the output
 #' of [get_confluences()]).
-#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` and `length_km`.
-#' A `topo_sort` column keeps building the aggregate flowpath axis cheap;
-#' without it the build falls back to a full topological sort.
+#' @param x `hy_topo` or `hy_node`, or a data.frame coercible with [hy()].
+#' Carries `aggregate_id` and `length_km`. A `topo_sort` column keeps building
+#' the aggregate flowpath axis cheap; without it a full topological sort is
+#' run.
 #' @returns `indexes` with `aggregate_id`, `hydro_location_id` and
-#' `distance_km` added. A position on a mainstem with no hydro location gets
-#' NA and a message.
+#' `distance_km` added. `aggregate_id` is `NA` for a position on a flowline
+#' without one. A position on an aggregate flowpath with no hydro location
+#' gets `NA` `hydro_location_id` and `distance_km`, with a message.
 #' @inheritSection index_points_to_lines Measures
 #' @name add_hydro_location_distance
 #' @export
@@ -602,27 +630,49 @@ add_hydro_location_dist_impl <- function(indexes, hydro_locations, axis) {
 
 #' Index a distance from a hydro location to a flowline
 #'
-#' @description The inverse of [add_hydro_location_distance()]. For each
-#' record (`aggregate_id`, `hydro_location_id`, `distance_km`) it finds the
-#' hydro location's kilometer value on `x`'s aggregate flowpath axis, adds the
-#' distance, and maps the result to `id` and `id_measure`.
+#' @description Places distances from hydro locations on the flowlines of
+#' `x`, the inverse of [add_hydro_location_distance()]. Each record gives an
+#' `aggregate_id`, a `hydro_location_id` and a `distance_km`, and the result
+#' adds the flowline `id` and `id_measure` at that distance. An aggregate
+#' flowpath is the run of flowlines that share an `aggregate_id` and link end
+#' to end, such as an identified mainstem.
 #'
-#' `distance_km` is negative toward the outlet and positive toward the head;
-#' the sign is hydroloom's convention, downstream and upstream in
-#' HY_DistanceDescription terms.
+#' Because a record points to a hydro location rather than to a flowline, `x`
+#' does not have to be the network the distance was recorded on. A distance
+#' recorded on NHDPlusV2 can be placed on 3DHP, as long as both carry the same
+#' `aggregate_id` values and `hydro_locations` is on `x`, for example
+#' `get_confluences(x)`.
+#'
+#' @details
+#' Each record's hydro location is converted to kilometers along the
+#' aggregate flowpath axis of `x` (the aggregate flowpath measured from its
+#' downstream end), `distance_km` is added, and the flowline holding the
+#' result is found. A result that lands on a boundary between two flowlines
+#' goes to the lower one, at `id_measure` 100. `distance_km` uses the sign
+#' convention of [add_hydro_location_distance()]: negative downstream,
+#' positive upstream.
+#'
+#' `status` reports what happened to each record. `placed` is a normal
+#' result. `hydro_location_not_in_x` means the `aggregate_id` and
+#' `hydro_location_id` pair is not in `hydro_locations`, or that hydro
+#' location is not on `x`, and `id` and `id_measure` are `NA`. `past_end`
+#' means the distance runs past the downstream or upstream end of the
+#' aggregate flowpath's flowlines in `x` (a truncated network, for example).
+#' The record is placed at that end, at `id_measure` 0 or 100, and
+#' `past_end_km` gives how far past the end it reached.
 #'
 #' @param positions data.frame. Records with `aggregate_id`,
 #' `hydro_location_id` and `distance_km`.
 #' @param hydro_locations data.frame. Hydro locations to measure from, with
-#' `aggregate_id`, `hydro_location_id`, `id` and `id_measure` (for example
-#' [get_confluences()] output).
-#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` and `length_km`.
-#' A `topo_sort` column keeps building the aggregate flowpath axis cheap;
-#' without it the build falls back to a full topological sort.
+#' `aggregate_id`, `hydro_location_id`, `id` and `id_measure`, on `x` (for
+#' example the output of `get_confluences(x)`).
+#' @param x `hy_topo` or `hy_node`, or a data.frame coercible with [hy()].
+#' Carries `aggregate_id` and `length_km`. A `topo_sort` column keeps building
+#' the aggregate flowpath axis cheap; without it a full topological sort is
+#' run.
 #' @returns `positions` with `id`, `id_measure`, `past_end_km` and `status`
-#' added. `status` is `placed`, `hydro_location_not_in_x`, or `past_end`; a
-#' `past_end` row is placed at the end flowline present and `past_end_km`
-#' carries how far past the end the arithmetic went.
+#' added. `status` is `placed`, `hydro_location_not_in_x` or `past_end`, as
+#' described in Details.
 #' @inheritSection index_points_to_lines Measures
 #' @name index_hydro_location_distance
 #' @export
