@@ -306,47 +306,77 @@ position_to_km <- function(id, id_measure, fr) {
 km_to_position <- function(aggregate_id, km, fr) {
 
   n <- length(km)
+
+  frames <- as.data.table(fr)
+
+  # per-chain ends, for the past-end branches
+  ends <- frames[, list(
+    bottom_id = id[which.min(from_km)],
+    bottom_from = min(from_km),
+    top_id = id[which.max(to_km)],
+    top_to = max(to_km)),
+    by = "aggregate_id"]
+
+  ei <- match(as.character(aggregate_id), as.character(ends$aggregate_id))
+  e_bottom_id <- ends$bottom_id[ei]
+  e_bottom_from <- ends$bottom_from[ei]
+  e_top_id <- ends$top_id[ei]
+  e_top_to <- ends$top_to[ei]
+
+  # rolling join to the flowline whose interval holds km: within each chain
+  # the last row with from_km <= km (roll = +Inf). At an exact interval
+  # boundary the original picked the lower interval, so nudge the join key
+  # down by 1e-9 to exclude the next interval's from_km; a km at the chain
+  # bottom then misses and is filled from the bottom row below.
+  look <- frames[, list(aggregate_id, from_km,
+    match_id = id, match_from = from_km, match_len = length_km)]
+  data.table::setkey(look, aggregate_id, from_km)
+
+  q <- data.table::data.table(.row = seq_len(n),
+    aggregate_id = as.character(aggregate_id),
+    from_km = km - 1e-9)
+
+  hit <- look[q, on = c("aggregate_id", "from_km"), roll = Inf,
+    mult = "first"]
+  data.table::setorder(hit, .row)
+
+  match_id <- hit$match_id
+  match_from <- hit$match_from
+  match_len <- hit$match_len
+
   out_id <- vector(mode = class(fr$id), length = n)
   out_id[] <- NA
   out_meas <- rep(NA_real_, n)
   past <- rep(0, n)
   status <- rep("placed", n)
 
-  by_chain <- split(seq_len(nrow(fr)), fr$aggregate_id)
+  in_chain <- !is.na(e_bottom_id) & !is.na(km)
+  status[!in_chain] <- "hydro_location_not_in_x"
 
-  for (i in seq_len(n)) {
+  below <- in_chain & km < e_bottom_from
+  above <- in_chain & km > e_top_to
+  inside <- in_chain & !below & !above
 
-    rows <- by_chain[[as.character(aggregate_id[i])]]
+  out_id[below] <- e_bottom_id[below]
+  out_meas[below] <- 0
+  past[below] <- e_bottom_from[below] - km[below]
+  status[below] <- "past_end"
 
-    if (is.null(rows) || is.na(km[i])) {
-      status[i] <- "hydro_location_not_in_x"
-      next
-    }
+  out_id[above] <- e_top_id[above]
+  out_meas[above] <- 100
+  past[above] <- km[above] - e_top_to[above]
+  status[above] <- "past_end"
 
-    sub_from <- fr$from_km[rows]
-    sub_to   <- fr$to_km[rows]
-    sub_id   <- fr$id[rows]
-    sub_len  <- fr$length_km[rows]
+  # km exactly at the chain's bottom from_km falls just below the
+  # down-nudged join key and misses; it belongs to the bottom interval
+  bottom_hit <- inside & is.na(match_id)
+  match_id[bottom_hit] <- e_bottom_id[bottom_hit]
+  match_from[bottom_hit] <- e_bottom_from[bottom_hit]
+  match_len[bottom_hit] <- fr$length_km[match(e_bottom_id[bottom_hit], fr$id)]
 
-    bottom <- which.min(sub_from)
-    top    <- which.max(sub_to)
-
-    if (km[i] < sub_from[bottom]) {
-      out_id[i] <- sub_id[bottom]
-      out_meas[i] <- 0
-      past[i] <- sub_from[bottom] - km[i]
-      status[i] <- "past_end"
-    } else if (km[i] > sub_to[top]) {
-      out_id[i] <- sub_id[top]
-      out_meas[i] <- 100
-      past[i] <- km[i] - sub_to[top]
-      status[i] <- "past_end"
-    } else {
-      j <- which(km[i] >= sub_from - 1e-9 & km[i] <= sub_to + 1e-9)[1]
-      out_id[i] <- sub_id[j]
-      out_meas[i] <- (km[i] - sub_from[j]) / sub_len[j] * 100
-    }
-  }
+  out_id[inside] <- match_id[inside]
+  out_meas[inside] <- (km[inside] - match_from[inside]) /
+    match_len[inside] * 100
 
   tibble(id = out_id, id_measure = out_meas, past_end_km = past,
     status = status)
@@ -406,25 +436,33 @@ add_hydro_location_distance_impl <- function(indexes, hydro_locations, fr) {
 
   ref_tbl <- ref_tbl[!is.na(ref_tbl$aggregate_id) & !is.na(ref_tbl$ref_km), ]
 
-  by_chain <- split(ref_tbl, ref_tbl$aggregate_id)
-
   n <- length(pos$km)
+
+  pos_dt <- data.table::data.table(.row = seq_len(n),
+    aggregate_id = as.character(pos$aggregate_id),
+    pos_km = pos$km)
+  pos_dt <- pos_dt[!is.na(pos_dt$aggregate_id) & !is.na(pos_dt$pos_km), ]
+
+  ref_dt <- data.table::as.data.table(ref_tbl)
+  ref_dt$aggregate_id <- as.character(ref_dt$aggregate_id)
+  ref_dt$hl_str <- as.character(ref_dt$hydro_location_id)
+
+  # every position joined to every referent on its mainstem; nearest by
+  # absolute difference, a tie taking the smaller hydro_location_id as a
+  # string -- the same order() the per-row loop used, over all rows at once
+  joined <- ref_dt[pos_dt, on = "aggregate_id", allow.cartesian = TRUE,
+    nomatch = NULL]
+  joined$d <- joined$pos_km - joined$ref_km
+
   hl <- rep(NA_character_, n)
   dist <- rep(NA_real_, n)
 
-  for (i in seq_len(n)) {
-
-    cands <- by_chain[[as.character(pos$aggregate_id[i])]]
-
-    if (is.null(cands) || is.na(pos$km[i])) next
-
-    d <- pos$km[i] - cands$ref_km
-
-    # nearest by absolute difference; a tie takes the smaller
-    # hydro_location_id as a string
-    ord <- order(abs(d), as.character(cands$hydro_location_id))
-    hl[i] <- cands$hydro_location_id[ord[1]]
-    dist[i] <- d[ord[1]]
+  if (nrow(joined) > 0) {
+    joined$d_abs <- abs(joined$d)
+    data.table::setorderv(joined, c(".row", "d_abs", "hl_str"))
+    best <- joined[!duplicated(joined$.row), ]
+    hl[best$.row] <- best$hydro_location_id
+    dist[best$.row] <- best$d
   }
 
   if (any(is.na(hl) & !is.na(pos$aggregate_id)))
