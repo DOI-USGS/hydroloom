@@ -1,5 +1,5 @@
-utils::globalVariables(c(".span", "bound", "from_km", "reversed",
-  "segment_order", "to_km"))
+utils::globalVariables(c(".span", "agg_chr", "bound", "from_km", "hi", "lo",
+  "reversed", "segment_order", "to_km"))
 
 ##### get_substring.R -- substrings between two positions on a mainstem #####
 # The span between two positions on one mainstem of x, as an ordered list of
@@ -213,11 +213,16 @@ substring_pieces <- function(spans, frdt) {
 
   if (nrow(spans) == 0) return(empty_piece)
 
-  # every flowline of each span's mainstem, then kept where its interval
-  # overlaps the span
-  j <- frdt[spans, on = c(agg_chr = "aggregate_id"), allow.cartesian = TRUE,
-    nomatch = NULL]
-  j <- j[j$to_km > j$lo & j$from_km < j$hi, ]
+  # overlapping (flowline interval, span) pairs only, via an interval join;
+  # foverlaps keys the frame on (agg_chr, from_km, to_km) and the spans on
+  # (aggregate_id, lo, hi). Intervals are closed, so a span touching a
+  # flowline end yields a zero-length pair the piece_len > 0 filter drops.
+  spans_key <- data.table::copy(spans)
+  data.table::setnames(spans_key, "aggregate_id", "agg_chr")
+  data.table::setkey(spans_key, agg_chr, lo, hi)
+  data.table::setkey(frdt, agg_chr, from_km, to_km)
+
+  j <- data.table::foverlaps(frdt, spans_key, type = "any", nomatch = NULL)
 
   # cut the end pieces to the span
   piece_from <- pmax(j$from_km, j$lo)

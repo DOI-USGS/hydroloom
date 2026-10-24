@@ -509,23 +509,54 @@ add_hydro_location_distance_impl <- function(indexes, hydro_locations, fr) {
   ref_dt <- data.table::as.data.table(ref_tbl)
   ref_dt$aggregate_id <- as.character(ref_dt$aggregate_id)
   ref_dt$hl_str <- as.character(ref_dt$hydro_location_id)
-
-  # every position joined to every referent on its mainstem; nearest by
-  # absolute difference, a tie taking the smaller hydro_location_id as a
-  # string -- the same order() the per-row loop used, over all rows at once
-  joined <- ref_dt[pos_dt, on = "aggregate_id", allow.cartesian = TRUE,
-    nomatch = NULL]
-  joined$d <- joined$pos_km - joined$ref_km
+  # the rolling join overwrites its roll column (ref_km) with the position's
+  # km, so keep the referent km under a second column to recover the distance
+  ref_dt$ref_km_val <- ref_dt$ref_km
 
   hl <- rep(NA_character_, n)
   dist <- rep(NA_real_, n)
 
-  if (nrow(joined) > 0) {
-    joined$d_abs <- abs(joined$d)
-    data.table::setorderv(joined, c(".row", "d_abs", "hl_str"))
-    best <- joined[!duplicated(joined$.row), ]
-    hl[best$.row] <- best$hydro_location_id
-    dist[best$.row] <- best$d
+  if (nrow(ref_dt) > 0 && nrow(pos_dt) > 0) {
+
+    # referents sorted so coincident ones put the smaller hydro_location_id
+    # string first; the rolling joins below keep the first match, so a tie
+    # resolves to the smaller string. See the mainstem referencing article.
+    data.table::setorderv(ref_dt, c("aggregate_id", "ref_km", "hl_str"))
+    data.table::setkey(ref_dt, aggregate_id, ref_km)
+
+    q <- data.table::data.table(.row = pos_dt$.row,
+      aggregate_id = pos_dt$aggregate_id, ref_km = pos_dt$pos_km)
+
+    # nearest referent at or below each position, and at or above; pick the
+    # smaller absolute difference, ties already broken by the sort. A single
+    # roll = "nearest" would break an equidistant tie to the lower key, not
+    # to the smaller hydro_location_id string.
+    below <- ref_dt[q, on = c("aggregate_id", "ref_km"), roll = Inf,
+      mult = "first"]
+    above <- ref_dt[q, on = c("aggregate_id", "ref_km"), roll = -Inf,
+      mult = "first"]
+
+    data.table::setorder(below, .row)
+    data.table::setorder(above, .row)
+
+    pos_km <- pos_dt$pos_km
+    d_below <- pos_km - below$ref_km_val
+    d_above <- pos_km - above$ref_km_val
+
+    # smaller absolute difference wins; an exact tie between a referent below
+    # and one above takes the smaller hydro_location_id string
+    tie <- !is.na(d_below) & !is.na(d_above) & abs(d_below) == abs(d_above)
+    tie_below <- tie & below$hl_str <= above$hl_str
+
+    take_below <- !is.na(d_below) &
+      (is.na(d_above) | (abs(d_below) < abs(d_above)) | tie_below)
+
+    best_hl <- ifelse(take_below, below$hydro_location_id,
+      above$hydro_location_id)
+    best_d <- ifelse(take_below, d_below, d_above)
+
+    hl[pos_dt$.row] <- best_hl
+    dist[pos_dt$.row] <- best_d
   }
 
   if (any(is.na(hl) & !is.na(pos$aggregate_id)))

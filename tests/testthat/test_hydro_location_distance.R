@@ -88,6 +88,52 @@ test_that("round trip on V2 returns each flowline's own id and measure", {
   expect_equal(back$id_measure, rep(50, nrow(back)), tolerance = 1e-6)
 })
 
+test_that("a position equidistant between two referents takes the smaller hydro_location_id", {
+
+  base <- dplyr::tibble(
+    id   = c("a1", "a2", "a3", "a4", "a5"),
+    toid = c("",   "a1", "a2", "a3", "a4"),
+    aggregate_id = "A",
+    length_km = 1)
+
+  net <- hy(base)
+
+  # a referent 1 km below and one 1 km above the position, on opposite sides
+  hl <- dplyr::tibble(
+    hydro_location_id = c("Z", "A"),
+    id = c("a2", "a4"),
+    id_measure = 50)
+
+  pos <- dplyr::tibble(id = "a3", id_measure = 50)
+
+  res <- add_hydro_location_distance(pos, hl, net)
+
+  expect_equal(res$hydro_location_id, "A")
+})
+
+test_that("two coincident referents take the smaller hydro_location_id", {
+
+  base <- dplyr::tibble(
+    id   = c("a1", "a2", "a3"),
+    toid = c("",   "a1", "a2"),
+    aggregate_id = "A",
+    length_km = 1)
+
+  net <- hy(base)
+
+  hl <- dplyr::tibble(
+    hydro_location_id = c("Z", "A"),
+    id = c("a2", "a2"),
+    id_measure = 50)
+
+  pos <- dplyr::tibble(id = "a2", id_measure = 50)
+
+  res <- add_hydro_location_distance(pos, hl, net)
+
+  expect_equal(res$hydro_location_id, "A")
+  expect_equal(res$distance_km, 0)
+})
+
 test_that("the Northeast Creek mouth at distance 0 resolves on 3DHP", {
 
   tbl <- read_3dhp()
