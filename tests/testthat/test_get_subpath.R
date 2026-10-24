@@ -11,7 +11,7 @@ test_that("a flowline's own two ends return itself at 0 to 100", {
   from <- dplyr::tibble(id = "a2", id_measure = 0)
   to   <- dplyr::tibble(id = "a2", id_measure = 100)
 
-  sub <- get_substring(from, to, h)
+  sub <- get_subpath(from, to, h)
 
   expect_equal(nrow(sub), 1)
   expect_equal(sub$id, "a2")
@@ -36,7 +36,7 @@ test_that("a span across three flowlines returns ordered pieces cut at the ends"
   from <- dplyr::tibble(id = "a1", id_measure = 50)
   to   <- dplyr::tibble(id = "a3", id_measure = 50)
 
-  sub <- get_substring(from, to, h)
+  sub <- get_subpath(from, to, h)
 
   expect_equal(sub$id, c("a1", "a2", "a3"))
   expect_equal(sub$segment_order, 1:3)
@@ -62,9 +62,9 @@ test_that("from above to returns the same pieces with reversed TRUE", {
   up   <- dplyr::tibble(id = "a3", id_measure = 50)
   down <- dplyr::tibble(id = "a1", id_measure = 50)
 
-  forward  <- get_substring(dplyr::tibble(id = "a1", id_measure = 50),
+  forward  <- get_subpath(dplyr::tibble(id = "a1", id_measure = 50),
     dplyr::tibble(id = "a3", id_measure = 50), h)
-  backward <- get_substring(up, down, h)
+  backward <- get_subpath(up, down, h)
 
   expect_equal(backward$id, forward$id)
   expect_equal(backward$id_from_measure, forward$id_from_measure)
@@ -86,14 +86,14 @@ test_that("two coincident ends return the empty row", {
   from <- dplyr::tibble(id = "a2", id_measure = 50)
   to   <- dplyr::tibble(id = "a2", id_measure = 50)
 
-  sub <- get_substring(from, to, h)
+  sub <- get_subpath(from, to, h)
 
   expect_equal(nrow(sub), 1)
   expect_true(is.na(sub$id))
   expect_equal(sub$length_km, 0)
 })
 
-test_that("snap_km moves a near-boundary end to the boundary", {
+test_that("snap_m moves a near-boundary end to the boundary", {
 
   base <- dplyr::tibble(
     id   = c("a1", "a2", "a3"),
@@ -108,7 +108,7 @@ test_that("snap_km moves a near-boundary end to the boundary", {
   from <- dplyr::tibble(id = "a2", id_measure = 2)
   to   <- dplyr::tibble(id = "a3", id_measure = 50)
 
-  snapped <- get_substring(from, to, h, snap_km = 0.05)
+  snapped <- get_subpath(from, to, h, snap_m = 50)
 
   expect_equal(snapped$id, c("a2", "a3"))
   expect_equal(snapped$id_from_measure[1], 0)
@@ -128,14 +128,14 @@ test_that("multiple spans are keyed by line_id", {
     id = c("a1", "a2"), id_measure = c(0, 0))
   to <- dplyr::tibble(id = c("a2", "a3"), id_measure = c(100, 100))
 
-  sub <- get_substring(from, to, h)
+  sub <- get_subpath(from, to, h)
 
   expect_setequal(unique(sub$line_id), c("x", "y"))
   expect_equal(sub$id[sub$line_id == "x"], c("a1", "a2"))
   expect_equal(sub$id[sub$line_id == "y"], c("a2", "a3"))
 })
 
-test_that("the V2 flowlines of 2408056 indexed onto 3DHP tile the 3DHP chain", {
+test_that("the V2 flowlines of 2408056 indexed onto 3DHP tile the 3DHP aggregate flowpath", {
 
   d3 <- read_3dhp(keep_geometry = TRUE)
   if (is.null(d3)) skip("3DHP sample not available")
@@ -152,7 +152,7 @@ test_that("the V2 flowlines of 2408056 indexed onto 3DHP tile the 3DHP chain", {
 
   sr <- units::set_units(500, "m")
 
-  # each V2 flowline's two ends indexed onto the 3DHP New Hope chain;
+  # each V2 flowline's two ends indexed onto the 3DHP New Hope aggregate flowpath;
   # index_points_to_lines drops unplaced points, so join start and end by
   # point_id and keep flowlines placed at both ends
   starts <- get_node(v2_nh, position = "start")
@@ -173,27 +173,27 @@ test_that("the V2 flowlines of 2408056 indexed onto 3DHP tile the 3DHP chain", {
     id = en$id, id_measure = en$id_measure)
   to <- dplyr::tibble(id = se$id, id_measure = se$id_measure)
 
-  sub <- suppressWarnings(get_substring(from, to, d3, snap_km = 0.05))
+  sub <- suppressWarnings(get_subpath(from, to, d3, snap_m = 50))
 
-  # pieces that are real (not empty-span rows) tile the 3DHP chain between the
+  # pieces that are real (not empty-span rows) tile the 3DHP aggregate flowpath between the
   # first and last cut: their kilometer intervals cover [min, max] with no gap
   # and no overlap, so the piece lengths sum to the covered span
-  fr3 <- hydroloom:::chain_frame(d3)
+  axis3 <- hydroloom:::aggregate_flowpath_axis(d3)
   real <- sub[!is.na(sub$id), ]
-  km_from <- hydroloom:::position_to_km(real$id, real$id_from_measure, fr3)$km
-  km_to   <- hydroloom:::position_to_km(real$id, real$id_to_measure, fr3)$km
+  km_from <- hydroloom:::position_to_km(real$id, real$id_from_measure, axis3)$km
+  km_to   <- hydroloom:::position_to_km(real$id, real$id_to_measure, axis3)$km
 
   lo <- pmin(km_from, km_to)
   hi <- pmax(km_from, km_to)
 
-  # the pieces tile the chain between the first and last cut: sorted by lo,
+  # the pieces tile the aggregate flowpath between the first and last cut: sorted by lo,
   # each piece starts no higher than the running maximum of the ends reached
   # so far, so the covered interval has no gap. A small overlap is allowed
   # because NHDPlusV2 and 3DHP draw 2408056 differently: four V2 flowlines
   # index onto 3DHP with their own upstream end below their downstream end
   # (self-inverting), and a five-flowline side channel sits 100-336 m off the
   # 3DHP line, so those pieces double-cover a short stretch. This is real
-  # cross-representation geometry, not a get_substring() defect; the
+  # cross-representation geometry, not a get_subpath() defect; the
   # piece-length-to-span ratio is reported, not asserted.
   ord <- order(lo)
   lo <- lo[ord]
@@ -216,8 +216,8 @@ test_that("piece geometry end points coincide with the positions' points", {
   d3 <- sf::st_cast(d3, "LINESTRING", warn = FALSE)
 
   h3 <- hy(sf::st_drop_geometry(d3))
-  fr <- hydroloom:::chain_frame(h3)
-  nh_rows <- fr[fr$aggregate_id == nh, ]
+  axis <- hydroloom:::aggregate_flowpath_axis(h3)
+  nh_rows <- axis[axis$aggregate_id == nh, ]
   nh_rows <- nh_rows[order(nh_rows$from_km), ]
 
   # a span from the middle of the bottom NH flowline to the middle of the one
@@ -225,7 +225,7 @@ test_that("piece geometry end points coincide with the positions' points", {
   from <- dplyr::tibble(id = nh_rows$id[1], id_measure = 50)
   to   <- dplyr::tibble(id = nh_rows$id[2], id_measure = 50)
 
-  sub <- get_substring(from, to, d3)
+  sub <- get_subpath(from, to, d3)
 
   expect_true(inherits(sub, "sf"))
 
@@ -263,16 +263,16 @@ test_that("the top COMID of Morgan Creek indexed onto 3DHP closes at the head", 
   v2 <- sf::st_cast(v2, "LINESTRING", warn = FALSE)
 
   v2_mc <- v2[!is.na(v2$aggregate_id) & v2$aggregate_id == mc, ]
-  fr_v2 <- hydroloom:::chain_frame(v2_mc)
-  top_id <- fr_v2$id[which.max(fr_v2$to_km)]
+  axis_v2 <- hydroloom:::aggregate_flowpath_axis(v2_mc)
+  top_id <- axis_v2$id[which.max(axis_v2$to_km)]
   top <- v2_mc[v2_mc$id == top_id, ]
 
   d3 <- sf::st_cast(d3, "LINESTRING", warn = FALSE)
   d3 <- sf::st_transform(d3, sf::st_crs(v2_mc))
 
-  fr3 <- hydroloom:::chain_frame(sf::st_drop_geometry(hy(d3)))
-  head3_id <- fr3$id[fr3$aggregate_id == mc][which.max(
-    fr3$to_km[fr3$aggregate_id == mc])]
+  axis3 <- hydroloom:::aggregate_flowpath_axis(sf::st_drop_geometry(hy(d3)))
+  head3_id <- axis3$id[axis3$aggregate_id == mc][which.max(
+    axis3$to_km[axis3$aggregate_id == mc])]
 
   start <- get_node(top, position = "start")
   end   <- get_node(top, position = "end")
@@ -287,10 +287,10 @@ test_that("the top COMID of Morgan Creek indexed onto 3DHP closes at the head", 
   expect_equal(nrow(idx_start), 1)
   expect_equal(nrow(idx_end), 1)
 
-  sub <- suppressWarnings(get_substring(
+  sub <- suppressWarnings(get_subpath(
     dplyr::tibble(id = idx_end$id, id_measure = idx_end$id_measure),
     dplyr::tibble(id = idx_start$id, id_measure = idx_start$id_measure),
-    d3, snap_km = 0.05))
+    d3, snap_m = 50))
 
   # the upstream end of the span closes at the 3DHP head flowline
   top_piece <- sub[sub$segment_order == max(sub$segment_order), ]

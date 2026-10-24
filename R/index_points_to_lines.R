@@ -117,7 +117,7 @@ rename_indexed <- function(x, matched) {
 #' @param aggregate_ids vector of aggregate_ids corresponding to the aggregate_id
 #' field of `x` of the same length and order as `points`. If included, index
 #' searching for each point is constrained to the flowlines that carry its
-#' aggregate_id, so a referent on a tributary is placed on the tributary and not
+#' aggregate_id, so a point on a tributary is placed on the tributary and not
 #' the receiving river. Exclusive with `ids`.
 #'
 #' @returns data.frame with up to six columns, point_id, id, id_measure,

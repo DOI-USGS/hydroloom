@@ -149,7 +149,7 @@ hnd$upmain <- "indicates that a given network element is the primary upstream co
 hnd$downmain <- "indicates that a given network element is the primary downstream connection at a confluence"
 hnd$hydro_location_id <- paste("identifier of the feature linked to the hydrolocation",
   "a distance is measured from (for a confluence, the tributary mainstem)")
-hnd$distance_km <- paste("signed distance along the line from the referent,",
+hnd$distance_km <- paste("signed distance along the line from the hydro location,",
   "negative toward the outlet, positive toward the head")
 hnd$past_end_km <- paste("distance by which a resolved position fell beyond the end of the flowlines present,",
   "before being placed at that end; 0 when it did not")

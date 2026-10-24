@@ -30,7 +30,7 @@ test_that("a divergence == 2 tributary warns and yields no confluence", {
   expect_equal(nrow(conf), 0)
 })
 
-test_that("a broken chain stops the frame building the mainstem", {
+test_that("a broken aggregate flowpath stops building the axis", {
 
   base <- dplyr::tibble(
     id   = c("a1", "a2", "a3", "b1", "b2"),
@@ -43,7 +43,7 @@ test_that("a broken chain stops the frame building the mainstem", {
   two_runs$aggregate_id[two_runs$id == "b2"] <- "A"
   expect_error(get_confluences(hy(two_runs)), "not continuous")
 
-  # a toid set to the outlet value mid-chain breaks A above a2
+  # a toid set to the outlet value mid-aggregate-flowpath breaks A above a2
   mid_outlet <- base
   mid_outlet$toid[mid_outlet$id == "a2"] <- ""
   expect_error(get_confluences(hy(mid_outlet)), "not continuous")
@@ -64,8 +64,8 @@ test_that("a bare hy gets a guided error, not a recursion", {
     "add_hydro_location_distance\\(\\) requires hy_topo or hy_node")
   expect_error(index_hydro_location_distance(rec, hl, bare),
     "index_hydro_location_distance\\(\\) requires hy_topo or hy_node")
-  expect_error(get_substring(pos, pos, bare),
-    "get_substring\\(\\) requires hy_topo or hy_node")
+  expect_error(get_subpath(pos, pos, bare),
+    "get_subpath\\(\\) requires hy_topo or hy_node")
 })
 
 test_that("round trip on V2 returns each flowline's own id and measure", {
@@ -88,7 +88,7 @@ test_that("round trip on V2 returns each flowline's own id and measure", {
   expect_equal(back$id_measure, rep(50, nrow(back)), tolerance = 1e-6)
 })
 
-test_that("a position equidistant between two referents takes the smaller hydro_location_id", {
+test_that("a position equidistant between two hydro locations takes the smaller hydro_location_id", {
 
   base <- dplyr::tibble(
     id   = c("a1", "a2", "a3", "a4", "a5"),
@@ -98,7 +98,8 @@ test_that("a position equidistant between two referents takes the smaller hydro_
 
   net <- hy(base)
 
-  # a referent 1 km below and one 1 km above the position, on opposite sides
+  # a hydro location 1 km below and one 1 km above the position, on opposite
+  # sides
   hl <- dplyr::tibble(
     hydro_location_id = c("Z", "A"),
     id = c("a2", "a4"),
@@ -111,7 +112,7 @@ test_that("a position equidistant between two referents takes the smaller hydro_
   expect_equal(res$hydro_location_id, "A")
 })
 
-test_that("two coincident referents take the smaller hydro_location_id", {
+test_that("two coincident hydro locations take the smaller hydro_location_id", {
 
   base <- dplyr::tibble(
     id   = c("a1", "a2", "a3"),
@@ -176,7 +177,7 @@ test_that("0.5 km above and below the Morgan Creek mouth resolve on 3DHP on the 
   expect_false(res$id[1] == res$id[2])
 })
 
-test_that("a referent absent from x gives hydro_location_not_in_x", {
+test_that("a hydro location absent from x gives hydro_location_not_in_x", {
 
   tbl <- read_3dhp()
   if (is.null(tbl)) skip("3DHP sample not available")
@@ -193,7 +194,7 @@ test_that("a referent absent from x gives hydro_location_not_in_x", {
   expect_true(is.na(res$id))
 })
 
-test_that("a truncated chain gives the same distance between two confluences", {
+test_that("a truncated aggregate flowpath gives the same distance between two confluences", {
 
   tbl <- read_3dhp()
   if (is.null(tbl)) skip("3DHP sample not available")
@@ -201,20 +202,20 @@ test_that("a truncated chain gives the same distance between two confluences", {
   h3 <- hy(tbl)
   conf <- get_confluences(h3)
 
-  fr_full <- hydroloom:::chain_frame(h3)
+  axis_full <- hydroloom:::aggregate_flowpath_axis(h3)
 
-  nh_rows <- fr_full[fr_full$aggregate_id == nh, ]
+  nh_rows <- axis_full[axis_full$aggregate_id == nh, ]
   drop_ids <- nh_rows$id[order(nh_rows$from_km)][1:5]
 
-  fr_trunc <- hydroloom:::chain_frame(hy(tbl[!tbl$id %in% drop_ids, ]))
+  axis_trunc <- hydroloom:::aggregate_flowpath_axis(hy(tbl[!tbl$id %in% drop_ids, ]))
 
   conf_nh <- conf[conf$aggregate_id == nh &
     conf$hydro_location_id %in% c(ne, mc), ]
 
   km_full <- hydroloom:::position_to_km(conf_nh$id, conf_nh$id_measure,
-    fr_full)$km
+    axis_full)$km
   km_trunc <- hydroloom:::position_to_km(conf_nh$id, conf_nh$id_measure,
-    fr_trunc)$km
+    axis_trunc)$km
 
   expect_equal(diff(km_full), diff(km_trunc), tolerance = 1e-6)
 })
@@ -239,9 +240,9 @@ test_that("the hy_node form yields the same confluence, including z truncated ab
   expect_equal(ne_node$id, ne_topo$id)
 
   # truncate z (New Hope) above the node: remove all NH flowlines above t
-  fr <- hydroloom:::chain_frame(h3)
-  t_to_km <- fr$to_km[fr$id == ne_topo$id]
-  nh_above <- fr$id[fr$aggregate_id == nh & fr$from_km >= t_to_km - 1e-9]
+  axis <- hydroloom:::aggregate_flowpath_axis(h3)
+  t_to_km <- axis$to_km[axis$id == ne_topo$id]
+  nh_above <- axis$id[axis$aggregate_id == nh & axis$from_km >= t_to_km - 1e-9]
 
   hn2 <- hy(nt[!nt$id %in% nh_above, ])
   ne_node2 <- get_confluences(hn2)

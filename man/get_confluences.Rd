@@ -21,8 +21,8 @@ get_confluences(x)
 \arguments{
 \item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} on identified
 flowlines, or a data.frame coercible with \code{\link[=hy]{hy()}}. A \code{topo_sort} column
-keeps the frame cheap; without it the frame falls back to a full
-topological sort.}
+keeps building the aggregate flowpath axis cheap; without it the build
+falls back to a full topological sort.}
 }
 \value{
 data.frame with one row per confluence: \code{aggregate_id} (the
@@ -38,6 +38,10 @@ connects downstream to a flowline on a different identified mainstem; the
 point is anchored to that downstream flowline, which the link points to
 and which is present even when the receiving mainstem is truncated just
 above the node. Reads no coordinates.
+
+A mainstem here is one kind of aggregate flowpath: the flowlines that share
+an \code{aggregate_id} and link end to end. Any \code{aggregate_id} whose flowlines
+form one such unbranched path works the same way.
 
 This is the \code{hydrolocation} feature type of OGC 25-045 with \code{mainstem_id}
 as \code{aggregate_id} and \code{link} as \code{hydro_location_id}. Each identified

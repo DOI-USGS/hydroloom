@@ -74,7 +74,7 @@ reference:
       - '`get_confluences`'
       - '`add_hydro_location_distance`'
       - '`index_hydro_location_distance`'
-      - '`get_substring`'
+      - '`get_subpath`'
   - title: Deprecated
     contents:
       - '`make_fromids`'

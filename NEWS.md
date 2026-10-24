@@ -1,25 +1,29 @@
 hydroloom 1.3.0
 ==========
 
-Referent distances and substrings along identified mainstems. Four new
-functions place and recover positions relative to the confluences of
+Distances from confluences and subpaths along identified mainstems. Four
+new functions place and recover positions relative to the confluences of
 identified mainstems (`aggregate_id` as a mainstem URI), working kilometer
-values from an internal chain frame that reads no coordinates.
+values along each aggregate flowpath axis, built from flowline lengths
+rather than coordinates. A mainstem is one kind of aggregate flowpath (the
+flowlines that share an `aggregate_id` and link end to end), so any
+`aggregate_id` whose flowlines form one unbranched path works the same way.
 
 - `get_confluences()` returns each confluence of two identified mainstems as
   a hydrolocation on the receiving mainstem at the outlet of the tributary.
 - `add_hydro_location_distance()` records the signed distance along a mainstem
-  from the nearest referent; negative toward the outlet, positive toward the
-  head.
-- `index_hydro_location_distance()` is the inverse, mapping a referent
-  distance back to a flowline `id` and `id_measure`.
-- `get_substring()` returns the ordered pieces between two positions on one
-  mainstem, with piece geometry cut by `lwgeom::st_linesubstring()` when the
-  input is `sf` and `lwgeom` is installed.
+  from the nearest hydro location; negative toward the outlet, positive toward
+  the head.
+- `index_hydro_location_distance()` is the inverse, mapping a distance from a
+  hydro location back to a flowline `id` and `id_measure`.
+- `get_subpath()` returns the subpath between two positions on one aggregate
+  flowpath (such as an identified mainstem) as ordered flowline pieces, with
+  piece geometry cut by `lwgeom::st_linesubstring()` when the input is `sf`
+  and `lwgeom` is installed.
 - `index_points_to_lines()` returns `id_measure` on every call and accepts
   `aggregate_ids` to constrain a point to one mainstem's flowlines.
 - `hy_capabilities()` reports the four new functions. A new website article,
-  "Referent distances along mainstems", walks a worked example.
+  "Distances from confluences along mainstems", walks a worked example.
 
 hydroloom 1.2.2
 ==========

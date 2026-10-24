@@ -2,7 +2,7 @@
 # as mainstemid, ready for hy(). new_hope_mainstems.csv is the comid to
 # mainstem_uri lookup for the flowlines in new_hope.gpkg. REACHCODE is
 # dropped so hy() maps mainstemid, not REACHCODE, to aggregate_id. The
-# flowlines are cast to LINESTRING so get_substring() can cut them.
+# flowlines are cast to LINESTRING so get_subpath() can cut them.
 #
 # source(system.file("extdata", "new_hope_mainstems.R", package = "hydroloom"))
 #

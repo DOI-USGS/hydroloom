@@ -6,7 +6,7 @@
 \alias{add_hydro_location_distance.hy}
 \alias{add_hydro_location_distance.hy_topo}
 \alias{add_hydro_location_distance.hy_node}
-\title{Add distance from the nearest referent}
+\title{Add distance from the nearest hydro location}
 \usage{
 add_hydro_location_distance(indexes, hydro_locations, x)
 
@@ -21,24 +21,29 @@ add_hydro_location_distance(indexes, hydro_locations, x)
 \arguments{
 \item{indexes}{data.frame. Positions with \code{id} and \code{id_measure}, on \code{x}.}
 
-\item{hydro_locations}{data.frame. Referents with \code{hydro_location_id},
-\code{id} and \code{id_measure}, on \code{x} (for example the output of
-\code{\link[=get_confluences]{get_confluences()}}).}
+\item{hydro_locations}{data.frame. Hydro locations to measure from, with
+\code{hydro_location_id}, \code{id} and \code{id_measure}, on \code{x} (for example the output
+of \code{\link[=get_confluences]{get_confluences()}}).}
 
 \item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} and \code{length_km}.
-A \code{topo_sort} column keeps the frame cheap; without it the frame falls
-back to a full topological sort.}
+A \code{topo_sort} column keeps building the aggregate flowpath axis cheap;
+without it the build falls back to a full topological sort.}
 }
 \value{
 \code{indexes} with \code{aggregate_id}, \code{hydro_location_id} and
-\code{distance_km} added. A position on a mainstem with no referent gets NA
-and a message.
+\code{distance_km} added. A position on a mainstem with no hydro location gets
+NA and a message.
 }
 \description{
 Records, for each position, the signed distance along its
-mainstem to the nearest referent among those supplied. Through the chain
-frame every position and referent on the same mainstem is a kilometer
-value; the nearest referent by absolute difference is the one recorded.
+mainstem to the nearest hydro location among those supplied. On the
+aggregate flowpath axis every position and hydro location on the same
+aggregate_id is a kilometer value; the nearest hydro location by absolute
+difference is the one recorded.
+
+A mainstem here is one kind of aggregate flowpath: the flowlines that share
+an \code{aggregate_id} and link end to end. Any \code{aggregate_id} whose flowlines
+form one such unbranched path works the same way.
 
 \code{distance_km} is negative toward the outlet and positive toward the head;
 the sign is hydroloom's convention, downstream and upstream in
