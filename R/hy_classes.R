@@ -704,7 +704,8 @@ hy_capabilities <- function(x, include_conversions = FALSE) {
   has_nodes  <- all(c(fromnode, tonode) %in% names(x))
   has_div    <- divergence %in% names(x)
   has_geom   <- inherits(x, "sf")
-  has_chain  <- all(c(aggregate_id, toid, length_km) %in% names(x))
+  has_chain  <- all(c(aggregate_id, length_km) %in% names(x)) &&
+    (is_topo || is_node)
 
   direct <- c(
     # representation conversions

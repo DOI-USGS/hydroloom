@@ -72,20 +72,14 @@ nh <- "https://geoconnex.us/ref/mainstems/2408056"  # New Hope River
 # The two representations
 
 The NHDPlusV2 network is the sample flowlines joined to the 679-row
-`comid, mainstem_uri` lookup, with the URI set as `aggregate_id`. The flowlines
-are cast to `LINESTRING` so the substring cutter can operate on them.
+`comid, mainstem_uri` lookup, with the URI set as `aggregate_id`. The recipe
+that ships with hydroloom does the join and casts the flowlines to
+`LINESTRING` so the substring cutter can operate on them.
 
 ```{r v2}
-g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-csv <- utils::read.csv(
-  system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+source(system.file("extdata", "new_hope_mainstems.R", package = "hydroloom"))
 
-g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
-g$REACHCODE <- NULL
-
-g <- sf::st_cast(g, "LINESTRING", warn = FALSE)
-
-v2 <- add_toids(hy(g))
+v2 <- add_toids(hy(new_hope_mainstems))
 ```
 
 The 3DHP network carries the four New Hope mainstems natively in `mainstemid`.

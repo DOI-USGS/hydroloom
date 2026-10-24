@@ -3,6 +3,7 @@
 \name{add_hydro_location_distance}
 \alias{add_hydro_location_distance}
 \alias{add_hydro_location_distance.data.frame}
+\alias{add_hydro_location_distance.hy}
 \alias{add_hydro_location_distance.hy_topo}
 \alias{add_hydro_location_distance.hy_node}
 \title{Distance from the nearest referent along a mainstem}
@@ -10,6 +11,8 @@
 add_hydro_location_distance(indexes, hydro_locations, x)
 
 \method{add_hydro_location_distance}{data.frame}(indexes, hydro_locations, x)
+
+\method{add_hydro_location_distance}{hy}(indexes, hydro_locations, x)
 
 \method{add_hydro_location_distance}{hy_topo}(indexes, hydro_locations, x)
 

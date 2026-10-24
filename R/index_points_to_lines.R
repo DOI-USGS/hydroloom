@@ -249,6 +249,8 @@ index_points_to_lines.hy <- function(x, points,
     if (length(aggregate_ids) != length(st_geometry(points)))
       stop("aggregate_ids input must be 1:1 with points")
 
+    if (anyNA(aggregate_ids)) stop("aggregate_ids must not contain NA")
+
     point_ids <- seq_along(st_geometry(points))
 
     matched <- lapply(unique(aggregate_ids), function(a) {

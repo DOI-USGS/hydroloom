@@ -468,6 +468,14 @@ add_hydro_location_distance.data.frame <- function(indexes, hydro_locations, x) 
 
 #' @name add_hydro_location_distance
 #' @export
+add_hydro_location_distance.hy <- function(indexes, hydro_locations, x) {
+  hy_classify_and_redispatch(x, "add_hydro_location_distance",
+    "hy_topo or hy_node", hy_guidance_topo,
+    indexes = indexes, hydro_locations = hydro_locations)
+}
+
+#' @name add_hydro_location_distance
+#' @export
 add_hydro_location_distance.hy_topo <- function(indexes, hydro_locations, x) {
   add_hydro_location_distance_impl(indexes, hydro_locations, chain_frame(x))
 }
@@ -578,6 +586,14 @@ index_hydro_location_distance <- function(positions, hydro_locations, x) {
 #' @export
 index_hydro_location_distance.data.frame <- function(positions, hydro_locations, x) {
   index_hydro_location_distance(positions, hydro_locations, hy(x))
+}
+
+#' @name index_hydro_location_distance
+#' @export
+index_hydro_location_distance.hy <- function(positions, hydro_locations, x) {
+  hy_classify_and_redispatch(x, "index_hydro_location_distance",
+    "hy_topo or hy_node", hy_guidance_topo,
+    positions = positions, hydro_locations = hydro_locations)
 }
 
 #' @name index_hydro_location_distance

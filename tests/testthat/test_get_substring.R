@@ -1,32 +1,3 @@
-ne <- "https://geoconnex.us/ref/mainstems/2408627"
-mc <- "https://geoconnex.us/ref/mainstems/2408909"
-nh <- "https://geoconnex.us/ref/mainstems/2408056"
-
-# 3DHP sample with geometry kept, renamed to hydroloom names
-read_3dhp_sf <- function() {
-  try(source(system.file("extdata", "new_hope_3dhp.R",
-    package = "hydrogeofetch")), silent = TRUE)
-  if (!exists("sample_new_hope_3dhp") || !file.exists(sample_new_hope_3dhp))
-    return(NULL)
-  d3 <- sf::read_sf(sample_new_hope_3dhp)
-  m <- match(d3$dnhydrosequence, d3$hydrosequence)
-  d3$toid <- d3$id3dhp[m]
-  d3$toid[is.na(d3$toid)] <- ""
-  d3 <- dplyr::rename(d3, id = id3dhp, aggregate_id = mainstemid,
-    topo_sort = hydrosequence, length_km = lengthkm)
-  sf::st_zm(dplyr::select(d3, id, toid, aggregate_id, topo_sort, length_km,
-    divergence))
-}
-
-read_v2_sf <- function() {
-  g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-  csv <- utils::read.csv(
-    system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
-  g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
-  g$REACHCODE <- NULL
-  sf::st_zm(add_toids(hy(g)))
-}
-
 test_that("a flowline's own two ends return itself at 0 to 100", {
 
   base <- dplyr::tibble(
@@ -166,11 +137,11 @@ test_that("multiple spans are keyed by line_id", {
 
 test_that("the V2 flowlines of 2408056 indexed onto 3DHP tile the 3DHP chain", {
 
-  d3 <- read_3dhp_sf()
+  d3 <- read_3dhp(keep_geometry = TRUE)
   if (is.null(d3)) skip("3DHP sample not available")
   if (!requireNamespace("lwgeom", quietly = TRUE)) skip("Missing lwgeom")
 
-  v2 <- read_v2_sf()
+  v2 <- read_v2()
   v2 <- sf::st_cast(v2, "LINESTRING", warn = FALSE)
 
   # V2 flowlines on New Hope River
@@ -238,7 +209,7 @@ test_that("the V2 flowlines of 2408056 indexed onto 3DHP tile the 3DHP chain", {
 
 test_that("piece geometry end points coincide with the positions' points", {
 
-  d3 <- read_3dhp_sf()
+  d3 <- read_3dhp(keep_geometry = TRUE)
   if (is.null(d3)) skip("3DHP sample not available")
   if (!requireNamespace("lwgeom", quietly = TRUE)) skip("Missing lwgeom")
 
@@ -284,11 +255,11 @@ test_that("piece geometry end points coincide with the positions' points", {
 
 test_that("the top COMID of Morgan Creek indexed onto 3DHP closes at the head", {
 
-  d3 <- read_3dhp_sf()
+  d3 <- read_3dhp(keep_geometry = TRUE)
   if (is.null(d3)) skip("3DHP sample not available")
   if (!requireNamespace("lwgeom", quietly = TRUE)) skip("Missing lwgeom")
 
-  v2 <- read_v2_sf()
+  v2 <- read_v2()
   v2 <- sf::st_cast(v2, "LINESTRING", warn = FALSE)
 
   v2_mc <- v2[!is.na(v2$aggregate_id) & v2$aggregate_id == mc, ]

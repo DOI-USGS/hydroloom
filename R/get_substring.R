@@ -75,6 +75,13 @@ get_substring.data.frame <- function(from, to, x, snap_km = 0) {
 
 #' @name get_substring
 #' @export
+get_substring.hy <- function(from, to, x, snap_km = 0) {
+  hy_classify_and_redispatch(x, "get_substring", "hy_topo or hy_node",
+    hy_guidance_topo, from = from, to = to, snap_km = snap_km)
+}
+
+#' @name get_substring
+#' @export
 get_substring.hy_topo <- function(from, to, x, snap_km = 0) {
   get_substring_impl(from, to, x, chain_frame(x), snap_km)
 }

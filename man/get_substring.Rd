@@ -3,6 +3,7 @@
 \name{get_substring}
 \alias{get_substring}
 \alias{get_substring.data.frame}
+\alias{get_substring.hy}
 \alias{get_substring.hy_topo}
 \alias{get_substring.hy_node}
 \title{Substring between two positions on a mainstem}
@@ -10,6 +11,8 @@
 get_substring(from, to, x, snap_km = 0)
 
 \method{get_substring}{data.frame}(from, to, x, snap_km = 0)
+
+\method{get_substring}{hy}(from, to, x, snap_km = 0)
 
 \method{get_substring}{hy_topo}(from, to, x, snap_km = 0)
 

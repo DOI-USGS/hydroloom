@@ -3,6 +3,7 @@
 \name{index_hydro_location_distance}
 \alias{index_hydro_location_distance}
 \alias{index_hydro_location_distance.data.frame}
+\alias{index_hydro_location_distance.hy}
 \alias{index_hydro_location_distance.hy_topo}
 \alias{index_hydro_location_distance.hy_node}
 \title{Position from a referent distance along a mainstem}
@@ -10,6 +11,8 @@
 index_hydro_location_distance(positions, hydro_locations, x)
 
 \method{index_hydro_location_distance}{data.frame}(positions, hydro_locations, x)
+
+\method{index_hydro_location_distance}{hy}(positions, hydro_locations, x)
 
 \method{index_hydro_location_distance}{hy_topo}(positions, hydro_locations, x)
 

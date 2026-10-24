@@ -409,4 +409,8 @@ test_that("aggregate_ids input errors", {
   expect_error(index_points_to_lines(flines_in, points,
     aggregate_ids = "02060003000579"),
   "aggregate_ids input must be 1:1 with points")
+
+  expect_error(index_points_to_lines(flines_in, points,
+    aggregate_ids = c("02060003000579", NA)),
+  "aggregate_ids must not contain NA")
 })

@@ -1,30 +1,3 @@
-ne <- "https://geoconnex.us/ref/mainstems/2408627"
-mc <- "https://geoconnex.us/ref/mainstems/2408909"
-nh <- "https://geoconnex.us/ref/mainstems/2408056"
-
-read_v2_mainstems <- function() {
-  g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-  csv <- utils::read.csv(
-    system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
-  g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
-  g$REACHCODE <- NULL
-  add_toids(hy(g))
-}
-
-read_3dhp_mainstems <- function() {
-  try(source(system.file("extdata", "new_hope_3dhp.R",
-    package = "hydrogeofetch")), silent = TRUE)
-  if (!exists("sample_new_hope_3dhp") || !file.exists(sample_new_hope_3dhp))
-    return(NULL)
-  d3 <- sf::read_sf(sample_new_hope_3dhp)
-  m <- match(d3$dnhydrosequence, d3$hydrosequence)
-  d3$toid <- d3$id3dhp[m]
-  d3$toid[is.na(d3$toid)] <- ""
-  dplyr::transmute(sf::st_drop_geometry(d3),
-    id = id3dhp, toid = toid, aggregate_id = mainstemid,
-    topo_sort = hydrosequence, length_km = lengthkm, divergence = divergence)
-}
-
 test_that("get_confluences finds a tributary confluence as a hydrolocation on the receiver", {
 
   base <- dplyr::tibble(
@@ -76,9 +49,28 @@ test_that("a broken chain stops the frame naming the mainstem", {
   expect_error(get_confluences(hy(mid_outlet)), "not continuous")
 })
 
+test_that("a bare hy gets a guided error, not a recursion", {
+
+  bare <- data.frame(id = c("a1", "a2"), aggregate_id = c("A", "A"),
+    length_km = c(1, 1))
+
+  pos <- data.frame(id = "a1", id_measure = 50)
+  hl <- data.frame(aggregate_id = "A", hydro_location_id = "B", id = "a1",
+    id_measure = 100)
+  rec <- data.frame(aggregate_id = "A", hydro_location_id = "B",
+    distance_km = 0.5)
+
+  expect_error(add_hydro_location_distance(pos, hl, bare),
+    "add_hydro_location_distance\\(\\) requires hy_topo or hy_node")
+  expect_error(index_hydro_location_distance(rec, hl, bare),
+    "index_hydro_location_distance\\(\\) requires hy_topo or hy_node")
+  expect_error(get_substring(pos, pos, bare),
+    "get_substring\\(\\) requires hy_topo or hy_node")
+})
+
 test_that("round trip on V2 returns each flowline's own id and measure", {
 
-  hv <- read_v2_mainstems()
+  hv <- read_v2()
   conf <- get_confluences(hv)
 
   idx <- dplyr::tibble(id = hv$id[!is.na(hv$aggregate_id)], id_measure = 50)
@@ -98,7 +90,7 @@ test_that("round trip on V2 returns each flowline's own id and measure", {
 
 test_that("the Northeast Creek mouth at distance 0 resolves on 3DHP", {
 
-  tbl <- read_3dhp_mainstems()
+  tbl <- read_3dhp()
   if (is.null(tbl)) skip("3DHP sample not available")
 
   h3 <- hy(tbl)
@@ -118,7 +110,7 @@ test_that("the Northeast Creek mouth at distance 0 resolves on 3DHP", {
 
 test_that("0.5 km above and below the Morgan Creek mouth resolve on 3DHP on the same sides", {
 
-  tbl <- read_3dhp_mainstems()
+  tbl <- read_3dhp()
   if (is.null(tbl)) skip("3DHP sample not available")
 
   h3 <- hy(tbl)
@@ -140,7 +132,7 @@ test_that("0.5 km above and below the Morgan Creek mouth resolve on 3DHP on the 
 
 test_that("a referent absent from x gives hydro_location_not_in_x", {
 
-  tbl <- read_3dhp_mainstems()
+  tbl <- read_3dhp()
   if (is.null(tbl)) skip("3DHP sample not available")
 
   h3 <- hy(tbl)
@@ -157,7 +149,7 @@ test_that("a referent absent from x gives hydro_location_not_in_x", {
 
 test_that("a truncated chain gives the same distance between two confluences", {
 
-  tbl <- read_3dhp_mainstems()
+  tbl <- read_3dhp()
   if (is.null(tbl)) skip("3DHP sample not available")
 
   h3 <- hy(tbl)
@@ -183,7 +175,7 @@ test_that("a truncated chain gives the same distance between two confluences", {
 
 test_that("the hy_node form yields the same confluence, including z truncated above the node", {
 
-  tbl <- read_3dhp_mainstems()
+  tbl <- read_3dhp()
   if (is.null(tbl)) skip("3DHP sample not available")
 
   h3 <- hy(tbl)
