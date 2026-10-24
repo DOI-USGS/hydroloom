@@ -253,11 +253,18 @@ index_points_to_lines.hy <- function(x, points,
 
     point_ids <- seq_along(st_geometry(points))
 
-    matched <- lapply(unique(aggregate_ids), function(a) {
+    present <- unique(aggregate_ids)
+
+    # split x once by aggregate_id, restricted to the values present in
+    # aggregate_ids, rather than filtering all of x once per value
+    groups <- split(x[x$aggregate_id %in% present, ],
+      x$aggregate_id[x$aggregate_id %in% present])
+
+    matched <- lapply(present, function(a) {
       in_group <- aggregate_ids == a
 
       group_matched <- index_points_to_lines(
-        filter(x, .data$aggregate_id == a),
+        groups[[as.character(a)]],
         st_geometry(points)[in_group],
         search_radius = search_radius,
         precision = precision,

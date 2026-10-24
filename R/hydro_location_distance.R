@@ -84,11 +84,11 @@ chain_frame <- function(x) {
     link <- chain_link_topo(x)
   }
 
-  fr <- as_tibble(sf::st_drop_geometry(x))
+  keep <- c(id, aggregate_id, length_km, intersect(topo_sort, names(x)))
+  fr <- as_tibble(sf::st_drop_geometry(x[, keep]))
   fr$link <- link
 
-  fr <- fr[!is.na(fr$aggregate_id), c(id, aggregate_id, length_km, "link",
-    intersect(topo_sort, names(fr)))]
+  fr <- fr[!is.na(fr$aggregate_id), ]
 
   if (!topo_sort %in% names(fr)) {
 
@@ -100,9 +100,9 @@ chain_frame <- function(x) {
     fr$topo_sort <- match(fr$id, rev(sorted$id))
   }
 
-  fr <- arrange(group_by(fr, .data$aggregate_id), .data$topo_sort)
+  fr <- arrange(fr, .data$aggregate_id, .data$topo_sort)
 
-  fr <- mutate(fr,
+  fr <- mutate(group_by(fr, .data$aggregate_id),
     from_km = cumsum(lag(.data$length_km, default = 0)),
     to_km = .data$from_km + .data$length_km)
 
@@ -163,7 +163,9 @@ check_chain_continuity <- function(fr) {
 #' connection is a diversion (`divergence == 2`) is dropped with a warning.
 #'
 #' @param x `hy_topo` or `hy_node` carrying `aggregate_id` on identified
-#' flowlines, or a data.frame coercible with [hy()].
+#' flowlines, or a data.frame coercible with [hy()]. A `topo_sort` column
+#' keeps the frame cheap; without it the frame falls back to a full
+#' topological sort.
 #' @returns data.frame with one row per confluence: `aggregate_id` (the
 #' receiving mainstem), `hydro_location_id` (the tributary), `id` (the
 #' flowline below the node on the receiving mainstem) and `id_measure`
@@ -231,11 +233,14 @@ get_confluences.hy_topo <- function(x) {
 #' @export
 get_confluences.hy_node <- function(x) {
 
-  # continuity check: makes the bottom flowline unique per mainstem
-  chain_frame(x)
+  # the frame's continuity check makes the bottom flowline unique per
+  # mainstem; the frame already carries the within-chain link, so map it
+  # back to x by id rather than recomputing it
+  fr <- chain_frame(x)
 
-  # bottom rows of each identified chain (within-chain link NA)
-  link <- chain_link_node(x)
+  # bottom rows of each identified chain (within-chain link NA). The frame
+  # dropped NA-aggregate_id rows and reordered, so index into it by id.
+  link <- fr$link[match(x$id, fr$id)]
   bottoms <- !is.na(x$aggregate_id) & is.na(link)
 
   # tributary bottoms, kept in order so the output and any warning follow it;
@@ -429,6 +434,8 @@ km_to_position <- function(aggregate_id, km, fr) {
 #' `id` and `id_measure`, on `x` (for example the output of
 #' [get_confluences()]).
 #' @param x `hy_topo` or `hy_node` carrying `aggregate_id` and `length_km`.
+#' A `topo_sort` column keeps the frame cheap; without it the frame falls
+#' back to a full topological sort.
 #' @returns `indexes` with `aggregate_id`, `hydro_location_id` and
 #' `distance_km` added. `distance_km` is negative toward the outlet and
 #' positive toward the head. A position on a mainstem with no referent gets
@@ -583,6 +590,8 @@ add_hydro_location_distance_impl <- function(indexes, hydro_locations, fr) {
 #' `hydro_location_id`, `id` and `id_measure` (for example
 #' [get_confluences()] output).
 #' @param x `hy_topo` or `hy_node` carrying `aggregate_id` and `length_km`.
+#' A `topo_sort` column keeps the frame cheap; without it the frame falls
+#' back to a full topological sort.
 #' @returns `positions` with `id`, `id_measure`, `past_end_km` and `status`
 #' added. `status` is `placed`, `hydro_location_not_in_x`, or `past_end`; a
 #' `past_end` row is placed at the end flowline present and `past_end_km`

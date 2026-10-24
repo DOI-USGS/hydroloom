@@ -26,7 +26,9 @@ index_hydro_location_distance(positions, hydro_locations, x)
 \code{hydro_location_id}, \code{id} and \code{id_measure} (for example
 \code{\link[=get_confluences]{get_confluences()}} output).}
 
-\item{x}{\code{hy_topo} or \code{hy_node} carrying \code{aggregate_id} and \code{length_km}.}
+\item{x}{\code{hy_topo} or \code{hy_node} carrying \code{aggregate_id} and \code{length_km}.
+A \code{topo_sort} column keeps the frame cheap; without it the frame falls
+back to a full topological sort.}
 }
 \value{
 \code{positions} with \code{id}, \code{id_measure}, \code{past_end_km} and \code{status}

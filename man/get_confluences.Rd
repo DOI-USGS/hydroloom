@@ -20,7 +20,9 @@ get_confluences(x)
 }
 \arguments{
 \item{x}{\code{hy_topo} or \code{hy_node} carrying \code{aggregate_id} on identified
-flowlines, or a data.frame coercible with \code{\link[=hy]{hy()}}.}
+flowlines, or a data.frame coercible with \code{\link[=hy]{hy()}}. A \code{topo_sort} column
+keeps the frame cheap; without it the frame falls back to a full
+topological sort.}
 }
 \value{
 data.frame with one row per confluence: \code{aggregate_id} (the
