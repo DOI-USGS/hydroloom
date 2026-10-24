@@ -43,6 +43,8 @@ Hydroloom is designed to provide general hydrologic network functionality for an
 
 This introduction covers the `hy` S3 class and the core flow network topology concepts necessary to use hydroloom effectively.
 
+Indexing also supports linear referencing against durable referents: a position stated as a signed distance along a mainstem from one of its confluences resolves on any representation carrying both mainstems. The [referent distances along mainstems article](https://doi-usgs.github.io/hydroloom/articles/mainstem_referencing.html) walks `get_confluences()`, `add_hydro_location_distance()`, `index_hydro_location_distance()`, and `get_substring()` on a point that moves between NHDPlusV2 and 3DHP.
+
 For the latest development and to open issues, please visit the [package github repository.](https://github.com/DOI-USGS/hydroloom)
 
 # `hy` S3 class

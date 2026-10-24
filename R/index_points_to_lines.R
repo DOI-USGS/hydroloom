@@ -153,6 +153,11 @@ rename_indexed <- function(x, matched) {
 #' flowline in order to have aggregate id measures (reachcode or mainstem
 #' measures) in the output.
 #'
+#' @section Measures:
+#' `id_measure` is an interpolative measure along a single flowline: a percent
+#' of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+#' inlet (upstream, head end).
+#'
 #' @name index_points_to_lines
 #' @export
 #' @examples

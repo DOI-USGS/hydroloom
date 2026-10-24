@@ -11,4 +11,4 @@ revdep/
 dev
 vignettes/*.html
 docs/
-
+.kiro

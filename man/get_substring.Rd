@@ -53,3 +53,31 @@ returns one row for that \code{line_id} with \code{NA} \code{id} and zero \code{
 When \code{x} is \code{sf} and \pkg{lwgeom} is installed the piece geometry from
 \code{lwgeom::st_linesubstring()} is attached.
 }
+\section{Measures}{
+
+\code{id_measure} is an interpolative measure along a single flowline: a percent
+of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+inlet (upstream, head end).
+}
+
+\examples{
+g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+csv <- utils::read.csv(
+  system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+
+g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+g$REACHCODE <- NULL
+
+g <- sf::st_cast(g, "LINESTRING", warn = FALSE)
+
+net <- add_toids(hy(g))
+
+# flowlines of one mainstem, bottom and top by topo_sort
+nh <- "https://geoconnex.us/ref/mainstems/2408056"
+on_nh <- net[!is.na(net$aggregate_id) & net$aggregate_id == nh, ]
+
+from <- data.frame(id = on_nh$id[which.min(on_nh$topo_sort)], id_measure = 0)
+to <- data.frame(id = on_nh$id[which.max(on_nh$topo_sort)], id_measure = 100)
+
+get_substring(from, to, net)
+}

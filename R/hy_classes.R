@@ -704,6 +704,7 @@ hy_capabilities <- function(x, include_conversions = FALSE) {
   has_nodes  <- all(c(fromnode, tonode) %in% names(x))
   has_div    <- divergence %in% names(x)
   has_geom   <- inherits(x, "sf")
+  has_chain  <- all(c(aggregate_id, toid, length_km) %in% names(x))
 
   direct <- c(
     # representation conversions
@@ -734,7 +735,13 @@ hy_capabilities <- function(x, include_conversions = FALSE) {
 
     # geometry operations
     make_attribute_topology = has_geom,
-    index_points_to_lines   = has_geom
+    index_points_to_lines   = has_geom,
+
+    # mainstem referent distances and substrings
+    get_confluences            = is_topo || is_node,
+    add_hydro_location_distance = has_chain,
+    index_hydro_location_distance = has_chain,
+    get_substring              = has_chain
   )
 
   if (!include_conversions) return(direct)

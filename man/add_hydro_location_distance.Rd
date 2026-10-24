@@ -37,3 +37,31 @@ frame every position and referent on the same mainstem is a kilometer
 value; the nearest referent by absolute difference is the one recorded.
 Reads no coordinates.
 }
+\section{Measures}{
+
+\code{id_measure} is an interpolative measure along a single flowline: a percent
+of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+inlet (upstream, head end).
+}
+
+\examples{
+g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+csv <- utils::read.csv(
+  system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+
+g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+g$REACHCODE <- NULL
+
+net <- add_toids(hy(g))
+
+confluences <- get_confluences(net)
+
+# the midpoint of every identified flowline, as a distance from its
+# nearest confluence
+positions <- data.frame(id = net$id[!is.na(net$aggregate_id)],
+  id_measure = 50)
+
+recorded <- add_hydro_location_distance(positions, confluences, net)
+
+head(recorded)
+}

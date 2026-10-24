@@ -1,3 +1,6 @@
+utils::globalVariables(c(".ord", "enters", "from_km", "n_cand", "n_enters",
+  "prev_id", "to_km"))
+
 ##### hydro_location_distance.R -- referent distances along mainstems #####
 # The chain frame and the three exported functions it underlies. Nothing
 # here reads coordinates. See the "Internal: the chain frame" and
@@ -165,8 +168,23 @@ check_chain_continuity <- function(fr) {
 #' receiving mainstem), `hydro_location_id` (the tributary), `id` (the
 #' flowline below the node on the receiving mainstem) and `id_measure`
 #' (100).
+#' @inheritSection index_points_to_lines Measures
 #' @name get_confluences
 #' @export
+#' @examples
+#' # New Hope flowlines, with ref/mainstems URIs joined on as aggregate_id
+#' g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#' csv <- utils::read.csv(
+#'   system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+#'
+#' g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+#' g$REACHCODE <- NULL
+#'
+#' net <- add_toids(hy(g))
+#'
+#' confluences <- get_confluences(net)
+#'
+#' head(confluences)
 get_confluences <- function(x) {
   UseMethod("get_confluences")
 }
@@ -415,8 +433,29 @@ km_to_position <- function(aggregate_id, km, fr) {
 #' `distance_km` added. `distance_km` is negative toward the outlet and
 #' positive toward the head. A position on a mainstem with no referent gets
 #' NA and a message.
+#' @inheritSection index_points_to_lines Measures
 #' @name add_hydro_location_distance
 #' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#' csv <- utils::read.csv(
+#'   system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+#'
+#' g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+#' g$REACHCODE <- NULL
+#'
+#' net <- add_toids(hy(g))
+#'
+#' confluences <- get_confluences(net)
+#'
+#' # the midpoint of every identified flowline, as a distance from its
+#' # nearest confluence
+#' positions <- data.frame(id = net$id[!is.na(net$aggregate_id)],
+#'   id_measure = 50)
+#'
+#' recorded <- add_hydro_location_distance(positions, confluences, net)
+#'
+#' head(recorded)
 add_hydro_location_distance <- function(indexes, hydro_locations, x) {
   UseMethod("add_hydro_location_distance", x)
 }
@@ -509,8 +548,28 @@ add_hydro_location_distance_impl <- function(indexes, hydro_locations, fr) {
 #' added. `status` is `placed`, `hydro_location_not_in_x`, or `past_end`; a
 #' `past_end` row is placed at the end flowline present and `past_end_km`
 #' carries how far past the end the arithmetic went.
+#' @inheritSection index_points_to_lines Measures
 #' @name index_hydro_location_distance
 #' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#' csv <- utils::read.csv(
+#'   system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+#'
+#' g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+#' g$REACHCODE <- NULL
+#'
+#' net <- add_toids(hy(g))
+#'
+#' confluences <- get_confluences(net)
+#'
+#' # 0.5 km upstream of each confluence, back to a flowline id and measure
+#' records <- data.frame(
+#'   aggregate_id = confluences$aggregate_id,
+#'   hydro_location_id = confluences$hydro_location_id,
+#'   distance_km = 0.5)
+#'
+#' index_hydro_location_distance(records, confluences, net)
 index_hydro_location_distance <- function(positions, hydro_locations, x) {
   UseMethod("index_hydro_location_distance", x)
 }

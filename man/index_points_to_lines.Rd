@@ -102,6 +102,13 @@ aggregate feature. From and to aggregate id measures must be included for each
 flowline in order to have aggregate id measures (reachcode or mainstem
 measures) in the output.
 }
+\section{Measures}{
+
+\code{id_measure} is an interpolative measure along a single flowline: a percent
+of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+inlet (upstream, head end).
+}
+
 \examples{
 \donttest{
 if (require(hydrogeofetch)) {

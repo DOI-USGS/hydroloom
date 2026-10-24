@@ -37,3 +37,30 @@ record (\code{aggregate_id}, \code{hydro_location_id}, \code{distance_km}) it fi
 referent's kilometer value in \code{x}'s frame, adds the distance, and maps
 the result to \code{id} and \code{id_measure}. Reads no coordinates.
 }
+\section{Measures}{
+
+\code{id_measure} is an interpolative measure along a single flowline: a percent
+of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+inlet (upstream, head end).
+}
+
+\examples{
+g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+csv <- utils::read.csv(
+  system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+
+g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+g$REACHCODE <- NULL
+
+net <- add_toids(hy(g))
+
+confluences <- get_confluences(net)
+
+# 0.5 km upstream of each confluence, back to a flowline id and measure
+records <- data.frame(
+  aggregate_id = confluences$aggregate_id,
+  hydro_location_id = confluences$hydro_location_id,
+  distance_km = 0.5)
+
+index_hydro_location_distance(records, confluences, net)
+}

@@ -1,3 +1,6 @@
+utils::globalVariables(c(".span", "bound", "from_km", "reversed",
+  "segment_order", "to_km"))
+
 ##### get_substring.R -- substrings between two positions on a mainstem #####
 # The span between two positions on one mainstem of x, as an ordered list of
 # pieces, each a flowline id with a from and to measure. Works kilometer
@@ -37,8 +40,29 @@
 #' end), `id`, `id_from_measure`, `id_to_measure`, `length_km` and `reversed`,
 #' one or more rows per span, plus piece geometry when `x` is `sf` and
 #' \pkg{lwgeom} is installed.
+#' @inheritSection index_points_to_lines Measures
 #' @name get_substring
 #' @export
+#' @examples
+#' g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+#' csv <- utils::read.csv(
+#'   system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+#'
+#' g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+#' g$REACHCODE <- NULL
+#'
+#' g <- sf::st_cast(g, "LINESTRING", warn = FALSE)
+#'
+#' net <- add_toids(hy(g))
+#'
+#' # flowlines of one mainstem, bottom and top by topo_sort
+#' nh <- "https://geoconnex.us/ref/mainstems/2408056"
+#' on_nh <- net[!is.na(net$aggregate_id) & net$aggregate_id == nh, ]
+#'
+#' from <- data.frame(id = on_nh$id[which.min(on_nh$topo_sort)], id_measure = 0)
+#' to <- data.frame(id = on_nh$id[which.max(on_nh$topo_sort)], id_measure = 100)
+#'
+#' get_substring(from, to, net)
 get_substring <- function(from, to, x, snap_km = 0) {
   UseMethod("get_substring", x)
 }

@@ -42,3 +42,25 @@ as \code{aggregate_id} and \code{link} as \code{hydro_location_id}. Each identif
 mainstem yields at most one confluence. A tributary whose downstream
 connection is a diversion (\code{divergence == 2}) is dropped with a warning.
 }
+\section{Measures}{
+
+\code{id_measure} is an interpolative measure along a single flowline: a percent
+of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+inlet (upstream, head end).
+}
+
+\examples{
+# New Hope flowlines, with ref/mainstems URIs joined on as aggregate_id
+g <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
+csv <- utils::read.csv(
+  system.file("extdata/new_hope_mainstems.csv", package = "hydroloom"))
+
+g$mainstemid <- csv$mainstem_uri[match(g$COMID, csv$comid)]
+g$REACHCODE <- NULL
+
+net <- add_toids(hy(g))
+
+confluences <- get_confluences(net)
+
+head(confluences)
+}
