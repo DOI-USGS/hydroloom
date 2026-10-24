@@ -22,7 +22,7 @@ utils::globalVariables(c(".span", "agg_chr", "bound", "from_km", "hi", "lo",
 #' Both positions must be on the same aggregate flowpath. A stretch that
 #' crosses a confluence of two mainstems takes two calls, one for each
 #' mainstem, split at the confluence.
-#' 
+#'
 #' Support for cross-aggregate_id paths may be included in a future release.
 #'
 #' @details
@@ -316,8 +316,9 @@ attach_piece_geometry <- function(result, x) {
     crs = sf::st_crs(geom))
 
   if (any(have)) {
-    cut <- mapply(function(line, from, to)
-      lwgeom::st_linesubstring(line, from, to),
+    cut <- mapply(function(line, from, to) {
+      lwgeom::st_linesubstring(line, from, to)
+    },
       geom[m[have]],
       result$id_from_measure[have] / 100,
       result$id_to_measure[have] / 100,

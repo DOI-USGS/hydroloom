@@ -111,7 +111,7 @@ aggregate_flowpath_axis <- function(x) {
 
   axis <- ungroup(axis)
 
-  broken <- check_aggregate_flowpath_continuity(axis)
+  broken <- check_axis_continuity(axis)
 
   if (length(broken) > 0)
     stop("the aggregate flowpath axis is not continuous on aggregate_id(s): ",
@@ -134,7 +134,7 @@ aggregate_flowpath_axis <- function(x) {
 #' aggregate_flowpath_axis, ungrouped)
 #' @returns character vector of aggregate_ids that fail the check
 #' @noRd
-check_aggregate_flowpath_continuity <- function(axis) {
+check_axis_continuity <- function(axis) {
 
   dt <- data.table::data.table(aggregate_id = axis$aggregate_id,
     id = axis$id, link = axis$link)
@@ -505,18 +505,18 @@ add_hydro_location_distance.hy <- function(indexes, hydro_locations, x) {
 #' @name add_hydro_location_distance
 #' @export
 add_hydro_location_distance.hy_topo <- function(indexes, hydro_locations, x) {
-  add_hydro_location_distance_impl(indexes, hydro_locations, aggregate_flowpath_axis(x))
+  add_hydro_location_dist_impl(indexes, hydro_locations, aggregate_flowpath_axis(x))
 }
 
 #' @name add_hydro_location_distance
 #' @export
 add_hydro_location_distance.hy_node <- function(indexes, hydro_locations, x) {
-  add_hydro_location_distance_impl(indexes, hydro_locations, aggregate_flowpath_axis(x))
+  add_hydro_location_dist_impl(indexes, hydro_locations, aggregate_flowpath_axis(x))
 }
 
 #' Shared body for add_hydro_location_distance
 #' @noRd
-add_hydro_location_distance_impl <- function(indexes, hydro_locations, axis) {
+add_hydro_location_dist_impl <- function(indexes, hydro_locations, axis) {
 
   pos <- position_to_km(indexes$id, indexes$id_measure, axis)
   ref <- position_to_km(hydro_locations$id, hydro_locations$id_measure, axis)
@@ -666,18 +666,18 @@ index_hydro_location_distance.hy <- function(positions, hydro_locations, x) {
 #' @name index_hydro_location_distance
 #' @export
 index_hydro_location_distance.hy_topo <- function(positions, hydro_locations, x) {
-  index_hydro_location_distance_impl(positions, hydro_locations, aggregate_flowpath_axis(x))
+  index_hydro_location_dist_impl(positions, hydro_locations, aggregate_flowpath_axis(x))
 }
 
 #' @name index_hydro_location_distance
 #' @export
 index_hydro_location_distance.hy_node <- function(positions, hydro_locations, x) {
-  index_hydro_location_distance_impl(positions, hydro_locations, aggregate_flowpath_axis(x))
+  index_hydro_location_dist_impl(positions, hydro_locations, aggregate_flowpath_axis(x))
 }
 
 #' Shared body for index_hydro_location_distance
 #' @noRd
-index_hydro_location_distance_impl <- function(positions, hydro_locations, axis) {
+index_hydro_location_dist_impl <- function(positions, hydro_locations, axis) {
 
   ref <- position_to_km(hydro_locations$id, hydro_locations$id_measure, axis)
 
