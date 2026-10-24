@@ -5,10 +5,10 @@ utils::globalVariables(c(".span", "agg_chr", "bound", "from_km", "hi", "lo",
 # The span between two positions on one mainstem of x, as an ordered list of
 # pieces, each a flowline id with a from and to measure. Works kilometer
 # values from the step 3 chain frame; reads geometry only to cut pieces when
-# x is sf and lwgeom is installed. See the "Step 4. Substrings" section of the
-# mainstem translation workplan for the design.
+# x is sf and lwgeom is installed. See the mainstem referencing article for
+# the design.
 
-#' Substring between two positions on a mainstem
+#' Get the substring between two positions
 #'
 #' @description Returns the pieces between two positions on one mainstem of
 #' `x`: an ordered list of flowlines, the end ones cut by measure. Through
@@ -28,12 +28,12 @@ utils::globalVariables(c(".span", "agg_chr", "bound", "from_km", "hi", "lo",
 #' When `x` is `sf` and \pkg{lwgeom} is installed the piece geometry from
 #' `lwgeom::st_linesubstring()` is attached.
 #'
-#' @param from data.frame of downstream-or-either positions with `id` and
-#' `id_measure`, one row per span. An optional `line_id` column labels the
-#' output; without it the row number is used.
-#' @param to data.frame of the other end, row-aligned with `from`.
-#' @param x `hy_topo` or `hy_node` carrying `aggregate_id` and `length_km`, or
-#' a data.frame coercible with [hy()].
+#' @param from data.frame. One end of each span, with `id` and `id_measure`;
+#' the ends are unordered. An optional `line_id` column labels the output;
+#' without it the row number is used.
+#' @param to data.frame. The other end, row-aligned with `from`.
+#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` and `length_km`,
+#' or a data.frame coercible with [hy()].
 #' @param snap_km numeric. An end within this many kilometers of a flowline
 #' boundary snaps to it. Default 0.
 #' @returns data.frame with `line_id`, `segment_order` (1 at the downstream

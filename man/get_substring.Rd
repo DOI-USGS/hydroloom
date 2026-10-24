@@ -6,7 +6,7 @@
 \alias{get_substring.hy}
 \alias{get_substring.hy_topo}
 \alias{get_substring.hy_node}
-\title{Substring between two positions on a mainstem}
+\title{Get the substring between two positions}
 \usage{
 get_substring(from, to, x, snap_km = 0)
 
@@ -19,14 +19,14 @@ get_substring(from, to, x, snap_km = 0)
 \method{get_substring}{hy_node}(from, to, x, snap_km = 0)
 }
 \arguments{
-\item{from}{data.frame of downstream-or-either positions with \code{id} and
-\code{id_measure}, one row per span. An optional \code{line_id} column labels the
-output; without it the row number is used.}
+\item{from}{data.frame. One end of each span, with \code{id} and \code{id_measure};
+the ends are unordered. An optional \code{line_id} column labels the output;
+without it the row number is used.}
 
-\item{to}{data.frame of the other end, row-aligned with \code{from}.}
+\item{to}{data.frame. The other end, row-aligned with \code{from}.}
 
-\item{x}{\code{hy_topo} or \code{hy_node} carrying \code{aggregate_id} and \code{length_km}, or
-a data.frame coercible with \code{\link[=hy]{hy()}}.}
+\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} and \code{length_km},
+or a data.frame coercible with \code{\link[=hy]{hy()}}.}
 
 \item{snap_km}{numeric. An end within this many kilometers of a flowline
 boundary snaps to it. Default 0.}

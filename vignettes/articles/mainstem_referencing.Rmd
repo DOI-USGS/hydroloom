@@ -42,8 +42,8 @@ A hydrologic location indexed to a flowline carries that flowline's `id` and a
 measure along it. The `id` is specific to one representation of the network:
 the NHDPlusV2 `COMID`, the NHDPlusHR `nhdplusid`, the 3DHP `id3dhp`. When the
 same location has to hold across representations, the flowline `id` is the
-wrong anchor — it does not survive a change of fabric, and the 3DHP flowline
-`id3dhp` is not even stable between 3DHP releases.
+wrong anchor — it does not survive a change of representation, and the 3DHP
+flowline `id3dhp` is not stable between 3DHP releases.
 
 A mainstem URI is durable. So is a confluence: the mouth of one identified
 mainstem where it enters another. A position stated as a signed distance along
@@ -120,8 +120,8 @@ ne_d3
 
 Both representations agree that the Northeast Creek mouth is a hydrolocation on
 the New Hope River (`aggregate_id` = `2408056`). The flowline that realizes it
-differs — a `COMID` on NHDPlusV2, an `id3dhp` on 3DHP — which is the point: the
-confluence is durable, the flowline is not.
+differs — a `COMID` on NHDPlusV2, an `id3dhp` on 3DHP. The confluence is
+durable, the flowline is not.
 
 # A point on the New Hope River
 
@@ -131,10 +131,10 @@ flowlines, so a point near the mouth lands on the receiving river and not on
 the tributary. `precision` refines the measure beyond vertex resolution.
 
 ```{r index}
-gage <- sf::st_centroid(sf::st_geometry(v2[v2$id == ne_v2$id, ]))
-gage_sf <- sf::st_sf(station = "demo", geometry = gage)
+point <- sf::st_centroid(sf::st_geometry(v2[v2$id == ne_v2$id, ]))
+point_sf <- sf::st_sf(geometry = point)
 
-idx <- index_points_to_lines(v2, gage_sf, aggregate_ids = nh, precision = 10)
+idx <- index_points_to_lines(v2, point_sf, aggregate_ids = nh, precision = 10)
 idx
 ```
 
@@ -182,10 +182,10 @@ d3_line <- nh_d3[nh_d3$id == onto3$id, ]
 plot(sf::st_geometry(nh_v2), col = "lightblue", lwd = 2, reset = FALSE)
 plot(sf::st_geometry(v2_line), add = TRUE, col = "darkblue", lwd = 3)
 plot(sf::st_geometry(d3_line), add = TRUE, col = "red", lwd = 3)
-plot(sf::st_geometry(gage_sf), add = TRUE, pch = 16, col = "black")
+plot(sf::st_geometry(point_sf), add = TRUE, pch = 16, col = "black")
 ```
 
-The gage (black) sits on the New Hope River. The NHDPlusV2 flowline that holds
+The point (black) sits on the New Hope River. The NHDPlusV2 flowline that holds
 its position (dark blue) and the 3DHP flowline the record resolves to (red)
 cover the same stretch of river by different lines.
 
@@ -193,9 +193,11 @@ cover the same stretch of river by different lines.
 
 A single NHDPlusV2 flowline maps to a span of 3DHP flowlines. Index both of its
 ends onto 3DHP with `aggregate_ids`, then `get_substring()` returns the ordered
-3DHP pieces between them. The upstream ends of NHDPlusV2 flowlines can sit a
-kilometer or more from the 3DHP line, so the search radius is raised and
-`offset` read; placement constrained to the mainstem keeps that safe.
+3DHP pieces between them. A NHDPlusV2 end can sit a few hundred meters from the
+3DHP line, so the search radius is raised to 500 m and `offset` read.
+`aggregate_ids` constrains each end to the New Hope River's own flowlines, so
+the wider radius cannot pull an end onto a tributary flowline that happens to
+fall within it.
 
 ```{r substring}
 src <- v2[v2$id == idx$id, ]
@@ -239,11 +241,11 @@ seg_mc <- get_substring(up_mc, mouth_mc, v2)
 
 # New Hope River, from the confluence downstream
 conf_nh <- data.frame(id = mc_v2$id, id_measure = 100)
-down_nh <- data.frame(id = on_nh$id[which.min(on_nh$topo_sort)], id_measure = 100)
+down_nh <- data.frame(id = on_nh$id[which.min(on_nh$topo_sort)], id_measure = 0)
 seg_nh <- get_substring(conf_nh, down_nh, v2)
 
-nrow(seg_mc)
-nrow(seg_nh)
+head(sf::st_drop_geometry(seg_mc))
+head(sf::st_drop_geometry(seg_nh))
 ```
 
 The two pieces meet at the Morgan Creek mouth. A consumer that wants the whole

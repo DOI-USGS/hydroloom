@@ -739,10 +739,10 @@ hy_capabilities <- function(x, include_conversions = FALSE) {
     index_points_to_lines   = has_geom,
 
     # mainstem referent distances and substrings
-    get_confluences            = is_topo || is_node,
-    add_hydro_location_distance = has_chain,
+    get_confluences               = is_topo || is_node,
+    add_hydro_location_distance   = has_chain,
     index_hydro_location_distance = has_chain,
-    get_substring              = has_chain
+    get_substring                 = has_chain
   )
 
   if (!include_conversions) return(direct)

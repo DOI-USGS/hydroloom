@@ -6,7 +6,7 @@
 \alias{index_hydro_location_distance.hy}
 \alias{index_hydro_location_distance.hy_topo}
 \alias{index_hydro_location_distance.hy_node}
-\title{Position from a referent distance along a mainstem}
+\title{Index a referent distance to a flowline}
 \usage{
 index_hydro_location_distance(positions, hydro_locations, x)
 
@@ -19,14 +19,14 @@ index_hydro_location_distance(positions, hydro_locations, x)
 \method{index_hydro_location_distance}{hy_node}(positions, hydro_locations, x)
 }
 \arguments{
-\item{positions}{data.frame of records with \code{aggregate_id},
+\item{positions}{data.frame. Records with \code{aggregate_id},
 \code{hydro_location_id} and \code{distance_km}.}
 
-\item{hydro_locations}{data.frame of referents with \code{aggregate_id},
+\item{hydro_locations}{data.frame. Referents with \code{aggregate_id},
 \code{hydro_location_id}, \code{id} and \code{id_measure} (for example
 \code{\link[=get_confluences]{get_confluences()}} output).}
 
-\item{x}{\code{hy_topo} or \code{hy_node} carrying \code{aggregate_id} and \code{length_km}.
+\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} and \code{length_km}.
 A \code{topo_sort} column keeps the frame cheap; without it the frame falls
 back to a full topological sort.}
 }
@@ -40,7 +40,11 @@ carries how far past the end the arithmetic went.
 The inverse of \code{\link[=add_hydro_location_distance]{add_hydro_location_distance()}}. For each
 record (\code{aggregate_id}, \code{hydro_location_id}, \code{distance_km}) it finds the
 referent's kilometer value in \code{x}'s frame, adds the distance, and maps
-the result to \code{id} and \code{id_measure}. Reads no coordinates.
+the result to \code{id} and \code{id_measure}.
+
+\code{distance_km} is negative toward the outlet and positive toward the head;
+the sign is hydroloom's convention, downstream and upstream in
+HY_DistanceDescription terms.
 }
 \section{Measures}{
 

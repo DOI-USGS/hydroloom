@@ -147,12 +147,10 @@ hnd$offset <- "offset distance from point to line in units of linear reference a
 hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
 hnd$upmain <- "indicates that a given network element is the primary upstream connection at a confluence"
 hnd$downmain <- "indicates that a given network element is the primary downstream connection at a confluence"
-hnd$hydro_location_id <- paste("identifier of the feature linked to the hydrolocation a distance is measured from;",
-  "for a confluence, the tributary mainstem whose outlet it is.",
-  "aggregate_id names the linear element the hydrolocation is on, for a confluence the receiving mainstem")
+hnd$hydro_location_id <- paste("identifier of the feature linked to the hydrolocation",
+  "a distance is measured from (for a confluence, the tributary mainstem)")
 hnd$distance_km <- paste("signed distance along the line from the referent,",
-  "negative toward the outlet and positive toward the head;",
-  "the sign is hydroloom's convention, downstream and upstream in HY_DistanceDescription terms")
+  "negative toward the outlet, positive toward the head")
 hnd$past_end_km <- paste("distance by which a resolved position fell beyond the end of the flowlines present,",
   "before being placed at that end; 0 when it did not")
 hnd$id_from_measure <- "interpolative measure bounding the downstream end of a piece of a single feature"

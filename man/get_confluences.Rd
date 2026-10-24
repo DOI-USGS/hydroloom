@@ -6,7 +6,7 @@
 \alias{get_confluences.hy}
 \alias{get_confluences.hy_topo}
 \alias{get_confluences.hy_node}
-\title{Confluences of identified mainstems}
+\title{Get confluences of identified mainstems}
 \usage{
 get_confluences(x)
 
@@ -19,7 +19,7 @@ get_confluences(x)
 \method{get_confluences}{hy_node}(x)
 }
 \arguments{
-\item{x}{\code{hy_topo} or \code{hy_node} carrying \code{aggregate_id} on identified
+\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} on identified
 flowlines, or a data.frame coercible with \code{\link[=hy]{hy()}}. A \code{topo_sort} column
 keeps the frame cheap; without it the frame falls back to a full
 topological sort.}
@@ -35,9 +35,9 @@ Identifies each confluence of two identified mainstems as a
 hydrolocation on the receiving mainstem at the outlet of the tributary.
 A confluence exists where the bottom flowline of a tributary mainstem
 connects downstream to a flowline on a different identified mainstem; the
-point is anchored to that downstream flowline, which the link always
-names and which is present even when the receiving mainstem is truncated
-just above the node. Reads no coordinates.
+point is anchored to that downstream flowline, which the link points to
+and which is present even when the receiving mainstem is truncated just
+above the node. Reads no coordinates.
 
 This is the \code{hydrolocation} feature type of OGC 25-045 with \code{mainstem_id}
 as \code{aggregate_id} and \code{link} as \code{hydro_location_id}. Each identified

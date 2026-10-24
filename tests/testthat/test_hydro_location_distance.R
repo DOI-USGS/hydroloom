@@ -30,7 +30,7 @@ test_that("a divergence == 2 tributary warns and yields no confluence", {
   expect_equal(nrow(conf), 0)
 })
 
-test_that("a broken chain stops the frame naming the mainstem", {
+test_that("a broken chain stops the frame building the mainstem", {
 
   base <- dplyr::tibble(
     id   = c("a1", "a2", "a3", "b1", "b2"),

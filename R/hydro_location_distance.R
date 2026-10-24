@@ -1,16 +1,16 @@
 utils::globalVariables(c(".ord", "enters", "from_km", "n_cand", "n_enters",
-  "prev_id", "to_km"))
+  "prev_id", "ref_km", "to_km"))
 
 ##### hydro_location_distance.R -- referent distances along mainstems #####
-# The chain frame and the three exported functions it underlies. Nothing
-# here reads coordinates. See the "Internal: the chain frame" and
-# "Step 3. Referent distances" sections of the mainstem translation
-# workplan for the design.
+# The chain frame and the three exported functions it underlies. Every
+# position and referent on a mainstem is a kilometer value in the frame, so
+# the work is frame arithmetic rather than coordinate geometry. The
+# mainstem referencing article walks the design.
 
 #' Within-chain downstream link for a hy_topo frame
 #' @description For each row, the id of the next flowline down within the
-#' same mainstem: toid where the row toid names has the same aggregate_id,
-#' NA otherwise.
+#' same mainstem: toid where the row's toid points to a flowline with the
+#' same aggregate_id, NA otherwise.
 #' @param x data.frame with id, toid, aggregate_id
 #' @returns vector of links parallel to x, NA at chain bottoms
 #' @noRd
@@ -50,8 +50,8 @@ chain_link_node <- function(x) {
 
 #' Build the chain frame
 #' @description The ordered flowlines of each identified mainstem, with
-#' cumulative kilometers from the bottom flowline present. Reads no
-#' geometry. See the "Internal: the chain frame" section of the workplan.
+#' cumulative kilometers from the bottom flowline present. See the mainstem
+#' referencing article.
 #' @param x hy_topo (id, toid, aggregate_id, length_km) or hy_node
 #' (fromnode, tonode in place of toid). Rows with NA aggregate_id are
 #' dropped. If length_km is absent and x is sf, st_length() supplies it.
@@ -137,7 +137,7 @@ check_chain_continuity <- function(fr) {
   # bottom row of each chain: no row before it, so prev_id and link are NA;
   # every other row's link must equal the id of the row before it. The frame
   # is already ordered bottom first within each mainstem, so the shift down
-  # one within aggregate_id names the row before.
+  # one within aggregate_id is the row before.
   dt[, prev_id := data.table::shift(id, 1L), by = "aggregate_id"]
 
   ok <- (is.na(dt$prev_id) & is.na(dt$link)) |
@@ -147,22 +147,22 @@ check_chain_continuity <- function(fr) {
 }
 
 
-#' Confluences of identified mainstems
+#' Get confluences of identified mainstems
 #'
 #' @description Identifies each confluence of two identified mainstems as a
 #' hydrolocation on the receiving mainstem at the outlet of the tributary.
 #' A confluence exists where the bottom flowline of a tributary mainstem
 #' connects downstream to a flowline on a different identified mainstem; the
-#' point is anchored to that downstream flowline, which the link always
-#' names and which is present even when the receiving mainstem is truncated
-#' just above the node. Reads no coordinates.
+#' point is anchored to that downstream flowline, which the link points to
+#' and which is present even when the receiving mainstem is truncated just
+#' above the node. Reads no coordinates.
 #'
 #' This is the `hydrolocation` feature type of OGC 25-045 with `mainstem_id`
 #' as `aggregate_id` and `link` as `hydro_location_id`. Each identified
 #' mainstem yields at most one confluence. A tributary whose downstream
 #' connection is a diversion (`divergence == 2`) is dropped with a warning.
 #'
-#' @param x `hy_topo` or `hy_node` carrying `aggregate_id` on identified
+#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` on identified
 #' flowlines, or a data.frame coercible with [hy()]. A `topo_sort` column
 #' keeps the frame cheap; without it the frame falls back to a full
 #' topological sort.
@@ -363,10 +363,12 @@ km_to_position <- function(aggregate_id, km, fr) {
   e_top_to <- ends$top_to[ei]
 
   # rolling join to the flowline whose interval holds km: within each chain
-  # the last row with from_km <= km (roll = +Inf). At an exact interval
-  # boundary the original picked the lower interval, so nudge the join key
-  # down by 1e-9 to exclude the next interval's from_km; a km at the chain
-  # bottom then misses and is filled from the bottom row below.
+  # the last row with from_km <= km (roll = +Inf). An exact interval
+  # boundary resolves to the lower interval (a confluence at measure 100
+  # stays on the flowline below it), so nudge the join key down by 1e-9 to
+  # exclude the next interval's from_km; a km at the chain bottom then misses
+  # and is filled from the bottom row below. See the mainstem referencing
+  # article.
   look <- frames[, list(aggregate_id, from_km,
     match_id = id, match_from = from_km, match_len = length_km)]
   data.table::setkey(look, aggregate_id, from_km)
@@ -421,25 +423,27 @@ km_to_position <- function(aggregate_id, km, fr) {
     status = status)
 }
 
-#' Distance from the nearest referent along a mainstem
+#' Add distance from the nearest referent
 #'
 #' @description Records, for each position, the signed distance along its
 #' mainstem to the nearest referent among those supplied. Through the chain
 #' frame every position and referent on the same mainstem is a kilometer
 #' value; the nearest referent by absolute difference is the one recorded.
-#' Reads no coordinates.
 #'
-#' @param indexes data.frame of positions with `id` and `id_measure`, on `x`.
-#' @param hydro_locations data.frame of referents with `hydro_location_id`,
+#' `distance_km` is negative toward the outlet and positive toward the head;
+#' the sign is hydroloom's convention, downstream and upstream in
+#' HY_DistanceDescription terms.
+#'
+#' @param indexes data.frame. Positions with `id` and `id_measure`, on `x`.
+#' @param hydro_locations data.frame. Referents with `hydro_location_id`,
 #' `id` and `id_measure`, on `x` (for example the output of
 #' [get_confluences()]).
-#' @param x `hy_topo` or `hy_node` carrying `aggregate_id` and `length_km`.
+#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` and `length_km`.
 #' A `topo_sort` column keeps the frame cheap; without it the frame falls
 #' back to a full topological sort.
 #' @returns `indexes` with `aggregate_id`, `hydro_location_id` and
-#' `distance_km` added. `distance_km` is negative toward the outlet and
-#' positive toward the head. A position on a mainstem with no referent gets
-#' NA and a message.
+#' `distance_km` added. A position on a mainstem with no referent gets NA
+#' and a message.
 #' @inheritSection index_points_to_lines Measures
 #' @name add_hydro_location_distance
 #' @export
@@ -577,19 +581,23 @@ add_hydro_location_distance_impl <- function(indexes, hydro_locations, fr) {
   indexes
 }
 
-#' Position from a referent distance along a mainstem
+#' Index a referent distance to a flowline
 #'
 #' @description The inverse of [add_hydro_location_distance()]. For each
 #' record (`aggregate_id`, `hydro_location_id`, `distance_km`) it finds the
 #' referent's kilometer value in `x`'s frame, adds the distance, and maps
-#' the result to `id` and `id_measure`. Reads no coordinates.
+#' the result to `id` and `id_measure`.
 #'
-#' @param positions data.frame of records with `aggregate_id`,
+#' `distance_km` is negative toward the outlet and positive toward the head;
+#' the sign is hydroloom's convention, downstream and upstream in
+#' HY_DistanceDescription terms.
+#'
+#' @param positions data.frame. Records with `aggregate_id`,
 #' `hydro_location_id` and `distance_km`.
-#' @param hydro_locations data.frame of referents with `aggregate_id`,
+#' @param hydro_locations data.frame. Referents with `aggregate_id`,
 #' `hydro_location_id`, `id` and `id_measure` (for example
 #' [get_confluences()] output).
-#' @param x `hy_topo` or `hy_node` carrying `aggregate_id` and `length_km`.
+#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` and `length_km`.
 #' A `topo_sort` column keeps the frame cheap; without it the frame falls
 #' back to a full topological sort.
 #' @returns `positions` with `id`, `id_measure`, `past_end_km` and `status`

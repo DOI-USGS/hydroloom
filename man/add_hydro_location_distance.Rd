@@ -6,7 +6,7 @@
 \alias{add_hydro_location_distance.hy}
 \alias{add_hydro_location_distance.hy_topo}
 \alias{add_hydro_location_distance.hy_node}
-\title{Distance from the nearest referent along a mainstem}
+\title{Add distance from the nearest referent}
 \usage{
 add_hydro_location_distance(indexes, hydro_locations, x)
 
@@ -19,28 +19,30 @@ add_hydro_location_distance(indexes, hydro_locations, x)
 \method{add_hydro_location_distance}{hy_node}(indexes, hydro_locations, x)
 }
 \arguments{
-\item{indexes}{data.frame of positions with \code{id} and \code{id_measure}, on \code{x}.}
+\item{indexes}{data.frame. Positions with \code{id} and \code{id_measure}, on \code{x}.}
 
-\item{hydro_locations}{data.frame of referents with \code{hydro_location_id},
+\item{hydro_locations}{data.frame. Referents with \code{hydro_location_id},
 \code{id} and \code{id_measure}, on \code{x} (for example the output of
 \code{\link[=get_confluences]{get_confluences()}}).}
 
-\item{x}{\code{hy_topo} or \code{hy_node} carrying \code{aggregate_id} and \code{length_km}.
+\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} and \code{length_km}.
 A \code{topo_sort} column keeps the frame cheap; without it the frame falls
 back to a full topological sort.}
 }
 \value{
 \code{indexes} with \code{aggregate_id}, \code{hydro_location_id} and
-\code{distance_km} added. \code{distance_km} is negative toward the outlet and
-positive toward the head. A position on a mainstem with no referent gets
-NA and a message.
+\code{distance_km} added. A position on a mainstem with no referent gets NA
+and a message.
 }
 \description{
 Records, for each position, the signed distance along its
 mainstem to the nearest referent among those supplied. Through the chain
 frame every position and referent on the same mainstem is a kilometer
 value; the nearest referent by absolute difference is the one recorded.
-Reads no coordinates.
+
+\code{distance_km} is negative toward the outlet and positive toward the head;
+the sign is hydroloom's convention, downstream and upstream in
+HY_DistanceDescription terms.
 }
 \section{Measures}{
 
