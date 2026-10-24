@@ -121,30 +121,26 @@ chain_frame <- function(x) {
 #' Continuity check over an ordered chain frame
 #' @description After ordering bottom first, each flowline's within-chain
 #' link must be the id of the flowline before it, the bottom row excepted
-#' (link NA). One shifted comparison per chain, vectorized over all rows.
+#' (link NA). One shifted comparison over the whole frame, the shift taken
+#' within each mainstem, vectorized over all rows.
 #' @param fr ordered chain frame (grouped output of chain_frame, ungrouped)
 #' @returns character vector of aggregate_ids that fail the check
 #' @noRd
 check_chain_continuity <- function(fr) {
 
-  by_chain <- split(seq_len(nrow(fr)), fr$aggregate_id)
+  dt <- data.table::data.table(aggregate_id = fr$aggregate_id,
+    id = fr$id, link = fr$link)
 
-  bad <- vapply(by_chain, function(rows) {
+  # bottom row of each chain: no row before it, so prev_id and link are NA;
+  # every other row's link must equal the id of the row before it. The frame
+  # is already ordered bottom first within each mainstem, so the shift down
+  # one within aggregate_id names the row before.
+  dt[, prev_id := data.table::shift(id, 1L), by = "aggregate_id"]
 
-    link <- fr$link[rows]
-    ids  <- fr$id[rows]
+  ok <- (is.na(dt$prev_id) & is.na(dt$link)) |
+    (!is.na(dt$prev_id) & !is.na(dt$link) & dt$link == dt$prev_id)
 
-    # bottom first: each link should be the id of the row before it
-    expect <- c(NA, ids[-length(ids)])
-
-    bottom_ok <- is.na(link[1])
-    rest_ok <- all(link[-1] == expect[-1])
-
-    !(bottom_ok && isTRUE(rest_ok))
-
-  }, logical(1))
-
-  names(by_chain)[bad]
+  unique(fr$aggregate_id[!ok])
 }
 
 
@@ -224,44 +220,64 @@ get_confluences.hy_node <- function(x) {
   link <- chain_link_node(x)
   bottoms <- !is.na(x$aggregate_id) & is.na(link)
 
-  r_agg  <- x$aggregate_id[bottoms]
-  r_node <- x$tonode[bottoms]
-  r_id   <- x$id[bottoms]
+  # tributary bottoms, kept in order so the output and any warning follow it;
+  # r_agg is a character join/group key, r_idx indexes back into x so output
+  # columns keep the uncoerced aggregate_id type
+  trib <- data.table::data.table(
+    .ord = seq_len(sum(bottoms)),
+    r_agg = as.character(x$aggregate_id[bottoms]),
+    r_node = x$tonode[bottoms],
+    r_idx = which(bottoms))
 
-  # candidates: identified flowlines of another mainstem starting at the node
-  cand <- x[!is.na(x$aggregate_id), ]
+  # candidates: identified flowlines starting at a node; c_agg is a character
+  # join key, c_idx indexes back into x for the output
+  ident <- !is.na(x$aggregate_id)
+  cand <- data.table::data.table(
+    c_agg = as.character(x$aggregate_id[ident]),
+    c_node = x$fromnode[ident],
+    c_idx = which(ident))
 
-  out_agg <- out_hl <- out_id <- vector("list", length(r_id))
+  # a candidate's mainstem enters the node when its (aggregate_id, node)
+  # appears as a (aggregate_id, tonode) among the identified rows
+  enters_key <- paste(x$aggregate_id[ident], x$tonode[ident])
 
-  for (i in seq_along(r_id)) {
+  # one join of bottoms to candidates on node = fromnode, dropping a
+  # candidate on the tributary's own mainstem
+  j <- cand[trib, on = c(c_node = "r_node"), allow.cartesian = TRUE,
+    nomatch = NULL]
+  j <- j[j$c_agg != j$r_agg, ]
 
-    at_node <- cand$fromnode == r_node[i] & cand$aggregate_id != r_agg[i]
-    if (!any(at_node)) next
+  conf <- get_confluences_rows(character(0), character(0), x$id[0])
 
-    sub <- cand[at_node, ]
+  if (nrow(j) > 0) {
 
-    # resolve to the flowline whose mainstem enters the node: the one whose
-    # (aggregate_id, node) also appears as a tonode on that mainstem
-    node_key <- paste(sub$aggregate_id, r_node[i])
-    enters <- node_key %in% paste(cand$aggregate_id, cand$tonode)
+    j$enters <- paste(j$c_agg, j$c_node) %in% enters_key
 
-    if (sum(enters) == 1) {
-      sub <- sub[enters, ]
-    } else if (nrow(sub) > 1) {
-      warning("tributary ", r_agg[i], " enters a node with more than one ",
-        "candidate receiver; dropped.", call. = FALSE)
-      next
-    }
+    # per tributary: the single entering candidate when exactly one enters;
+    # otherwise the sole candidate when there is exactly one; more than one
+    # candidate with no single entering receiver is ambiguous and dropped
+    j[, n_cand := .N, by = ".ord"]
+    j[, n_enters := sum(enters), by = ".ord"]
 
-    out_agg[[i]] <- sub$aggregate_id[1]
-    out_hl[[i]]  <- r_agg[i]
-    out_id[[i]]  <- sub$id[1]
+    pick <- (j$n_enters == 1 & j$enters) |
+      (j$n_enters != 1 & j$n_cand == 1)
+
+    drop <- j$n_enters != 1 & j$n_cand > 1
+
+    ambiguous <- unique(x$aggregate_id[j$r_idx[drop]][order(j$.ord[drop])])
+    if (length(ambiguous) > 0)
+      warning(paste0("tributary ", ambiguous, " enters a node with more ",
+        "than one candidate receiver; dropped.", collapse = "\n"),
+        call. = FALSE)
+
+    sel <- j[pick, ]
+    data.table::setorder(sel, .ord)
+
+    conf <- get_confluences_rows(x$aggregate_id[sel$c_idx],
+      x$aggregate_id[sel$r_idx], x$id[sel$c_idx])
   }
 
-  keep <- !vapply(out_id, is.null, logical(1))
-
-  get_confluences_rows(unlist(out_agg[keep]), unlist(out_hl[keep]),
-    unlist(out_id[keep]))
+  conf
 }
 
 #' Assemble the confluence output table
