@@ -18,10 +18,10 @@ Suggests: testthat, hydrogeofetch (>= 2.0.4), future, lwgeom, future.apply, knit
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 Config/Needs/website: gifski, mapview, webshot
 VignetteBuilder: knitr
 Language: en-US
 URL: https://github.com/DOI-USGS/hydroloom, https://doi-usgs.github.io/hydroloom/
 BugReports: https://github.com/DOI-USGS/hydroloom/issues
+Config/roxygen2/version: 8.1.0

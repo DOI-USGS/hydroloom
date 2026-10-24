@@ -1,0 +1,257 @@
+---
+title: "Referent distances along mainstems"
+author: "dblodgett@usgs.gov"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Referent distances along mainstems}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<style type="text/css">
+   .main-container {max-width: 100%;}
+   .row {display: flex;}
+   .column {flex: 50%;}
+</style>
+
+```{r setup, include = FALSE}
+library(hydroloom)
+eval <- (Sys.getenv("BUILD_VIGNETTES") == "TRUE") &
+  requireNamespace("hydrogeofetch", quietly = TRUE) &
+  requireNamespace("lwgeom", quietly = TRUE)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 6,
+  fig.align = "center",
+  eval = eval
+)
+
+library(sf)
+
+oldoption <- options(scipen = 9999)
+```
+
+# Positions stated against a confluence
+
+A hydrologic location indexed to a flowline carries that flowline's `id` and a
+measure along it. The `id` is specific to one representation of the network:
+the NHDPlusV2 `COMID`, the NHDPlusHR `nhdplusid`, the 3DHP `id3dhp`. When the
+same location has to hold across representations, the flowline `id` is the
+wrong anchor — it does not survive a change of representation, and the 3DHP
+flowline `id3dhp` is not stable between 3DHP releases.
+
+A mainstem URI is durable. So is a confluence: the mouth of one identified
+mainstem where it enters another. A position stated as a signed distance along
+a mainstem from one of its confluences is a record that resolves on any
+representation carrying both mainstems — the flowline that realizes it changes,
+the distance does not.
+
+This article walks one point on the New Hope River: indexed to NHDPlusV2,
+written as kilometers from the Northeast Creek confluence, and resolved on
+3DHP. It then cuts a substring across the Morgan Creek confluence, where the
+stretch spans two mainstems and splits at the shared referent.
+
+The NHDPlusV2 flowlines and the mainstem-URI lookup ship with hydroloom. The
+3DHP sample is fetched from hydrogeofetch; this article is website-only and
+does not run on CRAN.
+
+```{r mainstems}
+library(hydroloom)
+library(sf)
+
+ne <- "https://geoconnex.us/ref/mainstems/2408627"  # Northeast Creek
+mc <- "https://geoconnex.us/ref/mainstems/2408909"  # Morgan Creek
+nh <- "https://geoconnex.us/ref/mainstems/2408056"  # New Hope River
+```
+
+# The two representations
+
+The NHDPlusV2 network is the sample flowlines joined to the 679-row
+`comid, mainstem_uri` lookup, with the URI set as `aggregate_id`. The recipe
+that ships with hydroloom does the join and casts the flowlines to
+`LINESTRING` so the substring cutter can operate on them.
+
+```{r v2}
+source(system.file("extdata", "new_hope_mainstems.R", package = "hydroloom"))
+
+v2 <- add_toids(hy(new_hope_mainstems))
+```
+
+The 3DHP network carries the four New Hope mainstems natively in `mainstemid`.
+`toid` comes from joining `dnhydrosequence` to `hydrosequence`; `hydrosequence`
+is the `topo_sort`.
+
+```{r threedhp}
+source(system.file("extdata", "new_hope_3dhp.R", package = "hydrogeofetch"))
+
+d3 <- sf::read_sf(sample_new_hope_3dhp)
+
+m <- match(d3$dnhydrosequence, d3$hydrosequence)
+d3$toid <- d3$id3dhp[m]
+d3$toid[is.na(d3$toid)] <- ""
+
+d3 <- sf::st_zm(d3)
+d3 <- dplyr::transmute(d3,
+  id = id3dhp, toid = toid, aggregate_id = mainstemid,
+  topo_sort = hydrosequence, length_km = lengthkm, divergence = divergence)
+
+d3hp <- hy(d3)
+```
+
+`get_confluences()` finds, on each representation, every place a tributary
+mainstem enters another identified mainstem. Each confluence is a hydrolocation
+on the receiving mainstem at the outlet of the tributary.
+
+```{r confluences}
+v2conf <- get_confluences(v2)
+d3conf <- get_confluences(d3hp)
+
+ne_v2 <- v2conf[v2conf$hydro_location_id == ne, ]
+ne_d3 <- d3conf[d3conf$hydro_location_id == ne, ]
+
+ne_v2
+ne_d3
+```
+
+Both representations agree that the Northeast Creek mouth is a hydrolocation on
+the New Hope River (`aggregate_id` = `2408056`). The flowline that realizes it
+differs — a `COMID` on NHDPlusV2, an `id3dhp` on 3DHP. The confluence is
+durable, the flowline is not.
+
+# A point on the New Hope River
+
+Take a point near the Northeast Creek mouth and index it to the New Hope River
+on NHDPlusV2. `aggregate_ids` constrains the search to the New Hope River's own
+flowlines, so a point near the mouth lands on the receiving river and not on
+the tributary. `precision` refines the measure beyond vertex resolution.
+
+```{r index}
+point <- sf::st_centroid(sf::st_geometry(v2[v2$id == ne_v2$id, ]))
+point_sf <- sf::st_sf(geometry = point)
+
+idx <- index_points_to_lines(v2, point_sf, aggregate_ids = nh, precision = 10)
+idx
+```
+
+`add_hydro_location_distance()` turns that flowline-and-measure into a signed
+distance from the nearest referent. Passing only the Northeast Creek confluence
+as the referent set writes the distance from it specifically; the sign is
+negative because the point sits downstream of the mouth.
+
+```{r distance}
+rec <- add_hydro_location_distance(
+  data.frame(id = idx$id, id_measure = idx$id_measure), ne_v2, v2)
+rec
+```
+
+# Resolving on 3DHP
+
+The record — mainstem, referent, distance — now resolves on 3DHP without
+touching the NHDPlusV2 flowline it was made on.
+`index_hydro_location_distance()` finds the Northeast Creek confluence in the
+3DHP frame, adds the distance, and maps the result back to a 3DHP flowline and
+measure.
+
+```{r resolve}
+record <- data.frame(aggregate_id = rec$aggregate_id,
+  hydro_location_id = rec$hydro_location_id, distance_km = rec$distance_km)
+
+onto3 <- index_hydro_location_distance(record, ne_d3, d3hp)
+onto3
+```
+
+`status` is `placed`: the distance fell within the 3DHP flowlines present. A
+`past_end` status would mean the arithmetic ran off the end of the flowlines in
+hand, with `past_end_km` carrying how far.
+
+The point and the two flowlines that realize it, one per representation:
+
+```{r map}
+nh_v2 <- v2[!is.na(v2$aggregate_id) & v2$aggregate_id == nh, ]
+nh_d3 <- sf::st_transform(
+  d3hp[!is.na(d3hp$aggregate_id) & d3hp$aggregate_id == nh, ], sf::st_crs(v2))
+
+v2_line <- nh_v2[nh_v2$id == idx$id, ]
+d3_line <- nh_d3[nh_d3$id == onto3$id, ]
+
+plot(sf::st_geometry(nh_v2), col = "lightblue", lwd = 2, reset = FALSE)
+plot(sf::st_geometry(v2_line), add = TRUE, col = "darkblue", lwd = 3)
+plot(sf::st_geometry(d3_line), add = TRUE, col = "red", lwd = 3)
+plot(sf::st_geometry(point_sf), add = TRUE, pch = 16, col = "black")
+```
+
+The point (black) sits on the New Hope River. The NHDPlusV2 flowline that holds
+its position (dark blue) and the 3DHP flowline the record resolves to (red)
+cover the same stretch of river by different lines.
+
+# One flowline's substring on 3DHP
+
+A single NHDPlusV2 flowline maps to a span of 3DHP flowlines. Index both of its
+ends onto 3DHP with `aggregate_ids`, then `get_substring()` returns the ordered
+3DHP pieces between them. A NHDPlusV2 end can sit a few hundred meters from the
+3DHP line, so the search radius is raised to 500 m and `offset` read.
+`aggregate_ids` constrains each end to the New Hope River's own flowlines, so
+the wider radius cannot pull an end onto a tributary flowline that happens to
+fall within it.
+
+```{r substring}
+src <- v2[v2$id == idx$id, ]
+
+e_from <- sf::st_transform(get_node(src, "end"), sf::st_crs(d3hp))
+e_to <- sf::st_transform(get_node(src, "start"), sf::st_crs(d3hp))
+
+rad <- units::set_units(500, "m")
+i_from <- index_points_to_lines(d3hp, e_from, aggregate_ids = nh, search_radius = rad)
+i_to <- index_points_to_lines(d3hp, e_to, aggregate_ids = nh, search_radius = rad)
+
+piece <- get_substring(
+  data.frame(id = i_from$id, id_measure = i_from$id_measure),
+  data.frame(id = i_to$id, id_measure = i_to$id_measure), d3hp)
+
+sf::st_drop_geometry(piece)
+```
+
+`segment_order` runs 1 at the downstream end upward; `id_from_measure` and
+`id_to_measure` cut the end pieces; `length_km` is the piece length. Because
+`d3hp` is `sf` and lwgeom is installed, each piece also carries its cut
+geometry.
+
+# A stretch across a confluence
+
+A stretch that runs from Morgan Creek down onto the New Hope River spans two
+mainstems. `get_substring()` takes two positions on one mainstem, so the
+stretch is two calls split at the Morgan Creek confluence — the shared
+referent on both mainstems.
+
+```{r stretch}
+mc_v2 <- v2conf[v2conf$hydro_location_id == mc, ]
+
+on_mc <- v2[!is.na(v2$aggregate_id) & v2$aggregate_id == mc, ]
+on_nh <- v2[!is.na(v2$aggregate_id) & v2$aggregate_id == nh, ]
+
+# Morgan Creek, from an upstream point down to its mouth
+up_mc <- data.frame(id = on_mc$id[which.max(on_mc$topo_sort)], id_measure = 100)
+mouth_mc <- data.frame(id = on_mc$id[which.min(on_mc$topo_sort)], id_measure = 0)
+seg_mc <- get_substring(up_mc, mouth_mc, v2)
+
+# New Hope River, from the confluence downstream
+conf_nh <- data.frame(id = mc_v2$id, id_measure = 100)
+down_nh <- data.frame(id = on_nh$id[which.min(on_nh$topo_sort)], id_measure = 0)
+seg_nh <- get_substring(conf_nh, down_nh, v2)
+
+head(sf::st_drop_geometry(seg_mc))
+head(sf::st_drop_geometry(seg_nh))
+```
+
+The two pieces meet at the Morgan Creek mouth. A consumer that wants the whole
+stretch as one list concatenates them in flow order, the Morgan Creek pieces
+above the New Hope pieces.
+
+```{r reset, include = FALSE}
+options(oldoption)
+```

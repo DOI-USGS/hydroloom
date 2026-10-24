@@ -1,7 +1,48 @@
+hydroloom 1.3.0
+==========
+
+Referent distances and substrings along identified mainstems. Four new
+functions place and recover positions relative to the confluences of
+identified mainstems (`aggregate_id` as a mainstem URI), working kilometer
+values from an internal chain frame that reads no coordinates.
+
+- `get_confluences()` returns each confluence of two identified mainstems as
+  a hydrolocation on the receiving mainstem at the outlet of the tributary.
+- `add_hydro_location_distance()` records the signed distance along a mainstem
+  from the nearest referent; negative toward the outlet, positive toward the
+  head.
+- `index_hydro_location_distance()` is the inverse, mapping a referent
+  distance back to a flowline `id` and `id_measure`.
+- `get_substring()` returns the ordered pieces between two positions on one
+  mainstem, with piece geometry cut by `lwgeom::st_linesubstring()` when the
+  input is `sf` and `lwgeom` is installed.
+- `index_points_to_lines()` returns `id_measure` on every call and accepts
+  `aggregate_ids` to constrain a point to one mainstem's flowlines.
+- `hy_capabilities()` reports the four new functions. A new website article,
+  "Referent distances along mainstems", walks a worked example.
+
 hydroloom 1.2.2
 ==========
 
+Correctness fix on `make_node_topology()` for dendritic networks. Outlet
+`tonode`s were seeded from `max(non-outlet tonode) + 1`. When the highest
+`fromnode`s belonged to outlets (whose `tonode` is NA and excluded from that
+max), the seed fell inside the `fromnode` range and a terminal flowline's
+`tonode` collided with another feature's `fromnode`, fabricating a connection
+that `add_toids()` would then rediscover. Outlet `tonode`s are now seeded above
+every assigned node (`max(c(fromnode, tonode))`), so terminals keep independent
+pendant nodes. Observed on the Alaska reference network (2 of 2,122 outlets).
+
 Performance fix on `accumulate_downstream()`. No user-facing behavior change; output is identical.
+
+Correctness fix on `add_pathlength()` for networks with character ids. The
+terminal test was `toid != 0`, which recognizes only the numeric outlet
+sentinel. With character ids the sentinel is `""`, the comparison is made as
+strings and is `TRUE`, so terminals took the accumulating branch, indexed with
+`NA`, and the `NA` propagated up every path above them — the whole
+`pathlength_km` column came back `NA`. Now uses `get_outlet_value()`, as
+`add_streamorder()` and `add_levelpaths()` do. Networks with numeric ids are
+unaffected.
 
 `nhdplusTools` has been renamed `hydrogeofetch`. Examples, tests, and articles that pull sample data now suggest and source from `hydrogeofetch`, and package URLs point at the new repository.
 

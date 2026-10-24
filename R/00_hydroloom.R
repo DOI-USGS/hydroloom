@@ -68,6 +68,11 @@ point_id <- "point_id"
 offset <- "offset"
 upmain <- "upmain"
 downmain <- "downmain"
+hydro_location_id <- "hydro_location_id"
+distance_km <- "distance_km"
+past_end_km <- "past_end_km"
+id_from_measure <- "id_from_measure"
+id_to_measure <- "id_to_measure"
 
 indid <- "indid"
 toindid <- "toindid"
@@ -84,7 +89,8 @@ good_names <- c(id, toid, fromnode, tonode, divergence, divergence_fraction, wbi
   feature_type, feature_type_code, vector_proc_unit, raster_proc_unit,
   id_measure, aggregate_id, aggregate_id_measure,
   aggregate_id_from_measure, aggregate_id_to_measure, point_id, offset,
-  upmain, downmain)
+  upmain, downmain, hydro_location_id, distance_km, past_end_km,
+  id_from_measure, id_to_measure)
 
 hnd <- as.list(rep("", length(good_names)))
 names(hnd) <- good_names
@@ -141,6 +147,14 @@ hnd$offset <- "offset distance from point to line in units of linear reference a
 hnd$levelpath_outlet_id <- "id of outlet catchment of a levelpath"
 hnd$upmain <- "indicates that a given network element is the primary upstream connection at a confluence"
 hnd$downmain <- "indicates that a given network element is the primary downstream connection at a confluence"
+hnd$hydro_location_id <- paste("identifier of the feature linked to the hydrolocation",
+  "a distance is measured from (for a confluence, the tributary mainstem)")
+hnd$distance_km <- paste("signed distance along the line from the referent,",
+  "negative toward the outlet, positive toward the head")
+hnd$past_end_km <- paste("distance by which a resolved position fell beyond the end of the flowlines present,",
+  "before being placed at that end; 0 when it did not")
+hnd$id_from_measure <- "interpolative measure bounding the downstream end of a piece of a single feature"
+hnd$id_to_measure <- "interpolative measure bounding the upstream end of a piece of a single feature"
 
 hydroloom_name_definitions <- setNames(as.character(hnd), names(hnd))
 class(hydroloom_name_definitions) <- c("hydroloom_names", class(hydroloom_name_definitions))

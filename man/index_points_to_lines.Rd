@@ -12,7 +12,8 @@ index_points_to_lines(
   search_radius = NULL,
   precision = NA,
   max_matches = 1,
-  ids = NULL
+  ids = NULL,
+  aggregate_ids = NULL
 )
 
 \method{index_points_to_lines}{data.frame}(
@@ -21,7 +22,8 @@ index_points_to_lines(
   search_radius = NULL,
   precision = NA,
   max_matches = 1,
-  ids = NULL
+  ids = NULL,
+  aggregate_ids = NULL
 )
 
 \method{index_points_to_lines}{hy}(
@@ -30,7 +32,8 @@ index_points_to_lines(
   search_radius = NULL,
   precision = NA,
   max_matches = 1,
-  ids = NULL
+  ids = NULL,
+  aggregate_ids = NULL
 )
 }
 \arguments{
@@ -55,13 +58,21 @@ as and order as \code{points}. If included, index searching will be constrained 
 and only one flowline per point.
 
 \verb{search radius} is still used with this option but \code{max_matches} is overridden.}
+
+\item{aggregate_ids}{vector of aggregate_ids corresponding to the aggregate_id
+field of \code{x} of the same length and order as \code{points}. If included, index
+searching for each point is constrained to the flowlines that carry its
+aggregate_id, so a referent on a tributary is placed on the tributary and not
+the receiving river. Exclusive with \code{ids}.}
 }
 \value{
-data.frame with up to five columns, point_id, id, aggregate_id,
-aggregate_id_measure, and offset. point_id is the row or list element in the
-point input. If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
+data.frame with up to six columns, point_id, id, id_measure,
+aggregate_id, aggregate_id_measure, and offset. point_id is the row or list
+element in the point input. id_measure is the interpolative measure along the
+matched flowline (0 at the outlet, 100 at the inlet) and is always returned.
+If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
 it will not be included in the output. If from and to measures are not included
-for each id in x, measures will not be included in the output.
+for each id in x, aggregate measures will not be included in the output.
 }
 \description{
 given an sf point geometry column, return id, aggregate_id
@@ -91,6 +102,13 @@ aggregate feature. From and to aggregate id measures must be included for each
 flowline in order to have aggregate id measures (reachcode or mainstem
 measures) in the output.
 }
+\section{Measures}{
+
+\code{id_measure} is an interpolative measure along a single flowline: a percent
+of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+inlet (upstream, head end).
+}
+
 \examples{
 \donttest{
 if (require(hydrogeofetch)) {
