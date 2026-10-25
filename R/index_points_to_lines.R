@@ -124,7 +124,7 @@ rename_indexed <- function(x, matched) {
 #' aggregate_id, aggregate_id_measure, and offset. point_id is the row or list
 #' element in the point input. id_measure is the interpolative measure along the
 #' matched flowline (0 at the outlet, 100 at the inlet) and is always returned.
-#' If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
+#' If an aggregate_id (e.g. mainstem or reachcode) is not included in x,
 #' it will not be included in the output. If from and to measures are not included
 #' for each id in x, aggregate measures will not be included in the output.
 #'

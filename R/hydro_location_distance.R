@@ -461,7 +461,10 @@ km_to_position <- function(aggregate_id, km, axis) {
 #' A distance from a confluence does not depend on the flowline ids of the
 #' network it was recorded on. [index_hydro_location_distance()] takes the
 #' same record and places it on any network that carries the same aggregate
-#' flowpaths, for example to move a gage location from NHDPlusV2 to 3DHP.
+#' flowpaths, for example to move a gage location from NHDPlusV2 to 3DHP. The
+#' placed position is approximate in absolute terms, since the receiving
+#' network puts the confluence at its own spot, but it stays on the same side
+#' of the confluence.
 #'
 #' @details
 #' Positions and hydro locations are converted to kilometers along the
@@ -642,6 +645,18 @@ add_hydro_location_dist_impl <- function(indexes, hydro_locations, axis) {
 #' recorded on NHDPlusV2 can be placed on 3DHP, as long as both carry the same
 #' `aggregate_id` values and `hydro_locations` is on `x`, for example
 #' `get_confluences(x)`.
+#'
+#' A transferred position is approximate in absolute terms. `x` has unique
+#' flowlines and puts the hydro location at its own location along them, so
+#' `distance_km` laid out on `x` may not land at the same point on
+#' the ground as it did on the network it was recorded on. However, which 
+#' side of the referenced hydro location the position is on is transfered intact. 
+#' For a confluence that is what matters: crossing it changes the upstream
+#' drainage by a whole tributary basin, while moving along the mainstem
+#' between confluences changes it only by local drainage. Where a position has 
+#' to be exact on `x`, index the original point on `x` instead.
+#' The mainstem referencing article shows a worked case:
+#' \url{https://doi-usgs.github.io/hydroloom/articles/mainstem_referencing.html}
 #'
 #' @details
 #' Each record's hydro location is converted to kilometers along the

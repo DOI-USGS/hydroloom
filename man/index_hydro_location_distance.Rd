@@ -49,6 +49,18 @@ does not have to be the network the distance was recorded on. A distance
 recorded on NHDPlusV2 can be placed on 3DHP, as long as both carry the same
 \code{aggregate_id} values and \code{hydro_locations} is on \code{x}, for example
 \code{get_confluences(x)}.
+
+A transferred position is approximate in absolute terms. \code{x} has unique
+flowlines and puts the hydro location at its own location along them, so
+\code{distance_km} laid out on \code{x} may not land at the same point on
+the ground as it did on the network it was recorded on. However, which
+side of the referenced hydro location the position is on is transfered intact.
+For a confluence that is what matters: crossing it changes the upstream
+drainage by a whole tributary basin, while moving along the mainstem
+between confluences changes it only by local drainage. Where a position has
+to be exact on \code{x}, index the original point on \code{x} instead.
+The mainstem referencing article shows a worked case:
+\url{https://doi-usgs.github.io/hydroloom/articles/mainstem_referencing.html}
 }
 \details{
 Each record's hydro location is converted to kilometers along the

@@ -48,7 +48,10 @@ as an identified mainstem. Each position is a flowline \code{id} and
 A distance from a confluence does not depend on the flowline ids of the
 network it was recorded on. \code{\link[=index_hydro_location_distance]{index_hydro_location_distance()}} takes the
 same record and places it on any network that carries the same aggregate
-flowpaths, for example to move a gage location from NHDPlusV2 to 3DHP.
+flowpaths, for example to move a gage location from NHDPlusV2 to 3DHP. The
+placed position is approximate in absolute terms, since the receiving
+network puts the confluence at its own spot, but it stays on the same side
+of the confluence.
 }
 \details{
 Positions and hydro locations are converted to kilometers along the

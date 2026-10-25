@@ -47,8 +47,10 @@ utils::globalVariables(c(".span", "agg_chr", "bound", "from_km", "hi", "lo",
 #' `id_measure`; the ends are unordered. An optional `line_id` column labels
 #' the output; without it the row number is used.
 #' @param to data.frame. The other end, row-aligned with `from`.
-#' @param x `hy_topo` or `hy_node`. Carries `aggregate_id` and `length_km`,
-#' or a data.frame coercible with [hy()].
+#' @param x `hy_topo` or `hy_node`, or a data.frame coercible with [hy()].
+#' Carries `aggregate_id` and `length_km`. A `topo_sort` column keeps building
+#' the aggregate flowpath axis cheap; without it a full topological sort is
+#' run.
 #' @param snap_m numeric. An end within this many meters of a flowline
 #' boundary snaps to it. Default 0.
 #' @returns data.frame with `line_id`, `segment_order` (1 at the downstream

@@ -10,7 +10,7 @@ flowlines that share an `aggregate_id` and link end to end), so any
 `aggregate_id` whose flowlines form one unbranched path works the same way.
 
 - `get_confluences()` returns each confluence of two identified mainstems as
-  a hydrolocation on the receiving mainstem at the outlet of the tributary.
+  a hydro location on the receiving mainstem just below the tributary.
 - `add_hydro_location_distance()` records the signed distance along a mainstem
   from the nearest hydro location; negative toward the outlet, positive toward
   the head.

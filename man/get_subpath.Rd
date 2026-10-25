@@ -25,8 +25,10 @@ the output; without it the row number is used.}
 
 \item{to}{data.frame. The other end, row-aligned with \code{from}.}
 
-\item{x}{\code{hy_topo} or \code{hy_node}. Carries \code{aggregate_id} and \code{length_km},
-or a data.frame coercible with \code{\link[=hy]{hy()}}.}
+\item{x}{\code{hy_topo} or \code{hy_node}, or a data.frame coercible with \code{\link[=hy]{hy()}}.
+Carries \code{aggregate_id} and \code{length_km}. A \code{topo_sort} column keeps building
+the aggregate flowpath axis cheap; without it a full topological sort is
+run.}
 
 \item{snap_m}{numeric. An end within this many meters of a flowline
 boundary snaps to it. Default 0.}
