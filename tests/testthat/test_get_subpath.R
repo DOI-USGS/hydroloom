@@ -220,14 +220,17 @@ test_that("piece geometry end points coincide with the positions' points", {
   nh_rows <- axis[axis$aggregate_id == nh, ]
   nh_rows <- nh_rows[order(nh_rows$from_km), ]
 
-  # a span from the middle of the bottom NH flowline to the middle of the one
-  # above it
-  from <- dplyr::tibble(id = nh_rows$id[1], id_measure = 50)
+  # a span from a quarter of the way up the bottom NH flowline to the middle
+  # of the one above it; the asymmetric cut tells the two ends apart
+  from <- dplyr::tibble(id = nh_rows$id[1], id_measure = 25)
   to   <- dplyr::tibble(id = nh_rows$id[2], id_measure = 50)
 
   sub <- get_subpath(from, to, d3)
 
   expect_true(inherits(sub, "sf"))
+
+  # one LINESTRING per piece, not every cut merged into each row
+  expect_true(all(sf::st_geometry_type(sub) == "LINESTRING"))
 
   # the from position's point via get_hydro_location; the flowline id is given
   # under the comid alias so get_hydro_location keeps it (it renames an `id`
@@ -242,11 +245,12 @@ test_that("piece geometry end points coincide with the positions' points", {
       aggregate_id_to_measure))
 
   # the downstream end of the first piece is the from position's point; the
-  # piece's vertices run outlet-first (id_measure 0 at the first vertex), so
-  # the measure-50 cut sits at the piece's first vertex
+  # piece keeps the flowline's vertex order, upstream to downstream
+  # (id_measure 100 at the first vertex, 0 at the last), so the measure-25
+  # cut sits at the piece's last vertex
   first_geom <- sf::st_geometry(sub)[sub$segment_order == 1]
   first_coords <- sf::st_coordinates(first_geom)
-  down_end <- first_coords[1, c("X", "Y")]
+  down_end <- first_coords[nrow(first_coords), c("X", "Y")]
   from_coords <- sf::st_coordinates(from_pt)[1, c("X", "Y")]
 
   # the st_linesubstring cut and the get_hydro_location interpolation agree

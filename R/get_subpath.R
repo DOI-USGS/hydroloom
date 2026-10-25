@@ -300,7 +300,10 @@ empty_span_rows <- function(spans, axis_dt) {
 
 #' Attach piece geometry cut with lwgeom
 #' @description For each piece, lwgeom::st_linesubstring() on its flowline
-#' between id_from_measure/100 and id_to_measure/100. Empty-subpath rows
+#' between 1 - id_to_measure/100 and 1 - id_from_measure/100.
+#' st_linesubstring() measures fractions from the first vertex, which is the
+#' flowline's inlet (id_measure 100), so the measures are flipped; the piece
+#' keeps the flowline's upstream-to-downstream vertex order. Empty-subpath rows
 #' (NA id) get empty geometry. st_linesubstring() takes a single from/to
 #' applied to all of x, so the cut is made one piece at a time; this is
 #' geometry realization, not the arithmetic on the axis, which is vectorized
@@ -322,10 +325,12 @@ attach_piece_geometry <- function(result, x) {
       lwgeom::st_linesubstring(line, from, to)
     },
       geom[m[have]],
-      result$id_from_measure[have] / 100,
-      result$id_to_measure[have] / 100,
+      1 - result$id_to_measure[have] / 100,
+      1 - result$id_from_measure[have] / 100,
       SIMPLIFY = FALSE)
-    g[have] <- do.call(c, cut)
+    # cut holds sfg linestrings; c() on sfg would merge them into one
+    # multilinestring, so build the sfc directly
+    g[have] <- sf::st_sfc(cut, crs = sf::st_crs(geom))
   }
 
   sf::st_sf(result, geometry = g)
