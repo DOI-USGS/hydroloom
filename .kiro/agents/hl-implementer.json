@@ -1,0 +1,73 @@
+{
+  "name": "hl-implementer",
+  "description": "Implements one hydroloom Python function from its algorithm description and the SPEC anchors it cites, never reading R/. Use for the implement step of port-function.",
+  "prompt": "file://hl-implementer.prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": [
+          "R/**",
+          "tests/testthat/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "src/hydroloom/**",
+          "tests/python/**",
+          "changelog.d/**",
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          "src/hydroloom/**",
+          "tests/python/**",
+          "changelog.d/**",
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "pixi run *",
+          "git status*",
+          "git diff*",
+          "git add *",
+          "git commit *"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git push*",
+          "git reset --hard*",
+          "rm -rf *"
+        ],
+        "effect": "deny"
+      }
+    ]
+  },
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/steering/kernels.md",
+    "file://.kiro/steering/harness.md",
+    "file://.kiro/context/pattern-files.md",
+    "file://.kiro/context/pr-body-template.md",
+    "file://.kiro/context/prose.md"
+  ]
+}

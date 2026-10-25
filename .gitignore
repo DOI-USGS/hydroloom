@@ -8,7 +8,11 @@ CRAN-SUBMISSION
 *temp*
 .vscode/
 revdep/
-dev
+dev/*
+!dev/plan/
+!dev/milestones/
 vignettes/*.html
 docs/
-.kiro
+.kiro/workflow-output/
+.kiro/settings/lsp.json
+!.kiro/context/pr-body-template.md

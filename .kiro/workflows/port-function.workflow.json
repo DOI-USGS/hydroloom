@@ -1,0 +1,96 @@
+{
+  "name": "port-function",
+  "description": "Implement one hydroloom Python function from its description, with two independent reviews, a bounded fix loop, a maintainer handoff, and a milestone Log entry",
+  "inputs": {
+    "function": "string",
+    "description": "file",
+    "cases": "string",
+    "base": "string",
+    "milestone": "string",
+    "effort": "string"
+  },
+  "modelId": "claude-opus-5.5",
+  "effortLevel": "medium",
+  "steps": [
+    {
+      "type": "step",
+      "id": "readiness",
+      "agent": "hl-spec-reviewer",
+      "prompt": "Moment: readiness. Function {{function}}. Description {{description}}. Manifest cases {{cases}}. Check the per-function gate and do not edit files. Finish with send_message severity success if the gate holds, severity error naming the first missing item otherwise."
+    },
+    {
+      "type": "repeat",
+      "id": "build",
+      "maxIterations": 2,
+      "onMaxIterations": "pause",
+      "stopWhen": "{{aggregate.output}} contains VERDICT: APPROVED",
+      "steps": [
+        {
+          "type": "step",
+          "id": "implement",
+          "agent": "hl-implementer",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "medium",
+          "completion": { "completionSignal": "success" },
+          "prompt": "Function {{function}}. Description {{description}}. Cases {{cases}}. Base commit {{base}}. If .kiro/workflow-output/{{function}}/findings.md exists this is a fix round: address every blocker and should and record a response per id. Otherwise implement from the description. Run pixi run lint and pixi run test. Write the PR body to .kiro/workflow-output/{{function}}/pr-body.md and commit with the Assisted-by trailer. This run is unattended: do not stop to report progress or ask whether to continue. Finish with send_message severity success when lint and test pass.",
+          "artifacts": {
+            "prbody": ".kiro/workflow-output/{{function}}/pr-body.md"
+          }
+        },
+        {
+          "type": "parallel",
+          "id": "reviews",
+          "joinPolicy": "allSettled",
+          "branches": [
+            {
+              "type": "step",
+              "id": "style-review",
+              "agent": "hl-style-reviewer",
+              "modelId": "gpt-5.6-sol",
+              "effortLevel": "medium",
+              "prompt": "Function {{function}}. Review the diff of the current branch against base commit {{base}} (git diff {{base}}...HEAD). Read the diff before anything else. Write .kiro/workflow-output/{{function}}/findings-style.md and end your final message with the VERDICT line."
+            },
+            {
+              "type": "step",
+              "id": "spec-review",
+              "agent": "hl-spec-reviewer",
+              "modelId": "claude-opus-5.5",
+              "effortLevel": "medium",
+              "prompt": "Moment: review. Function {{function}}. Description {{description}}. Cases {{cases}}. Read the description before the diff, then review the diff of the current branch against base commit {{base}} (git diff {{base}}...HEAD). Write .kiro/workflow-output/{{function}}/findings-spec.md and end your final message with the VERDICT line."
+            }
+          ]
+        },
+        {
+          "type": "step",
+          "id": "aggregate",
+          "agent": "hl-aggregator",
+          "modelId": "claude-sonnet-5.5",
+          "effortLevel": "low",
+          "prompt": "Mode: merge. Function {{function}}. Merge .kiro/workflow-output/{{function}}/findings-style.md and findings-spec.md into .kiro/workflow-output/{{function}}/findings.md using the three bins. End your final message with VERDICT: APPROVED or VERDICT: REVISE.",
+          "artifacts": {
+            "findings": ".kiro/workflow-output/{{function}}/findings.md"
+          }
+        }
+      ]
+    },
+    {
+      "type": "step",
+      "id": "handoff",
+      "agent": "hl-aggregator",
+      "modelId": "claude-sonnet-5.5",
+      "effortLevel": "low",
+      "prompt": "Mode: handoff. Function {{function}}. Write the maintainer handoff to .kiro/workflow-output/{{function}}/handoff.md from the PR body at {{artifacts.prbody}} and the merged findings at {{artifacts.findings}}: the PR body, the description bin, the idiom bin, and whether the exemplar or a named kernel is involved.",
+      "artifacts": {
+        "handoff": ".kiro/workflow-output/{{function}}/handoff.md"
+      }
+    },
+    {
+      "type": "step",
+      "id": "record",
+      "agent": "hl-aggregator",
+      "modelId": "claude-sonnet-5.5",
+      "effortLevel": "low",
+      "prompt": "Mode: record. Function {{function}}. Milestone {{milestone}}. Base commit {{base}}. Implementer effort {{effort}}. Append one Log entry to dev/milestones/{{milestone}}.md from {{artifacts.prbody}}, {{artifacts.findings}}, {{artifacts.handoff}}, and git log {{base}}..HEAD. Every disposition is a dash. Write nothing else in that file. Finish with send_message severity error if you cannot establish both the base and the head SHA."
+    }
+  ]
+}

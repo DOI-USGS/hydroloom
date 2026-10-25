@@ -1,0 +1,55 @@
+{
+  "name": "hl-spec-reviewer",
+  "description": "Checks a hydroloom Python function against its algorithm description and the SPEC anchors it cites, reading the description before the diff; also checks the per-function readiness gate. Use for the readiness and spec-review steps of port-function.",
+  "prompt": "file://hl-spec-reviewer.prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": [
+          "R/**",
+          "tests/testthat/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git diff*",
+          "git log*",
+          "pixi run test*",
+          "pixi run validate*"
+        ],
+        "effect": "allow"
+      }
+    ]
+  },
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/steering/kernels.md",
+    "file://.kiro/steering/harness.md",
+    "file://.kiro/context/findings-format.md"
+  ]
+}

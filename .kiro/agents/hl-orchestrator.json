@@ -1,0 +1,30 @@
+{
+  "name": "hl-orchestrator",
+  "description": "Runs the port-function sequence by hand when Workflows are not enabled — readiness check, implementer, two parallel reviewers, aggregation, one fix round, handoff, record. Spawns only hl-* agents.",
+  "prompt": "file://hl-orchestrator.prompt.md",
+  "tools": [
+    "read",
+    "subagent"
+  ],
+  "toolsSettings": {
+    "subagent": {
+      "availableAgents": [
+        "hl-*"
+      ],
+      "trustedAgents": [
+        "hl-spec-reviewer",
+        "hl-style-reviewer",
+        "hl-aggregator",
+        "hl-hydro-reviewer",
+        "hl-modeler-reader",
+        "hl-docs-drift"
+      ]
+    }
+  },
+  "permissions": {
+    "rules": []
+  },
+  "resources": [
+    "file://AGENTS.md"
+  ]
+}

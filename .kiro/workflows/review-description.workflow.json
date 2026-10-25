@@ -1,0 +1,21 @@
+{
+  "name": "review-description",
+  "description": "Hydrology-reader review of one algorithm description and its fixtures before the function is opened to the implementer",
+  "inputs": {
+    "function": "string",
+    "description": "file"
+  },
+  "modelId": "claude-opus-5.5",
+  "effortLevel": "medium",
+  "steps": [
+    {
+      "type": "step",
+      "id": "hydro-review",
+      "agent": "hl-hydro-reviewer",
+      "prompt": "Moment: description. Function {{function}}. Description {{description}}. Read the description, the fixtures it names, and its manifest cases; run the template validator. Write .kiro/workflow-output/{{function}}/findings-description.md in the findings format and end your final message with the VERDICT line. Finish with send_message severity success when the file is written.",
+      "artifacts": {
+        "findings": ".kiro/workflow-output/{{function}}/findings-description.md"
+      }
+    }
+  ]
+}

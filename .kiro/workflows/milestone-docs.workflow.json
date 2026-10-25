@@ -1,0 +1,54 @@
+{
+  "name": "milestone-docs",
+  "description": "Milestone validation of documentation by a hydrology reader, a modeler reader, and a document-drift check, paired into one report",
+  "inputs": {
+    "milestone": "string",
+    "pages": "string"
+  },
+  "modelId": "claude-opus-5.5",
+  "effortLevel": "medium",
+  "steps": [
+    {
+      "type": "parallel",
+      "id": "reads",
+      "joinPolicy": "allSettled",
+      "branches": [
+        {
+          "type": "step",
+          "id": "hydro-read",
+          "agent": "hl-hydro-reviewer",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "medium",
+          "prompt": "Moment: docs. Milestone {{milestone}}. Pages: {{pages}}. Write .kiro/workflow-output/{{milestone}}/findings-hydro.md in the findings format and end your final message with the VERDICT line."
+        },
+        {
+          "type": "step",
+          "id": "modeler-read",
+          "agent": "hl-modeler-reader",
+          "modelId": "claude-sonnet-5.5",
+          "effortLevel": "medium",
+          "prompt": "Milestone {{milestone}}. Pages: {{pages}}. Write .kiro/workflow-output/{{milestone}}/findings-modeler.md in the findings format."
+        },
+        {
+          "type": "step",
+          "id": "drift",
+          "agent": "hl-docs-drift",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "high",
+          "prompt": "Milestone {{milestone}}. Check the four planning documents under dev/plan/ against the repository as your instructions list, including ROADMAP's done-when lines for {{milestone}}. Write .kiro/workflow-output/{{milestone}}/findings-drift.md in the findings format."
+        }
+      ]
+    },
+    {
+      "type": "step",
+      "id": "report",
+      "agent": "hl-aggregator",
+      "modelId": "claude-sonnet-5.5",
+      "effortLevel": "low",
+      "prompt": "Mode: report. Milestone {{milestone}}. Read .kiro/workflow-output/{{milestone}}/findings-hydro.md, findings-modeler.md, and findings-drift.md. Pair hydrology and modeler findings on the same sentence and label each pair jargon or imprecision; keep drift findings keyed by anchor. Write .kiro/workflow-output/{{milestone}}/docs-report.md with no VERDICT line.",
+      "artifacts": {
+        "report": ".kiro/workflow-output/{{milestone}}/docs-report.md"
+      }
+    }
+  ]
+}

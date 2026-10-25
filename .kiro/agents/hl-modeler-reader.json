@@ -1,0 +1,46 @@
+{
+  "name": "hl-modeler-reader",
+  "description": "Reads hydroloom user documentation as a modeler with a network file and a model to feed, who knows pandas but not hydrographic vocabulary; reads docs only, never code. Use for the modeler branch of milestone-docs.",
+  "prompt": "file://hl-modeler-reader.prompt.md",
+  "tools": [
+    "read",
+    "write"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": [
+          "R/**",
+          "src/**",
+          "tests/**",
+          "dev/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "deny"
+      }
+    ]
+  },
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/context/modeler-persona.md",
+    "file://.kiro/context/findings-format.md",
+    "file://.kiro/context/prose.md"
+  ]
+}

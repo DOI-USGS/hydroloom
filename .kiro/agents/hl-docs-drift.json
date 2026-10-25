@@ -1,0 +1,48 @@
+{
+  "name": "hl-docs-drift",
+  "description": "Compares the four hydroloom planning documents (SPEC, ROADMAP, VERIFICATION, DESIGN) to the repository and reports where they have drifted apart, keyed by anchor. Use for the drift branch of milestone-docs.",
+  "prompt": "file://hl-docs-drift.prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git log*",
+          "git diff*",
+          "pixi task list*",
+          "pixi run test --collect-only*"
+        ],
+        "effect": "allow"
+      }
+    ]
+  },
+  "resources": [
+    "file://AGENTS.md",
+    "file://dev/plan/SPEC.md",
+    "file://dev/plan/ROADMAP.md",
+    "file://dev/plan/VERIFICATION.md",
+    "file://.kiro/context/findings-format.md"
+  ]
+}

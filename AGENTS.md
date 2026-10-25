@@ -163,72 +163,50 @@ to `hy_flownetwork`. The old `allow_non_unique` bypass is removed.
   `.data.frame` dispatch can round-trip user column names; the user-facing
   `to_flownetwork()` drops it at the boundary.
 
-## HY_Features Concept Definitions (for decomposition)
+## Python port — rules for every agent
 
-These terms come from HY_Features (OGC WaterML2 Part 3) and the Mainstems
-logical data model. They are conceptual — hydroloom aligns with them without
-materializing them as formal objects.
+This repository holds the hydroloom R package at its root and the Python package under
+`src/hydroloom/`. Shared artifacts live under `inst/extdata/`: the vocabulary
+(`hy_vocab.json`, `abbreviations.json`), the remedies catalog (`remedies.json`), the
+composed docstrings (`docstrings.json`), and the conformance suite (`conformance/`:
+`manifest.yaml`, `algorithms/`, `fixtures/`, `expected/`). The planning documents are
+`dev/plan/SPEC.md` (rules, cited by anchor), `ROADMAP.md`, `VERIFICATION.md`, `DESIGN.md`.
+The review record is `dev/milestones/M<n>.md`, one file per milestone.
 
-- **Catchment** — holistic feature with inflow(s) and outflow(s), realized as
-  a polygon (divide), flowpath, or both. In hydroloom, an incremental catchment
-  is 1:1 with a confluence-to-confluence flowpath.
-- **Catchment aggregate** — a set of catchments grouped together that is itself
-  a catchment (inflows, outflows, divide, flowpath). Aggregation upscales a
-  catchment network without breaking connectivity. In the decomposition, a
-  domain *corresponds to* a catchment aggregate — the segment of extensive
-  network that flows through it is the aggregate's flowpath. The decomposition
-  does not materialize catchment aggregate objects directly.
-- **Drainage basin** — total upstream area draining to an outlet. A catchment
-  with no inflows and a single outlet. A single mainstem connects its headwater
-  to its outlet. Drainage basins nest: incremental catchments are a "flattened"
-  combination of nested drainage basin boundaries.
-- **Mainstem** — a single path from headwater to outlet through a drainage
-  basin. Cannot branch. A mainstem is a linear realization (backbone) of a
-  drainage basin. Mainstems form a dendritic tree whose branches are the
-  mainstems of nested drainage basins. Reserved term: "mainstem" denotes the
-  strict single-levelpath sense. The basin-scale concept the decomposition
-  selects via `decompose_network()`'s `stem_threshold` / `stem_levelpaths`
-  (which can branch) is captured by *extensive connectivity* (the
-  topological relationship) and *extensive network* (the realized
-  flowline features) — see those entries below.
-- **Hydro nexus (HY_HydroNexus)** — the interface between two catchments.
-  Realized as a hydro location (point) in hydroloom. In the decomposition,
-  synthetic nexus ids mark where domains connect to each other.
-- **Domain** — one per extensive network segment. Carries the segment's
-  lateral tributary rows together with the extensive network rows that flow
-  through the segment. On those extensive network rows the `toid` is set to
-  the reserved outlet value returned by `get_outlet_value()` — each becomes
-  a local outlet of its own contributing sub-basin (the decomposed form).
-  One `accumulate_downstream()` call on the domain yields, at every
-  detoid'd row, the locally-incremental value belonging there. Connects
-  only to other domains via segment-boundary nexuses; one outgoing edge
-  per non-outlet domain. Every `hy_domain` is compact — there is no
-  "non-compact" alternative.
-- **Extensive connectivity** — the topological relationship that ties a
-  drainage basin's pieces into a regionally-connected whole. The
-  abstract "how the basin connects regionally" — what the decomposition
-  preserves end-to-end across compact domains so the basin can still be
-  reasoned about as one object. Realized in features by the *extensive
-  network* (next entry).
-- **Extensive network** — the `hy_leveled` overlay carrying the flowline
-  features that realize a basin's extensive connectivity, with `toid`s
-  intact except at the basin outlet, which carries the reserved outlet
-  `toid` value. Held in `domain_decomposition$domain_connectivity` keyed
-  by basin id. Not a domain — a per-basin overlay that keeps the connected
-  flowlines addressable end-to-end. Sub-threshold basins have no overlay.
-- **Compact and extensive duality** — extensive network rows appear in
-  two places: inside their owning domain (with `toid` set to the reserved
-  outlet value — the decomposed form) and inside the basin's
-  `domain_connectivity` overlay (with `toid`s intact — the extensive form).
-  The duplication keeps the basin's extensive network queryable as one
-  object while letting per-domain accumulation run as a single pass.
-  Extensive network membership inside a domain is recovered by intersecting
-  the domain's `catchments$id` with the basin's extensive network overlay's
-  `id` — no marker column. Recomposition restores the dropped toids from
-  `source_network`. Per-domain accumulation produces the
-  per-extensive-network-row incremental values that recomposition then
-  routes through the extensive network.
-- **Levelpath** — a single linear path through the network, identified by
-  `add_levelpaths()`. The outlet levelpath of a drainage basin corresponds to
-  the basin's mainstem.
+One maintainer directs every agent on both sides of the port. "Maintainer" in these documents
+names that role when it decides: approving a description, filling the disposition column,
+merging. "Author" names a session, not a person: a description-side session reads `R/` and
+writes descriptions, cases, and R edits; a Python-side session never opens `R/`. Text called
+maintainer-authored is written in a session the maintainer reviews as prose rather than as
+code. The co-maintainer named in DESIGN §9 is a second person and the one place a second
+human is meant.
 
+Rules that hold in every session:
+
+1. The contract for a Python function is its algorithm description
+   (`inst/extdata/conformance/algorithms/<function>.md`) and the SPEC anchors it cites.
+   The expectation GeoPackage (`conformance/expected/<function>.gpkg`, one layer per
+   case) is the oracle. Python-side agents do not open `R/` or `tests/testthat/`.
+2. Binding sections of a description: Signature, Preconditions, Postconditions, and every
+   tie rule and sentinel in Algorithm. Algorithm step order does not bind. A kernel the
+   description names binds by signature (SPEC K-6); a kernel it does not name is the
+   author's to shape.
+3. Error text comes from `inst/extdata/remedies.json` by key, never typed at a raise
+   site (SPEC A-10).
+4. A review finding cites an anchor: a SPEC rule, a description section, a checklist
+   item, or a named source document. A finding with no anchor is severity `verify`; it
+   goes to the maintainer and never blocks.
+5. Done means `pixi run lint` and `pixi run test` pass. Run them yourself; hook triggers
+   do not fire in sub-agents.
+6. Write only where your agent's permissions allow. Findings, PR bodies, and reports go
+   under `.kiro/workflow-output/<function or milestone>/`.
+7. Hand off through files and your final message. Do not paste another agent's
+   transcript or reasoning into your output; pass findings, not deliberation.
+8. Every commit an agent makes carries `Assisted-by: <agent> (<model-id>)` as a git
+   trailer (`git commit --trailer "Assisted-by: Kiro (claude-opus-5.5)"`) and never
+   `Signed-off-by` or `Co-Authored-By`. Agents never write the disposition column of a
+   milestone file; that column is the maintainer's.
+9. Prose follows `.kiro/context/prose.md`. Existing roxygen, vignette, and
+   name-definition text is reused, not rewritten. Agents author user-facing prose only
+   in changelog fragments, doctests, and PR bodies; README, articles, `plain` and
+   `definition` fields, and `remedies.json` are maintainer-authored and agent-reviewed.

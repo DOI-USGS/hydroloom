@@ -1,0 +1,57 @@
+{
+  "name": "hl-style-reviewer",
+  "description": "Reviews a hydroloom Python diff for scientific-Python idiom against the PR checklist and the pattern files, reading the diff before anything else. Use for the style-review branch of port-function.",
+  "prompt": "file://hl-style-reviewer.prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": [
+          "R/**",
+          "tests/testthat/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git diff*",
+          "git log*",
+          "pixi run lint*",
+          "pixi run test*"
+        ],
+        "effect": "allow"
+      }
+    ]
+  },
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/steering/kernels.md",
+    "file://.kiro/steering/harness.md",
+    "file://.kiro/context/pr-checklist.md",
+    "file://.kiro/context/pattern-files.md",
+    "file://.kiro/context/findings-format.md"
+  ]
+}

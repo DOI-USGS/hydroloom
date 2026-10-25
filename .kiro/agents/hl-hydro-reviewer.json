@@ -1,0 +1,58 @@
+{
+  "name": "hl-hydro-reviewer",
+  "description": "Reads hydroloom algorithm descriptions, fixtures, and documentation as a river scientist calibrated to the hydrofabric and NHDPlus conventions; every finding cites a source. Use for review-description and for the hydrology branch of milestone-docs.",
+  "prompt": "file://hl-hydro-reviewer.prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": [
+          "R/**",
+          "tests/testthat/**",
+          "src/hydroloom/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          ".kiro/workflow-output/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "pixi run validate*",
+          "Rscript -e *"
+        ],
+        "effect": "allow"
+      }
+    ]
+  },
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/context/hydro/calibration.md",
+    "file://.kiro/context/hydro/usgs_hydrofabric_theme.md",
+    "file://.kiro/context/hydro/CONCEPT-hydrofabric.md",
+    "file://.kiro/context/hydro/CONCEPT-mainstems.md",
+    "file://inst/extdata/hy_vocab.json",
+    "file://.kiro/context/findings-format.md",
+    "file://.kiro/context/prose.md"
+  ]
+}

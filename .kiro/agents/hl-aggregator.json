@@ -1,0 +1,46 @@
+{
+  "name": "hl-aggregator",
+  "description": "Merges hydroloom review findings into one file with three routing bins and a VERDICT line; writes the maintainer handoff, the milestone docs report, or the milestone Log entry. Use for the aggregate, handoff, report, and record steps.",
+  "prompt": "file://hl-aggregator.prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/workflow-output/**",
+          "dev/milestones/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          ".kiro/workflow-output/**",
+          "dev/milestones/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git log*",
+          "git rev-parse*"
+        ],
+        "effect": "allow"
+      }
+    ]
+  },
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/context/findings-format.md",
+    "file://.kiro/context/prose.md"
+  ]
+}
