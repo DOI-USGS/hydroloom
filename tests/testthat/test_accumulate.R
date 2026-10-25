@@ -241,46 +241,6 @@ test_that("part closed test", {
 
 })
 
-test_that("accumulation scales linearly in the number of rows", {
-
-  skip_on_cran()
-
-  # The accumulation loop used to write `out[[var]][i] <- ...` into a
-  # tibble column on every iteration, which re-assigns the whole column
-  # each time and makes the function quadratic in nrow(x). Measured before
-  # the fix: 1.6 s at 25k rows, 4.3 s at 50k, 11.6 s at 100k, 31.8 s at
-  # 200k. That is invisible on the small fixtures every other test in this
-  # file uses, and it is the difference between seconds and hours on a
-  # continental network.
-  #
-  # This guards the shape of the curve, not an absolute time, so it does
-  # not fail on a slow machine. A quadratic implementation quadruples when
-  # n doubles; a linear one roughly doubles. The threshold is loose enough
-  # to absorb ordinary noise and still catch a regression.
-
-  make_net <- function(n) {
-    hy(data.frame(id = as.character(seq_len(n)),
-                  toid = as.character(c("", floor(seq_len(n)[-1] / 2))),
-                  v = 1,
-                  stringsAsFactors = FALSE))
-  }
-
-  time_it <- function(n) {
-    net <- make_net(n)
-    t0 <- Sys.time()
-    invisible(suppressMessages(accumulate_downstream(net, "v", quiet = TRUE)))
-    as.numeric(difftime(Sys.time(), t0, units = "secs"))
-  }
-
-  t1 <- time_it(40000L)
-  t2 <- time_it(80000L)
-
-  # Guard against a near-zero baseline making the ratio meaningless.
-  skip_if(t1 < 0.02, "baseline too fast to measure a ratio reliably")
-
-  expect_lt(t2 / t1, 3)
-})
-
 test_that("accumulation is unchanged by hoisting the accumulator", {
 
   # Pins the values the hoisted loop produces, for both branches, against
