@@ -13,7 +13,7 @@
 #' @importFrom pbapply pblapply pbsapply pbapply pboptions
 #' @importFrom RANN nn2
 #' @importFrom stats setNames na.omit
-#' @importFrom fastmap fastqueue faststack
+#' @importFrom fastmap faststack
 #' @importFrom utils txtProgressBar setTxtProgressBar adist combn tail
 #' @importFrom units set_units as_units
 #' @importFrom methods as

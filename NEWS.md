@@ -30,6 +30,17 @@ hydroloom (development version)
   than one outlet, and so do values built from `topo_sort`: `levelpath`
   from `add_levelpaths()`, and `add_pfafstetter()` codes where two
   tributaries enter the same flowline.
+- `check_hy_graph()` now finds every cycle in a network, not only two
+  flowlines that point at each other: a cycle of three or more flowlines
+  is now reported. It returns the rows on a cycle in input order with
+  `row`, `component` (which cycle, numbered from 1), and `reciprocal`
+  (`TRUE` for a cycle of two flowlines), in place of the `toid_check`
+  column ordered by `toid`. The `loop_check` argument is removed.
+  `sort_network()`, `add_topo_sort()`, `make_index_ids()`,
+  `navigate_network_dfs()`, and other functions that build their index
+  with `make_index_ids()` now stop on any cycle in a network with unique
+  `id`, where a longer cycle used to warn and drop rows; the error says
+  "cycles". A network with repeated `id` is sorted as before.
 
 hydroloom 1.3.0
 ==========

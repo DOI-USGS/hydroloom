@@ -295,8 +295,8 @@ sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
   x <- check_hy_outlets(x, fix = FALSE)
 
   if (!isTRUE(check_hy_graph(x))) {
-    stop("found one or more pairs of features that reference eachother.
-          Run check_hy_graph to identify issues.")
+    stop("found one or more cycles in the network. ",
+      "Run check_hy_graph to identify them.")
   }
 
   x <- select(st_drop_geometry(x), id, toid, everything())

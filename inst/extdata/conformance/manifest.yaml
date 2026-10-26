@@ -2295,6 +2295,8 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
+    raises: error
+    raises_key: network_cycle
 
   - id: make_index_ids_mode_invalid
     function: make_index_ids
@@ -2410,8 +2412,8 @@ cases:
 
   # changes_with: D-8; shared. S-6 tie case for component numbering; today
   # rows 1, 4, 5, 8 (pairs 9/12, 10/11) ordered by toid. After D-8: rows 1, 3,
-  # 4, 5, 6, 8, 9; component 1 = {10, 11} reciprocal TRUE, 2 = {20, 21, 22}
-  # FALSE, 3 = {9, 12} TRUE (byte order "10" < "20" < "9").
+  # 4, 5, 6, 8, 9; component 1 = {10, 11} reciprocal TRUE, 2 = {9, 12} TRUE,
+  # 3 = {20, 21, 22} FALSE (least identifier as text "10" < "12" < "20").
   - id: check_hy_graph_two_cycles_byte_order
     function: check_hy_graph
     fixture: two_cycles_byte_order.gpkg
@@ -2833,129 +2835,6 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # loop_check: today only. changes_with: D-8; these four cases are deleted
-  # when D-8 removes the argument.
-
-  # Warns "stuck in a loop at 2"; returns 1 row (id 2, toid 3), no row column.
-  - id: check_hy_graph_three_cycle_loop_check
-    function: check_hy_graph
-    fixture: three_cycle.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-    raises: warning
-
-  # Many warnings; returns 9 rows, 3 of them on no cycle.
-  - id: check_hy_graph_loop2_loop_check
-    function: check_hy_graph
-    fixture: loop2.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-    raises: warning
-
-  # TRUE.
-  - id: check_hy_graph_loop_loop_check
-    function: check_hy_graph
-    fixture: loop.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-
-  # make_index_ids inside the walk stops with "found one or more pairs of
-  # features that reference eachother."
-  - id: check_hy_graph_reciprocal_pair_loop_check
-    function: check_hy_graph
-    fixture: reciprocal_pair.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-    raises: error
-
-  # loop_check, test_check_hy_graph.R migration (M2); today only, deleted at
-  # D-8 with the cases above.
-
-  # Warns; returns 1 row (id 3, toid 5).
-  - id: check_hy_graph_loop_check_three_cycle_loop_check
-    function: check_hy_graph
-    fixture: loop_check_three_cycle.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-    raises: warning
-
-  # Warns; returns 1 row (id 2, toid 4).
-  - id: check_hy_graph_flownetwork_cycle_loop_check
-    function: check_hy_graph
-    fixture: flownetwork_cycle.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-    raises: warning
-
-  # A divergence that rejoins is not a loop; TRUE.
-  - id: check_hy_graph_loop_check_recombine_loop_check
-    function: check_hy_graph
-    fixture: loop_check_recombine.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-
-  # NHDPlusV2 after add_toids; TRUE.
-  - id: check_hy_graph_new_hope_loop_check
-    function: check_hy_graph
-    fixture: new_hope.gpkg
-    prepare: {function: add_toids}
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-
-  # TRUE.
-  - id: check_hy_graph_loop_outlets_loop_check
-    function: check_hy_graph
-    fixture: loop_outlets.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-
-  # TRUE.
-  - id: check_hy_graph_loop2_repaired_loop_check
-    function: check_hy_graph
-    fixture: loop2_repaired.gpkg
-    args:
-      loop_check: true
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-
   # sort_network --------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
   # changes_with D-4 = sibling and outlet order by identifier byte order
@@ -3292,8 +3171,8 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: sort_missed_features
+    raises: error
+    raises_key: network_cycle
 
   # changes_with: D-8; today no_outlet then sort_missed_features, zero rows;
   # post raises error network_cycle
@@ -3305,8 +3184,8 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: no_outlet
+    raises: error
+    raises_key: network_cycle
 
   # flownetwork runs no cycle check today or post; returns ids 6, 7
   - id: sort_network_flownetwork_cycle
@@ -3866,8 +3745,8 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: sort_missed_features
+    raises: error
+    raises_key: network_cycle
 
   # changes_with: D-8; hy_topo route; today warns no_outlet and
   # sort_missed_features, then internal error; post raises network_cycle
@@ -3882,7 +3761,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
-
+    raises_key: network_cycle
   # changes_with: i2; node route (message); siblings already in byte order, so
   # D-4 leaves it unchanged
   - id: add_topo_sort_return_divergence
@@ -4263,6 +4142,8 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    raises: error
+    raises_key: network_cycle
 
   # changes_with: d8; note: today [[6,5]]; after D-8 raises network_cycle
   - id: navigate_network_dfs_three_cycle_up
@@ -4273,6 +4154,8 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    raises: error
+    raises_key: network_cycle
 
   - id: navigate_network_dfs_reciprocal_pair
     function: navigate_network_dfs

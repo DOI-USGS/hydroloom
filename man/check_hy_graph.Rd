@@ -4,22 +4,10 @@
 \alias{check_hy_graph}
 \title{Check hy Graph}
 \usage{
-check_hy_graph(
-  x,
-  loop_check = FALSE,
-  divergence_check = FALSE,
-  fraction_tol = 1e-06
-)
+check_hy_graph(x, divergence_check = FALSE, fraction_tol = 1e-06)
 }
 \arguments{
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
-
-\item{loop_check}{logical if TRUE, the entire network is walked from
-top to bottom searching for loops. This loop detection algorithm visits
-a node in the network only once all its upstream neighbors have been
-visited. A complete depth first search is performed at each node, searching
-for paths that lead to an already visited (upstream) node. This algorithm
-is often referred to as "recursive depth first search".}
 
 \item{divergence_check}{logical if TRUE, \code{divergence} and, where
 present, \code{divergence_fraction} are checked for internal consistency as
@@ -31,12 +19,16 @@ described in details.}
 \value{
 if no problems are found, returns TRUE. If problems are found,
 problem rows with a row number added. Rows returned by the divergence
-check carry a \code{divergence_issue} column naming the failed checks. Checks
+check carry a \code{divergence_issue} column naming the failed checks. Rows
+returned by the cycle check are every row whose \code{id} and \code{toid} lie on a
+common cycle, in input order, with \code{component} (which cycle, numbered from
+1 in byte order of each cycle's least identifier compared as text) and
+\code{reciprocal} (\code{TRUE} when the cycle has exactly two flowlines). Checks
 run in order and the first one to find a problem returns, so a single
 call reports one class of problem at a time.
 }
 \description{
-check that a network graph doesn't contain localized loops
+check that a network graph doesn't contain cycles
 and, optionally, that its divergence attributes are internally consistent.
 }
 \details{
@@ -76,6 +68,12 @@ apply:
 \item \code{divergence_fraction} sums to 1 across each \code{fromnode} group.
 \item No \code{divergence == 2} feature takes the entire flow.
 }
+
+A cycle is a set of flowlines in which water leaving any one of them can,
+by following \code{toid}, return to it: the strongly connected components of
+the \code{id} to \code{toid} graph that hold more than one flowline, plus any
+flowline whose \code{toid} is its own \code{id}. Every network is checked for
+cycles.
 }
 \examples{
 # notice that row 4 (id = 4, toid = 9) and row 8 (id = 9, toid = 4) is a loop.

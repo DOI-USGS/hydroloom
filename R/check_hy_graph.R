@@ -3,7 +3,7 @@ utils::globalVariables(c("n_out", "n_main", "frac_sum"))
 required_atts_check_divergence <- c("id", "fromnode", "divergence")
 
 #' Check hy Graph
-#' @description check that a network graph doesn't contain localized loops
+#' @description check that a network graph doesn't contain cycles
 #' and, optionally, that its divergence attributes are internally consistent.
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @details
@@ -45,12 +45,12 @@ required_atts_check_divergence <- c("id", "fromnode", "divergence")
 #'   \item No `divergence == 2` feature takes the entire flow.
 #' }
 #'
-#' @param loop_check logical if TRUE, the entire network is walked from
-#' top to bottom searching for loops. This loop detection algorithm visits
-#' a node in the network only once all its upstream neighbors have been
-#' visited. A complete depth first search is performed at each node, searching
-#' for paths that lead to an already visited (upstream) node. This algorithm
-#' is often referred to as "recursive depth first search".
+#' A cycle is a set of flowlines in which water leaving any one of them can,
+#' by following `toid`, return to it: the strongly connected components of
+#' the `id` to `toid` graph that hold more than one flowline, plus any
+#' flowline whose `toid` is its own `id`. Every network is checked for
+#' cycles.
+#'
 #' @param divergence_check logical if TRUE, `divergence` and, where
 #' present, `divergence_fraction` are checked for internal consistency as
 #' described in details.
@@ -58,7 +58,11 @@ required_atts_check_divergence <- c("id", "fromnode", "divergence")
 #' `divergence_fraction` sums to 1 across a `fromnode` group.
 #' @returns if no problems are found, returns TRUE. If problems are found,
 #' problem rows with a row number added. Rows returned by the divergence
-#' check carry a `divergence_issue` column naming the failed checks. Checks
+#' check carry a `divergence_issue` column naming the failed checks. Rows
+#' returned by the cycle check are every row whose `id` and `toid` lie on a
+#' common cycle, in input order, with `component` (which cycle, numbered from
+#' 1 in byte order of each cycle's least identifier compared as text) and
+#' `reciprocal` (`TRUE` when the cycle has exactly two flowlines). Checks
 #' run in order and the first one to find a problem returns, so a single
 #' call reports one class of problem at a time.
 #' @export
@@ -82,8 +86,7 @@ required_atts_check_divergence <- c("id", "fromnode", "divergence")
 #' div_data$divergence[2] <- 2
 #' check_hy_graph(div_data, divergence_check = TRUE)
 #'
-check_hy_graph <- function(x, loop_check = FALSE, divergence_check = FALSE,
-                           fraction_tol = 1e-6) {
+check_hy_graph <- function(x, divergence_check = FALSE, fraction_tol = 1e-6) {
 
   if (!inherits(x, c("hy", "hy_flownetwork"))) {
     x <- hy(x)
@@ -97,38 +100,143 @@ check_hy_graph <- function(x, loop_check = FALSE, divergence_check = FALSE,
 
   }
 
-  if (loop_check) {
-    index_ids <- make_index_ids(x, mode = "both")
+  check_cycles_internal(x)
 
-    starts <- index_ids$to$to_list$indid[index_ids$to$to_list$id %in% x$id[!x$id %in% x$toid]]
+}
 
-    check <- check_hy_graph_internal(index_ids, starts)
+# Rows of x whose id and toid lie on a common cycle, with `row`, `component`,
+# and `reciprocal` appended (D-8); TRUE when there is none. Builds its own
+# CSR index: make_index_ids() on a hy_topo calls check_hy_graph().
+check_cycles_internal <- function(x) {
 
-    check <- unlist(check)
+  if (!"toid" %in% names(x)) stop("check_hy_graph requires toid. ", hy_guidance_topo,
+    call. = FALSE)
 
-    if (any(!is.na(check))) {
-      return(filter(x, id %in% check))
+  ids <- unique(x$id)
+
+  from <- match(x$id, ids)
+  to <- match(x$toid, ids, incomparables = NA)
+
+  edge <- which(!is.na(to))
+  edge <- edge[order(from[edge], method = "radix")]
+
+  indptr <- c(0L, cumsum(tabulate(from[edge], nbins = length(ids))))
+
+  comp <- scc_labels(indptr, to[edge])
+
+  on_cycle <- !is.na(to) & comp[from] == comp[to]
+  on_cycle[is.na(on_cycle)] <- FALSE
+
+  if (!any(on_cycle)) return(TRUE)
+
+  hit <- which(on_cycle)
+  hit_comp <- comp[from[hit]]
+
+  # components numbered by byte order of their least identifier (D-1)
+  key <- as.character(x$id[hit])
+  o <- order(key, method = "radix")
+  comp_order <- hit_comp[o][!duplicated(hit_comp[o])]
+
+  size <- tabulate(comp, nbins = max(comp))
+
+  out <- x[hit, , drop = FALSE]
+
+  out$row <- hit
+  out$component <- match(hit_comp, comp_order)
+  out$reciprocal <- size[hit_comp] == 2L
+
+  classify_hy(out)
+
+}
+
+# Strongly connected components of a CSR graph (Tarjan 1972), iterative.
+# indptr: 0-based offsets, length n + 1; indices: 1-based positions. Returns
+# one component label per position. 0 in index marks an unvisited position
+# (K-4, 1-based).
+scc_labels <- function(indptr, indices) {
+
+  n <- length(indptr) - 1L
+
+  index <- integer(n)
+  low <- integer(n)
+  on_stack <- logical(n)
+  comp <- integer(n)
+
+  stack <- integer(n)
+  sp <- 0L
+
+  call_node <- integer(n)
+  call_edge <- integer(n)
+  cp <- 0L
+
+  counter <- 0L
+  n_comp <- 0L
+
+  for (s in seq_len(n)) {
+
+    if (index[s] != 0L) next
+
+    counter <- counter + 1L
+    index[s] <- counter
+    low[s] <- counter
+    sp <- sp + 1L
+    stack[sp] <- s
+    on_stack[s] <- TRUE
+    cp <- 1L
+    call_node[cp] <- s
+    call_edge[cp] <- indptr[s]
+
+    while (cp > 0L) {
+
+      v <- call_node[cp]
+      e <- call_edge[cp]
+
+      if (e < indptr[v + 1L]) {
+
+        call_edge[cp] <- e + 1L
+        w <- indices[e + 1L]
+
+        if (index[w] == 0L) {
+          counter <- counter + 1L
+          index[w] <- counter
+          low[w] <- counter
+          sp <- sp + 1L
+          stack[sp] <- w
+          on_stack[w] <- TRUE
+          cp <- cp + 1L
+          call_node[cp] <- w
+          call_edge[cp] <- indptr[w]
+        } else if (on_stack[w] && index[w] < low[v]) {
+          low[v] <- index[w]
+        }
+
+      } else {
+
+        if (low[v] == index[v]) {
+          n_comp <- n_comp + 1L
+          repeat {
+            w <- stack[sp]
+            sp <- sp - 1L
+            on_stack[w] <- FALSE
+            comp[w] <- n_comp
+            if (w == v) break
+          }
+        }
+
+        cp <- cp - 1L
+
+        if (cp > 0L) {
+          u <- call_node[cp]
+          if (low[v] < low[u]) low[u] <- low[v]
+        }
+
+      }
+
     }
 
   }
 
-  x <- merge(data.table(mutate(x, row = seq_len(n()))),
-    data.table(rename(st_drop_geometry(x), toid_check = toid)),
-    by.x = "toid", by.y = "id", all.x = TRUE)
-
-  x <- as_tibble(x)
-
-  check <- x$id == x$toid_check
-
-  if (any(check, na.rm = TRUE)) {
-
-    filter(x, check)
-
-  } else {
-
-    TRUE
-
-  }
+  comp
 
 }
 
@@ -251,140 +359,5 @@ check_hy_outlets <- function(x, fix = FALSE) {
   }
 
   x
-
-}
-
-check_hy_graph_internal <- function(g, all_starts) {
-
-  # used to track which path tops we need to go back to
-  to_visit_queue <- fastqueue(missing_default = 0)
-
-  lapply(all_starts, function(x) to_visit_queue$add(x))
-
-  out_stack <- faststack()
-
-  # to track where we've been
-  visited_tracker <- rep(FALSE, ncol(g$to$to))
-
-  # Set up the starting node we change node below so this just tracks for clarity
-  node <- to_visit_queue$remove()
-
-  # trigger for making a new path
-  new_path <- FALSE
-
-  if (pbapply::dopb()) {
-    pb = txtProgressBar(0, ncol(g$to$to), style = 3)
-    on.exit(close(pb))
-  }
-  n <- 0
-
-  while (node > 0) {
-
-    if (!visited_tracker[node])
-      n <- n + 1
-
-    # mark it as visited
-    visited_tracker[node] <- TRUE
-
-    if (!n %% 100 && pbapply::dopb())
-      setTxtProgressBar(pb, n)
-
-    # now look at what's downtream and add to a queue
-    for (to in seq_len(g$to$lengths[node])) {
-
-      # Add the next node to visit to the tracking vector
-      if (g$to$to[to, node] != 0 && !visited_tracker[g$to$to[to, node]])
-        to_visit_queue$add(g$to$to[to, node])
-
-      # stops us from visiting a node again when we revisit
-      # from another upstream path.
-      g$to$to[to, node] <- 0
-
-    }
-
-    # go to the last element added in to_visit_queue
-    node <- to_visit_queue$remove()
-
-    # if nothing there, just increment to the next visit position
-    # this indicates we hit a new path
-    while ((node == 0 && to_visit_queue$size() > 0) ||
-      # or if we are at a node that's already been visited, skip it.
-      (node != 0 && visited_tracker[node])) {
-
-      node <- to_visit_queue$remove()
-
-    }
-
-    node_temp <- node
-
-    track <- 0
-    while (node != 0 &&
-      g$from$lengths[node] != 0 &&
-      any(!visited_tracker[
-        g$from$froms[seq(1, g$from$lengths[node]), node]])) {
-
-      to_visit_queue$add(node)
-      node <- to_visit_queue$remove()
-
-      track <- track + 1
-      if (track > to_visit_queue$size()) {
-        warning("stuck in a loop at ", g$to$to_list$id[node_temp])
-        out_stack$push(node_temp)
-
-        visited_tracker[node] <- TRUE
-
-        node <- to_visit_queue$remove()
-
-        break
-      }
-    }
-
-    check <- NULL
-
-    if (node != 0 && !visited_tracker[node])
-      check <- loop_search_dfs(g, node, visited_tracker)
-
-    if (!is.null(check)) {
-      message("found loop at ", g$to$to_list$id[check])
-      warning("found a loop at ", g$to$to_list$id[check])
-      out_stack$push(check)
-    }
-
-  }
-  if (pbapply::dopb())
-    setTxtProgressBar(pb, n)
-
-  # if we got this far, Cool!
-  unique(g$to$to_list$id[as.integer(out_stack$as_list())])
-
-}
-
-loop_search_dfs <- function(g, node, visited_tracker) {
-
-  # stack to track stuff we need to visit
-  to_visit_stack <- faststack(missing_default = 0)
-
-  # while we still have nodes to check
-  while (node != 0) {
-
-    # means we hit a node that we already visited
-    if (visited_tracker[node]) {
-      return(node)
-    }
-
-    for (to in seq_len(g$to$lengths[node])) {
-      to_visit_stack$push(g$to$to[to, node])
-      g$to$to[to, node] <- 0
-    }
-
-    # grab the next node
-    node <- to_visit_stack$pop()
-
-    # if it's 0 grab the next node unless it's empty
-    while (!node && to_visit_stack$size() > 0) {
-      node <- to_visit_stack$pop()
-    }
-
-  }
 
 }

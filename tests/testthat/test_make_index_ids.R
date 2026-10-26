@@ -56,7 +56,7 @@ test_that("add indid", {
     toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 
   expect_error(hydroloom:::make_index_ids(test_data),
-    "found one or more pairs of features that reference eachother.")
+    "found one or more cycles in the network.")
 
   x$id <- as.character(x$id)
 

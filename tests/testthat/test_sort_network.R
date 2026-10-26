@@ -2,7 +2,7 @@ test_that("get_sorted", {
   test_data <- data.frame(id = c(1, 2, 3, 4, 6, 7, 8, 9),
     toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 
-  expect_error(sort_network(test_data), "found one or more pairs of features that reference eachother.")
+  expect_error(sort_network(test_data), "found one or more cycles in the network.")
 
   test_data <- data.frame(id = c(1, 2, 3, 4),
     toid = c(2, 3, 4, 0))

@@ -200,10 +200,7 @@ importFrom(dplyr,
   tibble,
   ungroup
 )
-importFrom(fastmap,
-  fastqueue,
-  faststack
-)
+importFrom(fastmap,faststack)
 importFrom(jsonlite,read_json)
 importFrom(methods,as)
 importFrom(pbapply,
