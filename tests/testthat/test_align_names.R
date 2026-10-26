@@ -5,8 +5,6 @@ test_that("align_names", {
 
   expect_warning(x <- align_names(x), "Duplicate names found when aligning with hydroloom")
 
-  expect_true(all(c("id", "length_km", "aggregate_id") %in% names(x)))
-
   expect_true(is.character(hydroloom_name_definitions))
 
 })

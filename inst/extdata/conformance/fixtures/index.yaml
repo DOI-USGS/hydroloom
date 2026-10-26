@@ -219,6 +219,52 @@ fixtures:
     inside sf'
   rules: []
   bytes: 98304
+- file: align_names_new_hope_totda.gpkg
+  source: inst/extdata/new_hope.gpkg as read (REACHCODE kept, no mainstemid) with
+    TotDA copied from TotDASqKM (test_align_names.R); EPSG:5070
+  rows: 746
+  geometry: EPSG:5070
+  columns:
+  - COMID
+  - GNIS_ID
+  - GNIS_NAME
+  - LENGTHKM
+  - REACHCODE
+  - WBAREACOMI
+  - FTYPE
+  - FCODE
+  - StreamLeve
+  - StreamOrde
+  - StreamCalc
+  - FromNode
+  - ToNode
+  - Hydroseq
+  - LevelPathI
+  - Pathlength
+  - TerminalPa
+  - ArbolateSu
+  - Divergence
+  - StartFlag
+  - TerminalFl
+  - DnLevel
+  - UpLevelPat
+  - UpHydroseq
+  - DnLevelPat
+  - DnMinorHyd
+  - DnDrainCou
+  - DnHydroseq
+  - FromMeas
+  - ToMeas
+  - RtnDiv
+  - VPUIn
+  - VPUOut
+  - AreaSqKM
+  - TotDASqKM
+  - TotDA
+  exercises: 'sf NHDPlusV2 input in source names with two total_da_sqkm aliases: totda
+    wins with a warning; COMID, LENGTHKM, REACHCODE become id, length_km, aggregate_id'
+  rules: []
+  bytes: 462848
 - file: align_names_permanent_identifier_alone.gpkg
   source: synthetic
   rows: 2

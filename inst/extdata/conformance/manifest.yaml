@@ -839,6 +839,20 @@ cases:
     raises: warning
     raises_key: name_alias_duplicate
 
+  # sf New Hope as read in source names with TotDA added (test_align_names.R):
+  # totda wins with a warning; COMID, LENGTHKM, REACHCODE -> id, length_km,
+  # aggregate_id
+  - id: align_names_new_hope_totda
+    function: align_names
+    fixture: align_names_new_hope_totda.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: name_alias_duplicate
+
   # three aliases of id: stops after two warnings
   - id: align_names_three_aliases
     function: align_names

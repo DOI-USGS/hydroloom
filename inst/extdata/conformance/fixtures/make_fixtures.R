@@ -527,11 +527,11 @@ fixture(data.frame(COMID = 1:2, TotDASqKM = c(1.5, 3), TotDA = c(1.5, 3)),
   "synthetic",
   "two total_da_sqkm aliases (TotDASqKM, TotDA): totda wins, with a warning")
 
-fixture(if (build("align_names_new_hope_totda")) {
-  nh_totda <- sf::read_sf(file.path("inst", "extdata", "new_hope.gpkg"))
-  nh_totda$TotDA <- nh_totda$TotDASqKM
-  sf::st_transform(nh_totda, 5070)
-},
+fixture(local({
+  x <- sf::read_sf(file.path("inst", "extdata", "new_hope.gpkg"))
+  x$TotDA <- x$TotDASqKM
+  sf::st_transform(x, 5070)
+}),
   "align_names_new_hope_totda",
   "inst/extdata/new_hope.gpkg as read (REACHCODE kept, no mainstemid) with TotDA copied from TotDASqKM (test_align_names.R); EPSG:5070",
   "sf NHDPlusV2 input in source names with two total_da_sqkm aliases: totda wins with a warning; COMID, LENGTHKM, REACHCODE become id, length_km, aggregate_id")
