@@ -4,13 +4,16 @@ future_available <- function() {
 }
 
 # Writer-side helper: returns the reserved outlet `toid` value for the table's
-# id type (the canonical hydroloom marker — `0` for numeric ids, `""` for
-# character). Used when a function needs to fill in a value for a row that has
-# no downstream (e.g., add_toids assigning toid to disconnected segments). For
+# id type (the canonical hydroloom marker — `0L` for integer ids, `0` for
+# other numeric ids, `""` for character). Used when a function needs to fill
+# in a value for a row that has no downstream (e.g., add_toids assigning toid
+# to disconnected segments). For
 # outlet *detection*, use is_outlet() instead.
 get_outlet_value <- function(x) {
   if (inherits(x$id, "character")) {
     ""
+  } else if (is.integer(x$id)) {
+    0L
   } else {
     0
   }

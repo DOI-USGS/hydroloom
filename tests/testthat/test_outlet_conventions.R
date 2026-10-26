@@ -111,13 +111,14 @@ test_that("make_node_topology accepts orphan outlet toid", {
 })
 
 test_that("check_hy_outlets warns on type mismatch", {
-  # Numeric id with character toid -- a real bug condition.
+  # Numeric id with character toid. hy() types id and toid as a pair
+  # (I-2), so the data.frame path no longer reaches the mismatch.
   x <- structure(list(
     id   = c(1, 2, 3),
     toid = c("2", "3", "")
   ), class = "data.frame", row.names = 1:3)
-  expect_warning(hydroloom:::check_hy_outlets(x),
-    "incompatible types")
+  expect_no_warning(y <- hydroloom:::check_hy_outlets(x))
+  expect_type(y$id, "character")
 })
 
 test_that("check_hy_outlets does NOT warn on non-canonical valid outlets", {

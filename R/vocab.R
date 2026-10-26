@@ -32,6 +32,14 @@ vocab_good_names <- function() {
   names(vocab_columns())
 }
 
+# identifier names: hydroloom names whose vocabulary type is id
+vocab_id_names <- function() {
+
+  terms <- vocab_columns()
+
+  names(terms)[vapply(terms, function(t) identical(t$type, "id"), logical(1))]
+}
+
 # alias map: named character vector, alias -> hydroloom name
 vocab_alias_map <- function() {
 

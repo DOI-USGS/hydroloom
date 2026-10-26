@@ -166,7 +166,7 @@ get_pfaf_9 <- function(x, mainstem, max_level, pre_pfaf = 0, assigned = NA, stat
     by = c("toid" = "id")) |> arrange(.data$ms_ts)
 
   ms_inter <- lapply(seq_len(5), function(x, ms, ts) {
-    if (x > (length(ts) + 1)) return(data.frame(id = NA_real_))
+    if (x > (length(ts) + 1)) return(data.frame(id = ms$id[NA_integer_]))
     if (x == 1) {
       ms <- ms[ms$topo_sort <= ts[x], ]
     } else if (x == 5 | x == (length(ts) + 1)) {

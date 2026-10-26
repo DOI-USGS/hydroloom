@@ -497,6 +497,8 @@ run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
 
   layer <- to_layer(result, fn_entry$returns, args)
 
+  id_problems <- if (fn != "align_names") id_type_problems(result) else character()
+
   expected <- if (is.null(case$expected)) paste0(fn, ".gpkg") else case$expected
   path <- file.path(dir, "expected", expected)
 
@@ -522,7 +524,25 @@ run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
     return(paste0("no expectation layer ", case$id, " in expected/", expected,
       "; run with HYDROLOOM_WRITE_EXPECTED=1"))
 
-  cmp(read_layer(path, case$id))
+  c(id_problems, cmp(read_layer(path, case$id)))
+}
+
+# In-memory identifier type (I-1, I-2; D2-10): every identifier column of a
+# returned table is integer or character in R. align_names() renames without
+# the hy() ingest, so its cases are not checked.
+id_type_problems <- function(result) {
+
+  if (!is.data.frame(result)) return(character())
+
+  bad <- Filter(function(n) {
+    identical(vocab_term(n)$type, "id") &&
+      !(is.integer(result[[n]]) || is.character(result[[n]]))
+  }, names(result))
+
+  if (length(bad) == 0) return(character())
+
+  sprintf("identifier column %s: type %s, expected integer or character", bad,
+    vapply(bad, function(n) paste(class(result[[n]]), collapse = "/"), ""))
 }
 
 # Manifest cases R generates; empty when the suite or a reader is absent.

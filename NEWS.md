@@ -9,6 +9,17 @@ hydroloom (development version)
 - The `outletID` alias for `levelpath_outlet_id` is now `outletid`. Input
   names are lowercased before matching, so the camelCase entry never
   matched.
+- `hy()` now fixes the type of identifier columns (`id`, `toid`,
+  `fromnode`, `tonode`, `levelpath`, and the other identifier names) on
+  ingest. A whole-valued `double` or `integer64` column becomes `integer`
+  when every value fits in 32 bits and `character` (the exact decimal
+  string) otherwise, so NHDPlusV2 `COMID` read from a file comes back
+  `integer` and NHDPlus HR `NHDPlusID` comes back `character`. `id` and
+  `toid` share one type, as do `fromnode` and `tonode`; an integer `id`
+  beside a character `toid` no longer errors. The outlet `toid` is `0L`
+  for integer identifiers, and `add_toids()` returns `toid` in the type of
+  `id`. Functions called on a `data.frame` return these types under the
+  input column names.
 
 hydroloom 1.3.0
 ==========

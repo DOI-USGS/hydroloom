@@ -39,6 +39,8 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
 
   x <- align_names(x)
 
+  x <- ingest_ids(x)
+
   keep_names <- orig_names
 
   if (clean) {
@@ -119,6 +121,54 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
   x <- classify_hy(x)
 
   x
+}
+
+# Identifier ingest (SPEC I-2). Each identifier column that is integer,
+# integer64, or whole-valued double becomes integer when every value fits in
+# 32 bits, else its exact decimal string. id/toid and fromnode/tonode are
+# typed as pairs: if either is character, both are (D3-06). Character columns
+# and non-whole double, factor, or logical columns are left as they arrive
+# (D3-07).
+#' @noRd
+ingest_ids <- function(x) {
+
+  cols <- intersect(vocab_id_names(), names(x))
+
+  for (n in cols) x[[n]] <- ingest_id(x[[n]])
+
+  for (p in list(c(id, toid), c(fromnode, tonode))) {
+    if (all(p %in% names(x)) && any(vapply(p, function(n) is.character(x[[n]]), logical(1)))) {
+      for (n in p) x[[n]] <- as.character(x[[n]])
+    }
+  }
+
+  x
+}
+
+#' @noRd
+ingest_id <- function(v) {
+
+  max_id <- .Machine$integer.max
+
+  if (inherits(v, "integer64")) {
+    s <- as.character(v)
+    d <- as.numeric(s)
+
+    if (all(is.na(d) | abs(d) <= max_id)) return(as.integer(d))
+
+    return(s)
+  }
+
+  if (!is.double(v)) return(v)
+
+  if (any(!is.na(v) & (!is.finite(v) | v != round(v)))) return(v)
+
+  if (all(is.na(v) | abs(v) <= max_id)) return(as.integer(v))
+
+  s <- sprintf("%.0f", v)
+  s[is.na(v)] <- NA_character_
+
+  s
 }
 
 #' Is Valid `hy` Class?

@@ -158,7 +158,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: error
 
   - id: hy_mixed_case_names
     function: hy
@@ -2353,7 +2352,6 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
-    raises: error
 
   # Not added: long_form (deprecated, R only, not a graph; stays a testthat
   # interface test); hy_leveled input (prepare is one level and add_levelpaths
@@ -3398,7 +3396,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: error
 
   # changes_with: D-4; node route (add_toids), sf, 746 rows
   - id: sort_network_new_hope
