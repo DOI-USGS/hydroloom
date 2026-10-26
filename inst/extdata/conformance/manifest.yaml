@@ -10,6 +10,12 @@ functions:
   is.hy:
     requires: algorithms/is.hy.md#requires
     returns: scalar
+  # A named character vector becomes a frame of name, value in vector order
+  # (D3-13).
+  hydroloom_names:
+    requires: algorithms/hydroloom_names.md#requires
+    returns: frame
+    key: [name, value]
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -557,6 +563,44 @@ cases:
     function: is.hy
     fixture: zero_length.gpkg
     args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # hydroloom_names -----------------------------------------------------------
+  # No fixture (D3-12): the harness calls the function with args only.
+  # Registration, clear = TRUE, and the alias-takes-effect check stay in
+  # test_align_names.R: each mutates the session registry later cases read,
+  # and a named mapping cannot be written as a case arg.
+
+  # registry at load: the vocabulary alias table in file order (D-15)
+  - id: hydroloom_names_default
+    function: hydroloom_names
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # unnamed_name_mapping; stops before the registry is touched
+  - id: hydroloom_names_unnamed_input
+    function: hydroloom_names
+    args:
+      x: [foobar]
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # hydroloom_name_definitions -------------------------------------------------
+  # A non-function export read by value (D3-12, D3-22): no fixture, args, or
+  # raises. The named vector becomes a frame with columns name, definition, one
+  # row per element in vector order (D3-13). order: exact pins hy_vocab.json
+  # term order (D-14, D-15). No error, warning, changes_with, or S-6 boundary
+  # cases apply; the print method and class check stay in testthat.
+  - id: hydroloom_name_definitions_default
+    function: hydroloom_name_definitions
     compare: exact
     order: exact
     supported_by: [r]

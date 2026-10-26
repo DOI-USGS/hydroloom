@@ -36,7 +36,8 @@ index <- list()
 
 # Write one fixture and record its index entry. A fixture not selected by
 # HYDROLOOM_FIXTURES is skipped before x is evaluated.
-fixture <- function(x, name, source, exercises, rules = character()) {
+fixture <- function(x, name, source, exercises, rules = character(),
+  layer_options = NULL) {
 
   if (!build(name)) return(invisible(NULL))
 
@@ -47,7 +48,7 @@ fixture <- function(x, name, source, exercises, rules = character()) {
   f <- file.path(out_dir, paste0(name, ".gpkg"))
   if (file.exists(f)) unlink(f)
 
-  sf::st_write(x, f, layer = name, quiet = TRUE)
+  sf::st_write(x, f, layer = name, quiet = TRUE, layer_options = layer_options)
 
   index[[name]] <<- list(
     file = paste0(name, ".gpkg"),
