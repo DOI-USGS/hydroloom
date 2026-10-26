@@ -383,9 +383,44 @@ case_args <- function(args, dir = conformance_dir()) {
 
 write_expected_mode <- function() identical(Sys.getenv("HYDROLOOM_WRITE_EXPECTED"), "1")
 
+# Calls a case's function. Without `raises`, warnings and messages are
+# suppressed; they are not part of the expectation layer. With `raises`
+# ("error" or "warning", S-6) the condition is captured and asserted with a
+# testthat expectation; `raises_key` (a remedies.json key, A-10) is not yet
+# checked. Returns list(result, raised), raised TRUE for an error case.
+call_case_function <- function(fun, call_args, raises = NULL, id = "") {
+
+  if (is.null(raises))
+    return(list(result = suppressMessages(suppressWarnings(do.call(fun, call_args))),
+      raised = FALSE))
+
+  if (identical(raises, "error")) {
+    err <- tryCatch({
+      suppressMessages(suppressWarnings(do.call(fun, call_args)))
+      NULL
+    }, error = function(e) e)
+
+    testthat::expect(!is.null(err), paste0("case ", id, " was expected to raise an error"))
+
+    return(list(result = NULL, raised = TRUE))
+  }
+
+  warned <- FALSE
+  result <- withCallingHandlers(suppressMessages(do.call(fun, call_args)),
+    warning = function(w) {
+      warned <<- TRUE
+      invokeRestart("muffleWarning")
+    })
+
+  testthat::expect(warned, paste0("case ", id, " was expected to warn"))
+
+  list(result = result, raised = FALSE)
+}
+
 # Runs one manifest case. In write mode the expectation layer is (re)written
 # first and any value change from the previous layer is reported with
-# message(). Returns the comparison problems; empty when the case passes.
+# message(). A case with `raises: error` asserts the error and has no layer.
+# Returns the comparison problems; empty when the case passes.
 run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
   write = write_expected_mode()) {
 
@@ -395,8 +430,10 @@ run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
 
   fun <- get(fn, envir = asNamespace("hydroloom"), mode = "function")
 
-  # Warnings and messages are not part of the expectation layer.
-  result <- suppressMessages(suppressWarnings(do.call(fun, c(list(x), args))))
+  called <- call_case_function(fun, c(list(x), args), case$raises, case$id)
+  if (called$raised) return(character())
+
+  result <- called$result
 
   layer <- to_layer(result, fn_entry$returns, args)
 

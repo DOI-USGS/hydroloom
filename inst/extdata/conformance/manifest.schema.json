@@ -117,7 +117,20 @@
         "generator": {
           "description": "Which of supported_by writes the expectation; both once Python is co-generator (S-7).",
           "$ref": "#/definitions/languages"
+        },
+        "raises": {
+          "description": "A condition the call must signal (S-6 boundary cases). An error case writes and compares no layer; a warning case still compares its layer.",
+          "type": "string",
+          "enum": ["error", "warning"]
+        },
+        "raises_key": {
+          "description": "The remedies.json key of the condition (A-10). Accepted now; checked once remedies.json exists.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.]*$"
         }
+      },
+      "dependencies": {
+        "raises_key": ["raises"]
       },
       "allOf": [
         {
