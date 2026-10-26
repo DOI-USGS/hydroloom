@@ -33,3 +33,4 @@ CLAUDE.md
 ^dev$
 ^AGENTS\.md$
 ^\.kiro$
+^inst/extdata/conformance$

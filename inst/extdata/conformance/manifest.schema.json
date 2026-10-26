@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "hydroloom conformance manifest",
+  "description": "Functions under conformance and the cases that exercise them (SPEC S-4). Cross-references the schema cannot express (a case naming an unlisted function, duplicated case ids, a generator not in supported_by) are checked by the testthat harness.",
+  "type": "object",
+  "required": ["suite_version", "functions", "cases"],
+  "additionalProperties": false,
+  "properties": {
+    "suite_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "functions": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/function_name" },
+      "additionalProperties": { "$ref": "#/definitions/function" }
+    },
+    "cases": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/case" }
+    }
+  },
+  "definitions": {
+    "function_name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.]*$"
+    },
+    "language": {
+      "type": "string",
+      "enum": ["r", "python"]
+    },
+    "languages": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/language" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "column_list": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "function": {
+      "type": "object",
+      "required": ["returns"],
+      "additionalProperties": false,
+      "properties": {
+        "requires": {
+          "description": "Reference to the requires block in the description's YAML front matter (S-8), never a restatement of it.",
+          "type": "string",
+          "pattern": "^algorithms/[a-z][a-z0-9_.]*\\.md#requires$"
+        },
+        "returns": {
+          "description": "Layer convention for the expectation (S-7).",
+          "type": "string",
+          "enum": ["frame", "graph", "traversal", "scalar"]
+        },
+        "key": {
+          "description": "Natural-key columns the harness sorts on before comparing a long table.",
+          "$ref": "#/definitions/column_list"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "returns": { "enum": ["graph", "traversal"] } } },
+          "then": { "required": ["key"] }
+        }
+      ]
+    },
+    "literal": {
+      "type": ["string", "number", "boolean", "null"]
+    },
+    "case": {
+      "type": "object",
+      "required": ["id", "function", "fixture", "compare", "order", "supported_by", "generator"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Unique slug; the stem of the expected layer.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_]*$"
+        },
+        "function": { "$ref": "#/definitions/function_name" },
+        "fixture": {
+          "description": "Path under fixtures/.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]*\\.gpkg$"
+        },
+        "args": {
+          "description": "Keyword map of literal values; a fixture path where a second table is needed, never code.",
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9_.]*$" },
+          "additionalProperties": {
+            "anyOf": [
+              { "$ref": "#/definitions/literal" },
+              { "type": "array", "items": { "$ref": "#/definitions/literal" } }
+            ]
+          }
+        },
+        "expected": {
+          "description": "Path under expected/; defaults to <function>.gpkg, layer <id>.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]*\\.gpkg$"
+        },
+        "compare": {
+          "type": "string",
+          "enum": ["exact", "tolerance"]
+        },
+        "atol": { "type": "number", "minimum": 0 },
+        "rtol": { "type": "number", "minimum": 0 },
+        "order": {
+          "type": "string",
+          "enum": ["exact", "ignore"]
+        },
+        "supported_by": { "$ref": "#/definitions/languages" },
+        "generator": {
+          "description": "Which of supported_by writes the expectation; both once Python is co-generator (S-7).",
+          "$ref": "#/definitions/languages"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "anyOf": [
+              { "required": ["atol"] },
+              { "required": ["rtol"] }
+            ]
+          },
+          "then": { "properties": { "compare": { "const": "tolerance" } } }
+        }
+      ]
+    }
+  }
+}

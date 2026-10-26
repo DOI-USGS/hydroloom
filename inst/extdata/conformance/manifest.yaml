@@ -1,0 +1,4 @@
+# hydroloom conformance manifest (SPEC S-4); schema: manifest.schema.json
+suite_version: 0.1.0
+functions: {}
+cases: []
