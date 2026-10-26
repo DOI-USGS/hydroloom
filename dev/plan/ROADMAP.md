@@ -10,7 +10,7 @@ Inside every milestone that touches a function, the unit of work and of review i
 2. The R-generated expectations (S-7); where the function carries an intended change (§4), the R edit, its new cases, and a NEWS entry in the same step (D-16). No R kernel extraction (K-10).
 3. The Python function against the same cases and the same signature (A-16), written in a Python-side session that never opens `R/`, from the description and the SPEC anchors it cites alone, so the Python reads as Python rather than as a transliteration. Exemplar and named-kernel (K-6) changes are flagged in the Log for a second human review when a co-maintainer joins (§3).
 
-One function is one logged review round and one commit set on the milestone branch `milestone/m<n>`; one milestone is one pull request, merged with a merge commit. Each milestone's record is `dev/milestones/M<n>.md`, created with the branch: Summary (written at close, the PR body), Plan (one line per run), Log (one entry per run with the reviewed diff's base and head SHAs, the findings table, the implementer's responses, and a disposition column only the maintainer writes). The two sides are independent after M3: phase-2 descriptions can be written while phase 1 is ported.
+One function is one logged review round and one commit set, committed directly to the `python-port` branch; there are no milestone branches and no per-milestone pull requests. `python-port` reaches `main` by a merge commit when the maintainer chooses. Each milestone's record is `dev/milestones/M<n>.md`, created when the milestone starts: Summary (written at close), Plan (one line per run), Log (one entry per run with the reviewed diff's base and head SHAs, the findings table, the implementer's responses, and a disposition column only the maintainer writes). The two sides are independent after M3: phase-2 descriptions can be written while phase 1 is ported.
 
 ## 1. Milestones
 
@@ -36,7 +36,7 @@ Two gates hold inside every milestone from M3 on. The per-function gate, checked
 
 ### M3. Descriptions, cases, and intended changes for the phase-1 functions
 
-- Deliverable: for the phase-1 functions (§2), the algorithm description with its YAML `requires` front matter, the boundary and tie cases, and the R-generated expectations; `remedies.json` with the keys those descriptions cite (A-10); the intended changes that land on these functions (§4: sibling order, SCC cycle check, `hy_capabilities()` shape, identifier ingest, the one condition class) as edits to the existing bodies, new R code written to K-4 and K-6, with their NEWS entries and new expectations. Each description runs through `review-description` (the hydrology reader) before its expectations are generated. On `main`.
+- Deliverable: for the phase-1 functions (§2), the algorithm description with its YAML `requires` front matter, the boundary and tie cases, and the R-generated expectations; `remedies.json` with the keys those descriptions cite (A-10); the intended changes that land on these functions (§4: sibling order, SCC cycle check, `hy_capabilities()` shape, identifier ingest, the one condition class) as edits to the existing bodies, new R code written to K-4 and K-6, with their NEWS entries and new expectations. Each description runs through `review-description` (the hydrology reader) before its expectations are generated. On `python-port`.
 - Done when: every phase-1 function has a description passing the template validator (M2's R conformance test) and a `review-description` round dispositioned in the Log; every D rule the description cites has a fixture that exercises it; conformance passes before and after each intended change except where its NEWS entry says otherwise; `hy_capabilities()` returns the (function, available, via) frame from a code table that a testthat test checks against the manifest's `requires`; `remedies.json` text has a read by both readers dispositioned in the Log (prose.md).
 - Load: SPEC K-1 to K-11, D (all), I (all), A-2 to A-4, A-10, S-6, S-8.
 - Do not touch: functions outside phase 1; any Python file; existing R bodies beyond the intended changes.
@@ -64,10 +64,10 @@ Two gates hold inside every milestone from M3 on. The per-function gate, checked
 ### M6. Port in dependency order
 
 - Deliverable: phase 2 then phase 3 from §2, each function by the unit of work above. Arrivals with the function that first needs them: asv and the scale harness with `add_levelpaths` (the first sequential kernel, VERIFICATION §5); pooch and the domain fixture with the scale harness; the WBD benchmark before `dissolve_polygons`; the units conformance case with `navigate_hydro_network` (G-3); the state-plane case with `index_points_to_lines` (G-4). A `py-v0.x` release when a group lands. 1.0 is parity with hydroloom 1.3.0, phases 1 to 3 (DESIGN §9; 2026-10-25).
-- Done when, per function: its description, cases, R-generated expectations, and Python function are one logged round on the milestone branch and the parity table row reads `r, python`; per release: `pixi run scale` and `pixi run bench` on record for that tag (VERIFICATION §5).
+- Done when, per function: its description, cases, R-generated expectations, and Python function are one logged round on `python-port` and the parity table row reads `r, python`; per release: `pixi run scale` and `pixi run bench` on record for that tag (VERIFICATION §5).
 - Load: per function, the SPEC anchors its description cites; for phase 3, G (all).
 - Do not touch: a function whose upstream in the dependency order is not yet at parity.
-- Record: `dev/milestones/M6<letter>.md` per milestone branch (one per function group); items flagged for a later second review: every named kernel (`add_levelpaths`, `add_pfafstetter`, `get_bridge_flowlines`, `navigate_hydro_network`, `index_points_to_lines`' `project_point_to_line`, `disambiguate_indexes`' Levenshtein).
+- Record: `dev/milestones/M6<letter>.md`, one per function group; items flagged for a later second review: every named kernel (`add_levelpaths`, `add_pfafstetter`, `get_bridge_flowlines`, `navigate_hydro_network`, `index_points_to_lines`' `project_point_to_line`, `disambiguate_indexes`' Levenshtein).
 - Blockers: which NHDPlus product supplies HU04 0204 for the scale fixture (§3); the WBD benchmark result for the dissolve implementation.
 
 ### M7. Documentation with two tabs
@@ -138,7 +138,7 @@ The linear-referencing family (`get_hydro_location`, `rescale_measures`, `add_me
 
 ## 4. Intended changes to the R package
 
-Each is a NEWS entry and new expectations, landed on `main` in the milestone shown (D-16); the next CRAN release collects whatever has landed, and none is scheduled against a milestone (1.3.0, CRAN the week of 2026-10-26, is the last release the plan assumes). None is captured first: each is either an accident no user could rely on or a named behavior change.
+Each is a NEWS entry and new expectations, landed on `python-port` in the milestone shown (D-16); the next CRAN release collects whatever has landed, and none is scheduled against a milestone (1.3.0, CRAN the week of 2026-10-26, is the last release the plan assumes). None is captured first: each is either an accident no user could rely on or a named behavior change.
 
 | Change | Rule | Milestone |
 | --- | --- | --- |
