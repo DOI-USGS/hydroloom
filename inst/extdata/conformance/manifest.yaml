@@ -23,6 +23,9 @@ functions:
     requires: algorithms/hydroloom_names.md#requires
     returns: frame
     key: [name, value]
+  hy_network_type:
+    requires: algorithms/hy_network_type.md#requires
+    returns: scalar
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -868,3 +871,198 @@ cases:
     generator: [r]
     raises: error
     raises_key: sf_geometry_name_case
+
+  # hy_network_type -----------------------------------------------------------
+  # R reads only class(x), so a table as read is "not a hydroloom object";
+  # every shared case applies hy() first through prepare (D3-11). Annotations
+  # from the proposed cases (D3-14): shared: true = R and Python agree (add
+  # python to supported_by when representation() is ported); shared: false =
+  # R-only (class test, or add_topo, an A-5 omission in as_hy). expect is the
+  # value probed against current R. No case raises or carries changes_with.
+
+  # shared: true; expect hy_node; NHDPlusV2 nodes, no toid (roxygen example)
+  - id: hy_network_type_new_hope
+    function: hy_network_type
+    fixture: new_hope.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; expect hy_topo; add_topo builds toid
+  - id: hy_network_type_new_hope_add_topo
+    function: hy_network_type
+    fixture: new_hope.gpkg
+    prepare: {function: hy, args: {add_topo: true}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; expect "not a hydroloom object"; no hy class as read,
+  # Python gives hy_node here
+  - id: hy_network_type_new_hope_raw
+    function: hy_network_type
+    fixture: new_hope.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_leveled; all three level-path columns, unique id.
+  # Proposed fixture hy_network_type_leveled repointed to hy_leveled (same
+  # columns and pattern)
+  - id: hy_network_type_leveled
+    function: hy_network_type
+    fixture: hy_leveled.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy; tie rule: repeated id without toid matches
+  # neither flownetwork nor node
+  - id: hy_network_type_node_repeated_id
+    function: hy_network_type
+    fixture: hy_network_type_node_repeated_id.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_flownetwork; repeated id with toid and node
+  # columns; flownetwork outranks node (I-6)
+  - id: hy_network_type_loop
+    function: hy_network_type
+    fixture: loop.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy; toNexID is not an alias, so id without toid
+  - id: hy_network_type_sort_test
+    function: hy_network_type
+    fixture: sort_test.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; expect hy_flownetwork; without a divergence column add_topo
+  # keeps both downstream rows, so id repeats
+  - id: hy_network_type_divergence_add_topo
+    function: hy_network_type
+    fixture: divergence_no_attribute.gpkg
+    prepare: {function: hy, args: {add_topo: true}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; expect hy_topo; the divergence attribute drops the minor
+  # path, so id stays unique
+  - id: hy_network_type_divergence_attribute_add_topo
+    function: hy_network_type
+    fixture: divergence_attribute.gpkg
+    prepare: {function: hy, args: {add_topo: true}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_topo; string identifiers (3DHP)
+  - id: hy_network_type_new_hope_3dhp
+    function: hy_network_type
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_node; identifiers beyond 32 bits (I-2)
+  - id: hy_network_type_nhdplushr
+    function: hy_network_type
+    fixture: nhdplushr.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundaries; requires is [any], so every one runs.
+  # shared: true; expect hy_topo; worked example; toid outranks the nodes
+  - id: hy_network_type_single_flowline
+    function: hy_network_type
+    fixture: single_flowline.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_topo; five flowlines, no edges
+  - id: hy_network_type_all_terminals
+    function: hy_network_type
+    fixture: all_terminals.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_flownetwork; the pattern, not a raise
+  - id: hy_network_type_duplicated_edge
+    function: hy_network_type
+    fixture: duplicated_edge.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_topo; weight not read
+  - id: hy_network_type_missing_weight
+    function: hy_network_type
+    fixture: missing_weight.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_topo; sf input; geometry not read
+  - id: hy_network_type_zero_length
+    function: hy_network_type
+    fixture: zero_length.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy; id without toid or nodes
+  - id: hy_network_type_empty_name
+    function: hy_network_type
+    fixture: empty_name.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; expect hy_topo; I-11 zero rows, id vacuously unique
+  - id: hy_network_type_empty_network
+    function: hy_network_type
+    fixture: empty_network.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]

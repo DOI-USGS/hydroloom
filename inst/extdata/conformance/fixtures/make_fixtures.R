@@ -550,6 +550,13 @@ fixture(sf::st_sf(
   "sf input whose geometry column name has an uppercase letter: R stops inside sf",
   layer_options = "GEOMETRY_NAME=Shape")
 
+# Function fixtures: hy_network_type (algorithms/hy_network_type.md) ---------
+
+fixture(data.frame(id = c(1L, 1L, 2L), fromnode = c(10L, 10L, 11L), tonode = c(11L, 11L, 12L)),
+  "hy_network_type_node_repeated_id",
+  "synthetic",
+  "repeated id with fromnode and tonode and no toid: neither flownetwork nor node, plain hy")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

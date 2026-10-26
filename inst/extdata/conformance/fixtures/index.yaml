@@ -329,6 +329,18 @@ fixtures:
   exercises: 'an alias (comid) beside its hy name (id): raises'
   rules: []
   bytes: 73728
+- file: hy_network_type_node_repeated_id.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  exercises: 'repeated id with fromnode and tonode and no toid: neither flownetwork
+    nor node, plain hy'
+  rules: []
+  bytes: 73728
 - file: hy_permanent_identifier_tie.gpkg
   source: synthetic
   rows: 2
