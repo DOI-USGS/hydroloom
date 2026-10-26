@@ -493,6 +493,63 @@ fixture(data.frame(id = c("1", "2", "3"), toid = c("2", "3", NA)),
   "hydroloom names, TEXT identifiers, and a missing toid: not hy as read in R",
   c("I-1", "I-4"))
 
+# Function fixtures: align_names (algorithms/align_names.md) -----------------
+
+# A fixed row permutation, no seed (D-15): stepping through the rows by 389,
+# which shares no factor with 707.
+net <- rds("network")
+perm_net <- ((seq_len(nrow(net)) - 1) * 389) %% nrow(net) + 1
+stopifnot(!anyDuplicated(perm_net))
+
+fixture(net[perm_net, ], "network_shuffled",
+  "network fixture with rows permuted: row i is network row ((i - 1) * 389) %% 707 + 1",
+  "the NHDPlusV2 attribute table in a different row order; names do not depend on row order",
+  "D-7")
+
+fixture(data.frame(featureid = 3:4, nhdplusid = 1:2, toid = c(2L, 0L)),
+  "align_names_duplicate_alias_swapped",
+  "synthetic (hy_duplicate_alias_tie with the id aliases swapped)",
+  "two id aliases in the other column order: featureid still wins, with a warning")
+
+fixture(data.frame(COMID = 1:2, TotDASqKM = c(1.5, 3), TotDA = c(1.5, 3)),
+  "align_names_totda",
+  "synthetic",
+  "two total_da_sqkm aliases (TotDASqKM, TotDA): totda wins, with a warning")
+
+fixture(data.frame(comid = 1:2, nhdplusid = 3:4, featureid = 5:6, tocomid = c(2L, 0L)),
+  "align_names_three_aliases",
+  "synthetic",
+  "three id aliases: raises after two warnings")
+
+fixture(data.frame(permanent_identifier = c("a", "b"), tocomid = 1:2,
+  to_permanent_identifier = c("x", "y")),
+  "align_names_permanent_identifier_elsewhere",
+  "synthetic",
+  "permanent_identifier drops because toid has two candidates; to_permanent_identifier wins toid; no id column")
+
+fixture(data.frame(permanent_identifier = c("a", "b"), to_permanent_identifier = c("b", "")),
+  "align_names_permanent_identifier_pair",
+  "synthetic",
+  "permanent_identifier and to_permanent_identifier alone: id and toid, no message or warning")
+
+fixture(data.frame(permanent_identifier = c("a", "b"), tocomid = 1:2),
+  "align_names_permanent_identifier_alone",
+  "synthetic",
+  "permanent_identifier the only id alias: becomes id")
+
+fixture(data.frame(id = 1:2, tocomid = c(2L, 0L), toid = c(2L, 0L)),
+  "align_names_conflict_toid",
+  "synthetic",
+  "an alias (tocomid) beside its hy name (toid): raises")
+
+fixture(sf::st_sf(
+  COMID = 1:2,
+  Shape = sf::st_sfc(sf::st_point(c(0, 0)), sf::st_point(c(1, 1)), crs = 5070)),
+  "align_names_geometry_shape",
+  "synthetic; geometry column written as Shape (GEOMETRY_NAME=Shape)",
+  "sf input whose geometry column name has an uppercase letter: R stops inside sf",
+  layer_options = "GEOMETRY_NAME=Shape")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

@@ -10,6 +10,13 @@ functions:
   is.hy:
     requires: algorithms/is.hy.md#requires
     returns: scalar
+  align_names:
+    requires: algorithms/align_names.md#requires
+    returns: frame
+  hydroloom_name_definitions:
+    requires: algorithms/hydroloom_name_definitions.md#requires
+    returns: frame
+    key: [name]
   # A named character vector becomes a frame of name, value in vector order
   # (D3-13).
   hydroloom_names:
@@ -605,3 +612,259 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+
+  # align_names ---------------------------------------------------------------
+  # Each case passes the fixture as read; align_names renames only. Behavior
+  # that needs registry setup (a registered alias beating a vocabulary alias,
+  # a registered pair to a non-hydroloom name, an uppercase registered alias)
+  # stays in testthat (D3-21).
+
+  # NHDPlusV2 attribute table, aspatial: every alias renamed, mixed case lowered
+  - id: align_names_network
+    function: align_names
+    fixture: network.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # D-7: rows permuted; names and values equal align_names_network after sorting
+  - id: align_names_network_shuffled
+    function: align_names
+    fixture: network_shuffled.gpkg
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # permanent_identifier rule (step 4): NHDPlusID and Permanent_Identifier
+  # both alias id; Permanent_Identifier keeps its name, with an R message
+  - id: align_names_nhdplushr
+    function: align_names
+    fixture: nhdplushr.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # 3DHP aliases on string identifiers; id3dhp -> id, toid identity pair
+  - id: align_names_new_hope_3dhp
+    function: align_names
+    fixture: new_hope_3dhp.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # unmatched column (toNexID) keeps its name; ID lowercases to id
+  - id: align_names_sort_test
+    function: align_names
+    fixture: sort_test.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # missing toid stays missing (no I-5 fill here)
+  - id: align_names_coastal
+    function: align_names
+    fixture: coastal.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # worked example (shared fixture with hy)
+  - id: align_names_worked_example
+    function: align_names
+    fixture: hy_worked_example.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundaries; sf input with all-lowercase names: returned as read
+  - id: align_names_single_flowline
+    function: align_names
+    fixture: single_flowline.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: align_names_all_terminals
+    function: align_names
+    fixture: all_terminals.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: align_names_empty_network
+    function: align_names
+    fixture: empty_network.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # ID, ToID, MyCol -> id, toid, MyCol
+  - id: align_names_mixed_case
+    function: align_names
+    fixture: hy_mixed_case_names.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # tie rule (step 5): featureid (later in map order) wins over nhdplusid
+  - id: align_names_duplicate_alias
+    function: align_names
+    fixture: hy_duplicate_alias_tie.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: name_alias_duplicate
+
+  # same table, columns swapped: featureid still wins (column order does not enter)
+  - id: align_names_duplicate_alias_swapped
+    function: align_names
+    fixture: align_names_duplicate_alias_swapped.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: name_alias_duplicate
+
+  # totda beside TotDASqKM (test_align_names.R): totda wins
+  - id: align_names_totda
+    function: align_names
+    fixture: align_names_totda.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: name_alias_duplicate
+
+  # three aliases of id: stops after two warnings
+  - id: align_names_three_aliases
+    function: align_names
+    fixture: align_names_three_aliases.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: name_alias_ambiguous
+
+  # permanent_identifier with comid: comid -> id, message only
+  - id: align_names_permanent_identifier
+    function: align_names
+    fixture: hy_permanent_identifier_tie.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # permanent_identifier drops although id is not the repeated name; the toid
+  # tie (tocomid, to_permanent_identifier) warns and to_permanent_identifier
+  # wins. Output: permanent_identifier, tocomid, toid; no id column (D3-24)
+  - id: align_names_permanent_identifier_elsewhere
+    function: align_names
+    fixture: align_names_permanent_identifier_elsewhere.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: name_alias_duplicate
+
+  # permanent_identifier with to_permanent_identifier only: id, toid; no
+  # message, no warning
+  - id: align_names_permanent_identifier_pair
+    function: align_names
+    fixture: align_names_permanent_identifier_pair.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # permanent_identifier alone: becomes id
+  - id: align_names_permanent_identifier_alone
+    function: align_names
+    fixture: align_names_permanent_identifier_alone.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: align_names_conflict
+    function: align_names
+    fixture: hy_name_conflict.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: name_alias_conflict
+
+  # tocomid beside toid: the identity pair does not shield toid
+  - id: align_names_conflict_toid
+    function: align_names
+    fixture: align_names_conflict_toid.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: name_alias_conflict
+
+  # R-only accidents (Python returns the aligned GeoDataFrame; keep r only).
+  # mainstemid lowercase beside COMID on sf input: sf's rename stops
+  - id: align_names_new_hope_sf_mixed_case
+    function: align_names
+    fixture: new_hope.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: sf_mixed_case_names
+
+  # geometry column named Shape on sf input: sf stops after lowercasing
+  - id: align_names_geometry_uppercase
+    function: align_names
+    fixture: align_names_geometry_shape.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: sf_geometry_name_case
