@@ -204,6 +204,7 @@ importFrom(fastmap,
   fastqueue,
   faststack
 )
+importFrom(jsonlite,read_json)
 importFrom(methods,as)
 importFrom(pbapply,
   pbapply,

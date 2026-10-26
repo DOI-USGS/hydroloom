@@ -43,6 +43,8 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
 
   if (clean) {
 
+    good_names <- vocab_good_names()
+
     keep_names <- orig_names[which(names(x) %in% good_names)]
 
     x <- select(x, all_of(names(x)[names(x) %in% good_names]))

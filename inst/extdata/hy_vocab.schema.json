@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "hydroloom vocabulary",
+  "description": "Attribute names used by hydroloom, their types, definitions, and the input column names that rename to them (SPEC S-2).",
+  "type": "object",
+  "required": ["version", "terms"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "terms": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": {
+        "oneOf": [
+          { "$ref": "#/definitions/column_term" },
+          { "$ref": "#/definitions/concept_term" }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "role": {
+      "type": ["string", "null"],
+      "pattern": "^HY_[A-Za-z]+$"
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["core", "standard", "derived"]
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "alias": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["nhdplus", "nhdplushr", "3dhp", "hydrofabric"]
+        }
+      }
+    },
+    "column_term": {
+      "type": "object",
+      "required": ["role", "type", "definition", "aliases", "tier", "plain"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "$ref": "#/definitions/role" },
+        "type": {
+          "type": "string",
+          "enum": ["id", "flag", "count", "measure", "length", "area", "code", "fraction", "text"]
+        },
+        "definition": { "$ref": "#/definitions/text" },
+        "unit": {
+          "type": "string",
+          "enum": ["km", "km2", "m", "percent"]
+        },
+        "values": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "pattern": "^-?[0-9]+$" },
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "sums_to_one_over": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "aliases": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/alias" }
+        },
+        "computed_by": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "tier": { "$ref": "#/definitions/tier" },
+        "plain": { "$ref": "#/definitions/text" }
+      }
+    },
+    "concept_term": {
+      "type": "object",
+      "required": ["concept", "definition", "tier", "plain"],
+      "additionalProperties": false,
+      "properties": {
+        "concept": { "const": true },
+        "role": { "$ref": "#/definitions/role" },
+        "definition": { "$ref": "#/definitions/text" },
+        "tier": { "$ref": "#/definitions/tier" },
+        "plain": { "$ref": "#/definitions/text" }
+      }
+    }
+  }
+}

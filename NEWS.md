@@ -1,3 +1,15 @@
+hydroloom (development version)
+==========
+
+- The attribute vocabulary (hydroloom names, their definitions, and the
+  input column names that rename to them) is now read from
+  `inst/extdata/hy_vocab.json` rather than defined in R code.
+  `hydroloom_names()`, `hydroloom_name_definitions`, and `align_names()`
+  are served from that file. jsonlite is now in Imports.
+- The `outletID` alias for `levelpath_outlet_id` is now `outletid`. Input
+  names are lowercased before matching, so the camelCase entry never
+  matched.
+
 hydroloom 1.3.0
 ==========
 

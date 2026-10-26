@@ -1,7 +1,9 @@
 align_name_char <- function(x) {
 
-  if (tolower(x) %in% names(hydroloom_name_map))
-    return(hydroloom_name_map[[tolower(x)]])
+  name_map <- vocab_alias_map()
+
+  if (tolower(x) %in% names(name_map))
+    return(name_map[[tolower(x)]])
 
   x
 }
@@ -34,7 +36,7 @@ align_names <- function(x) {
   names(x) <- tolower(names(x))
 
   replace_names <- get("hydroloom_name_map", envir = hydroloom_env)
-  good_names <- get("good_names", envir = hydroloom_env)
+  good_names <- vocab_good_names()
 
   replace_names <- replace_names[names(replace_names) %in% names(x)]
 

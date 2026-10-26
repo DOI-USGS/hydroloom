@@ -4,4 +4,9 @@
   if (nzchar(chk) && !chk %in% c("false", "0")) {
     data.table::setDTthreads(2L)
   }
+
+  assign("hydroloom_name_definitions", vocab_name_definitions(),
+    envir = parent.env(environment()))
+
+  assign("hydroloom_name_map", vocab_alias_map(), envir = hydroloom_env)
 }
