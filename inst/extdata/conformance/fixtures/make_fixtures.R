@@ -800,6 +800,110 @@ fixture(within(dvc, divergence <- c(0L, 1L, 2L, 0L))[c(1, 2, 4), ],
   "synthetic (divergence_miscoded with id 2 coded 1 and the minor branch, id 3, removed)",
   "an extract keeping only the main branch of a divergence at node 2; the remaining divergence == 1 is flagged as a split where flow does not split")
 
+# test_check_hy_graph.R migration (M2): the remaining tables of that file.
+fixture(data.frame(
+  id = c(1L, 2L, 3L, 4L, 6L, 7L, 8L, 9L),
+  toid = c(2L, 3L, 4L, 9L, 7L, 8L, 9L, 4L)),
+  "check_reciprocal_chains",
+  "synthetic (test_check_hy_graph.R \"base check_hy_graph\")",
+  "two chains joined by a reciprocal pair (4 -> 9, 9 -> 4); rows 4 and 8 reported",
+  "D-8")
+
+dvv <- within(dvc, divergence <- c(0L, 1L, 2L, 0L))
+
+fixture(dvv, "divergence_valid",
+  "synthetic (test_check_hy_graph.R \"valid divergence coding passes\")",
+  "a divergence at node 2 coded main (id 2) and minor (id 3); passes")
+
+fixture(data.frame(
+  id = 1:4,
+  toid = c(2L, 0L, 0L, 0L),
+  fromnode = c(1L, 2L, 2L, 2L),
+  tonode = 2:5,
+  divergence = c(0L, 1L, 2L, 2L)),
+  "divergence_fan",
+  "synthetic (test_check_hy_graph.R \"valid divergence coding passes\", fan)",
+  "a three-way divergence at node 2 with one main and two minor paths; passes")
+
+fixture(within(dvv, divergence[3] <- 0L), "divergence_at_split",
+  "synthetic (test_check_hy_graph.R \"divergence coding problems are found\", at_split)",
+  "divergence == 0 on a member of a divergence (id 3 at node 2)")
+
+fixture(within(dvv, divergence[4] <- 1L), "divergence_flagged_no_split",
+  "synthetic (test_check_hy_graph.R \"divergence coding problems are found\", flagged)",
+  "divergence == 1 on a flowline (id 4) whose fromnode does not split")
+
+fixture(within(dvv, divergence[4] <- NA_integer_), "divergence_na",
+  "synthetic (test_check_hy_graph.R \"divergence coding problems are found\", na_flag)",
+  "a missing divergence value (id 4)")
+
+dvf <- within(dvv, divergence_fraction <- c(1, 0.6, 0.4, 1))
+
+fixture(dvf, "divergence_fraction_valid",
+  "synthetic (test_check_hy_graph.R \"divergence_fraction is checked when present\")",
+  "divergence_fraction 0.6 and 0.4 at node 2; passes")
+
+fixture(within(dvf, divergence_fraction[3] <- 0.4 + 1e-9), "divergence_fraction_near",
+  "synthetic (test_check_hy_graph.R \"divergence_fraction is checked when present\", near)",
+  "divergence_fraction summing to 1 + 1e-9 at node 2: within the default fraction_tol, outside 1e-12")
+
+fixture(within(dvf, divergence_fraction[3] <- 1.4), "divergence_fraction_over",
+  "synthetic (test_check_hy_graph.R \"divergence_fraction is checked when present\", over)",
+  "divergence_fraction 1.4 on id 3: out of range and a bad sum")
+
+fixture(within(dvf, divergence_fraction[2:3] <- c(0, 1)), "divergence_fraction_all_flow",
+  "synthetic (test_check_hy_graph.R \"divergence_fraction is checked when present\", all_flow)",
+  "a minor path (id 3) with divergence_fraction 1 takes all flow")
+
+fixture(data.frame(
+  id = 1:3,
+  toid = 0L,
+  fromnode = NA_integer_,
+  tonode = 1:3,
+  divergence = 0L),
+  "divergence_na_fromnode",
+  "synthetic (test_check_hy_graph.R \"features with no fromnode are not pooled into one node\")",
+  "missing fromnode on every row: not grouped as one node")
+
+fixture(data.frame(
+  id = c(1L, 2L, 3L, 4L, 5L, 5L, 6L),
+  toid = c(3L, 5L, 5L, 3L, 4L, 6L, 0L)),
+  "loop_check_three_cycle",
+  "synthetic (test_check_hy_graph.R \"loop check\", first table)",
+  "a three-flowline cycle 3 -> 5 -> 4 -> 3 in a flownetwork (repeated id 5)",
+  "D-8")
+
+fixture(data.frame(
+  id = c(1L, 1L, 3L, 2L, 4L, 5L),
+  toid = c(3L, 2L, 4L, 4L, 5L, 0L)),
+  "loop_check_recombine",
+  "synthetic (test_check_hy_graph.R \"loop check\", third table)",
+  "a divergence (1 -> 3, 1 -> 2) that rejoins at 4; no cycle",
+  "D-8")
+
+lpe <- rds("loop")
+lpe$toid[!lpe$toid %in% lpe$id] <- ""
+lpe$toid[lpe$id == "31325125"] <- ""
+
+fixture(lpe, "loop_outlets",
+  "tests/testthat/data/loop.rds with toid outside the table and toid of 31325125 set to \"\" (test_check_hy_graph.R \"big_check\")",
+  "character identifier flownetwork with no cycle after the edit",
+  "D-8")
+
+lp2 <- rds("loop2")
+lp2$toid[!lp2$toid %in% lp2$id] <- ""
+lp2$toid[lp2$id == "{9C33A204-E0C5-4047-A81E-23647ED06E2A}"] <- ""
+lp2$toid[lp2$id == "{99E532FB-6ADD-4DD2-B10F-E0A687590428}"] <- "{0874C471-4F58-471B-B2A0-6140D6332E7D}"
+lp2$toid[lp2$id == "{782C5B65-07A0-48BF-9A84-969CEF510DFC}"] <- "{9662E643-E8B7-4B94-B23A-4141E486D5B3}"
+lp2$toid[lp2$id == "{2BB601E0-6711-4B5E-92F3-852227D46BE0}"] <- "{B9A43856-3A49-4DF7-8B05-51A26781F539}"
+lp2$toid[lp2$id == "{4E7E9D38-373D-4FDA-A920-00EA2AE826EA}"] <- "{B9A43856-3A49-4DF7-8B05-51A26781F539}"
+lp2$toid[lp2$id == "{B3F20B3F-9141-4009-8935-4930DE818192}"] <- "{B9A43856-3A49-4DF7-8B05-51A26781F539}"
+
+fixture(dplyr::distinct(lp2), "loop2_repaired",
+  "tests/testthat/data/loop2.rds with the test_check_hy_graph.R \"big_check\" toid edits (outlets set to \"\", five toids redirected), then distinct rows",
+  "braced GUID flownetwork with its cycles broken",
+  "D-8")
+
 # Function fixtures: sort_network (algorithms/sort_network.md) ---------------
 
 # Three siblings (30, 2, 10) join at 4, which drains to the outlet 5. Row

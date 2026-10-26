@@ -395,6 +395,18 @@ fixtures:
   exercises: 'hy_node without aggregate_id: aggregate flowpath functions unavailable'
   rules: []
   bytes: 73728
+- file: check_reciprocal_chains.gpkg
+  source: synthetic (test_check_hy_graph.R "base check_hy_graph")
+  rows: 8
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: two chains joined by a reciprocal pair (4 -> 9, 9 -> 4); rows 4 and 8
+    reported
+  rules:
+  - D-8
+  bytes: 73728
 - file: coastal.gpkg
   source: tests/testthat/data/coastal.rds
   rows: 548
@@ -493,6 +505,20 @@ fixtures:
   rules:
   - D-6
   bytes: 73728
+- file: divergence_at_split.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence coding problems are found",
+    at_split)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: divergence == 0 on a member of a divergence (id 3 at node 2)
+  rules: []
+  bytes: 73728
 - file: divergence_attribute.gpkg
   source: synthetic (divergence_no_attribute with a divergence column)
   rows: 13
@@ -511,6 +537,79 @@ fixtures:
   rules:
   - D-9
   bytes: 73728
+- file: divergence_fan.gpkg
+  source: synthetic (test_check_hy_graph.R "valid divergence coding passes", fan)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: a three-way divergence at node 2 with one main and two minor paths; passes
+  rules: []
+  bytes: 73728
+- file: divergence_flagged_no_split.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence coding problems are found",
+    flagged)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: divergence == 1 on a flowline (id 4) whose fromnode does not split
+  rules: []
+  bytes: 73728
+- file: divergence_fraction_all_flow.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence_fraction is checked when present",
+    all_flow)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  - divergence_fraction
+  exercises: a minor path (id 3) with divergence_fraction 1 takes all flow
+  rules: []
+  bytes: 73728
+- file: divergence_fraction_near.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence_fraction is checked when present",
+    near)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  - divergence_fraction
+  exercises: 'divergence_fraction summing to 1 + 1e-9 at node 2: within the default
+    fraction_tol, outside 1e-12'
+  rules: []
+  bytes: 73728
+- file: divergence_fraction_over.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence_fraction is checked when present",
+    over)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  - divergence_fraction
+  exercises: 'divergence_fraction 1.4 on id 3: out of range and a bad sum'
+  rules: []
+  bytes: 73728
 - file: divergence_fraction_short.gpkg
   source: synthetic (test_check_hy_graph.R "divergence_fraction is checked when present",
     short)
@@ -524,6 +623,20 @@ fixtures:
   - divergence
   - divergence_fraction
   exercises: divergence_fraction summing to 0.8 at node 2; fraction_tol
+  rules: []
+  bytes: 73728
+- file: divergence_fraction_valid.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence_fraction is checked when present")
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  - divergence_fraction
+  exercises: divergence_fraction 0.6 and 0.4 at node 2; passes
   rules: []
   bytes: 73728
 - file: divergence_minor_absent.gpkg
@@ -555,6 +668,34 @@ fixtures:
   exercises: a divergence at node 2 with no divergence == 1; both members reported
   rules: []
   bytes: 73728
+- file: divergence_na.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence coding problems are found",
+    na_flag)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: a missing divergence value (id 4)
+  rules: []
+  bytes: 73728
+- file: divergence_na_fromnode.gpkg
+  source: synthetic (test_check_hy_graph.R "features with no fromnode are not pooled
+    into one node")
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: 'missing fromnode on every row: not grouped as one node'
+  rules: []
+  bytes: 73728
 - file: divergence_no_attribute.gpkg
   source: synthetic
   rows: 13
@@ -571,6 +712,19 @@ fixtures:
     feature type at 107, full tie at 108 between ids 9 and 10'
   rules:
   - D-9
+  bytes: 73728
+- file: divergence_valid.gpkg
+  source: synthetic (test_check_hy_graph.R "valid divergence coding passes")
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: a divergence at node 2 coded main (id 2) and minor (id 3); passes
+  rules: []
   bytes: 73728
 - file: duplicated_edge.gpkg
   source: synthetic
@@ -999,6 +1153,57 @@ fixtures:
   - I-6
   - D-8
   bytes: 147456
+- file: loop2_repaired.gpkg
+  source: tests/testthat/data/loop2.rds with the test_check_hy_graph.R "big_check"
+    toid edits (outlets set to "", five toids redirected), then distinct rows
+  rows: 837
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: braced GUID flownetwork with its cycles broken
+  rules:
+  - D-8
+  bytes: 147456
+- file: loop_check_recombine.gpkg
+  source: synthetic (test_check_hy_graph.R "loop check", third table)
+  rows: 6
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: a divergence (1 -> 3, 1 -> 2) that rejoins at 4; no cycle
+  rules:
+  - D-8
+  bytes: 73728
+- file: loop_check_three_cycle.gpkg
+  source: synthetic (test_check_hy_graph.R "loop check", first table)
+  rows: 7
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: a three-flowline cycle 3 -> 5 -> 4 -> 3 in a flownetwork (repeated id
+    5)
+  rules:
+  - D-8
+  bytes: 73728
+- file: loop_outlets.gpkg
+  source: tests/testthat/data/loop.rds with toid outside the table and toid of 31325125
+    set to "" (test_check_hy_graph.R "big_check")
+  rows: 1425
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - gnis_id
+  - feature_type
+  exercises: character identifier flownetwork with no cycle after the edit
+  rules:
+  - D-8
+  bytes: 131072
 - file: make_index_ids_conflicting_downmain.gpkg
   source: synthetic (duplicated_edge with a downmain column; the repeated 1 -> 2 row
     is FALSE)

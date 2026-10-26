@@ -2678,6 +2678,152 @@ cases:
     raises: error
     raises_key: divergence_check_missing_columns
 
+  # test_check_hy_graph.R migration (M2) --------------------------------------
+
+  # changes_with: D-8; shared. Reciprocal pair 4 <-> 9 between two chains;
+  # today rows 4 and 8 reported.
+  - id: check_hy_graph_reciprocal_chains
+    function: check_hy_graph
+    fixture: check_reciprocal_chains.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-8; shared. divergence_check = FALSE equals the default
+  # call (check_hy_graph_reciprocal_chains).
+  - id: check_hy_graph_reciprocal_chains_divergence_check_false
+    function: check_hy_graph
+    fixture: check_reciprocal_chains.gpkg
+    args:
+      divergence_check: false
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. One main, one minor path at node 2; TRUE.
+  - id: check_hy_graph_divergence_valid
+    function: check_hy_graph
+    fixture: divergence_valid.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. One main, two minor paths at node 2; TRUE.
+  - id: check_hy_graph_divergence_fan
+    function: check_hy_graph
+    fixture: divergence_fan.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Row 3, divergence_issue "divergence == 0 at a divergence".
+  - id: check_hy_graph_divergence_at_split
+    function: check_hy_graph
+    fixture: divergence_at_split.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Row 4, divergence_issue "... where flow does not split".
+  - id: check_hy_graph_divergence_flagged_no_split
+    function: check_hy_graph
+    fixture: divergence_flagged_no_split.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Row 4, divergence_issue "divergence not in {0, 1, 2}".
+  - id: check_hy_graph_divergence_na
+    function: check_hy_graph
+    fixture: divergence_na.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Fractions 0.6 and 0.4 at node 2; TRUE.
+  - id: check_hy_graph_divergence_fraction_valid
+    function: check_hy_graph
+    fixture: divergence_fraction_valid.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Sum off by 1e-9, within the default fraction_tol; TRUE.
+  - id: check_hy_graph_divergence_fraction_near
+    function: check_hy_graph
+    fixture: divergence_fraction_near.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. fraction_tol 1e-12; rows 2, 3, "does not sum to 1".
+  - id: check_hy_graph_divergence_fraction_near_tight_tol
+    function: check_hy_graph
+    fixture: divergence_fraction_near.gpkg
+    args:
+      divergence_check: true
+      fraction_tol: 1.0e-12
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Row 3 reported with "divergence_fraction not in [0, 1]".
+  - id: check_hy_graph_divergence_fraction_over
+    function: check_hy_graph
+    fixture: divergence_fraction_over.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Row 3, divergence_issue "... takes all flow".
+  - id: check_hy_graph_divergence_fraction_all_flow
+    function: check_hy_graph
+    fixture: divergence_fraction_all_flow.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Missing fromnode is not one node; TRUE.
+  - id: check_hy_graph_divergence_na_fromnode
+    function: check_hy_graph
+    fixture: divergence_na_fromnode.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # loop_check: today only. changes_with: D-8; these four cases are deleted
   # when D-8 removes the argument.
 
@@ -2728,6 +2874,78 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+
+  # loop_check, test_check_hy_graph.R migration (M2); today only, deleted at
+  # D-8 with the cases above.
+
+  # Warns; returns 1 row (id 3, toid 5).
+  - id: check_hy_graph_loop_check_three_cycle_loop_check
+    function: check_hy_graph
+    fixture: loop_check_three_cycle.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+
+  # Warns; returns 1 row (id 2, toid 4).
+  - id: check_hy_graph_flownetwork_cycle_loop_check
+    function: check_hy_graph
+    fixture: flownetwork_cycle.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+
+  # A divergence that rejoins is not a loop; TRUE.
+  - id: check_hy_graph_loop_check_recombine_loop_check
+    function: check_hy_graph
+    fixture: loop_check_recombine.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # NHDPlusV2 after add_toids; TRUE.
+  - id: check_hy_graph_new_hope_loop_check
+    function: check_hy_graph
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # TRUE.
+  - id: check_hy_graph_loop_outlets_loop_check
+    function: check_hy_graph
+    fixture: loop_outlets.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # TRUE.
+  - id: check_hy_graph_loop2_repaired_loop_check
+    function: check_hy_graph
+    fixture: loop2_repaired.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
 
   # sort_network --------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
