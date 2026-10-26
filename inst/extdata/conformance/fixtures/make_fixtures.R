@@ -459,6 +459,12 @@ fixture(data.frame(id = c(3L, 1L, 2L), fromnode = c(9L, 1L, 2L), tonode = c(NA, 
   "node topology whose first row has a missing tonode: add_topo moves it to the end",
   "D-14")
 
+fixture(data.frame(comid = c(1, 2), tocomid = c(2, NA), fromnode = c(1, 2), tonode = c(2, 3)),
+  "hy_toid_missing_with_nodes",
+  "synthetic; tests/testthat/test_hydroloom.R",
+  "REAL tocomid with a missing value beside fromnode and tonode: toid kept and the missing value filled with 0",
+  c("I-2", "I-5"))
+
 # Function fixtures: hy_reverse (algorithms/hy_reverse.md) -------------------
 
 fixture(data.frame(ID = 1:3, toID = c(2L, 3L, NA), extra = c("a", "b", "c")),

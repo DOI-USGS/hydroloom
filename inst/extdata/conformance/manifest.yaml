@@ -262,6 +262,16 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # changes_with: i2 (toid double -> integer); test_hydroloom.R: toid 2, 0
+  - id: hy_toid_missing_with_nodes
+    function: hy
+    fixture: hy_toid_missing_with_nodes.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # changes_with: i2; D-7: sorted on all columns, equals hy_new_hope_default's layer
   - id: hy_new_hope_shuffled
     function: hy
@@ -496,7 +506,8 @@ cases:
 
   # is.hy ---------------------------------------------------------------------
   # The harness passes each fixture as read, so every R value is FALSE: a table
-  # read from a file never carries the hy class. The TRUE path stays in
+  # read from a file never carries the hy class. The TRUE path after hy() runs
+  # through prepare (is_hy_after_hy); an hy object altered after hy() stays in
   # test_hydroloom.R. Annotations from the proposed cases (D3-14): shared: true
   # = R and the Python definition agree (add python to supported_by when
   # is_hy is ported); shared: false = the Python definition may return True.
@@ -526,6 +537,18 @@ cases:
     function: is.hy
     fixture: is_hy_source_names.gpkg
     args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # R-only: TRUE after hy() renames and fills the missing toid (D3-11 prepare);
+  # test_hydroloom.R input
+  - id: is_hy_after_hy
+    function: is.hy
+    fixture: hy_toid_missing_with_nodes.gpkg
+    prepare: {function: hy}
+    args: {}
     compare: exact
     order: exact
     supported_by: [r]

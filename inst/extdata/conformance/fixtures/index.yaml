@@ -721,6 +721,21 @@ fixtures:
   rules:
   - I-5
   bytes: 73728
+- file: hy_toid_missing_with_nodes.gpkg
+  source: synthetic; tests/testthat/test_hydroloom.R
+  rows: 2
+  geometry: none
+  columns:
+  - comid
+  - tocomid
+  - fromnode
+  - tonode
+  exercises: 'REAL tocomid with a missing value beside fromnode and tonode: toid kept
+    and the missing value filled with 0'
+  rules:
+  - I-2
+  - I-5
+  bytes: 73728
 - file: hy_worked_example.gpkg
   source: synthetic; the worked example in algorithms/hy.md
   rows: 3

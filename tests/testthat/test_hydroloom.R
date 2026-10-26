@@ -15,10 +15,6 @@ test_that("s3 class creation", {
 
   expect_true(inherits(y, "tbl"))
 
-  expect_equal(y$toid, c(2, 0))
-
-  expect_true(is.hy(y))
-
   expect_message(expect_false(is.hy(unclass(y))), "no hy class attribute")
 
   # NA toid is a valid outlet marker under the is_outlet() rule;
