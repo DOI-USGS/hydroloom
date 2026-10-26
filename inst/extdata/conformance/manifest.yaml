@@ -55,6 +55,14 @@ functions:
   add_topo_sort:
     requires: algorithms/add_topo_sort.md#requires
     returns: frame
+  # One element per unique start, split into paths; the traversal layer adds
+  # a 0-based path column (D2-08). Python's direction_invalid has no R
+  # counterpart (R walks downstream for an unknown direction); the
+  # non-frame, non-list input stays a testthat interface test.
+  navigate_network_dfs:
+    requires: algorithms/navigate_network_dfs.md#requires
+    returns: traversal
+    key: [start, order]
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -3474,3 +3482,655 @@ cases:
     generator: [r]
     raises: warning
     raises_key: sort_missed_features
+
+  # navigate_network_dfs ------------------------------------------------------
+  # Annotations from the proposed cases (D3-14) are kept as comments:
+  # changes_with d6 = proposed sibling order by identifier byte order (not
+  # in ROADMAP section 4); d8 = SCC in check_hy_graph (section 4, M3), after
+  # which the case raises network_cycle; i2 = identifier ingest (section 4,
+  # M3). The traversal converter reads starts from args.
+  # Worked example and the sibling tie (D-5, D-6, D-7)
+  # changes_with: d6; note: worked example; [[1,9,4],[10]]; post-change
+  # [[1,10,4],[9]]
+  - id: navigate_network_dfs_tie_down
+    function: navigate_network_dfs
+    fixture: dfs_tie.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: no split at a headwater; [[4,9,1,10]]; post-change
+  # [[4,10,1,9]]
+  - id: navigate_network_dfs_tie_up
+    function: navigate_network_dfs
+    fixture: dfs_tie.gpkg
+    args: {starts: [4], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: D-7 against tie_down; [[1,10,4],[9]], equal to the post-change rule
+  # for both row orders
+  - id: navigate_network_dfs_tie_permuted_down
+    function: navigate_network_dfs
+    fixture: dfs_tie_permuted.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: D-7 against tie_up; [[4,10,1,9]]
+  - id: navigate_network_dfs_tie_permuted_up
+    function: navigate_network_dfs
+    fixture: dfs_tie_permuted.gpkg
+    args: {starts: [4], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # reset, repeated and visited starts, start order (roxygen tests "total div")
+  # changes_with: d6; note: split at outlet 9; [[2,3,5,7,9],[4,6,8,10]]
+  - id: navigate_network_dfs_two_outlets_down
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: [2]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: reset FALSE, start 5 already returned; second
+  # element empty, no rows
+  - id: navigate_network_dfs_two_outlets_visited_start
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: [2, 5]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: second element [[5,7,9]]
+  - id: navigate_network_dfs_two_outlets_reset
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: [2, 5], reset: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: walk stops at visited 5 and splits; [[5,7,9]],
+  # [[2,3],[4,6,8,10]]; post-change [[2,3,4,6,8,10]]
+  - id: navigate_network_dfs_two_outlets_start_order
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: [5, 2]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: repeated start kept once; two elements
+  - id: navigate_network_dfs_two_outlets_duplicate_starts
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: [2, 2, 5]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: tie-free; [[9,7,5,3,2]], [[10,8,6,4]]
+  - id: navigate_network_dfs_two_outlets_up
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: [9, 10], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: text start against integer id; same as
+  # two_outlets_down
+  - id: navigate_network_dfs_two_outlets_character_start
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: ["2"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: empty list; zero-row layer
+  - id: navigate_network_dfs_empty_starts
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: []}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundary fixtures
+  # note: one-node DFS; [[1]]
+  - id: navigate_network_dfs_single_flowline
+    function: navigate_network_dfs
+    fixture: single_flowline.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: navigate_network_dfs_single_flowline_up
+    function: navigate_network_dfs
+    fixture: single_flowline.gpkg
+    args: {starts: [1], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: five one-identifier elements in start order
+  - id: navigate_network_dfs_all_terminals
+    function: navigate_network_dfs
+    fixture: all_terminals.gpkg
+    args: {starts: [30, 4, 100, 2, 7]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: navigate_network_dfs_all_terminals_up
+    function: navigate_network_dfs
+    fixture: all_terminals.gpkg
+    args: {starts: [30, 4, 100, 2, 7], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: S-6 says raises; R collapses the repeated edge and returns [[1,2]]
+  # (captured)
+  - id: navigate_network_dfs_duplicated_edge
+    function: navigate_network_dfs
+    fixture: duplicated_edge.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: I-11 not met; R stops in make_index_ids ("subscript out of bounds")
+  # after a max() warning; no remedies key
+  - id: navigate_network_dfs_empty_network
+    function: navigate_network_dfs
+    fixture: empty_network.gpkg
+    args: {starts: []}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # D-8 and cycles
+  # changes_with: d8; note: today [[1,2,3,4]]; after D-8 raises network_cycle
+  - id: navigate_network_dfs_three_cycle
+    function: navigate_network_dfs
+    fixture: three_cycle.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d8; note: today [[6,5]]; after D-8 raises network_cycle
+  - id: navigate_network_dfs_three_cycle_up
+    function: navigate_network_dfs
+    fixture: three_cycle.gpkg
+    args: {starts: [6], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: navigate_network_dfs_reciprocal_pair
+    function: navigate_network_dfs
+    fixture: reciprocal_pair.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  - id: navigate_network_dfs_self_loop
+    function: navigate_network_dfs
+    fixture: self_loop.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  # note: [[12]]
+  - id: navigate_network_dfs_isolated_flowline
+    function: navigate_network_dfs
+    fixture: isolated_flowline.gpkg
+    args: {starts: [12]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: three confluences, one path of 11
+  - id: navigate_network_dfs_isolated_flowline_up
+    function: navigate_network_dfs
+    fixture: isolated_flowline.gpkg
+    args: {starts: [11], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # New Hope: node route, main directions, dendritic, flownetwork, index ids
+  # changes_with: d6; note: hy_node via add_toids(return_dendritic = FALSE); 7
+  # paths, 38 ids (roxygen example)
+  - id: navigate_network_dfs_new_hope_down
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    args: {starts: [8893402]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: 83 paths, 746 ids (roxygen example)
+  - id: navigate_network_dfs_new_hope_up
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    args: {starts: [8897784], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: hy_node via to_flownetwork; one path, 75 ids
+  - id: navigate_network_dfs_new_hope_upmain
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    args: {starts: [8897784], direction: upmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: one path, 60 ids
+  - id: navigate_network_dfs_new_hope_downmain
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    args: {starts: [8891126], direction: downmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: reset FALSE; 7 and 40 paths, 187 ids
+  - id: navigate_network_dfs_new_hope_starts
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    args: {starts: [8893402, 8891152]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: 7 and 46 paths, 223 ids
+  - id: navigate_network_dfs_new_hope_starts_reset
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    args: {starts: [8893402, 8891152], reset: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: hy_topo route; one path, 21 ids
+  - id: navigate_network_dfs_new_hope_dendritic
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    args: {starts: [8893402]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: hy_flownetwork with upmain/downmain; equals new_hope_upmain
+  - id: navigate_network_dfs_new_hope_flownetwork_upmain
+    function: navigate_network_dfs
+    fixture: new_hope_flownetwork.gpkg
+    args: {starts: [8897784], direction: upmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: equals new_hope_downmain
+  - id: navigate_network_dfs_new_hope_flownetwork_downmain
+    function: navigate_network_dfs
+    fixture: new_hope_flownetwork.gpkg
+    args: {starts: [8891126], direction: downmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: list / IndexIds input with main; equals new_hope_downmain
+  - id: navigate_network_dfs_index_ids_downmain
+    function: navigate_network_dfs
+    fixture: new_hope_flownetwork.gpkg
+    prepare: {function: make_index_ids, args: {mode: to}}
+    args: {starts: [8891126], direction: downmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: equals new_hope_upmain
+  - id: navigate_network_dfs_index_ids_upmain
+    function: navigate_network_dfs
+    fixture: new_hope_flownetwork.gpkg
+    prepare: {function: make_index_ids, args: {mode: from}}
+    args: {starts: [8897784], direction: upmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: character identifiers, hy_topo; one path, 74 ids
+  - id: navigate_network_dfs_new_hope_3dhp_down
+    function: navigate_network_dfs
+    fixture: new_hope_3dhp.gpkg
+    args: {starts: ["14PA2"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: equals new_hope_3dhp_down
+  - id: navigate_network_dfs_index_ids_down
+    function: navigate_network_dfs
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: make_index_ids, args: {mode: to}}
+    args: {starts: ["14PA2"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: whole basin from the outlet; one path, 2708 ids
+  - id: navigate_network_dfs_index_ids_up
+    function: navigate_network_dfs
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: make_index_ids, args: {mode: from}}
+    args: {starts: ["6S7LY"], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # Other test-suite networks
+  # note: NHDPlusV2 aliases through to_flownetwork; one path, 26 ids
+  - id: navigate_network_dfs_network_downmain
+    function: navigate_network_dfs
+    fixture: network.gpkg
+    args: {starts: [11689204], direction: downmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: one path, 39 ids
+  - id: navigate_network_dfs_network_up
+    function: navigate_network_dfs
+    fixture: network.gpkg
+    args: {starts: [11690088], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: every connection kept (return_dendritic FALSE);
+  # [[1,3,5,6,7,13],[8,10,11,12],[9],[4]]
+  - id: navigate_network_dfs_divergence_attribute_down
+    function: navigate_network_dfs
+    fixture: divergence_attribute.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: minor paths end where they rejoin;
+  # [[1,6,8,9,5,10],[7,4],[2,3]]
+  - id: navigate_network_dfs_return_divergence_down
+    function: navigate_network_dfs
+    fixture: return_divergence.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: split at a revisited flowline with upstream slots;
+  # [[10,5,9,8,6,1,4,7],[3,2]]
+  - id: navigate_network_dfs_return_divergence_up
+    function: navigate_network_dfs
+    fixture: return_divergence.gpkg
+    args: {starts: [10], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: hy_flownetwork with cycles, walked without a cycle
+  # check; 58 paths, 311 ids; flowline 31325083 has one toid in the table and
+  # one outside (D3-59)
+  - id: navigate_network_dfs_loop_down
+    function: navigate_network_dfs
+    fixture: loop.gpkg
+    args: {starts: ["164411831"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: braced GUID identifiers; 14 paths, 75 ids; three
+  # flowlines with one toid in the table and one outside (D3-59)
+  - id: navigate_network_dfs_loop2_down
+    function: navigate_network_dfs
+    fixture: loop2.gpkg
+    args: {starts: ["{00266880-5565-4B15-ADC4-4B86EB6A6E46}"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # A divergence with one branch leaving the table (H-01, D3-59)
+  # changes_with: d6; note: 2 divides into 3 and 9 (outside); the outside slot
+  # follows 3, so a break splits [[1,2],[3]]
+  - id: navigate_network_dfs_divergence_leaves_down
+    function: navigate_network_dfs
+    fixture: sort_divergence_leaves.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: rows of 2 swapped; the outside slot precedes 3, so
+  # [[1,2,3]]
+  - id: navigate_network_dfs_divergence_leaves_permuted_down
+    function: navigate_network_dfs
+    fixture: sort_divergence_leaves_permuted.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: the outside connection has no upstream reverse;
+  # [[3,2,4,1]], same for the permuted rows; post-change [[3,2,1,4]]
+  - id: navigate_network_dfs_divergence_leaves_up
+    function: navigate_network_dfs
+    fixture: sort_divergence_leaves.gpkg
+    args: {starts: [3], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # Walks ending at coastal and foreign-valued outlets (H-02, I-4, I-5)
+  # note: ends at 2544457, a coastal terminal with missing tocomid;
+  # [[2545561,2545559,2544457]]
+  - id: navigate_network_dfs_coastal_down
+    function: navigate_network_dfs
+    fixture: coastal.gpkg
+    args: {starts: [2545561]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: ends at id 1, whose toid is the foreign outlet value -1; [[34,2,1]]
+  - id: navigate_network_dfs_sort_test_hy_names_down
+    function: navigate_network_dfs
+    fixture: sort_test_hy_names.gpkg
+    args: {starts: [34]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: repeated id; one path, 18 ids
+  - id: navigate_network_dfs_sort_network_dups_down
+    function: navigate_network_dfs
+    fixture: sort_network_dups.gpkg
+    args: {starts: ["wb-269951"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: one path, 80 ids
+  - id: navigate_network_dfs_sort_network_dups_up
+    function: navigate_network_dfs
+    fixture: sort_network_dups.gpkg
+    args: {starts: ["nex-269810"], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; note: identifiers beyond 32 bits (double today, character
+  # after I-2); one path, 49 ids
+  - id: navigate_network_dfs_nhdplushr_downmain
+    function: navigate_network_dfs
+    fixture: nhdplushr.gpkg
+    args: {starts: [15000500004891], direction: downmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # Raised conditions
+  - id: navigate_network_dfs_start_not_in_network
+    function: navigate_network_dfs
+    fixture: dfs_tie.gpkg
+    args: {starts: [99]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: start_not_in_network
+
+  - id: navigate_network_dfs_missing_start
+    function: navigate_network_dfs
+    fixture: dfs_tie.gpkg
+    args: {starts: [null]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: start_not_in_network
+
+  # note: id and name only; A-10 classes this stop
+  - id: navigate_network_dfs_no_topology
+    function: navigate_network_dfs
+    fixture: empty_name.gpkg
+    args: {starts: [1]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  - id: navigate_network_dfs_upmain_without_main
+    function: navigate_network_dfs
+    fixture: dfs_two_outlets.gpkg
+    args: {starts: [9], direction: upmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: main_path_required
+
+  # note: to_flownetwork warns (node_to_flownetwork_no_main) before the stop
+  - id: navigate_network_dfs_divergence_attribute_downmain
+    function: navigate_network_dfs
+    fixture: divergence_attribute.gpkg
+    args: {starts: [1], direction: downmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: main_path_required
+
+  - id: navigate_network_dfs_index_ids_direction_mismatch
+    function: navigate_network_dfs
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: make_index_ids, args: {mode: to}}
+    args: {starts: ["6S7LY"], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: index_ids_direction_mismatch
+
+  - id: navigate_network_dfs_index_ids_missing_main
+    function: navigate_network_dfs
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: make_index_ids, args: {mode: to}}
+    args: {starts: ["14PA2"], direction: downmain}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: index_ids_missing_main

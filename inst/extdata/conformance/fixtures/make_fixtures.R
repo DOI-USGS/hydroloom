@@ -844,6 +844,54 @@ fixture(data.frame(
   "TEXT siblings whose byte order (B, _c, a) differs from row and locale order",
   c("D-4", "D-1"))
 
+# Function fixtures: navigate_network_dfs (algorithms/navigate_network_dfs.md)
+
+# Flowline 1 divides into 10 and 9, which join at the outlet 4. Row order
+# (10 before 9) differs from identifier byte order ("10" < "9") only in the
+# permuted copy.
+dft <- data.frame(
+  id = c(1L, 1L, 10L, 9L, 4L),
+  toid = c(10L, 9L, 4L, 4L, 0L))
+
+fixture(dft, "dfs_tie",
+  "synthetic; the worked example in algorithms/navigate_network_dfs.md",
+  "a divergence at 1 (to 10 and 9) rejoining at the outlet 4: visit order and path split follow row order today",
+  c("D-5", "D-6", "D-7"))
+
+fixture(dft[c(2, 1, 4, 3, 5), ], "dfs_tie_permuted",
+  "dfs_tie with the rows of 1 swapped and the rows of 10 and 9 swapped",
+  "the same network in another row order: the walk follows the new row order",
+  c("D-6", "D-7"))
+
+fixture(data.frame(
+  id = c(2L, 3L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L),
+  toid = c(3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 0L, 0L)),
+  "dfs_two_outlets",
+  "synthetic (tests/testthat/test_navigate_network_dfs.R \"total div\")",
+  "a divergence at 3 (to 4 and 5) whose branches reach separate outlets 10 and 9: path split at an outlet, reset, repeated and visited starts",
+  "D-6")
+
+# Built with the package source in the checkout, loaded only when selected.
+nfn <- if (build("new_hope_flownetwork")) {
+  pkgload::load_all(".", quiet = TRUE, export_all = FALSE)
+  out <- as.data.frame(to_flownetwork(nh))[, c("id", "toid", "upmain", "downmain")]
+  out$toid <- as.integer(out$toid)
+  out
+}
+
+fixture(nfn, "new_hope_flownetwork",
+  "new_hope fixture through to_flownetwork() (R 1.3.0); columns id, toid, upmain, downmain",
+  "a flownetwork with upmain and downmain at every divergence and confluence; main-path navigation",
+  "I-6")
+
+fixture(data.frame(
+  id = c(1L, 2L, 2L, 3L, 4L),
+  toid = c(2L, 9L, 3L, 0L, 2L)),
+  "sort_divergence_leaves_permuted",
+  "sort_divergence_leaves with the two rows of 2 swapped",
+  "the connection leaving the table (2 -> 9) before the one inside it (2 -> 3): the depth-first path split follows row order",
+  c("I-4", "D-7"))
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

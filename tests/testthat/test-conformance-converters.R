@@ -212,3 +212,20 @@ test_that("a bare TRUE goes through the frame converter as the scalar layer (D3-
   rows <- frame_to_layer(data.frame(id = 5:6, toid = 6:5, row = 5:6))
   expect_match(compare_layers(rows, back), "missing column: value", all = FALSE)
 })
+
+test_that("case args keep a null start and a large integer", {
+  skip_if_no_conformance()
+  skip_if_not_installed("yaml")
+
+  f <- tempfile(fileext = ".yaml")
+  on.exit(unlink(f))
+  writeLines(c("a: {starts: [null]}", "b: {starts: []}", "c: {starts: [15000500004891, 2]}",
+    "d: {starts: [1, null]}"), f)
+
+  y <- read_conformance_yaml(f)
+
+  expect_identical(case_args(y$a)$starts, NA)
+  expect_null(case_args(y$b)$starts)
+  expect_identical(case_args(y$c)$starts, c(15000500004891, 2))
+  expect_identical(case_args(y$d)$starts, c(1L, NA))
+})

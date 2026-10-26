@@ -392,14 +392,19 @@ read_fixture <- function(path) {
   sf::read_sf(path, layer = layers)
 }
 
-# Case args (S-4): literal values, a sequence becomes an atomic vector, and a
-# string naming a file under fixtures/ is read as a second table.
+# Case args (S-4): literal values, a sequence becomes an atomic vector (a
+# null element becomes NA, so `[null]` is a missing value rather than an
+# empty vector), and a string naming a file under fixtures/ is read as a
+# second table.
 case_args <- function(args, dir = conformance_dir()) {
 
   if (is.null(args)) return(list())
 
   lapply(args, function(v) {
-    if (is.list(v)) v <- unlist(v)
+    if (is.list(v)) {
+      v[vapply(v, is.null, TRUE)] <- list(NA)
+      v <- unlist(v)
+    }
 
     if (is.character(v) && length(v) == 1 && grepl("\\.gpkg$", v)) {
       f <- file.path(dir, "fixtures", v)
