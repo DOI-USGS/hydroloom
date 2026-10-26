@@ -253,6 +253,43 @@ fixtures:
     keeps its name'
   rules: []
   bytes: 73728
+- file: hy_reverse_divergence.gpkg
+  source: synthetic
+  rows: 5
+  geometry: none
+  columns:
+  - ID
+  - toID
+  exercises: 'a divergence (1 -> 2 and 1 -> 3, rejoining at 4) as one row per downstream
+    flowline in user-style names: hy() gives a flownetwork'
+  rules:
+  - I-6
+  bytes: 73728
+- file: hy_reverse_renamed.gpkg
+  source: synthetic; the worked example in algorithms/hy_reverse.md
+  rows: 3
+  geometry: none
+  columns:
+  - ID
+  - toID
+  - extra
+  exercises: user-style names (ID, toID) restored by hy_reverse; a column outside
+    the vocabulary; a missing toid filled on ingest and not restored
+  rules:
+  - I-5
+  bytes: 73728
+- file: hy_reverse_zero_rows.gpkg
+  source: synthetic
+  rows: 0
+  geometry: none
+  columns:
+  - ID
+  - toID
+  - extra
+  exercises: 'zero rows under user-style names: names and column types restored'
+  rules:
+  - I-11
+  bytes: 73728
 - file: hy_toid_and_nodes.gpkg
   source: synthetic
   rows: 2

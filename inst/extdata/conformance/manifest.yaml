@@ -4,6 +4,9 @@ functions:
   hy:
     requires: algorithms/hy.md#requires
     returns: frame
+  hy_reverse:
+    requires: algorithms/hy_reverse.md#requires
+    returns: frame
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -314,3 +317,123 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+
+  # hy_reverse ----------------------------------------------------------------
+  # Every case but the last applies hy() first through prepare (D3-11); the
+  # prepare args are hy()'s, and hy_reverse takes none. Column order and the
+  # sf_column name are not visible in a layer; the testthat interface test
+  # keeps those assertions.
+
+  # changes_with: i2 (COMID et al. arrive double; integer after I-2, text-equal)
+  - id: hy_reverse_new_hope
+    function: hy_reverse
+    fixture: new_hope.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; toid stays hydroloom-named; add_toids moved FromNode
+  - id: hy_reverse_new_hope_add_topo
+    function: hy_reverse
+    fixture: new_hope.gpkg
+    prepare: {function: hy, args: {add_topo: true}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; non-vocabulary columns and geometry stay dropped
+  - id: hy_reverse_new_hope_clean
+    function: hy_reverse
+    fixture: new_hope.gpkg
+    prepare: {function: hy, args: {clean: true}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # worked example; toID NA -> 0 (I-5) is not restored
+  - id: hy_reverse_renamed
+    function: hy_reverse
+    fixture: hy_reverse_renamed.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundary; hydroloom names already, the rename is the identity
+  - id: hy_reverse_single_row
+    function: hy_reverse
+    fixture: single_flowline.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundary; hydroloom names already, rows come back unchanged
+  - id: hy_reverse_all_terminals
+    function: hy_reverse
+    fixture: all_terminals.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # I-11
+  - id: hy_reverse_zero_rows
+    function: hy_reverse
+    fixture: hy_reverse_zero_rows.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # not_hy_object; changes_with: a10 (gains hydroloom_representation_error);
+  # S-6 boundary; repeated id -> hy() gives hy_flownetwork, not hy
+  - id: hy_reverse_flownetwork_raises
+    function: hy_reverse
+    fixture: duplicated_edge.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # not_hy_object; changes_with: a10; ID 1 -> 2 and 1 -> 3: hy() gives
+  # hy_flownetwork, orig_names present
+  - id: hy_reverse_divergence_raises
+    function: hy_reverse
+    fixture: hy_reverse_divergence.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # not_hy_object; changes_with: a10; raw fixture, no hy()
+  - id: hy_reverse_not_hy_raises
+    function: hy_reverse
+    fixture: hy_reverse_renamed.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error

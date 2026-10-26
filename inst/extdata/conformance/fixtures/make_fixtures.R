@@ -458,6 +458,26 @@ fixture(data.frame(id = c(3L, 1L, 2L), fromnode = c(9L, 1L, 2L), tonode = c(NA, 
   "node topology whose first row has a missing tonode: add_topo moves it to the end",
   "D-14")
 
+# Function fixtures: hy_reverse (algorithms/hy_reverse.md) -------------------
+
+fixture(data.frame(ID = 1:3, toID = c(2L, 3L, NA), extra = c("a", "b", "c")),
+  "hy_reverse_renamed",
+  "synthetic; the worked example in algorithms/hy_reverse.md",
+  "user-style names (ID, toID) restored by hy_reverse; a column outside the vocabulary; a missing toid filled on ingest and not restored",
+  "I-5")
+
+fixture(data.frame(ID = integer(), toID = integer(), extra = character()),
+  "hy_reverse_zero_rows",
+  "synthetic",
+  "zero rows under user-style names: names and column types restored",
+  "I-11")
+
+fixture(data.frame(ID = c(1L, 1L, 2L, 3L, 4L), toID = c(2L, 3L, 4L, 4L, NA)),
+  "hy_reverse_divergence",
+  "synthetic",
+  "a divergence (1 -> 2 and 1 -> 3, rejoining at 4) as one row per downstream flowline in user-style names: hy() gives a flownetwork",
+  "I-6")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")
