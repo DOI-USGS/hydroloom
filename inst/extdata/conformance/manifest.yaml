@@ -4331,6 +4331,91 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # Migrated from tests/testthat/test_navigate_network_dfs.R (M2)
+  # changes_with: d6; note: "super basic"; the minor path ends where it
+  # rejoins at 8; [[2,3,5,7,8,9],[4,6]]
+  - id: navigate_network_dfs_rejoin_down
+    function: navigate_network_dfs
+    fixture: dfs_rejoin.gpkg
+    args: {starts: [2]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: one path; [[9,8,7,5,3,2,6,4]]
+  - id: navigate_network_dfs_rejoin_up
+    function: navigate_network_dfs
+    fixture: dfs_rejoin.gpkg
+    args: {starts: [9], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: 46 paths
+  - id: navigate_network_dfs_new_hope_down_8891152
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    args: {starts: [8891152]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # note: hy_topo route; one path
+  - id: navigate_network_dfs_new_hope_dendritic_up
+    function: navigate_network_dfs
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    args: {starts: [8897784], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: id, toid frame route; equals new_hope_down
+  - id: navigate_network_dfs_new_hope_not_dendritic_down
+    function: navigate_network_dfs
+    fixture: new_hope_toids_not_dendritic.gpkg
+    args: {starts: [8893402]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: index-id route; equals new_hope_not_dendritic_down
+  - id: navigate_network_dfs_new_hope_not_dendritic_index_ids_down
+    function: navigate_network_dfs
+    fixture: new_hope_toids_not_dendritic.gpkg
+    prepare: {function: make_index_ids, args: {mode: to}}
+    args: {starts: [8893402]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: id, toid frame route; equals new_hope_up
+  - id: navigate_network_dfs_new_hope_not_dendritic_up
+    function: navigate_network_dfs
+    fixture: new_hope_toids_not_dendritic.gpkg
+    args: {starts: [8897784], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d6; note: index-id route; equals new_hope_not_dendritic_up
+  - id: navigate_network_dfs_new_hope_not_dendritic_index_ids_up
+    function: navigate_network_dfs
+    fixture: new_hope_toids_not_dendritic.gpkg
+    prepare: {function: make_index_ids, args: {mode: from}}
+    args: {starts: [8897784], direction: up}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # Raised conditions
   - id: navigate_network_dfs_start_not_in_network
     function: navigate_network_dfs

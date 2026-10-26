@@ -1029,6 +1029,27 @@ fixture(data.frame(
   "a divergence at 3 (to 4 and 5) whose branches reach separate outlets 10 and 9: path split at an outlet, reset, repeated and visited starts",
   "D-6")
 
+fixture(data.frame(
+  id = c(2L, 3L, 3L, 4L, 5L, 6L, 7L, 8L, 9L),
+  toid = c(3L, 4L, 5L, 6L, 7L, 8L, 8L, 9L, 0L)),
+  "dfs_rejoin",
+  "synthetic (tests/testthat/test_navigate_network_dfs.R \"super basic\")",
+  "a divergence at 3 (to 4 and 5) whose branches rejoin at 8 above the outlet 9: the minor path ends where it rejoins",
+  "D-6")
+
+# Built with the package source in the checkout, loaded only when selected.
+nnd <- if (build("new_hope_toids_not_dendritic")) {
+  pkgload::load_all(".", quiet = TRUE, export_all = FALSE)
+  out <- suppressWarnings(add_toids(hy(nh), return_dendritic = FALSE))
+  out <- sf::st_drop_geometry(out)
+  data.frame(id = as.integer(out$id), toid = as.integer(out$toid))
+}
+
+fixture(nnd, "new_hope_toids_not_dendritic",
+  "new_hope fixture through hy() and add_toids(return_dendritic = FALSE) (R 1.3.0); columns id, toid (tests/testthat/test_navigate_network_dfs.R \"real data\")",
+  "an id, toid edge list with every downstream connection kept and no main flags; frame and index-id navigation routes",
+  "I-6")
+
 # Built with the package source in the checkout, loaded only when selected.
 nfn <- if (build("new_hope_flownetwork")) {
   pkgload::load_all(".", quiet = TRUE, export_all = FALSE)
