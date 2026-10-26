@@ -71,9 +71,20 @@
     "literal": {
       "type": ["string", "number", "boolean", "null"]
     },
+    "args": {
+      "description": "Keyword map of literal values; a fixture path where a second table is needed, never code.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_.]*$" },
+      "additionalProperties": {
+        "anyOf": [
+          { "$ref": "#/definitions/literal" },
+          { "type": "array", "items": { "$ref": "#/definitions/literal" } }
+        ]
+      }
+    },
     "case": {
       "type": "object",
-      "required": ["id", "function", "fixture", "compare", "order", "supported_by", "generator"],
+      "required": ["id", "function", "compare", "order", "supported_by", "generator"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -83,21 +94,21 @@
         },
         "function": { "$ref": "#/definitions/function_name" },
         "fixture": {
-          "description": "Path under fixtures/.",
+          "description": "Path under fixtures/. Absent when the function takes no input table; the harness then calls it with args only, or reads a non-function export by value.",
           "type": "string",
           "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]*\\.gpkg$"
         },
-        "args": {
-          "description": "Keyword map of literal values; a fixture path where a second table is needed, never code.",
+        "prepare": {
+          "description": "One call applied to the fixture before the function under test (D3-11); one level only.",
           "type": "object",
-          "propertyNames": { "pattern": "^[a-z][a-z0-9_.]*$" },
-          "additionalProperties": {
-            "anyOf": [
-              { "$ref": "#/definitions/literal" },
-              { "type": "array", "items": { "$ref": "#/definitions/literal" } }
-            ]
+          "required": ["function"],
+          "additionalProperties": false,
+          "properties": {
+            "function": { "$ref": "#/definitions/function_name" },
+            "args": { "$ref": "#/definitions/args" }
           }
         },
+        "args": { "$ref": "#/definitions/args" },
         "expected": {
           "description": "Path under expected/; defaults to <function>.gpkg, layer <id>.",
           "type": "string",
@@ -130,7 +141,8 @@
         }
       },
       "dependencies": {
-        "raises_key": ["raises"]
+        "raises_key": ["raises"],
+        "prepare": ["fixture"]
       },
       "allOf": [
         {

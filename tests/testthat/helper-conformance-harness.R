@@ -72,7 +72,20 @@ layer_columns <- function(x, id_cols = character()) {
   list2DF(stats::setNames(cols, names(x)))
 }
 
+# A named atomic vector as a two-column frame in vector order (D3-13): a
+# hydroloom_names vector gives name, definition; any other gives name, value.
+named_vector_frame <- function(x) {
+
+  value_col <- if (inherits(x, "hydroloom_names")) "definition" else "value"
+  value <- as.vector(unclass(x))
+  if (value_col == "definition") value <- as.character(value)
+
+  list2DF(stats::setNames(list(names(x), unname(value)), c("name", value_col)))
+}
+
 frame_to_layer <- function(x) {
+
+  if (is.atomic(x) && !is.null(names(x))) x <- named_vector_frame(x)
 
   out <- layer_columns(x)
 
@@ -381,6 +394,19 @@ case_args <- function(args, dir = conformance_dir()) {
   })
 }
 
+# The case's fixture with its prepare step applied when present (D3-11). One
+# level only: prepare takes literal args and has no prepare of its own.
+case_input <- function(case, dir = conformance_dir()) {
+
+  x <- read_fixture(file.path(dir, "fixtures", case$fixture))
+  if (is.null(case$prepare)) return(x)
+
+  prep <- get(case$prepare[["function"]], envir = asNamespace("hydroloom"), mode = "function")
+
+  suppressMessages(suppressWarnings(
+    do.call(prep, c(list(x), case_args(case$prepare$args, dir)))))
+}
+
 write_expected_mode <- function() identical(Sys.getenv("HYDROLOOM_WRITE_EXPECTED"), "1")
 
 # Calls a case's function. Without `raises`, warnings and messages are
@@ -420,20 +446,33 @@ call_case_function <- function(fun, call_args, raises = NULL, id = "") {
 # Runs one manifest case. In write mode the expectation layer is (re)written
 # first and any value change from the previous layer is reported with
 # message(). A case with `raises: error` asserts the error and has no layer.
-# Returns the comparison problems; empty when the case passes.
+# A case with no fixture calls the function with args only; a manifest
+# function that names a non-function export is read by value and takes no
+# fixture, args, or raises (D3-12). Returns the comparison problems; empty
+# when the case passes.
 run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
   write = write_expected_mode()) {
 
   fn <- case[["function"]]
-  x <- read_fixture(file.path(dir, "fixtures", case$fixture))
   args <- case_args(case$args, dir)
 
-  fun <- get(fn, envir = asNamespace("hydroloom"), mode = "function")
+  obj <- get(fn, envir = asNamespace("hydroloom"))
 
-  called <- call_case_function(fun, c(list(x), args), case$raises, case$id)
-  if (called$raised) return(character())
+  if (is.function(obj)) {
+    call_args <- args
+    if (!is.null(case$fixture)) call_args <- c(list(case_input(case, dir)), args)
 
-  result <- called$result
+    called <- call_case_function(obj, call_args, case$raises, case$id)
+    if (called$raised) return(character())
+
+    result <- called$result
+  } else {
+    if (length(args) || !is.null(case$fixture) || !is.null(case$raises))
+      stop("case ", case$id, ": ", fn, " is a value, not a function; ",
+        "it takes no fixture, args, or raises")
+
+    result <- obj
+  }
 
   layer <- to_layer(result, fn_entry$returns, args)
 

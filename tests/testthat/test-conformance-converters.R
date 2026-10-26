@@ -154,3 +154,31 @@ test_that("comparison follows tolerance, order, and column-name rules", {
 
   expect_match(compare_layers(e[, c("id", "length_km")], e), "missing column")
 })
+
+test_that("named vectors go through the frame converter (D3-13)", {
+  skip_if_no_conformance()
+
+  defs <- frame_to_layer(hydroloom_name_definitions)
+
+  expect_identical(names(defs), c("name", "definition"))
+  expect_identical(defs$name, names(hydroloom_name_definitions))
+  expect_identical(defs$definition, unname(as.character(unclass(hydroloom_name_definitions))))
+
+  back <- round_trip(defs)
+  expect_identical(back$name, defs$name)
+  expect_identical(compare_layers(defs, back), character())
+
+  v <- c(b = 2L, a = 1L, c = NA)
+  vl <- frame_to_layer(v)
+
+  expect_identical(names(vl), c("name", "value"))
+  expect_identical(vl$name, c("b", "a", "c"))
+  expect_identical(vl$value, c(2L, 1L, NA))
+
+  vb <- round_trip(vl)
+  expect_identical(vapply(vb, typeof, ""), vapply(vl, typeof, ""))
+  expect_identical(compare_layers(vl, vb), character())
+
+  s <- frame_to_layer(c(comid = "id", tocomid = "toid"))
+  expect_identical(s$value, c("id", "toid"))
+})
