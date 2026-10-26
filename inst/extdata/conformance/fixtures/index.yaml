@@ -148,6 +148,45 @@ fixtures:
   rules:
   - I-11
   bytes: 73728
+- file: add_topo_sort_collation.gpkg
+  source: synthetic
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: TEXT siblings whose byte order (B, _c, a) differs from row and locale
+    order
+  rules:
+  - D-4
+  - D-1
+  bytes: 73728
+- file: add_topo_sort_worked_example.gpkg
+  source: synthetic; the worked example in algorithms/add_topo_sort.md
+  rows: 6
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'siblings and two outlets whose row order differs from identifier byte
+    order: input order today, byte order after D-4'
+  rules:
+  - D-4
+  - D-1
+  bytes: 73728
+- file: add_topo_sort_worked_example_reversed.gpkg
+  source: add_topo_sort_worked_example with rows in reverse order
+  rows: 6
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'the same network in another row order: topo_sort follows row order today,
+    not after D-4'
+  rules:
+  - D-4
+  - D-7
+  bytes: 73728
 - file: align_names_conflict_toid.gpkg
   source: synthetic
   rows: 2

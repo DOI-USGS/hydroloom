@@ -52,6 +52,9 @@ functions:
   sort_network:
     requires: algorithms/sort_network.md#requires
     returns: frame
+  add_topo_sort:
+    requires: algorithms/add_topo_sort.md#requires
+    returns: frame
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -3096,3 +3099,378 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+
+  # add_topo_sort -------------------------------------------------------------
+  # Annotations from the proposed cases (D3-14) are kept as comments:
+  # changes_with D-4 = sibling and outlet order by identifier byte order
+  # (ROADMAP §4, M3), so row order and topo_sort values change; D-8 = SCC
+  # cycle check on the hy_topo route only (D3-41); i2 = identifier ingest,
+  # values compared as text are unchanged; A-10 = the stop takes class
+  # hydroloom_representation_error. "R-only after port" marks R behavior
+  # Python will not reproduce. A warning case still compares its layer.
+
+  # changes_with: D-4; today (7,6), (10,5), (9,4), (2,3), (5,2), (3,1); post
+  # (10,6), (9,5), (2,4), (5,3), (3,2), (7,1); "10" before "9"
+  - id: add_topo_sort_worked_example
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; D-7 un-sorted variant; today (5,6), (9,5), (10,4),
+  # (2,3), (3,2), (7,1); post equal to add_topo_sort_worked_example
+  - id: add_topo_sort_worked_example_permuted
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example_reversed.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; hy route; R class hy_topo, hy names kept
+  - id: add_topo_sort_worked_example_hy
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # outlet 7 dropped; (10,5), (9,4), (2,3), (5,2), (3,1) before and after D-4
+  - id: add_topo_sort_outlets
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example.gpkg
+    args: {outlets: [3]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # a start upstream of another and a repeated outlet add nothing; equals
+  # add_topo_sort_outlets
+  - id: add_topo_sort_outlets_nested
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example.gpkg
+    args: {outlets: [2, 3, 3]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # R internal error "wrong sign in 'by' argument"; Python returns zero rows
+  # (R-only after port)
+  - id: add_topo_sort_outlets_absent
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example.gpkg
+    args: {outlets: [99]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # changes_with: D-4; D-1 byte order on character siblings; today a, B, _c,
+  # d; post B, _c, a, d
+  - id: add_topo_sort_collation
+    function: add_topo_sort
+    fixture: add_topo_sort_collation.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 n = 1; topo_sort 1 (integer today); sf input, geometry kept
+  - id: add_topo_sort_single_flowline
+    function: add_topo_sort
+    fixture: single_flowline.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; S-6 all terminals; today 7, 2, 100, 4, 30 (reverse
+  # input); post 100, 2, 30, 4, 7
+  - id: add_topo_sort_all_terminals
+    function: add_topo_sort
+    fixture: all_terminals.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundary fixture; one row, sorting does not read geometry
+  - id: add_topo_sort_zero_length
+    function: add_topo_sort
+    fixture: zero_length.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundary fixture; no weight is read, the missing da_sqkm passes through
+  - id: add_topo_sort_missing_weight
+    function: add_topo_sort
+    fixture: missing_weight.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # I-11 departure; R internal error "subscript out of bounds"; Python returns
+  # zero rows, topo_sort int32 (R-only after port)
+  - id: add_topo_sort_empty_network
+    function: add_topo_sort
+    fixture: empty_network.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # changes_with: D-4, i2; outlet 12 with no edges beside outlet 11; toid REAL
+  # in the fixture
+  - id: add_topo_sort_isolated_flowline
+    function: add_topo_sort
+    fixture: isolated_flowline.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 lists raises; R returns 3 rows, both 1->2 rows topo_sort 2 (R-only
+  # after port, D3-46, D3-57)
+  - id: add_topo_sort_duplicated_edge
+    function: add_topo_sort
+    fixture: duplicated_edge.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-8; stops today (pair join) and after (SCC); message text
+  # changes
+  - id: add_topo_sort_reciprocal_pair
+    function: add_topo_sort
+    fixture: reciprocal_pair.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  # changes_with: D-8; toid == id caught by the pair join today; SCC after
+  - id: add_topo_sort_self_loop
+    function: add_topo_sort
+    fixture: self_loop.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  # changes_with: D-8; hy_topo route; today warns and returns ids 5, 6 only;
+  # post raises error network_cycle (no layer)
+  - id: add_topo_sort_three_cycle
+    function: add_topo_sort
+    fixture: three_cycle.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: sort_missed_features
+
+  # changes_with: D-8; hy_topo route; today warns no_outlet and
+  # sort_missed_features, then internal error; post raises network_cycle
+  # first. Proposed fixture add_topo_sort_no_outlet (1 -> 2 -> 3 -> 1) is
+  # sort_no_outlet row for row.
+  - id: add_topo_sort_no_outlet
+    function: add_topo_sort
+    fixture: sort_no_outlet.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # changes_with: i2; node route (message); siblings already in byte order, so
+  # D-4 leaves it unchanged
+  - id: add_topo_sort_return_divergence
+    function: add_topo_sort
+    fixture: return_divergence.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; flownetwork route; ids 1 and 6 two rows each sharing
+  # topo_sort; output 1, 1, 2, 3, 6, 6, 7, 4, 8, 9, 5, 10, unchanged by D-4
+  - id: add_topo_sort_return_divergence_flownetwork
+    function: add_topo_sort
+    fixture: return_divergence.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; roxygen NOTE; returns ids 2, 3 only; id 1's main path
+  # reaches 3 but its minor path (6) does not, so 1 is left out
+  - id: add_topo_sort_flownetwork_partial
+    function: add_topo_sort
+    fixture: return_divergence.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {outlets: [3]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4, i2; node route; outlets 12 and 13; today 13's network
+  # first, post 12's first
+  - id: add_topo_sort_divergence_attribute
+    function: add_topo_sort
+    fixture: divergence_attribute.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # node conversion needs divergence
+  - id: add_topo_sort_divergence_no_attribute
+    function: add_topo_sort
+    fixture: divergence_no_attribute.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: divergence_required
+
+  # changes_with: A-10; plain hy, representation guidance
+  - id: add_topo_sort_no_topology
+    function: add_topo_sort
+    fixture: empty_name.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # changes_with: D-4, i2; node route, 746 rows; Hydroseq becomes
+  # topo_sort.x, computed topo_sort.y (R-only after port)
+  - id: add_topo_sort_new_hope
+    function: add_topo_sort
+    fixture: new_hope.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4, i2; flownetwork route, 832 rows, 746 topo_sort values;
+  # topo_sort.x/.y (R-only after port)
+  - id: add_topo_sort_new_hope_flownetwork
+    function: add_topo_sort
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; string identifiers, topo route, no topo_sort alias
+  # collision (3DHP hydrosequence is not a topo_sort alias today; H-08);
+  # 2710 rows
+  - id: add_topo_sort_new_hope_3dhp
+    function: add_topo_sort
+    fixture: new_hope_3dhp.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4, i2; identifiers beyond 32 bits (character after I-2, so
+  # byte order differs from numeric); topo_sort.x/.y (R-only after port)
+  - id: add_topo_sort_nhdplushr
+    function: add_topo_sort
+    fixture: nhdplushr.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; many terminals with I-5 filled toid; hydroseq becomes
+  # topo_sort.x (R-only after port)
+  - id: add_topo_sort_coastal
+    function: add_topo_sort
+    fixture: coastal.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; flownetwork route, wb-/nex- strings, 83 rows, 80
+  # topo_sort values
+  - id: add_topo_sort_sort_network_dups
+    function: add_topo_sort
+    fixture: sort_network_dups.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; flownetwork route, 1425 rows, 1327 values, no warning;
+  # D-8 does not apply on this route (D3-41)
+  - id: add_topo_sort_loop
+    function: add_topo_sort
+    fixture: loop.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # flownetwork route; warns and returns 50 of 839 rows, today and after D-8
+  # (D3-41, D3-55)
+  - id: add_topo_sort_loop2
+    function: add_topo_sort
+    fixture: loop2.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: sort_missed_features

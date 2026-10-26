@@ -818,6 +818,32 @@ fixture(data.frame(
   "a divergence at 2 with one branch inside the table (3) and one leaving it (9): 2 is its own start",
   c("I-4", "I-6"))
 
+# Function fixtures: add_topo_sort (algorithms/add_topo_sort.md) -------------
+
+# Outlets 3 and 7; 10 and 9 flow to 2; 2 and 5 flow to 3. Row order differs
+# from identifier byte order ("10" < "9", "2" < "5", "3" < "7").
+atw <- data.frame(
+  id = c(10L, 9L, 2L, 3L, 5L, 7L),
+  toid = c(2L, 2L, 3L, 0L, 3L, 0L))
+
+fixture(atw, "add_topo_sort_worked_example",
+  "synthetic; the worked example in algorithms/add_topo_sort.md",
+  "siblings and two outlets whose row order differs from identifier byte order: input order today, byte order after D-4",
+  c("D-4", "D-1"))
+
+fixture(atw[rev(seq_len(nrow(atw))), ], "add_topo_sort_worked_example_reversed",
+  "add_topo_sort_worked_example with rows in reverse order",
+  "the same network in another row order: topo_sort follows row order today, not after D-4",
+  c("D-4", "D-7"))
+
+fixture(data.frame(
+  id = c("a", "B", "_c", "d"),
+  toid = c("d", "d", "d", "")),
+  "add_topo_sort_collation",
+  "synthetic",
+  "TEXT siblings whose byte order (B, _c, a) differs from row and locale order",
+  c("D-4", "D-1"))
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")
