@@ -109,6 +109,21 @@ fixtures:
   - S-6
   - D-4
   bytes: 98304
+- file: capabilities_leveled.gpkg
+  source: synthetic; hy_capabilities worked example
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  - topo_sort
+  - levelpath
+  - levelpath_outlet_id
+  - divergence
+  exercises: 'hy_leveled with a divergence column (all 0, no branching): to_flownetwork,
+    add_pfafstetter, add_streamlevel available'
+  rules: []
+  bytes: 73728
 - file: coastal.gpkg
   source: tests/testthat/data/coastal.rds
   rows: 548

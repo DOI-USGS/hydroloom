@@ -557,6 +557,15 @@ fixture(data.frame(id = c(1L, 1L, 2L), fromnode = c(10L, 10L, 11L), tonode = c(1
   "synthetic",
   "repeated id with fromnode and tonode and no toid: neither flownetwork nor node, plain hy")
 
+# Function fixtures: hy_capabilities (algorithms/hy_capabilities.md) ---------
+
+fixture(data.frame(
+  id = 1:3, toid = c(2L, 3L, 0L), topo_sort = 3:1,
+  levelpath = 1L, levelpath_outlet_id = 3L, divergence = 0L),
+  "capabilities_leveled",
+  "synthetic; hy_capabilities worked example",
+  "hy_leveled with a divergence column (all 0, no branching): to_flownetwork, add_pfafstetter, add_streamlevel available")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

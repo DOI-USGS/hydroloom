@@ -26,6 +26,14 @@ functions:
   hy_network_type:
     requires: algorithms/hy_network_type.md#requires
     returns: scalar
+  # A named logical vector until A-4: a frame of name, value in vector order
+  # (D3-13); after A-4, function, available, via.
+  hy_capabilities:
+    requires: algorithms/hy_capabilities.md#requires
+    returns: frame
+  is_dendritic:
+    requires: algorithms/is_dendritic.md#requires
+    returns: scalar
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -1062,6 +1070,479 @@ cases:
     function: hy_network_type
     fixture: empty_network.gpkg
     prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # hy_capabilities -----------------------------------------------------------
+  # R reads the class hy() stamps, so most cases apply hy() through prepare
+  # (D3-11). Today's return is a named logical vector, stored through the frame
+  # converter as name, value in vector order (D3-13). Every case carries
+  # changes_with: A-4 (D3-14): the A-4 step regenerates the same case ids as
+  # (function, available, via) frame layers. order: exact pins code-table
+  # order (D-14). Cases without prepare stay R only: R reads a class, Python
+  # reads columns. No case raises.
+
+  # changes_with: A-4; hy_node, sf, aggregate_id (mainstemid) and length_km;
+  # node, geometry, and aggregate-flowpath rows TRUE
+  - id: hy_capabilities_new_hope_node
+    function: hy_capabilities
+    fixture: new_hope.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hy_node via add_toids; make_node_topology TRUE after
+  # conversion (captured as is)
+  - id: hy_capabilities_new_hope_node_conversions
+    function: hy_capabilities
+    fixture: new_hope.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hy_topo that still carries fromnode/tonode; node rows
+  # FALSE (class test)
+  - id: hy_capabilities_new_hope_topo
+    function: hy_capabilities
+    fixture: new_hope.gpkg
+    prepare: {function: hy, args: {add_topo: true}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hy_topo, string ids, aggregate_id and length_km, no geometry
+  - id: hy_capabilities_new_hope_3dhp
+    function: hy_capabilities
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hy_topo via make_node_topology for the four node rows
+  - id: hy_capabilities_new_hope_3dhp_conversions
+    function: hy_capabilities
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hy_node with divergence and no aggregate_id;
+  # add_return_divergence TRUE, aggregate rows FALSE
+  - id: hy_capabilities_return_divergence
+    function: hy_capabilities
+    fixture: return_divergence.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; worked example; hy_leveled with a divergence column (all
+  # 0, no branching); to_flownetwork, add_pfafstetter, add_streamlevel TRUE
+  - id: hy_capabilities_leveled
+    function: hy_capabilities
+    fixture: capabilities_leveled.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; worked example; hy_leveled satisfies the hy_topo via
+  # key; nineteen rows TRUE
+  - id: hy_capabilities_leveled_conversions
+    function: hy_capabilities
+    fixture: capabilities_leveled.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; no hy class; only the two geometry rows TRUE (sf). R only.
+  - id: hy_capabilities_raw_new_hope
+    function: hy_capabilities
+    fixture: new_hope.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hydroloom names but no hy class; only geometry rows TRUE
+  # in R. Python would read hy_topo. R only.
+  - id: hy_capabilities_raw_all_terminals
+    function: hy_capabilities
+    fixture: all_terminals.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundary fixtures and I-11; requires is [any], so each runs here.
+  # changes_with: A-4; single row; hy_topo with node columns and geometry
+  - id: hy_capabilities_single_flowline
+    function: hy_capabilities
+    fixture: single_flowline.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; single row; add_return_divergence reported via
+  # make_node_topology
+  - id: hy_capabilities_single_flowline_conversions
+    function: hy_capabilities
+    fixture: single_flowline.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; five flowlines, no edges; toid values not read
+  - id: hy_capabilities_all_terminals
+    function: hy_capabilities
+    fixture: all_terminals.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; I-11 zero rows; hy_topo without node columns; output has
+  # the code table's 24 rows
+  - id: hy_capabilities_empty_network
+    function: hy_capabilities
+    fixture: empty_network.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; duplicated edge; hy_flownetwork; navigate_network_dfs and
+  # make_index_ids TRUE (A-4 adds sort_network, add_topo_sort, check_hy_graph,
+  # D3-42); does not raise; available is blind to the repeated row (D3-46, D3-57)
+  - id: hy_capabilities_duplicated_edge
+    function: hy_capabilities
+    fixture: duplicated_edge.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; no via entry for hy_flownetwork, same values as the
+  # direct call
+  - id: hy_capabilities_duplicated_edge_conversions
+    function: hy_capabilities
+    fixture: duplicated_edge.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; missing weight; not read
+  - id: hy_capabilities_missing_weight
+    function: hy_capabilities
+    fixture: missing_weight.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; zero-length geometry; not read beyond the sf class
+  - id: hy_capabilities_zero_length
+    function: hy_capabilities
+    fixture: zero_length.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; real non-dendritic network (repeated id, distinct toid);
+  # hy_flownetwork; navigate_network_dfs and make_index_ids TRUE today, A-4
+  # adds sort_network, add_topo_sort, check_hy_graph (D3-42)
+  - id: hy_capabilities_sort_network_dups
+    function: hy_capabilities
+    fixture: sort_network_dups.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; no via entry for hy_flownetwork; same values as the
+  # direct call
+  - id: hy_capabilities_sort_network_dups_conversions
+    function: hy_capabilities
+    fixture: sort_network_dups.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hy_node without a divergence column; add_toids,
+  # add_divergence, subset_network, get_confluences TRUE; add_return_divergence
+  # FALSE (columns gate)
+  - id: hy_capabilities_divergence_no_attribute
+    function: hy_capabilities
+    fixture: divergence_no_attribute.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; hy_node via add_toids for the topo rows;
+  # add_return_divergence and to_flownetwork stay FALSE
+  - id: hy_capabilities_divergence_no_attribute_conversions
+    function: hy_capabilities
+    fixture: divergence_no_attribute.gpkg
+    prepare: {function: hy, args: {}}
+    args: {include_conversions: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # is_dendritic --------------------------------------------------------------
+  # Annotations from the proposed cases (D3-14): shared: true on every case =
+  # the Python definition gives the same value (add python to supported_by
+  # when is_dendritic is ported). Values are those probed against current R.
+  # No case raises or carries changes_with. prepare: hy (D3-11) where the
+  # fixture is in source names; is_dendritic reads hydroloom names only.
+
+  # Definition rule 1: divergence == 2.
+  # NHDPlusV2 with Divergence 2 after hy(); expect FALSE
+  - id: is_dendritic_new_hope
+    function: is_dendritic
+    fixture: new_hope.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # divergence test runs regardless of validate_data; expect FALSE
+  - id: is_dendritic_new_hope_no_validate
+    function: is_dendritic
+    fixture: new_hope.gpkg
+    prepare: {function: hy}
+    args: {validate_data: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # no alias lookup; Divergence/FromNode are not hydroloom names; expect TRUE
+  # (Definition, captured as is)
+  - id: is_dendritic_new_hope_source_names
+    function: is_dendritic
+    fixture: new_hope.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # source table already has lowercase divergence with 2; FALSE without hy()
+  - id: is_dendritic_new_hope_3dhp
+    function: is_dendritic
+    fixture: new_hope_3dhp.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # node topology with divergence column holding 2; worked example; expect FALSE
+  - id: is_dendritic_divergence_attribute
+    function: is_dendritic
+    fixture: divergence_attribute.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # minor path leaves a divergence and rejoins the main stem; expect FALSE
+  - id: is_dendritic_return_divergence
+    function: is_dendritic
+    fixture: return_divergence.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # identifiers outside 32-bit range after hy(); I-2 alters id type, not the
+  # result; expect FALSE
+  - id: is_dendritic_nhdplushr
+    function: is_dendritic
+    fixture: nhdplushr.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # node topology with divergences but no divergence column; expect TRUE
+  # (Definition, captured as is)
+  - id: is_dendritic_divergence_no_attribute
+    function: is_dendritic
+    fixture: divergence_no_attribute.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # Definition rule 2: repeated id with toid, gated by validate_data.
+  # nextgen string ids, repeated id with toid; expect FALSE
+  - id: is_dendritic_sort_network_dups
+    function: is_dendritic
+    fixture: sort_network_dups.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # repeat test skipped, no divergence column; expect TRUE
+  - id: is_dendritic_sort_network_dups_no_validate
+    function: is_dendritic
+    fixture: sort_network_dups.gpkg
+    args: {validate_data: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # I-6 flownetwork with cycles; expect FALSE
+  - id: is_dendritic_loop
+    function: is_dendritic
+    fixture: loop.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # braced GUID string ids, repeated id; expect FALSE
+  - id: is_dendritic_loop2
+    function: is_dendritic
+    fixture: loop2.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # Dendritic tables.
+  # many terminals, unique id; expect TRUE
+  - id: is_dendritic_coastal
+    function: is_dendritic
+    fixture: coastal.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # a cycle is not a divergence; unique id; expect TRUE
+  - id: is_dendritic_reciprocal_pair
+    function: is_dendritic
+    fixture: reciprocal_pair.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 boundary fixtures and I-11; requires is [any], so every one runs.
+  # single row, divergence 0; expect TRUE
+  - id: is_dendritic_single_flowline
+    function: is_dendritic
+    fixture: single_flowline.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # five flowlines, no edges; expect TRUE
+  - id: is_dendritic_all_terminals
+    function: is_dendritic
+    fixture: all_terminals.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # duplicated edge, read as a repeat; no raise (D3-57); expect FALSE
+  - id: is_dendritic_duplicated_edge
+    function: is_dendritic
+    fixture: duplicated_edge.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # duplicated edge, validate_data false; expect TRUE
+  - id: is_dendritic_duplicated_edge_no_validate
+    function: is_dendritic
+    fixture: duplicated_edge.gpkg
+    args: {validate_data: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # missing weight value; not read; expect TRUE
+  - id: is_dendritic_missing_weight
+    function: is_dendritic
+    fixture: missing_weight.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # zero-length geometry; not read; expect TRUE
+  - id: is_dendritic_zero_length
+    function: is_dendritic
+    fixture: zero_length.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # empty name; no toid; expect TRUE
+  - id: is_dendritic_empty_name
+    function: is_dendritic
+    fixture: empty_name.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # I-11 zero rows; expect TRUE
+  - id: is_dendritic_empty_network
+    function: is_dendritic
+    fixture: empty_network.gpkg
     compare: exact
     order: exact
     supported_by: [r]
