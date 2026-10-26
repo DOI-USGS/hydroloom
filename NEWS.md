@@ -41,6 +41,15 @@ hydroloom (development version)
   with `make_index_ids()` now stop on any cycle in a network with unique
   `id`, where a longer cycle used to warn and drop rows; the error says
   "cycles". A network with repeated `id` is sorted as before.
+- `hy_capabilities()` now returns a data.frame with one row per function
+  and columns `function`, `available`, and `via`, in place of a named
+  logical vector. `via` names the one conversion (`add_toids` or
+  `make_node_topology`) that makes an unavailable function callable, and
+  is `""` otherwise. `sort_network()`, `add_topo_sort()`, and
+  `check_hy_graph()` are now reported available on an `hy_flownetwork`,
+  which they accept. Code that indexed the vector by name, such as
+  `hy_capabilities(x)["sort_network"]`, should read the `available`
+  column instead.
 
 hydroloom 1.3.0
 ==========

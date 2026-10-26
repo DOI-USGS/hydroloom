@@ -13,10 +13,13 @@ hy_capabilities(x, include_conversions = FALSE)
 via a single representation conversion.}
 }
 \value{
-named logical vector.
+data.frame with one row per function and columns \code{function}
+(character), \code{available} (logical), and \code{via} (character: the one
+conversion function that makes an unavailable function callable, \code{""}
+when the function is directly callable or no single conversion reaches it).
 }
 \description{
-Returns a named logical vector indicating which hydroloom
+Returns a data.frame indicating which hydroloom
 functions can operate on the input object given its current class and
 columns.
 

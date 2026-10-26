@@ -250,7 +250,7 @@ write_layer <- function(layer, path, name) {
 read_layer <- function(path, name) {
 
   x <- sf::st_read(path, layer = name, quiet = TRUE, stringsAsFactors = FALSE,
-    int64_as_string = TRUE)
+    int64_as_string = TRUE, optional = TRUE)
 
   rownames(x) <- NULL
 

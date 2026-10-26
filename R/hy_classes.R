@@ -678,7 +678,7 @@ is_dendritic <- function(x, validate_data = TRUE) {
 
 #' What operations are available for this network?
 #'
-#' @description Returns a named logical vector indicating which hydroloom
+#' @description Returns a data.frame indicating which hydroloom
 #' functions can operate on the input object given its current class and
 #' columns.
 #'
@@ -689,7 +689,10 @@ is_dendritic <- function(x, validate_data = TRUE) {
 #' @param x object to query.
 #' @param include_conversions logical. If TRUE, also marks functions reachable
 #' via a single representation conversion.
-#' @returns named logical vector.
+#' @returns data.frame with one row per function and columns `function`
+#' (character), `available` (logical), and `via` (character: the one
+#' conversion function that makes an unavailable function callable, `""`
+#' when the function is directly callable or no single conversion reaches it).
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
@@ -697,75 +700,95 @@ is_dendritic <- function(x, validate_data = TRUE) {
 #'
 hy_capabilities <- function(x, include_conversions = FALSE) {
 
-  is_topo    <- inherits(x, "hy_topo")
-  is_leveled <- inherits(x, "hy_leveled")
-  is_node    <- inherits(x, "hy_node")
-  is_fn      <- inherits(x, "hy_flownetwork")
-  has_nodes  <- all(c(fromnode, tonode) %in% names(x))
-  has_div    <- divergence %in% names(x)
-  has_geom   <- inherits(x, "sf")
-  has_aggregate_flowpath  <- all(c(aggregate_id, length_km) %in% names(x)) &&
-    (is_topo || is_node)
+  fns <- names(hy_requires)
 
-  direct <- c(
+  direct <- vapply(hy_requires, function(r) {
+    hy_satisfies(x, r$pattern) && all(vapply(r$columns, function(col) {
+      if (col == "geom") inherits(x, "sf") else col %in% names(x)
+    }, logical(1)))
+  }, logical(1))
+
+  via <- vapply(hy_requires, function(r) {
+    hit <- names(r$via)[vapply(names(r$via), function(p) inherits(x, p), logical(1))]
+    if (length(hit) == 0) "" else unname(r$via[hit[1]])
+  }, character(1))
+
+  via[direct] <- ""
+
+  available <- if (include_conversions) direct | via != "" else direct
+
+  data.frame(`function` = fns, available = unname(available), via = unname(via),
+    stringsAsFactors = FALSE, check.names = FALSE)
+}
+
+# TRUE when x has a representation the pattern names. "any" matches every
+# object; hy_leveled satisfies hy_topo by inheritance.
+hy_satisfies <- function(x, pattern) {
+
+  "any" %in% pattern || inherits(x, pattern)
+}
+
+# Code table behind hy_capabilities(): one entry per function, in output
+# order, holding the representation pattern, the columns read beyond those
+# that define the pattern ("geom" for an sf geometry), and the one conversion
+# call per representation (via). An entry for a function in the conformance
+# manifest equals that function's `requires` front matter; see
+# tests/testthat/test-conformance-capabilities.R.
+hy_requires <- local({
+
+  topo <- function(pattern = "hy_topo", columns = character()) {
+    list(pattern = pattern, columns = columns, via = c(hy_node = "add_toids"))
+  }
+
+  node <- function(columns = character()) {
+    list(pattern = "hy_node", columns = columns, via = c(hy_topo = "make_node_topology"))
+  }
+
+  none <- function(pattern, columns = character()) {
+    list(pattern = pattern, columns = columns, via = character())
+  }
+
+  fn_topo <- c("hy_topo", "hy_flownetwork")
+  aggregate_flowpath <- c("aggregate_id", "length_km")
+
+  list(
     # representation conversions
-    add_toids               = is_node,
-    make_node_topology      = is_topo,
-    to_flownetwork          = is_leveled && has_div,
+    add_toids               = node(),
+    make_node_topology      = topo(),
+    to_flownetwork          = none("hy_leveled", "divergence"),
 
     # topology operations (edge list)
-    sort_network            = is_topo,
-    add_topo_sort           = is_topo,
-    add_levelpaths          = is_topo,
-    add_pathlength          = is_topo,
-    add_streamorder         = is_topo,
-    accumulate_downstream   = is_topo,
-    check_hy_graph          = is_topo,
-    navigate_hydro_network  = is_topo,
-    add_pfafstetter         = is_leveled,
-    add_streamlevel         = is_leveled,
+    sort_network            = topo(fn_topo),
+    add_topo_sort           = topo(fn_topo),
+    add_levelpaths          = topo(),
+    add_pathlength          = topo(),
+    add_streamorder         = topo(),
+    accumulate_downstream   = topo(),
+    check_hy_graph          = topo(fn_topo),
+    navigate_hydro_network  = topo(),
+    add_pfafstetter         = none("hy_leveled"),
+    add_streamlevel         = none("hy_leveled"),
 
     # fromnode/tonode operations (node identifiers)
-    add_divergence          = is_node,
-    add_return_divergence   = is_node && has_div,
-    subset_network          = is_node,
+    add_divergence          = node(),
+    add_return_divergence   = node("divergence"),
+    subset_network          = node(),
 
     # junction table operations
-    navigate_network_dfs    = is_topo || is_fn,
-    make_index_ids          = is_topo || is_fn,
+    navigate_network_dfs    = topo(fn_topo),
+    make_index_ids          = topo(fn_topo),
 
     # geometry operations
-    make_attribute_topology = has_geom,
-    index_points_to_lines   = has_geom,
+    make_attribute_topology = none("any", "geom"),
+    index_points_to_lines   = none("any", "geom"),
 
     # mainstem confluence distances and subpaths
-    get_confluences               = is_topo || is_node,
-    add_hydro_location_distance   = has_aggregate_flowpath,
-    index_hydro_location_distance = has_aggregate_flowpath,
-    get_subpath                   = has_aggregate_flowpath
+    get_confluences               = none(c("hy_topo", "hy_node")),
+    add_hydro_location_distance   = none(c("hy_topo", "hy_node"), aggregate_flowpath),
+    index_hydro_location_distance = none(c("hy_topo", "hy_node"), aggregate_flowpath),
+    get_subpath                   = none(c("hy_topo", "hy_node"), aggregate_flowpath)
   )
-
-  if (!include_conversions) return(direct)
-
-  after_convert <- direct
-
-  if (is_node) {
-    topo_fns <- c("sort_network", "add_topo_sort", "add_levelpaths",
-                  "add_pathlength", "add_streamorder",
-                  "accumulate_downstream", "check_hy_graph",
-                  "navigate_hydro_network", "navigate_network_dfs",
-                  "make_index_ids", "make_node_topology")
-    after_convert[topo_fns] <- TRUE
-  }
-
-  if (is_topo && !is_node) {
-    node_fns <- c("add_divergence", "add_return_divergence",
-                  "subset_network", "add_toids")
-    after_convert[node_fns] <- TRUE
-  }
-
-  after_convert
-}
+})
 
 # ---- print methods ----
 
