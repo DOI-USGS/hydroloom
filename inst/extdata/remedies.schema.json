@@ -33,6 +33,10 @@
       "properties": {
         "kind": { "type": "string", "enum": ["error", "warning"] },
         "message": { "$ref": "#/definitions/text" },
+        "message_python": {
+          "description": "Python's text where the shared message must stay R's current printed text and speaks R; when present, Python raises this text in place of message. Same placeholders as message.",
+          "allOf": [{ "$ref": "#/definitions/text" }]
+        },
         "placeholders": {
           "type": "object",
           "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
@@ -72,6 +76,10 @@
         }
       },
       "allOf": [
+        {
+          "if": { "required": ["message_python"] },
+          "then": { "properties": { "languages": { "contains": { "const": "python" } } } }
+        },
         {
           "if": { "properties": { "kind": { "const": "warning" } } },
           "then": {

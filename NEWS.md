@@ -40,7 +40,8 @@ hydroloom (development version)
   `navigate_network_dfs()`, and other functions that build their index
   with `make_index_ids()` now stop on any cycle in a network with unique
   `id`, where a longer cycle used to warn and drop rows; the error says
-  "cycles". A network with repeated `id` is sorted as before.
+  the flowlines drain back into themselves and points to
+  `check_hy_graph()`. A network with repeated `id` is sorted as before.
 - `hy_capabilities()` now returns a data.frame with one row per function
   and columns `function`, `available`, and `via`, in place of a named
   logical vector. `via` names the one conversion (`add_toids` or

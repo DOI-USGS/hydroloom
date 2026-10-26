@@ -139,8 +139,9 @@ make_index_ids.hy_topo <- function(x, mode = "to", long_form = NULL) {
   x <- check_hy_outlets(x, fix = FALSE)
 
   if (!isTRUE(check_hy_graph(x))) {
-    stop("found one or more cycles in the network. ",
-      "Run check_hy_graph to identify them.")
+    stop("Some flowlines drain back into themselves: following toid downstream ",
+      "returns to the flowline it started from (a cycle). ",
+      "Run check_hy_graph() to list them, then correct their toid.")
   }
 
   if (!is.null(long_form)) {

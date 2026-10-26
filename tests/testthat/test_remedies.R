@@ -29,6 +29,14 @@ test_that("each remedy's placeholders, languages, and R text agree", {
       info = key)
     expect_false(grepl("[{}]", gsub("\\{[a-z][a-z0-9_]*\\}", "", r$message)), info = key)
 
+    # Python's own text, where the shared message stays R's, takes the same
+    # placeholders
+    if (!is.null(r$message_python)) {
+      expect_identical(sort(message_placeholders(r$message_python)), sort(names(r$placeholders)),
+        info = key)
+      expect_false(grepl("[{}]", gsub("\\{[a-z][a-z0-9_]*\\}", "", r$message_python)), info = key)
+    }
+
     expect_identical("r" %in% r$languages, length(r$r_text) > 0, info = key)
     expect_identical("python" %in% r$languages, !is.null(r$python_class), info = key)
 

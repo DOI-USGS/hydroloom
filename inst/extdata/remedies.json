@@ -4,13 +4,14 @@
     "needs_topo": {
       "kind": "error",
       "message": "{function}() requires hy_topo.\n  Current input is: {current}.\n  Use add_toids() to build toid from fromnode/tonode, or hy(x, add_topo = TRUE).",
+      "message_python": "{function}() needs toid, each flowline's downstream flowline, and the network (representation {current}) has neither toid nor the fromnode/tonode identifiers to build it from. All rows are affected. Add a toid column and call again.",
       "placeholders": {
         "function": "the function called",
-        "current": "the representation of the input, as hy_network_type() gives it"
+        "current": "the representation of the input, as hy_network_type() returns it in R and representation() in Python"
       },
-      "condition": "The network does not give each flowline its downstream flowline: it has no toid column, and the function cannot use it without one.",
+      "condition": "The function needs each flowline's downstream flowline (toid), and the network has neither toid nor fromnode/tonode, the identifiers of the points at each end of every flowline that add_toids() builds toid from; the representation is then hy. Where the network has fromnode/tonode, the functions convert it themselves, except check_hy_graph() in R, which stops here with representation hy_node; add_toids() fixes that case. Where the downstream column has a source name the vocabulary lacks, registering it as toid (hydroloom_names() in R, register_names() in Python) is the alternative.",
       "rows": "all",
-      "fix": "add_toids(), which builds toid from the fromnode/tonode identifiers at each end of every flowline.",
+      "fix": "Add a toid column giving each flowline's downstream flowline, then call again.",
       "raised_by": ["sort_network", "add_topo_sort", "make_index_ids", "navigate_network_dfs", "check_hy_graph"],
       "languages": ["r", "python"],
       "r_text": [
@@ -23,13 +24,14 @@
     "needs_node": {
       "kind": "error",
       "message": "{function}() requires hy_node.\n  Current input is: {current}.\n  Supply data with fromnode/tonode columns, or use make_node_topology() to build them.",
+      "message_python": "{function}() builds toid from fromnode and tonode, the identifiers of the points at each end of every flowline; the network (representation {current}) has no such columns, or an id repeats on more than one row. All rows are affected, or for a repeated id the rows sharing it. Add fromnode and tonode from the source data, or remove the duplicated rows, and call again.",
       "placeholders": {
         "function": "the function called",
-        "current": "the representation of the input, as hy_network_type() gives it"
+        "current": "the representation of the input, as hy_network_type() returns it in R and representation() in Python"
       },
-      "condition": "add_toids builds each flowline's downstream flowline from the node identifiers at its upstream and downstream ends (fromnode, tonode); the network has no such columns, or one flowline appears on more than one row.",
+      "condition": "add_toids() builds each flowline's downstream flowline (toid) from the identifiers of the points at its upstream and downstream ends (fromnode, tonode). The network has no toid (with toid the stop is toid_already_present) and either lacks those columns or gives one flowline more than one row. make_node_topology() does not help here, since it builds fromnode/tonode from toid. Where an id repeats, removing the duplicated rows is the fix.",
       "rows": "all; for a repeated id, the rows sharing it",
-      "fix": "make_node_topology(), which builds fromnode/tonode; where an id repeats, remove the duplicated flowline rows first.",
+      "fix": "Add fromnode and tonode columns from the source data, then call again.",
       "raised_by": ["add_toids"],
       "languages": ["r", "python"],
       "r_text": [
@@ -41,8 +43,9 @@
     "toid_already_present": {
       "kind": "error",
       "message": "This network already has toid (class: {current}). add_toids() converts fromnode/tonode to toid.",
+      "message_python": "This network already gives each flowline its downstream flowline in toid (representation {current}); add_toids() only builds toid from fromnode/tonode. Use the network as it is, without add_toids().",
       "placeholders": {
-        "current": "the representation of the input, as hy_network_type() gives it"
+        "current": "the representation of the input, as hy_network_type() returns it in R and representation() in Python"
       },
       "condition": "The network already gives each flowline its downstream flowline in toid; add_toids only builds toid from fromnode/tonode.",
       "rows": "all",
@@ -60,9 +63,9 @@
       "kind": "error",
       "message": "To remove non dendritic paths, a divergence attribute is required.",
       "placeholders": {},
-      "condition": "Keeping only the main path where a flowline splits into two or more downstream flowlines (a divergence) needs the divergence column, which marks the main path 1 and minor paths 2; the network has none.",
+      "condition": "Keeping only the main path where a flowline splits into two or more downstream flowlines (a divergence) needs the divergence column, which marks the main path 1 and minor paths 2; the network has none. To keep every path instead, to_flownetwork() needs no divergence.",
       "rows": "all",
-      "fix": "add_divergence(), which computes divergence; to_flownetwork() keeps every path instead.",
+      "fix": "add_divergence(), given the coastal and inland outlets, to compute divergence.",
       "raised_by": ["add_toids", "sort_network", "add_topo_sort", "check_hy_graph"],
       "languages": ["r", "python"],
       "r_text": [
@@ -73,8 +76,9 @@
     "return_dendritic_deprecated": {
       "kind": "warning",
       "message": "return_dendritic = FALSE is deprecated. Use to_flownetwork() for non-dendritic edge lists.",
+      "message_python": "add_toids() with return_dendritic false is deprecated: it keeps every downstream connection where a flowline splits into two or more downstream flowlines (a divergence). Call to_flownetwork() instead, which keeps both the main and minor paths.",
       "placeholders": {},
-      "condition": "Keeping every downstream connection at a divergence through add_toids(return_dendritic = FALSE) is deprecated.",
+      "condition": "Keeping every downstream connection at a divergence by calling add_toids() with return_dendritic false is deprecated.",
       "rows": "all",
       "fix": "to_flownetwork(), which keeps both the main and minor paths.",
       "raised_by": ["add_toids"],
@@ -86,7 +90,7 @@
     },
     "network_cycle": {
       "kind": "error",
-      "message": "found one or more cycles in the network. Run check_hy_graph to identify them.",
+      "message": "Some flowlines drain back into themselves: following toid downstream returns to the flowline it started from (a cycle). Run check_hy_graph() to list them, then correct their toid.",
       "placeholders": {},
       "condition": "Some flowlines drain back into themselves: following toid downstream from one of them returns to it, so the network has no upstream-to-downstream order.",
       "rows": "the flowlines in each cycle, as check_hy_graph() returns them",
@@ -94,7 +98,7 @@
       "raised_by": ["make_index_ids", "sort_network", "add_topo_sort", "navigate_network_dfs"],
       "languages": ["r", "python"],
       "r_text": [
-        "found one or more cycles in the network. Run check_hy_graph to identify them."
+        "Some flowlines drain back into themselves: following toid downstream returns to the flowline it started from (a cycle). Run check_hy_graph() to list them, then correct their toid."
       ],
       "python_class": "HydroloomError"
     },
@@ -114,12 +118,12 @@
     },
     "outlet_fill_type_mismatch": {
       "kind": "error",
-      "message": "Outlets cannot be marked: id is {id_type} and toid is {toid_type}, so the outlet value cannot be written into the rows with a missing toid. Convert id and toid to one type and call again.",
+      "message": "Outlets cannot be marked: id is {id_type} and toid is {toid_type}, so the outlet value (\"\" where id is text, 0 otherwise) cannot be written into the rows with a missing toid. Convert id and toid to one type and call again.",
       "placeholders": {
         "id_type": "the type of id",
         "toid_type": "the type of toid"
       },
-      "condition": "A missing toid marks an outlet and is filled with the reserved outlet value, which takes the type of id; toid has a type that value cannot be written into.",
+      "condition": "A missing toid marks an outlet and is filled with the reserved outlet value, which takes the type of id: \"\" where id is text, 0 otherwise. toid has a type that value cannot be written into.",
       "rows": "the rows with a missing toid",
       "fix": "Convert id and toid to one type before the call.",
       "raised_by": ["hy"],
@@ -134,9 +138,9 @@
       "kind": "warning",
       "message": "no outlets detected in network -- sort may produce incomplete results. A future release will treat this as an error.",
       "placeholders": {},
-      "condition": "No flowline's toid leaves the network, so no flowline is an outlet (the flowline where water leaves the network) and the sort has nowhere to start.",
+      "condition": "No flowline's toid leaves the network, so no flowline is an outlet (the flowline where water leaves the network) and the sort has nowhere to start. Such a network contains a cycle, and the flowlines in it and those draining into it are left out of the sort.",
       "rows": "all",
-      "fix": "Correct the toid of the outlet flowline to a value that is not an id.",
+      "fix": "check_hy_graph() to list the flowlines in the cycle; then give the outlet flowline a toid that is not an id.",
       "raised_by": ["sort_network", "add_topo_sort"],
       "languages": ["r", "python"],
       "r_text": [
@@ -148,7 +152,7 @@
       "kind": "warning",
       "message": "some features missed in sort. Are there loops in the network?",
       "placeholders": {},
-      "condition": "Some flowlines were not reached from any outlet, usually because their toid leads back to themselves (a cycle); they are left out of the result.",
+      "condition": "Some flowlines were not reached from any outlet, usually because they drain into a cycle, a run of flowlines whose toid leads back to themselves; they and the cycle are left out of the result.",
       "rows": "the flowlines missing from the result",
       "fix": "check_hy_graph() to find the cycle.",
       "raised_by": ["sort_network", "add_topo_sort"],
@@ -176,9 +180,9 @@
       "kind": "error",
       "message": "Are two or more outlets within the same network?",
       "placeholders": {},
-      "condition": "With split = TRUE each outlet gets its own group of upstream flowlines; one of the outlets is upstream of another, so the flowlines above the inner one would belong to both.",
+      "condition": "With split true, each of the flowlines given in outlets, where each sorted group ends, gets its own group of upstream flowlines. One of the outlets passed is upstream of another, so the flowlines above the upstream one would belong to both groups. Sorting with split false, one group for the whole network, is the alternative.",
       "rows": "the flowlines reached from both outlets",
-      "fix": "Drop the inner outlet from outlets, or use split = FALSE.",
+      "fix": "Remove the upstream one of the two from outlets, then call again.",
       "raised_by": ["sort_network"],
       "languages": ["r", "python"],
       "r_text": [
@@ -206,7 +210,7 @@
       "placeholders": {},
       "condition": "The long table output of make_index_ids is deprecated.",
       "rows": "all",
-      "fix": "Drop long_form.",
+      "fix": "Drop long_form. The default output's to_list table holds the same id, indid, and toindid, with one row per flowline and toindid a list of the downstream positions in place of one row per connection.",
       "raised_by": ["make_index_ids"],
       "languages": ["r"],
       "r_text": [
@@ -217,13 +221,14 @@
     "index_ids_direction_mismatch": {
       "kind": "error",
       "message": "Direction must be '{needed}' if x contains {mode} index ids",
+      "message_python": "This index was built with mode '{mode}' and can be walked only with direction '{needed}'. Build it again with make_index_ids() in the mode that matches the direction: 'to' for down or downmain, 'from' for up or upmain.",
       "placeholders": {
         "needed": "the direction the index supports, 'down' or 'up'",
         "mode": "the mode the index was built with, 'to' or 'from'"
       },
       "condition": "An index built for downstream navigation (mode \"to\") cannot be walked upstream, nor one built for upstream navigation (mode \"from\") downstream.",
       "rows": "all",
-      "fix": "make_index_ids() with mode = \"from\" for up or upmain, mode = \"to\" for down or downmain.",
+      "fix": "make_index_ids() with mode \"from\" for up or upmain, \"to\" for down or downmain.",
       "raised_by": ["navigate_network_dfs"],
       "languages": ["r", "python"],
       "r_text": [
@@ -238,9 +243,9 @@
       "placeholders": {
         "direction": "the direction asked for, 'downmain' or 'upmain'"
       },
-      "condition": "The index carries no main-path flags, which upmain and downmain navigation follow at each divergence and confluence.",
+      "condition": "The index carries no main-path flags (main), which upmain and downmain navigation follow at each divergence and confluence. make_index_ids() carries them only from the upmain/downmain columns, which to_flownetwork() sets from levelpath.",
       "rows": "all",
-      "fix": "make_index_ids() on to_flownetwork() output.",
+      "fix": "add_levelpaths(), then to_flownetwork(), then make_index_ids() on the result.",
       "raised_by": ["navigate_network_dfs"],
       "languages": ["r", "python"],
       "r_text": [
@@ -252,6 +257,7 @@
     "network_not_frame_or_index_ids": {
       "kind": "error",
       "message": "if x is not a length three list as\n            returned by make_index_ids\n            it must be a data.frame that can be coerced\n            to an hy object.",
+      "message_python": "network must be a network table or the output of make_index_ids(); the input is neither, so there is nothing to navigate. Pass the network table or the make_index_ids() output.",
       "placeholders": {},
       "condition": "The input is neither a network table nor an index from make_index_ids(), so there is nothing to navigate.",
       "rows": "all",
@@ -271,7 +277,7 @@
       },
       "condition": "upmain and downmain navigation follow the main path at each divergence and confluence; the network has no upmain/downmain columns to say which flowline that is.",
       "rows": "all",
-      "fix": "to_flownetwork(), which sets upmain and downmain from levelpath.",
+      "fix": "add_levelpaths(), then to_flownetwork(), which sets upmain and downmain from levelpath.",
       "raised_by": ["navigate_network_dfs"],
       "languages": ["r", "python"],
       "r_text": [
@@ -282,6 +288,7 @@
     "start_not_in_network": {
       "kind": "error",
       "message": "all starts must be in x",
+      "message_python": "Every start must be an id in the network; one or more starts is missing or is not an id. Pass values of id as starts.",
       "placeholders": {},
       "condition": "A start is missing or is not an id in the network.",
       "rows": "the starts not found",
@@ -313,7 +320,7 @@
       "placeholders": {},
       "condition": "fromnode/tonode alone do not say which flowline is the main path at a divergence or confluence, so the converted network carries no upmain/downmain.",
       "rows": "all",
-      "fix": "add_levelpaths(), after add_divergence(), before the conversion.",
+      "fix": "add_divergence(), given the coastal and inland outlets, then add_levelpaths(), before the conversion.",
       "raised_by": ["to_flownetwork", "navigate_network_dfs"],
       "languages": ["r", "python"],
       "r_text": [
@@ -327,9 +334,9 @@
       "placeholders": {
         "columns": "the absent columns, comma separated"
       },
-      "condition": "The divergence check groups flowlines by the node they leave (fromnode) and reads which path is main (divergence); one or both columns are absent.",
+      "condition": "The divergence check groups flowlines by the point where they begin (fromnode), which the flowlines leaving a divergence share, and reads which path is main (divergence); one or both columns are absent. Where fromnode is absent, make_node_topology() builds it from toid.",
       "rows": "all",
-      "fix": "add_divergence() for divergence; make_node_topology() for fromnode.",
+      "fix": "add_divergence(), given the coastal and inland outlets, for divergence.",
       "raised_by": ["check_hy_graph"],
       "languages": ["r", "python"],
       "r_text": [
@@ -340,6 +347,7 @@
     "name_alias_conflict": {
       "kind": "error",
       "message": "Problem aligning names. {columns} conflicts with hydroloom name {names} can't proceed converting to hy object.",
+      "message_python": "Column {columns} would be renamed to the hydroloom name {names}, which another column already has, so two columns would carry one name. Drop or rename one of the two columns and call again.",
       "placeholders": {
         "columns": "the input columns that rename to a name already present, comma separated",
         "names": "the hydroloom names they would take, comma separated"
@@ -361,9 +369,9 @@
         "alias": "the input column that took the hydroloom name",
         "aliases": "every input column that aliases that name, comma separated"
       },
-      "condition": "Two input columns are aliases of one hydroloom name; the column named after \"using\" took the name and the other kept its input name.",
+      "condition": "Two input columns are aliases of one hydroloom name. The one later in the alias list (a registered alias comes after the vocabulary's) took the name, and the message gives it after \"using\"; the other column kept its input name. Registering the intended mapping (hydroloom_names() in R, register_names() in Python) is the alternative to dropping a column.",
       "rows": "none; the columns are named in the message",
-      "fix": "Drop the unwanted column, or register the intended mapping with hydroloom_names().",
+      "fix": "Drop the column that should not carry the hydroloom name.",
       "raised_by": ["align_names", "hy", "hy_network_type"],
       "languages": ["r", "python"],
       "r_text": [
@@ -378,7 +386,7 @@
         "columns": "the input columns that alias the name, comma separated",
         "name": "the hydroloom name"
       },
-      "condition": "Three or more input columns are aliases of one hydroloom name, so no single column can be chosen to carry it.",
+      "condition": "Three or more input columns are aliases of one hydroloom name. When aliases compete, the one earliest in the alias list is set aside: with two, the other takes the name (name_alias_duplicate); with three or more, two or more remain and none can be chosen to carry it.",
       "rows": "none; the columns are named in the message",
       "fix": "Drop all but one of the aliasing columns.",
       "raised_by": ["align_names", "hy", "hy_network_type"],
@@ -444,7 +452,7 @@
       "kind": "error",
       "message": "Mixed-case column names on an sf table cannot be renamed by align_names(): sf loses the link between its attribute columns and the geometry. Call hy(x) instead.",
       "placeholders": {},
-      "condition": "On an sf table with mixed-case attribute names, sf cannot match its attribute-geometry table after the rename.",
+      "condition": "On an sf table with mixed-case attribute names, sf loses track of which attribute columns go with the geometry after the rename.",
       "rows": "none",
       "fix": "hy(x).",
       "raised_by": ["align_names"],
@@ -459,9 +467,9 @@
       "kind": "warning",
       "message": "Non-unique id values detected. This self-referencing table has duplicated rows (likely from divergences). Use to_flownetwork() for a junction-table representation, or make_node_topology() for a fromnode/tonode representation. hy_topo requires unique id.",
       "placeholders": {},
-      "condition": "Divergences gave a flowline more than one row, so the table is a flownetwork (one row per downstream connection), not hy_topo.",
+      "condition": "Divergences gave a flowline more than one row, so hy() returned a flownetwork (one row per downstream connection), not hy_topo, which needs one row per flowline. Functions that take a flownetwork use it as returned; to_flownetwork() is the call for a flownetwork with upmain/downmain set from levelpath.",
       "rows": "the rows with a repeated id",
-      "fix": "to_flownetwork() to keep each divergence as its own row, or make_node_topology() to describe connections by the points where flowlines meet (nodes).",
+      "fix": "make_node_topology(), for one row per flowline connected through the points where flowlines meet (nodes).",
       "raised_by": ["hy"],
       "languages": ["r"],
       "r_text": [
@@ -499,11 +507,11 @@
     },
     "no_id_column": {
       "kind": "warning",
-      "message": "No column was recognized as the flowline identifier id. Rename the identifier column to id, or register its name as an alias of id.",
+      "message": "No column was recognized as the identifier id (of each catchment or flowline). Rename the identifier column to id, or register its name as an alias of id.",
       "placeholders": {},
-      "condition": "No input column is id or one of its aliases, so the flowlines have no identifier.",
+      "condition": "No input column is id or one of its aliases, so the catchments or flowlines have no identifier. Registering the identifier column's name as an alias of id (hydroloom_names() in R, register_names() in Python) is the alternative to renaming it.",
       "rows": "all",
-      "fix": "Register the identifier column with hydroloom_names(), or rename it to id.",
+      "fix": "Rename the identifier column to id.",
       "raised_by": ["hy"],
       "languages": ["r", "python"],
       "r_text": [
@@ -547,7 +555,7 @@
       "placeholders": {},
       "condition": "The table did not come from hy(), or hy() found flowlines repeated at divergences and returned a flownetwork, whose original names hy_reverse() does not restore.",
       "rows": "all",
-      "fix": "Call hy_reverse() on the object hy() returned.",
+      "fix": "Call hy_reverse() on the object hy() returned. For a flownetwork no call restores the original names today.",
       "raised_by": ["hy_reverse"],
       "languages": ["r"],
       "r_text": [
@@ -558,13 +566,13 @@
     },
     "unknown_alias_source": {
       "kind": "error",
-      "message": "source '{source}' is not an alias source in the vocabulary. Pass one of nhdplus, nhdplushr, 3dhp, or hydrofabric, or register the mapping with register_names().",
+      "message": "source '{source}' is not an alias source in the vocabulary. Pass one of nhdplus, nhdplushr, 3dhp, or hydrofabric.",
       "placeholders": {
         "source": "the source given"
       },
-      "condition": "source is not one of the vocabulary's alias sources.",
+      "condition": "source is not one of the vocabulary's alias sources. Registering the mapping with register_names() is the alternative to a vocabulary source.",
       "rows": "none",
-      "fix": "Pass one of nhdplus, nhdplushr, 3dhp, hydrofabric, or register the mapping with register_names().",
+      "fix": "Pass one of nhdplus, nhdplushr, 3dhp, hydrofabric.",
       "raised_by": ["hy_reverse"],
       "languages": ["python"],
       "r_text": [],

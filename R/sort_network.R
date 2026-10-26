@@ -295,8 +295,9 @@ sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
   x <- check_hy_outlets(x, fix = FALSE)
 
   if (!isTRUE(check_hy_graph(x))) {
-    stop("found one or more cycles in the network. ",
-      "Run check_hy_graph to identify them.")
+    stop("Some flowlines drain back into themselves: following toid downstream ",
+      "returns to the flowline it started from (a cycle). ",
+      "Run check_hy_graph() to list them, then correct their toid.")
   }
 
   x <- select(st_drop_geometry(x), id, toid, everything())

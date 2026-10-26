@@ -56,7 +56,7 @@ test_that("add indid", {
     toid = c(2, 3, 4, 9, 7, 8, 9, 4))
 
   expect_error(hydroloom:::make_index_ids(test_data),
-    "found one or more cycles in the network.")
+    "Some flowlines drain back into themselves")
 
   x$id <- as.character(x$id)
 
