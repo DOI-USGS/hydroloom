@@ -694,6 +694,50 @@ fixture(data.frame(id = 1:2, toid = c("2", "")),
   "INTEGER id with TEXT toid and the character outlet value: the outlet check warns and the join fails",
   "I-2")
 
+# Function fixtures: check_hy_graph (algorithms/check_hy_graph.md) -----------
+
+# Three cycles whose least identifiers are 9, 10, and 20: byte order numbers
+# them 10, 20, 9; numeric order 9, 10, 20; input order meets 9 first.
+fixture(data.frame(
+  id = c(9L, 1L, 22L, 12L, 11L, 20L, 2L, 10L, 21L),
+  toid = c(12L, 9L, 20L, 9L, 10L, 21L, 0L, 11L, 22L)),
+  "two_cycles_byte_order",
+  "synthetic",
+  "three cycles whose numbering by least identifier differs between byte order (\"10\" < \"20\" < \"9\") and numeric order; input order matches neither",
+  c("D-8", "D-1", "S-6"))
+
+fixture(data.frame(
+  id = c(1L, 1L, 2L, 3L, 4L, 5L, 6L, 6L, 7L, 8L),
+  toid = c(2L, 3L, 4L, 7L, 5L, 6L, 2L, 7L, 8L, 0L)),
+  "flownetwork_cycle",
+  "synthetic (tests/testthat/test_check_hy_graph.R \"loop check\", second table)",
+  "a four-flowline cycle in a flownetwork (repeated id 1 and 6) with an edge out of the cycle (6 -> 7) that is not returned",
+  c("D-8", "I-6"))
+
+# Node 2 splits to ids 2 and 3; three variants of its divergence coding.
+dvc <- data.frame(
+  id = 1:4,
+  toid = c(2L, 4L, 0L, 0L),
+  fromnode = c(1L, 2L, 2L, 3L),
+  tonode = c(2L, 3L, 4L, 5L),
+  divergence = c(0L, 2L, 2L, 0L))
+
+fixture(dvc, "divergence_miscoded",
+  "synthetic (test_check_hy_graph.R \"divergence coding problems are found\", no_main)",
+  "a divergence at node 2 with no divergence == 1; both members reported")
+
+fixture(within(dvc, {
+  divergence <- c(0L, 1L, 2L, 0L)
+  divergence_fraction <- c(1, 0.6, 0.2, 1)
+}), "divergence_fraction_short",
+  "synthetic (test_check_hy_graph.R \"divergence_fraction is checked when present\", short)",
+  "divergence_fraction summing to 0.8 at node 2; fraction_tol")
+
+fixture(within(dvc, divergence <- c(0L, 1L, 2L, 0L))[c(1, 2, 4), ],
+  "divergence_minor_absent",
+  "synthetic (divergence_miscoded with id 2 coded 1 and the minor branch, id 3, removed)",
+  "an extract keeping only the main branch of a divergence at node 2; the remaining divergence == 1 is flagged as a split where flow does not split")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

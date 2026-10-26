@@ -94,7 +94,12 @@ named_vector_frame <- function(x) {
   list2DF(stats::setNames(list(names(x), unname(value)), c("name", value_col)))
 }
 
+# A bare unnamed length-one value (check_hy_graph's TRUE on a clean network)
+# is written as the scalar value layer, so one `returns: frame` covers both
+# outcomes (D3-53).
 frame_to_layer <- function(x) {
+
+  if (is.atomic(x) && is.null(names(x)) && length(x) == 1) return(scalar_to_layer(x))
 
   if (is.atomic(x) && !is.null(names(x))) x <- named_vector_frame(x)
 

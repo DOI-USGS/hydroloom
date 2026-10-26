@@ -198,3 +198,17 @@ test_that("named vectors go through the frame converter (D3-13)", {
   s <- frame_to_layer(c(comid = "id", tocomid = "toid"))
   expect_identical(s$value, c("id", "toid"))
 })
+
+test_that("a bare TRUE goes through the frame converter as the scalar layer (D3-53)", {
+  skip_if_no_conformance()
+
+  layer <- frame_to_layer(TRUE)
+  expect_identical(layer, scalar_to_layer(TRUE))
+
+  back <- round_trip(layer)
+  expect_identical(scalar_from_layer(back), TRUE)
+  expect_identical(compare_layers(layer, back), character())
+
+  rows <- frame_to_layer(data.frame(id = 5:6, toid = 6:5, row = 5:6))
+  expect_match(compare_layers(rows, back), "missing column: value", all = FALSE)
+})

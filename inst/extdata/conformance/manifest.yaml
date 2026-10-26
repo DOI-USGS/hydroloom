@@ -43,6 +43,12 @@ functions:
     requires: algorithms/make_index_ids.md#requires
     returns: graph
     key: [id, position, neighbor]
+  # TRUE on a clean network is written by the frame converter as the scalar
+  # value layer (D3-53); problem rows otherwise.
+  check_hy_graph:
+    requires: algorithms/check_hy_graph.md#requires
+    returns: frame
+    key: [row]
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -2191,3 +2197,384 @@ cases:
   # Not added: long_form (deprecated, R only, not a graph; stays a testthat
   # interface test); hy_leveled input (prepare is one level and add_levelpaths
   # needs toid first; hy_leveled reaches the hy_topo method by inheritance).
+
+  # check_hy_graph ------------------------------------------------------------
+  # Annotations from the proposed cases (D3-14) are kept as comments:
+  # changes_with D-8 = today's value changes at the D-8 change (ROADMAP §4,
+  # M3); the loop_check cases are deleted then, not regenerated. shared =
+  # Python gives the same value once ported. python_omitted = the R value is
+  # an R-only behavior.
+
+  # changes_with: D-8; shared. Today 2 rows, columns toid, id, row,
+  # toid_check, ordered by toid (id 6 row 6, id 5 row 5). After D-8: rows 5,
+  # 6, component 1, reciprocal TRUE; id 7 not returned.
+  - id: check_hy_graph_reciprocal_pair
+    function: check_hy_graph
+    fixture: reciprocal_pair.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-8; shared. Today TRUE (pairwise join cannot see it);
+  # worked example. After D-8: rows 2, 3, 4, component 1, reciprocal FALSE.
+  - id: check_hy_graph_three_cycle
+    function: check_hy_graph
+    fixture: three_cycle.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-8; shared. Today 1 row (id 3, row 3, toid_check 3). After
+  # D-8: row 3, component 1, reciprocal FALSE.
+  - id: check_hy_graph_self_loop
+    function: check_hy_graph
+    fixture: self_loop.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-8; shared. Today TRUE; braced GUID ids, flownetwork. After
+  # D-8: 6 rows, two three-flowline cycles; component 1 = {3C365B59..} row
+  # 210, {782C5B65..} row 383, {DB8B740D..} row 721; component 2 =
+  # {4E7E9D38..} row 266, {B3F20B3F..} row 584, {E49CFC31..} row 742;
+  # reciprocal FALSE.
+  - id: check_hy_graph_loop2
+    function: check_hy_graph
+    fixture: loop2.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-8; shared. S-6 tie case for component numbering; today
+  # rows 1, 4, 5, 8 (pairs 9/12, 10/11) ordered by toid. After D-8: rows 1, 3,
+  # 4, 5, 6, 8, 9; component 1 = {10, 11} reciprocal TRUE, 2 = {20, 21, 22}
+  # FALSE, 3 = {9, 12} TRUE (byte order "10" < "20" < "9").
+  - id: check_hy_graph_two_cycles_byte_order
+    function: check_hy_graph
+    fixture: two_cycles_byte_order.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-8; shared. Today TRUE; repeated id 6 with an edge out of
+  # the cycle (6 -> 7). After D-8: rows 3, 5, 6, 7 (2->4, 4->5, 5->6, 6->2),
+  # component 1, reciprocal FALSE; row 8 (6->7) not returned.
+  - id: check_hy_graph_flownetwork_cycle
+    function: check_hy_graph
+    fixture: flownetwork_cycle.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Flownetwork, character ids; TRUE (no strongly connected component
+  # either).
+  - id: check_hy_graph_loop
+    function: check_hy_graph
+    fixture: loop.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Nextgen ids, repeated id; TRUE.
+  - id: check_hy_graph_sort_network_dups
+    function: check_hy_graph
+    fixture: sort_network_dups.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. String ids, 3dhp aliases; TRUE.
+  - id: check_hy_graph_new_hope_3dhp
+    function: check_hy_graph
+    fixture: new_hope_3dhp.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Many terminals with missing tocomid (I-5); TRUE.
+  - id: check_hy_graph_coastal
+    function: check_hy_graph
+    fixture: coastal.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. NHDPlusV2 after add_toids (dendritic); TRUE.
+  - id: check_hy_graph_new_hope
+    function: check_hy_graph
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. S-6 one row; TRUE.
+  - id: check_hy_graph_single_flowline
+    function: check_hy_graph
+    fixture: single_flowline.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. S-6 no connections; TRUE.
+  - id: check_hy_graph_all_terminals
+    function: check_hy_graph
+    fixture: all_terminals.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. S-6 duplicated edge (flownetwork); TRUE, does not raise (D3-57,
+  # S-6 raise not applied in M3).
+  - id: check_hy_graph_duplicated_edge
+    function: check_hy_graph
+    fixture: duplicated_edge.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. TRUE.
+  - id: check_hy_graph_isolated_flowline
+    function: check_hy_graph
+    fixture: isolated_flowline.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. S-6; weight not read; TRUE.
+  - id: check_hy_graph_missing_weight
+    function: check_hy_graph
+    fixture: missing_weight.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. S-6; geometry not read; TRUE.
+  - id: check_hy_graph_zero_length
+    function: check_hy_graph
+    fixture: zero_length.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. I-11 zero rows; TRUE.
+  - id: check_hy_graph_empty_network
+    function: check_hy_graph
+    fixture: empty_network.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted. hy_node (no toid); R stops in dplyr "Column `toid`
+  # doesn't exist"; Python converts with add_toids (A-3) and returns TRUE.
+  - id: check_hy_graph_new_hope_node
+    function: check_hy_graph
+    fixture: new_hope.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # python_omitted. NHDPlusV2 attributes, FromNode/ToNode, no toid; same as
+  # new_hope_node.
+  - id: check_hy_graph_network_node
+    function: check_hy_graph
+    fixture: network.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # shared. ID/toNexID is not a vocabulary alias, so no toid and no nodes.
+  - id: check_hy_graph_sort_test_no_toid
+    function: check_hy_graph
+    fixture: sort_test.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # shared. id and name only; stops.
+  - id: check_hy_graph_empty_name_no_toid
+    function: check_hy_graph
+    fixture: empty_name.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # shared. NHDPlusV2 coding is consistent; TRUE.
+  - id: check_hy_graph_new_hope_divergence_check
+    function: check_hy_graph
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. TRUE after add_toids.
+  - id: check_hy_graph_divergence_attribute_divergence_check
+    function: check_hy_graph
+    fixture: divergence_attribute.gpkg
+    prepare: {function: add_toids}
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Rows 2, 3, divergence_issue "node without exactly one divergence
+  # == 1"; unchanged by D-8.
+  - id: check_hy_graph_divergence_miscoded
+    function: check_hy_graph
+    fixture: divergence_miscoded.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Rows 2, 3, divergence_issue "divergence_fraction does not sum to
+  # 1 at a node".
+  - id: check_hy_graph_divergence_fraction_short
+    function: check_hy_graph
+    fixture: divergence_fraction_short.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. 1 row, row 2 (id 2, divergence 1), divergence_issue "divergence
+  # of 1 or 2 where flow does not split"; unchanged by D-8.
+  - id: check_hy_graph_divergence_minor_absent
+    function: check_hy_graph
+    fixture: divergence_minor_absent.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. Sum 0.8 is within 0.5; TRUE.
+  - id: check_hy_graph_divergence_fraction_short_tol
+    function: check_hy_graph
+    fixture: divergence_fraction_short.gpkg
+    args:
+      divergence_check: true
+      fraction_tol: 0.5
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. No fromnode or divergence; the stop comes before cycle detection.
+  - id: check_hy_graph_divergence_check_missing_columns
+    function: check_hy_graph
+    fixture: reciprocal_pair.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: divergence_check_missing_columns
+
+  # python_omitted. R names `divergence` as absent; Python converts with
+  # add_toids first, which raises divergence_required.
+  - id: check_hy_graph_divergence_no_attribute_divergence_check
+    function: check_hy_graph
+    fixture: divergence_no_attribute.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: divergence_check_missing_columns
+
+  # loop_check: today only. changes_with: D-8; these four cases are deleted
+  # when D-8 removes the argument.
+
+  # Warns "stuck in a loop at 2"; returns 1 row (id 2, toid 3), no row column.
+  - id: check_hy_graph_three_cycle_loop_check
+    function: check_hy_graph
+    fixture: three_cycle.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+
+  # Many warnings; returns 9 rows, 3 of them on no cycle.
+  - id: check_hy_graph_loop2_loop_check
+    function: check_hy_graph
+    fixture: loop2.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+
+  # TRUE.
+  - id: check_hy_graph_loop_loop_check
+    function: check_hy_graph
+    fixture: loop.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # make_index_ids inside the walk stops with "found one or more pairs of
+  # features that reference eachother."
+  - id: check_hy_graph_reciprocal_pair_loop_check
+    function: check_hy_graph
+    fixture: reciprocal_pair.gpkg
+    args:
+      loop_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error

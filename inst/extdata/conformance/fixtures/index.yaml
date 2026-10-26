@@ -317,6 +317,50 @@ fixtures:
   rules:
   - D-9
   bytes: 73728
+- file: divergence_fraction_short.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence_fraction is checked when present",
+    short)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  - divergence_fraction
+  exercises: divergence_fraction summing to 0.8 at node 2; fraction_tol
+  rules: []
+  bytes: 73728
+- file: divergence_minor_absent.gpkg
+  source: synthetic (divergence_miscoded with id 2 coded 1 and the minor branch, id
+    3, removed)
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: an extract keeping only the main branch of a divergence at node 2; the
+    remaining divergence == 1 is flagged as a split where flow does not split
+  rules: []
+  bytes: 73728
+- file: divergence_miscoded.gpkg
+  source: synthetic (test_check_hy_graph.R "divergence coding problems are found",
+    no_main)
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  - divergence
+  exercises: a divergence at node 2 with no divergence == 1; both members reported
+  rules: []
+  bytes: 73728
 - file: divergence_no_attribute.gpkg
   source: synthetic
   rows: 13
@@ -368,6 +412,19 @@ fixtures:
     and typed'
   rules:
   - I-11
+  bytes: 73728
+- file: flownetwork_cycle.gpkg
+  source: synthetic (tests/testthat/test_check_hy_graph.R "loop check", second table)
+  rows: 10
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: a four-flowline cycle in a flownetwork (repeated id 1 and 6) with an
+    edge out of the cycle (6 -> 7) that is not returned
+  rules:
+  - D-8
+  - I-6
   bytes: 73728
 - file: hy_add_topo_isolated_first.gpkg
   source: synthetic
@@ -1160,6 +1217,20 @@ fixtures:
   exercises: a three-flowline cycle (ids 2, 3, 4) the pairwise test could not see
   rules:
   - D-8
+  bytes: 73728
+- file: two_cycles_byte_order.gpkg
+  source: synthetic
+  rows: 9
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: three cycles whose numbering by least identifier differs between byte
+    order ("10" < "20" < "9") and numeric order; input order matches neither
+  rules:
+  - D-8
+  - D-1
+  - S-6
   bytes: 73728
 - file: zero_length.gpkg
   source: synthetic; points in zero_length_points.gpkg
