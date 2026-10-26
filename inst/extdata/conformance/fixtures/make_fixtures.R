@@ -465,6 +465,11 @@ fixture(data.frame(comid = c(1, 2), tocomid = c(2, NA), fromnode = c(1, 2), tono
   "REAL tocomid with a missing value beside fromnode and tonode: toid kept and the missing value filled with 0",
   c("I-2", "I-5"))
 
+fixture(data.frame(comid = 1, fromnode = 2, tonode = 3),
+  "hy_comid_nodes_single",
+  "synthetic; tests/testthat/test_hy_classes.R \"existing hy() behavior preserved\"",
+  "one REAL comid row with fromnode and tonode: renamed to id and hy after hy()")
+
 # Function fixtures: hy_reverse (algorithms/hy_reverse.md) -------------------
 
 fixture(data.frame(ID = 1:3, toID = c(2L, 3L, NA), extra = c("a", "b", "c")),
@@ -522,6 +527,15 @@ fixture(data.frame(COMID = 1:2, TotDASqKM = c(1.5, 3), TotDA = c(1.5, 3)),
   "synthetic",
   "two total_da_sqkm aliases (TotDASqKM, TotDA): totda wins, with a warning")
 
+fixture(if (build("align_names_new_hope_totda")) {
+  nh_totda <- sf::read_sf(file.path("inst", "extdata", "new_hope.gpkg"))
+  nh_totda$TotDA <- nh_totda$TotDASqKM
+  sf::st_transform(nh_totda, 5070)
+},
+  "align_names_new_hope_totda",
+  "inst/extdata/new_hope.gpkg as read (REACHCODE kept, no mainstemid) with TotDA copied from TotDASqKM (test_align_names.R); EPSG:5070",
+  "sf NHDPlusV2 input in source names with two total_da_sqkm aliases: totda wins with a warning; COMID, LENGTHKM, REACHCODE become id, length_km, aggregate_id")
+
 fixture(data.frame(comid = 1:2, nhdplusid = 3:4, featureid = 5:6, tocomid = c(2L, 0L)),
   "align_names_three_aliases",
   "synthetic",
@@ -563,6 +577,11 @@ fixture(data.frame(id = c(1L, 1L, 2L), fromnode = c(10L, 10L, 11L), tonode = c(1
   "synthetic",
   "repeated id with fromnode and tonode and no toid: neither flownetwork nor node, plain hy")
 
+fixture(data.frame(x = 1),
+  "hy_network_type_not_hy",
+  "synthetic; tests/testthat/test_hy_classes.R",
+  "a one-column table with no hydroloom class: not a hydroloom object")
+
 # Function fixtures: hy_capabilities (algorithms/hy_capabilities.md) ---------
 
 fixture(data.frame(
@@ -571,6 +590,35 @@ fixture(data.frame(
   "capabilities_leveled",
   "synthetic; hy_capabilities worked example",
   "hy_leveled with a divergence column (all 0, no branching): to_flownetwork, add_pfafstetter, add_streamlevel available")
+
+fixture(data.frame(id = c(1, 2), fromnode = c(10, 11), tonode = c(11, 12),
+  aggregate_id = c("A", "A"), length_km = c(1, 1)),
+  "capabilities_node_aggregate",
+  "synthetic; tests/testthat/test_hy_classes.R",
+  "hy_node with aggregate_id and length_km: aggregate flowpath functions available")
+
+fixture(data.frame(id = c(1, 2), fromnode = c(10, 11), tonode = c(11, 12)),
+  "capabilities_node_bare",
+  "synthetic (capabilities_node_aggregate without aggregate_id and length_km)",
+  "hy_node without aggregate_id: aggregate flowpath functions unavailable")
+
+# Function fixtures: is_dendritic (algorithms/is_dendritic.md) ---------------
+
+fixture(data.frame(id = 1:3, toid = c(2L, 3L, 0L)),
+  "is_dendritic_chain",
+  "synthetic; tests/testthat/test_hy_classes.R",
+  "a three-flowline chain, unique id, no divergence column: dendritic")
+
+fixture(data.frame(id = 1:3, toid = c(2L, 3L, 0L), divergence = c(0L, 2L, 0L)),
+  "is_dendritic_chain_divergence",
+  "synthetic (is_dendritic_chain with divergence 2 on id 2)",
+  "a divergence value of 2 on an otherwise dendritic chain: not dendritic")
+
+fixture(data.frame(id = c(1, 1, 2), toid = c(2, 3, 0)),
+  "is_dendritic_repeated_id",
+  "synthetic; tests/testthat/test_hy_classes.R",
+  "REAL id repeated with toid and no divergence column: not dendritic",
+  "I-6")
 
 # Function fixtures: add_toids (algorithms/add_toids.md) ---------------------
 

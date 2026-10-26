@@ -512,6 +512,18 @@ cases:
   # = R and the Python definition agree (add python to supported_by when
   # is_hy is ported); shared: false = the Python definition may return True.
 
+  # R-only: TRUE after hy() renames comid to id (D3-11 prepare);
+  # test_hy_classes.R input
+  - id: is_hy_comid_nodes_after_hy
+    function: is.hy
+    fixture: hy_comid_nodes_single.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # shared: true; real NHDPlusV2 subset in source names; FALSE in both languages
   - id: is_hy_new_hope
     function: is.hy
@@ -1127,6 +1139,16 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # shared: false; expect "not a hydroloom object"; one column, no hy class
+  # (test_hy_classes.R)
+  - id: hy_network_type_not_hy
+    function: hy_network_type
+    fixture: hy_network_type_not_hy.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # hy_capabilities -----------------------------------------------------------
   # R reads the class hy() stamps, so most cases apply hy() through prepare
   # (D3-11). Today's return is a named logical vector, stored through the frame
@@ -1381,6 +1403,29 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # changes_with: A-4; hy_node with aggregate_id and length_km;
+  # add_hydro_location_distance, index_hydro_location_distance, get_subpath
+  # TRUE (test_hy_classes.R)
+  - id: hy_capabilities_node_aggregate
+    function: hy_capabilities
+    fixture: capabilities_node_aggregate.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; the same hy_node without aggregate_id; get_subpath
+  # FALSE (test_hy_classes.R)
+  - id: hy_capabilities_node_bare
+    function: hy_capabilities
+    fixture: capabilities_node_bare.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # is_dendritic --------------------------------------------------------------
   # Annotations from the proposed cases (D3-14): shared: true on every case =
   # the Python definition gives the same value (add python to supported_by
@@ -1595,6 +1640,36 @@ cases:
   - id: is_dendritic_empty_network
     function: is_dendritic
     fixture: empty_network.gpkg
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # test_hy_classes.R inputs.
+  # three-flowline chain after hy(); expect TRUE
+  - id: is_dendritic_chain
+    function: is_dendritic
+    fixture: is_dendritic_chain.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # the chain with divergence 2 on id 2, after hy(); expect FALSE
+  - id: is_dendritic_chain_divergence
+    function: is_dendritic
+    fixture: is_dendritic_chain_divergence.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # repeated id with toid, as read; expect FALSE
+  - id: is_dendritic_repeated_id
+    function: is_dendritic
+    fixture: is_dendritic_repeated_id.gpkg
     compare: exact
     order: exact
     supported_by: [r]

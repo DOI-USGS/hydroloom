@@ -6,7 +6,6 @@ test_that("hy() auto-classifies to hy_topo with add_topo = TRUE", {
   # auto-builds toid from fromnode/tonode -> hy_topo
   expect_s3_class(h, "hy_topo")
   expect_s3_class(h, "hy")
-  expect_true("toid" %in% names(h))
   expect_true(inherits(h, "sf"))
 })
 
@@ -19,8 +18,6 @@ test_that("hy() default produces hy_node for node data", {
   expect_s3_class(h, "hy_node")
   expect_s3_class(h, "hy")
   expect_false(inherits(h, "hy_topo"))
-  expect_true("fromnode" %in% names(h))
-  expect_true("tonode" %in% names(h))
 })
 
 test_that("hy() classifies toid-only data as hy_topo", {
@@ -72,59 +69,6 @@ test_that("hy_reverse strips all extended classes", {
   expect_null(attr(rev, "dendritic"))
 })
 
-test_that("is_dendritic works correctly", {
-  # data with no divergence == 2 should be dendritic
-  x <- data.frame(id = 1:3, toid = c(2L, 3L, 0L))
-  h <- hy(x)
-  expect_true(is_dendritic(h))
-
-  # data with divergence == 2 should not be dendritic
-  x2 <- data.frame(id = 1:3, toid = c(2L, 3L, 0L),
-                   divergence = c(0L, 2L, 0L))
-  h2 <- hy(x2)
-  expect_false(is_dendritic(h2))
-})
-
-test_that("hy_network_type returns correct type", {
-  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-
-  expect_equal(hy_network_type(hy(x)), "hy_node")
-  expect_equal(hy_network_type(hy(x, add_topo = TRUE)), "hy_topo")
-
-  lev <- data.frame(
-    id = 1:3, toid = c(2L, 3L, 0L),
-    topo_sort = 3:1, levelpath = c(1L, 1L, 1L),
-    levelpath_outlet_id = c(3L, 3L, 3L)
-  )
-  expect_equal(hy_network_type(hy(lev)), "hy_leveled")
-
-  expect_equal(hy_network_type(data.frame(x = 1)), "not a hydroloom object")
-})
-
-test_that("hy_capabilities returns correct logical vector", {
-  x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
-
-  # hy_topo capabilities
-  h <- hy(x, add_topo = TRUE)
-  caps <- hy_capabilities(h)
-  expect_true(caps[["sort_network"]])
-  expect_true(caps[["add_levelpaths"]])
-  expect_false(caps[["add_toids"]])
-  expect_false(caps[["add_divergence"]])
-
-  # hy_node capabilities
-  hn <- hy(x)
-  caps_n <- hy_capabilities(hn)
-  expect_true(caps_n[["add_toids"]])
-  expect_true(caps_n[["add_divergence"]])
-  expect_false(caps_n[["sort_network"]])
-
-  # include_conversions for hy_node
-  caps_nc <- hy_capabilities(hn, include_conversions = TRUE)
-  expect_true(caps_nc[["sort_network"]])
-  expect_true(caps_nc[["add_levelpaths"]])
-})
-
 test_that("hy_capabilities reports aggregate flowpath functions on node input", {
 
   base <- data.frame(id = c(1, 2), fromnode = c(10, 11), tonode = c(11, 12),
@@ -132,15 +76,6 @@ test_that("hy_capabilities reports aggregate flowpath functions on node input", 
 
   hn <- hy(base)
   expect_s3_class(hn, "hy_node")
-
-  caps <- hy_capabilities(hn)
-  expect_true(caps[["add_hydro_location_distance"]])
-  expect_true(caps[["index_hydro_location_distance"]])
-  expect_true(caps[["get_subpath"]])
-
-  # no aggregate_id, no aggregate flowpath
-  caps <- hy_capabilities(hy(base[, c("id", "fromnode", "tonode")]))
-  expect_false(caps[["get_subpath"]])
 })
 
 test_that("print methods produce expected output", {
@@ -198,7 +133,6 @@ test_that("add_topo = TRUE with NHD data produces hy_topo", {
   h <- hy(x, add_topo = TRUE)
 
   expect_s3_class(h, "hy_topo")
-  expect_true("toid" %in% names(h))
 })
 
 test_that("hy_node preserves fromnode/tonode form", {
@@ -207,8 +141,6 @@ test_that("hy_node preserves fromnode/tonode form", {
   h <- hy(x)
 
   expect_s3_class(h, "hy_node")
-  expect_true("fromnode" %in% names(h))
-  expect_true("tonode" %in% names(h))
 })
 
 test_that("new_hy_topo rejects duplicated id", {
@@ -248,11 +180,6 @@ test_that("new_hy_flownetwork rejects multiple upmain per toid", {
   expect_error(new_hy_flownetwork(bad_um), "multiple upmain")
 })
 
-test_that("is_dendritic detects duplicated id with toid", {
-  x <- data.frame(id = c(1, 1, 2), toid = c(2, 3, 0))
-  expect_false(is_dendritic(x))
-})
-
 test_that("existing hy() behavior preserved", {
   # basic data.frame test
   x <- data.frame(comid = 1, fromnode = 2, tonode = 3)
@@ -261,7 +188,6 @@ test_that("existing hy() behavior preserved", {
 
   expect_equal(names(y)[1:3], c("id", "fromnode", "tonode"))
   expect_s3_class(y, "hy")
-  expect_true(is.hy(y))
 
   # sf class preserved
   x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

@@ -309,6 +309,31 @@ fixtures:
     add_pfafstetter, add_streamlevel available'
   rules: []
   bytes: 73728
+- file: capabilities_node_aggregate.gpkg
+  source: synthetic; tests/testthat/test_hy_classes.R
+  rows: 2
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  - aggregate_id
+  - length_km
+  exercises: 'hy_node with aggregate_id and length_km: aggregate flowpath functions
+    available'
+  rules: []
+  bytes: 73728
+- file: capabilities_node_bare.gpkg
+  source: synthetic (capabilities_node_aggregate without aggregate_id and length_km)
+  rows: 2
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  exercises: 'hy_node without aggregate_id: aggregate flowpath functions unavailable'
+  rules: []
+  bytes: 73728
 - file: coastal.gpkg
   source: tests/testthat/data/coastal.rds
   rows: 548
@@ -517,6 +542,18 @@ fixtures:
   rules:
   - D-14
   bytes: 73728
+- file: hy_comid_nodes_single.gpkg
+  source: synthetic; tests/testthat/test_hy_classes.R "existing hy() behavior preserved"
+  rows: 1
+  geometry: none
+  columns:
+  - comid
+  - fromnode
+  - tonode
+  exercises: 'one REAL comid row with fromnode and tonode: renamed to id and hy after
+    hy()'
+  rules: []
+  bytes: 73728
 - file: hy_duplicate_alias_tie.gpkg
   source: synthetic
   rows: 2
@@ -637,6 +674,14 @@ fixtures:
     nor node, plain hy'
   rules: []
   bytes: 73728
+- file: hy_network_type_not_hy.gpkg
+  source: synthetic; tests/testthat/test_hy_classes.R
+  rows: 1
+  geometry: none
+  columns: x
+  exercises: 'a one-column table with no hydroloom class: not a hydroloom object'
+  rules: []
+  bytes: 73728
 - file: hy_permanent_identifier_tie.gpkg
   source: synthetic
   rows: 2
@@ -749,6 +794,38 @@ fixtures:
   rules:
   - I-2
   - I-5
+  bytes: 73728
+- file: is_dendritic_chain.gpkg
+  source: synthetic; tests/testthat/test_hy_classes.R
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'a three-flowline chain, unique id, no divergence column: dendritic'
+  rules: []
+  bytes: 73728
+- file: is_dendritic_chain_divergence.gpkg
+  source: synthetic (is_dendritic_chain with divergence 2 on id 2)
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  - divergence
+  exercises: 'a divergence value of 2 on an otherwise dendritic chain: not dendritic'
+  rules: []
+  bytes: 73728
+- file: is_dendritic_repeated_id.gpkg
+  source: synthetic; tests/testthat/test_hy_classes.R
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'REAL id repeated with toid and no divergence column: not dendritic'
+  rules:
+  - I-6
   bytes: 73728
 - file: is_hy_hy_names_na_toid.gpkg
   source: synthetic
