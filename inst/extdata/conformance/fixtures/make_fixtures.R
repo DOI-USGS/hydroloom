@@ -478,6 +478,20 @@ fixture(data.frame(ID = c(1L, 1L, 2L, 3L, 4L), toID = c(2L, 3L, 4L, 4L, NA)),
   "a divergence (1 -> 2 and 1 -> 3, rejoining at 4) as one row per downstream flowline in user-style names: hy() gives a flownetwork",
   "I-6")
 
+# Function fixtures: is.hy (algorithms/is.hy.md) ----------------------------
+
+fixture(data.frame(comid = 1:3, tocomid = c(2L, 3L, NA)),
+  "is_hy_source_names",
+  "synthetic; the worked example in algorithms/is.hy.md",
+  "a table in NHDPlusV2 source names with a missing tocomid: not hy as read",
+  "I-4")
+
+fixture(data.frame(id = c("1", "2", "3"), toid = c("2", "3", NA)),
+  "is_hy_hy_names_na_toid",
+  "synthetic",
+  "hydroloom names, TEXT identifiers, and a missing toid: not hy as read in R",
+  c("I-1", "I-4"))
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

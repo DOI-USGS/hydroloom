@@ -7,6 +7,9 @@ functions:
   hy_reverse:
     requires: algorithms/hy_reverse.md#requires
     returns: frame
+  is.hy:
+    requires: algorithms/is.hy.md#requires
+    returns: scalar
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -437,3 +440,124 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+
+  # is.hy ---------------------------------------------------------------------
+  # The harness passes each fixture as read, so every R value is FALSE: a table
+  # read from a file never carries the hy class. The TRUE path stays in
+  # test_hydroloom.R. Annotations from the proposed cases (D3-14): shared: true
+  # = R and the Python definition agree (add python to supported_by when
+  # is_hy is ported); shared: false = the Python definition may return True.
+
+  # shared: true; real NHDPlusV2 subset in source names; FALSE in both languages
+  - id: is_hy_new_hope
+    function: is.hy
+    fixture: new_hope.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; silent changes messages only, never the value
+  - id: is_hy_new_hope_silent
+    function: is.hy
+    fixture: new_hope.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; worked example; source names with an NA tocomid
+  - id: is_hy_source_names
+    function: is.hy
+    fixture: is_hy_source_names.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; hydroloom names, string ids, NA toid; R FALSE (no class),
+  # Python True (NA toid accepted, issue #85)
+  - id: is_hy_hy_names_na_toid
+    function: is.hy
+    fixture: is_hy_hy_names_na_toid.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; divergent network in id/toid form (repeated id, character
+  # ids); R no class, and hy() gives hy_flownetwork; Python condition 3
+  - id: is_hy_loop
+    function: is.hy
+    fixture: loop.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; I-11 zero-row table in hydroloom names; R FALSE as read
+  # (TRUE after hy()); Python may return True
+  - id: is_hy_empty_network
+    function: is.hy
+    fixture: empty_network.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; S-6 single-row network
+  - id: is_hy_boundary_single_row
+    function: is.hy
+    fixture: single_flowline.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; S-6 five flowlines, no edges
+  - id: is_hy_boundary_all_terminals
+    function: is.hy
+    fixture: all_terminals.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: true; S-6 duplicated row (1 -> 2 twice); FALSE as read and after
+  # hy() (hy_flownetwork); Python condition 3; no raise (D3-46, D3-57)
+  - id: is_hy_boundary_duplicated_edge
+    function: is.hy
+    fixture: duplicated_edge.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; S-6 missing weight_attribute value; not read by is.hy
+  - id: is_hy_boundary_missing_weight
+    function: is.hy
+    fixture: missing_weight.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared: false; S-6 zero-length geometry; not read by is.hy
+  - id: is_hy_boundary_zero_length
+    function: is.hy
+    fixture: zero_length.gpkg
+    args: {silent: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]

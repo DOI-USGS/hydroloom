@@ -454,9 +454,9 @@ call_case_function <- function(fun, call_args, raises = NULL, id = "") {
   list(result = result, raised = FALSE)
 }
 
-# Runs one manifest case. In write mode the expectation layer is (re)written
-# first and any value change from the previous layer is reported with
-# message(). A case with `raises: error` asserts the error and has no layer.
+# Runs one manifest case. In write mode the expectation layer is written
+# first when it is missing or any value changed from the previous layer; a
+# change is reported with message(). A case with `raises: error` asserts the error and has no layer.
 # A case with no fixture calls the function with args only; a manifest
 # function that names a non-function export is read by value and takes no
 # fixture, args, or raises (D3-12). Returns the comparison problems; empty
@@ -493,15 +493,19 @@ run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
   cmp <- function(old) compare_layers(layer, old, compare = case$compare,
     order = case$order, key = fn_entry$key, atol = case$atol, rtol = case$rtol)
 
+  # A layer is written only when it is missing or its values differ, so an
+  # expectation file whose layers all match is left untouched (D2-20).
   if (write) {
     if (has_layer(path, case$id)) {
       diff <- cmp(read_layer(path, case$id))
-      if (length(diff)) message("conformance ", case$id, " changed:\n  ", paste(diff, collapse = "\n  "))
+      if (length(diff)) {
+        message("conformance ", case$id, " changed:\n  ", paste(diff, collapse = "\n  "))
+        write_layer(layer, path, case$id)
+      }
     } else {
       message("conformance ", case$id, ": new expectation layer in ", expected)
+      write_layer(layer, path, case$id)
     }
-
-    write_layer(layer, path, case$id)
   }
 
   if (!has_layer(path, case$id))

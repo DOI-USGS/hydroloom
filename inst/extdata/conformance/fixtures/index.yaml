@@ -339,6 +339,31 @@ fixtures:
   - I-2
   - I-5
   bytes: 73728
+- file: is_hy_hy_names_na_toid.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'hydroloom names, TEXT identifiers, and a missing toid: not hy as read
+    in R'
+  rules:
+  - I-1
+  - I-4
+  bytes: 73728
+- file: is_hy_source_names.gpkg
+  source: synthetic; the worked example in algorithms/is.hy.md
+  rows: 3
+  geometry: none
+  columns:
+  - comid
+  - tocomid
+  exercises: 'a table in NHDPlusV2 source names with a missing tocomid: not hy as
+    read'
+  rules:
+  - I-4
+  bytes: 73728
 - file: isolated_flowline.gpkg
   source: synthetic
   rows: 12
