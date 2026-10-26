@@ -1932,6 +1932,30 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # test_add_toids.R migration: hy route with return_dendritic = FALSE (no
+  # deprecation warning on this route); same toid as
+  # add_toids_new_hope_not_dendritic; 832 rows, no missing toid
+  - id: add_toids_new_hope_hy_not_dendritic
+    function: add_toids
+    fixture: new_hope.gpkg
+    prepare: {function: hy}
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # test_add_toids.R migration: character COMID; outlet toid "" at the rows
+  # where add_toids_new_hope_hy has 0
+  - id: add_toids_new_hope_character_id
+    function: add_toids
+    fixture: new_hope_character_id.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # S-6 single-row fixture carries toid, so the hy_topo stop applies
   - id: add_toids_single_flowline_has_toid
     function: add_toids

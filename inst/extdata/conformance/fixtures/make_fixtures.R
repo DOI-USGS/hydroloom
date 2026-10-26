@@ -699,6 +699,14 @@ fixture(data.frame(id = integer(), fromnode = integer(), tonode = integer(),
   "I-11 zero rows on the node pattern: toid typed",
   "I-11")
 
+# test_add_toids.R: New Hope with COMID as character; geometry dropped, as
+# the migrated assertion reads only toid.
+fixture(transform(sf::st_drop_geometry(nh), COMID = as.character(COMID)),
+  "new_hope_character_id",
+  "new_hope fixture with COMID as TEXT; geometry dropped",
+  "the default NHDPlusV2 network with TEXT identifiers: outlet toid \"\" at the same rows as the integer outlet 0",
+  "I-5")
+
 # Function fixtures: make_index_ids (algorithms/make_index_ids.md) -----------
 
 # Three headwaters join at 10, which drains to the outlet 7. Identifier byte
