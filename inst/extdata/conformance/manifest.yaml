@@ -3244,6 +3244,136 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # headwater 1 first, outlet 4 (toid 0) last; test_sort_network.R
+  - id: sort_network_chain
+    function: sort_network
+    fixture: sort_chain.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; a headwater first, outlet 4 (toid 0) last
+  - id: sort_network_branching
+    function: sort_network
+    fixture: sort_branching.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; all 8 rows returned
+  - id: sort_network_joined_chains
+    function: sort_network
+    fixture: sort_joined_chains.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; outlets in the test's order (3, 8); 6 rows,
+  # terminal_id 8, 8, 8, 3, 3, 3 today
+  - id: sort_network_two_networks_outlets_listed
+    function: sort_network
+    fixture: sort_two_networks.gpkg
+    args: {split: true, outlets: [3, 8]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; add_toids (return_dendritic = TRUE) applied first, as
+  # the test does; both outlets have a toid outside the result
+  - id: sort_network_network_add_toids_outlets_split
+    function: sort_network
+    fixture: network.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: true}}
+    args: {split: true, outlets: [11690186, 11689280]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4, I-2; input in hydroseq order; 2544325 before 2544321;
+  # 32 terminals
+  - id: sort_network_coastal_hydroseq_split
+    function: sort_network
+    fixture: coastal_hydroseq_order.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: I-2; one outlet, terminal_id 2544457 on every row
+  - id: sort_network_coastal_hydroseq_outlet
+    function: sort_network
+    fixture: coastal_hydroseq_order.gpkg
+    args: {split: true, outlets: [2544457]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; flownetwork route; as many rows as add_toids returns
+  - id: sort_network_network_flownetwork
+    function: sort_network
+    fixture: network.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; flownetwork route; 8893420 comes before both
+  # non-dendritic paths below it (8893472, 8893424)
+  - id: sort_network_new_hope_ut_flownetwork
+    function: sort_network
+    fixture: new_hope_ut_8894172.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; I-4 implicit-absence outlets; all 21 rows
+  - id: sort_network_huc12_implicit_outlets
+    function: sort_network
+    fixture: huc12_implicit_outlets.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; hy route; 59149125, 59149129, 59149189 (terminal
+  # 59149189), then 56784393 (its own terminal)
+  - id: sort_network_divergence_outlets_split
+    function: sort_network
+    fixture: sort_divergence_outlets.gpkg
+    prepare: {function: hy}
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; equals the distinct id, toid rows of
+  # sort_network_sort_network_dups in order
+  - id: sort_network_sort_network_dups_distinct
+    function: sort_network
+    fixture: sort_network_dups_distinct.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # add_topo_sort -------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
   # changes_with D-4 = sibling and outlet order by identifier byte order
@@ -3618,6 +3748,18 @@ cases:
     generator: [r]
     raises: warning
     raises_key: sort_missed_features
+
+  # changes_with: D-4, i2; flownetwork route after add_toids (return_dendritic
+  # = FALSE); 8317403's rows share one topo_sort, above 8317409's
+  - id: add_topo_sort_diversions
+    function: add_topo_sort
+    fixture: add_topo_sort_diversions.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
 
   # navigate_network_dfs ------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:

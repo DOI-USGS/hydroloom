@@ -161,6 +161,21 @@ fixtures:
   - D-4
   - D-1
   bytes: 73728
+- file: add_topo_sort_diversions.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "add_topo_sort deals with
+    diversions"; NHDPlusV2 identifiers)
+  rows: 45
+  geometry: none
+  columns:
+  - id
+  - divergence
+  - fromnode
+  - tonode
+  exercises: 'node topology with several minor paths: topo_sort decreases downstream
+    along both the main and the minor path'
+  rules:
+  - I-6
+  bytes: 73728
 - file: add_topo_sort_worked_example.gpkg
   source: synthetic; the worked example in algorithms/add_topo_sort.md
   rows: 6
@@ -395,6 +410,24 @@ fixtures:
   rules:
   - I-5
   bytes: 98304
+- file: coastal_hydroseq_order.gpkg
+  source: tests/testthat/data/coastal.rds with rows ordered by hydroseq (tests/testthat/test_sort_network.R
+    "get_sorted")
+  rows: 548
+  geometry: none
+  columns:
+  - comid
+  - lengthkm
+  - hydroseq
+  - levelpathi
+  - totdasqkm
+  - tocomid
+  exercises: many coastal terminals in hydrosequence row order; split and a single
+    outlet
+  rules:
+  - I-5
+  - D-4
+  bytes: 98304
 - file: coastal_inland.gpkg
   source: synthetic; case args coastal_outlet_ids = 5, inland_outlet_ids = [6, 8]
   rows: 8
@@ -574,6 +607,19 @@ fixtures:
   rules:
   - D-8
   - I-6
+  bytes: 73728
+- file: huc12_implicit_outlets.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "no stated outlet"; WBD HUC12
+    identifiers)
+  rows: 21
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: TEXT HUC12 identifiers whose outlets name downstream units absent from
+    the table (implicit-absence outlets)
+  rules:
+  - I-4
   bytes: 73728
 - file: hy_add_topo_isolated_first.gpkg
   source: synthetic
@@ -1341,6 +1387,52 @@ fixtures:
   rules:
   - G-4
   bytes: 471040
+- file: new_hope_ut_8894172.gpkg
+  source: new_hope fixture rows upstream of COMID 8894172 (navigate_hydro_network
+    mode UT; tests/testthat/test_sort_network.R "non-dendritic issues")
+  rows: 53
+  geometry: EPSG:5070
+  columns:
+  - COMID
+  - GNIS_ID
+  - GNIS_NAME
+  - LENGTHKM
+  - WBAREACOMI
+  - FTYPE
+  - FCODE
+  - StreamLeve
+  - StreamOrde
+  - StreamCalc
+  - FromNode
+  - ToNode
+  - Hydroseq
+  - LevelPathI
+  - Pathlength
+  - TerminalPa
+  - ArbolateSu
+  - Divergence
+  - StartFlag
+  - TerminalFl
+  - DnLevel
+  - UpLevelPat
+  - UpHydroseq
+  - DnLevelPat
+  - DnMinorHyd
+  - DnDrainCou
+  - DnHydroseq
+  - FromMeas
+  - ToMeas
+  - RtnDiv
+  - VPUIn
+  - VPUOut
+  - AreaSqKM
+  - TotDASqKM
+  - mainstemid
+  exercises: a New Hope subset with divergences that rejoin below a common upstream
+    flowline
+  rules:
+  - I-6
+  bytes: 122880
 - file: nhdplushr.gpkg
   source: tests/testthat/data/hr.rds (COMID renamed NHDPlusID; network columns only)
   rows: 2691
@@ -1458,6 +1550,29 @@ fixtures:
   rules:
   - S-6
   bytes: 98304
+- file: sort_branching.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "sort order is headwater first,
+    outlet last")
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: two headwaters (1 and 5) joining above the outlet 4
+  rules:
+  - D-4
+  bytes: 73728
+- file: sort_chain.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "sort order is headwater first,
+    outlet last")
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'a four-flowline chain: headwater first, outlet last'
+  rules: []
+  bytes: 73728
 - file: sort_divergence_leaves.gpkg
   source: synthetic (hydrology reader H-01)
   rows: 5
@@ -1483,6 +1598,23 @@ fixtures:
   rules:
   - I-4
   - D-7
+  bytes: 73728
+- file: sort_divergence_outlets.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "divergences as outlets limit
+    the result")
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - gnis_id
+  - feature_type
+  - direction
+  exercises: TEXT identifiers with two outlets (toid ""); split assigns each flowline
+    its outlet
+  rules:
+  - I-5
+  - D-4
   bytes: 73728
 - file: sort_flownetwork_cycle.gpkg
   source: synthetic (tests/testthat/test_sort_network.R "loop warning")
@@ -1510,6 +1642,18 @@ fixtures:
   - D-4
   - I-6
   bytes: 73728
+- file: sort_joined_chains.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "get_sorted"; sort_two_networks
+    with 9 draining to 4)
+  rows: 8
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: a tributary chain (6 to 9) joining a main chain at its outlet 4
+  rules:
+  - D-4
+  bytes: 73728
 - file: sort_mixed_types.gpkg
   source: synthetic
   rows: 2
@@ -1535,6 +1679,18 @@ fixtures:
   rules:
   - I-1
   - I-6
+  bytes: 73728
+- file: sort_network_dups_distinct.gpkg
+  source: tests/testthat/data/sort_network_dups.rds, distinct id and toid
+  rows: 80
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: nextgen wb-/nex- string identifiers without the repeated (id, toid) rows
+  rules:
+  - I-1
+  - D-4
   bytes: 73728
 - file: sort_no_outlet.gpkg
   source: synthetic
