@@ -34,6 +34,9 @@ functions:
   is_dendritic:
     requires: algorithms/is_dendritic.md#requires
     returns: scalar
+  add_toids:
+    requires: algorithms/add_toids.md#requires
+    returns: frame
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -1547,3 +1550,285 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+
+  # add_toids -----------------------------------------------------------------
+  # Annotations from the proposed cases (D3-14) are kept as comments:
+  # changes_with i2 = identifier ingest (ROADMAP §4, M3): toid takes id's type,
+  # integer outlet 0L; python_omitted = R 1.3.0 behavior that is not Python
+  # contract (D3-56), so the case stays R-only after the port. Every
+  # return_dendritic = FALSE case warns (return_dendritic_deprecated) and still
+  # compares its layer.
+
+  # changes_with: i2; data.frame route, source names back, 746 rows, toid
+  # second, FromNode moved last
+  - id: add_toids_new_hope
+    function: add_toids
+    fixture: new_hope.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; hy route, hy names, R class hy_topo
+  - id: add_toids_new_hope_hy
+    function: add_toids
+    fixture: new_hope.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; 832 rows; id repeats (flownetwork pattern)
+  - id: add_toids_new_hope_not_dendritic
+    function: add_toids
+    fixture: new_hope.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: return_dendritic_deprecated
+
+  # changes_with: i2; identifiers beyond 32 bits; post-change id and toid
+  # character, outlet ""
+  - id: add_toids_nhdplushr
+    function: add_toids
+    fixture: nhdplushr.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; D-9, the source divergence attribute decides; ids 4, 9,
+  # 13 (divergence 2) receive no upstream; 13 rows
+  - id: add_toids_divergence_attribute
+    function: add_toids
+    fixture: divergence_attribute.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; step 7 tie order; 16 rows, (3,4),(3,5),(7,8),(7,13),
+  # (8,9),(8,10) in downstream input order
+  - id: add_toids_divergence_attribute_not_dendritic
+    function: add_toids
+    fixture: divergence_attribute.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: return_dendritic_deprecated
+
+  - id: add_toids_divergence_no_attribute
+    function: add_toids
+    fixture: divergence_no_attribute.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: divergence_required
+
+  # changes_with: i2; runs without divergence; 16 rows
+  - id: add_toids_divergence_no_attribute_not_dendritic
+    function: add_toids
+    fixture: divergence_no_attribute.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: return_dendritic_deprecated
+
+  # changes_with: i2; minor path returning to the main path at nodes 104 and
+  # 105; 10 rows
+  - id: add_toids_return_divergence
+    function: add_toids
+    fixture: return_divergence.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; (1,2),(2,4),(3,5),(4,6),(5,6),(6,0); minor path 3 is a
+  # headwater and rejoins at 6
+  - id: add_toids_worked_example
+    function: add_toids
+    fixture: add_toids_worked_example.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; (1,2),(1,3),(2,4),(3,5),(4,6),(5,6),(6,0)
+  - id: add_toids_worked_example_not_dendritic
+    function: add_toids
+    fixture: add_toids_worked_example.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: return_dendritic_deprecated
+
+  # changes_with: i2; step 7 tie rule; (1,3),(1,2),(3,5),(2,4),(4,6),(5,6),(6,0)
+  # because id 3 precedes id 2 in input
+  - id: add_toids_downstream_input_order
+    function: add_toids
+    fixture: add_toids_downstream_swapped.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: return_dendritic_deprecated
+
+  # python_omitted; changes_with: i2; id 2 divergence missing; id 1 becomes an
+  # outlet (1,0),(2,4),(3,5),(4,0),(5,0); R-only (D3-56)
+  - id: add_toids_missing_divergence
+    function: add_toids
+    fixture: add_toids_missing_divergence.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; both downstream divergence 1; id 1 appears twice with
+  # return_dendritic TRUE, no warning
+  - id: add_toids_divergence_without_minor
+    function: add_toids
+    fixture: add_toids_divergence_without_minor.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; both downstream divergence 2; id 1 becomes an outlet, no
+  # warning (1,0),(2,4),(3,5),(4,0),(5,0)
+  - id: add_toids_divergence_without_main
+    function: add_toids
+    fixture: add_toids_divergence_without_main.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; D-14 departure; id 9 (missing tonode) moves last; id 3
+  # tonode unmatched; ids 1,2,3,9
+  - id: add_toids_missing_tonode_first
+    function: add_toids
+    fixture: add_toids_missing_tonode_first.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted; changes_with: i2; id 2 has missing tonode and is never a
+  # target; ids 1 and 3 become outlets; order 1,3,2; R-only (D3-56)
+  - id: add_toids_missing_tonode_target
+    function: add_toids
+    fixture: add_toids_missing_tonode_target.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # outlet value "" for character id
+  - id: add_toids_character_id
+    function: add_toids
+    fixture: add_toids_character_id.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; S-6 n = 1 on the node pattern; (1,0)
+  - id: add_toids_single_row
+    function: add_toids
+    fixture: add_toids_single_row.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; S-6 all terminals on the node pattern; every toid 0,
+  # input order
+  - id: add_toids_no_connections
+    function: add_toids
+    fixture: add_toids_no_connections.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; I-11; toid typed with no rows
+  - id: add_toids_zero_rows
+    function: add_toids
+    fixture: add_toids_zero_rows.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 single-row fixture carries toid, so the hy_topo stop applies
+  - id: add_toids_single_flowline_has_toid
+    function: add_toids
+    fixture: single_flowline.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: toid_already_present
+
+  # S-6 all-terminals fixture; the deprecation warning precedes the stop
+  - id: add_toids_all_terminals_has_toid
+    function: add_toids
+    fixture: all_terminals.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: toid_already_present
+
+  # id and name only; plain hy, representation guidance
+  - id: add_toids_no_nodes
+    function: add_toids
+    fixture: empty_name.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_node
+
+  # Not added: duplicated_edge.gpkg (repeated id with toid). R 1.3.0 recurses
+  # until the evaluation depth limit (algorithms/add_toids.md Preconditions).

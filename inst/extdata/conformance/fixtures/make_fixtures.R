@@ -566,6 +566,85 @@ fixture(data.frame(
   "synthetic; hy_capabilities worked example",
   "hy_leveled with a divergence column (all 0, no branching): to_flownetwork, add_pfafstetter, add_streamlevel available")
 
+# Function fixtures: add_toids (algorithms/add_toids.md) ---------------------
+
+# Flowline 1 splits at node 20 into main path 2 and minor path 3, which
+# rejoin through 4 and 5 at node 50 above the outlet 6.
+atw <- data.frame(
+  id = 1:6,
+  fromnode = c(10L, 20L, 20L, 30L, 40L, 50L),
+  tonode = c(20L, 30L, 40L, 50L, 50L, 60L),
+  divergence = c(0L, 1L, 2L, 0L, 0L, 0L))
+
+fixture(atw, "add_toids_worked_example",
+  "synthetic; the worked example in algorithms/add_toids.md",
+  "a divergence at node 20 (main 2, minor 3) rejoining at node 50 above one outlet")
+
+fixture(atw[c(1, 3, 2, 4, 5, 6), ], "add_toids_downstream_swapped",
+  "add_toids_worked_example with input rows 2 and 3 swapped",
+  "downstream connections at a divergence follow input row order, not identifier order",
+  "D-7")
+
+atw5 <- atw[1:5, ]
+
+fixture(within(atw5, divergence[2] <- NA_integer_), "add_toids_missing_divergence",
+  "first five rows of add_toids_worked_example with id 2 divergence missing",
+  "a missing divergence below a divergence: in R 1.3.0 the flowline receives no upstream connection")
+
+fixture(within(atw5, divergence[3] <- 1L), "add_toids_divergence_without_minor",
+  "first five rows of add_toids_worked_example with id 3 divergence 1",
+  "both downstream flowlines coded main (1): the upstream flowline repeats under return_dendritic = TRUE")
+
+fixture(within(atw5, divergence[2] <- 2L), "add_toids_divergence_without_main",
+  "first five rows of add_toids_worked_example with id 2 divergence 2",
+  "both downstream flowlines coded minor (2): the upstream flowline becomes an outlet")
+
+fixture(data.frame(
+  id = c(9L, 1L, 2L, 3L),
+  fromnode = c(90L, 1L, 2L, 5L),
+  tonode = c(NA, 2L, 3L, 77L),
+  divergence = 0L),
+  "add_toids_missing_tonode_first",
+  "synthetic",
+  "a missing tonode on the first row (moves last, D-14 departure) and an unmatched tonode (id 3)",
+  "D-14")
+
+fixture(data.frame(
+  id = 1:3,
+  fromnode = 1:3,
+  tonode = c(2L, NA, 2L),
+  divergence = 0L),
+  "add_toids_missing_tonode_target",
+  "synthetic",
+  "a flowline (id 2) with a missing tonode whose fromnode two flowlines reach: in R 1.3.0 never a target")
+
+fixture(transform(atw, id = as.character(id)), "add_toids_character_id",
+  "add_toids_worked_example with id TEXT",
+  "TEXT identifiers: outlet toid \"\"",
+  "I-5")
+
+fixture(data.frame(id = 1L, fromnode = 1L, tonode = 2L, divergence = 0L),
+  "add_toids_single_row",
+  "synthetic",
+  "S-6 single row on the node pattern",
+  "S-6")
+
+fixture(data.frame(
+  id = c(30L, 4L, 100L, 2L, 7L),
+  fromnode = 1:5, tonode = 6:10,
+  divergence = 0L),
+  "add_toids_no_connections",
+  "synthetic (all_terminals identifiers and nodes, no toid)",
+  "S-6 all terminals on the node pattern: every toid is the outlet value, input order",
+  "S-6")
+
+fixture(data.frame(id = integer(), fromnode = integer(), tonode = integer(),
+  divergence = integer()),
+  "add_toids_zero_rows",
+  "synthetic",
+  "I-11 zero rows on the node pattern: toid typed",
+  "I-11")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")
