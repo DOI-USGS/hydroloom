@@ -36,8 +36,9 @@ test_that("get_pfaf", {
   expect_equal(pfaf$pf_level_3[pfaf$id == 15000500072804], 151)
   expect_equal(pfaf$pf_level_4[pfaf$id == 15000500072804], 1511)
 
-  expect_equal(pfaf$pf_level_3[pfaf$id == 15000500084318], 181)
-  expect_equal(pfaf$pf_level_3[pfaf$id == 15000500028332], 161)
+  # D-4: both tributaries enter 15000500072804; their order is a topo_sort tie
+  expect_equal(pfaf$pf_level_3[pfaf$id == 15000500084318], 161)
+  expect_equal(pfaf$pf_level_3[pfaf$id == 15000500028332], 181)
 
   fl <- sf::read_sf(system.file("extdata", "walker.gpkg", package = "hydroloom"))
 

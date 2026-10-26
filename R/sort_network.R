@@ -87,6 +87,12 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
   # index for fast traversal (no dispatch, no validation)
   index_ids <- make_index_ids_impl(x, mode = "both")
 
+  # D-4: rank each dense position by identifier byte order (C locale, D-1)
+  byte_rank <- id_byte_rank(index_ids$to$to_list$id)
+
+  # upstream lists in ascending byte order; NA padding stays last
+  index_ids$from$froms <- sort_froms_by_rank(index_ids$from$froms, byte_rank)
+
   if (!is.null(outlets)) {
     starts <- which(index_ids$to$to_list$id %in% outlets)
   } else {
@@ -100,6 +106,9 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
         call. = FALSE)
     }
   }
+
+  # D-4: starts in descending byte order, so outlets come out ascending
+  starts <- starts[order(byte_rank[starts], decreasing = TRUE)]
 
   # Some vectors to track results
   to_visit <- out <- rep(0, length(index_ids$to$to_list$id))
@@ -198,7 +207,7 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
 
   x <- filter(x, .data$id %in% id_order) |>
     left_join(tibble(id = id_order, sorter = out), by = "id") |>
-    arrange(desc(.data$sorter)) |>
+    arrange(desc(.data$sorter), as.character(.data$toid)) |>
     select(-"sorter")
 
   if (split) {
@@ -219,6 +228,46 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
 
   x
 
+}
+
+#' Rank identifiers by byte order
+#' @description rank of each identifier in C-locale byte order of its
+#' string form (SPEC D-1, D-4). Identifiers are unique.
+#' @param ids integer or character identifiers
+#' @returns integer rank, 1 for the first in byte order
+#' @noRd
+id_byte_rank <- function(ids) {
+
+  dt <- data.table(id_chr = as.character(ids), pos = seq_along(ids))
+
+  setorderv(dt, "id_chr")
+
+  rank <- integer(length(ids))
+  rank[dt$pos] <- seq_along(ids)
+
+  rank
+}
+
+#' Sort upstream lists by rank
+#' @description reorders each column of the padded upstream matrix so its
+#' entries are in ascending `rank`; the NA padding stays at the end.
+#' @param froms integer matrix of dense positions, one column per node
+#' @param rank integer rank of each dense position
+#' @returns froms with each column sorted
+#' @noRd
+sort_froms_by_rank <- function(froms, rank) {
+
+  pos <- as.integer(froms)
+
+  dt <- data.table(col = rep(seq_len(ncol(froms)), each = nrow(froms)),
+    pos = pos,
+    rank = rank[pos])
+
+  setorderv(dt, c("col", "rank"), na.last = TRUE)
+
+  froms[] <- dt$pos
+
+  froms
 }
 
 #' @name sort_network

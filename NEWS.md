@@ -20,6 +20,16 @@ hydroloom (development version)
   for integer identifiers, and `add_toids()` returns `toid` in the type of
   `id`. Functions called on a `data.frame` return these types under the
   input column names.
+- `sort_network()` and `add_topo_sort()` now return one order for a
+  network whatever the order of its input rows. Flowlines that flow to
+  the same flowline, and separate outlet networks, are placed in
+  ascending order of their identifiers compared as text (so `100` comes
+  before `2`); rows that share an `id` are ordered by `toid` the same
+  way. Previously the order followed the input rows. Row order and
+  `topo_sort` values change on most networks with a confluence or more
+  than one outlet, and so do values built from `topo_sort`: `levelpath`
+  from `add_levelpaths()`, and `add_pfafstetter()` codes where two
+  tributaries enter the same flowline.
 
 hydroloom 1.3.0
 ==========
