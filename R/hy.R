@@ -212,7 +212,7 @@ is.hy <- function(x, silent = FALSE) {
 #'
 hy_reverse <- function(x) {
 
-  if (!is.hy(x)) stop("must be an hy object")
+  if (!is.hy(x)) hy_representation_error("must be an hy object")
 
   orig_names <- attr(x, "orig_names")
 

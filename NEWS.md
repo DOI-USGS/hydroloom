@@ -50,6 +50,14 @@ hydroloom (development version)
   which they accept. Code that indexed the vector by name, such as
   `hy_capabilities(x)["sort_network"]`, should read the `available`
   column instead.
+- Errors raised when a network is not the representation a function needs
+  now have the condition class `hydroloom_representation_error`, so code
+  can catch them with `tryCatch(hydroloom_representation_error = ...)`.
+  These are the errors that name the required class (for example
+  "sort_network() requires hy_topo"), `add_toids()` on a network that
+  already has `toid`, `hy_reverse()` on an object that is not an hy
+  object, and `check_hy_graph()` on a network without `toid`. The message
+  text is unchanged.
 
 hydroloom 1.3.0
 ==========

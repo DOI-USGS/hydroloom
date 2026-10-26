@@ -62,7 +62,7 @@ add_toids.hy <- function(x, return_dendritic = TRUE) {
 #' @name add_toids
 #' @export
 add_toids.hy_topo <- function(x, return_dendritic = TRUE) {
-  stop("This network already has toid (class: ", hy_network_type(x),
+  hy_representation_error("This network already has toid (class: ", hy_network_type(x),
     "). add_toids() converts fromnode/tonode to toid.",
     call. = FALSE)
 }
@@ -71,7 +71,7 @@ add_toids.hy_topo <- function(x, return_dendritic = TRUE) {
 #' @export
 add_toids.hy_node <- function(x, return_dendritic = TRUE) {
 
-  if ("toid" %in% names(x)) stop("network already contains a toid attribute")
+  if ("toid" %in% names(x)) hy_representation_error("network already contains a toid attribute")
 
   # nolint start
   # joiner_fun <- function(x) {

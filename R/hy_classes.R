@@ -335,7 +335,7 @@ new_hy_topo <- function(x) {
   check_names(x, c(id, toid), "hy_topo")
 
   if (any(duplicated(x$id)))
-    stop("hy_topo requires unique id. This self-referencing edge list ",
+    hy_representation_error("hy_topo requires unique id. This self-referencing edge list ",
          "cannot have duplicated rows.\n",
          "  For non-dendritic connectivity, use:\n",
          "  - make_node_topology() for fromnode/tonode (hy_node)\n",
@@ -374,7 +374,7 @@ new_hy_node <- function(x) {
   check_names(x, c(id, fromnode, tonode), "hy_node")
 
   if (any(duplicated(x$id)))
-    stop("hy_node requires unique id. Each catchment or flowline ",
+    hy_representation_error("hy_node requires unique id. Each catchment or flowline ",
          "appears once; non-dendritic topology is encoded through ",
          "shared node identifiers, not row duplication.")
 
@@ -482,10 +482,26 @@ hy_dispatch_error <- function(fn_name, required_class, x, guidance) {
 
   current <- hy_network_type(x)
 
-  stop(fn_name, "() requires ", required_class, ".\n",
+  hy_representation_error(fn_name, "() requires ", required_class, ".\n",
     "  Current input is: ", current, ".\n",
     "  ", guidance,
     call. = FALSE)
+}
+
+#' Signal an error of class hydroloom_representation_error
+#' @description Used where the input is not the representation a function
+#' needs (SPEC A-10). Message parts and `call.` behave as in `stop()`.
+#' @param ... message parts, pasted together as `stop()` does.
+#' @param call. logical. Include the calling function's call in the error.
+#' @noRd
+hy_representation_error <- function(..., call. = TRUE) {
+
+  call <- if (call.) sys.call(-1) else NULL
+
+  cond <- structure(list(message = .makeMessage(...), call = call),
+    class = c("hydroloom_representation_error", "error", "condition"))
+
+  stop(cond)
 }
 
 # ---- guidance constants ----

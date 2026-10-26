@@ -109,8 +109,8 @@ check_hy_graph <- function(x, divergence_check = FALSE, fraction_tol = 1e-6) {
 # CSR index: make_index_ids() on a hy_topo calls check_hy_graph().
 check_cycles_internal <- function(x) {
 
-  if (!"toid" %in% names(x)) stop("check_hy_graph requires toid. ", hy_guidance_topo,
-    call. = FALSE)
+  if (!"toid" %in% names(x)) hy_representation_error("check_hy_graph requires toid. ",
+    hy_guidance_topo, call. = FALSE)
 
   ids <- unique(x$id)
 
