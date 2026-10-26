@@ -73,6 +73,7 @@ test_that("point indexing to nearest existing node works as expected", {
   expect_equal(index_points_to_lines(flines_in, point),
     data.frame(point_id = 1,
       COMID = 11688298,
+      id_measure = 34.6,
       REACHCODE = "02060003000579",
       REACHCODE_measure = 34.6,
       offset = 0.000348), tolerance = 0.01)
@@ -85,6 +86,7 @@ test_that("point indexing to nearest existing node works as expected", {
     sf::st_transform(point, 5070)),
   data.frame(point_id = 1,
     COMID = 11688298,
+    id_measure = 33.8,
     REACHCODE = "02060003000579",
     REACHCODE_measure = 33.8,
     offset = 30.27), tolerance = 0.01)
@@ -98,6 +100,7 @@ test_that("point indexing to nearest existing node works as expected", {
       precision = 30),
     data.frame(point_id = 1,
       COMID = 11688298,
+      id_measure = 25.9,
       REACHCODE = "02060003000579",
       REACHCODE_measure = 25.9,
       offset = 0.0000959), tolerance = 0.001))
@@ -106,6 +109,7 @@ test_that("point indexing to nearest existing node works as expected", {
     point),
   data.frame(point_id = 1,
     COMID = 11688298,
+    id_measure = 34.56,
     offset = 0.00034), tolerance = 0.001)
 
   point_w <- sf::st_sfc(sf::st_point(c(-76.86934, 39.49328)), crs = 4326)
@@ -135,6 +139,7 @@ test_that("point indexing works without measures", {
   expect_equal(index_points_to_lines(flines_in, point),
     data.frame(point_id = 1,
       COMID = 11688298,
+      id_measure = 34.56,
       REACHCODE = "02060003000579",
       offset = 0.000348), tolerance = 0.01)
 })
@@ -154,6 +159,7 @@ test_that("point indexing to for multiple points works", {
   expect_equal(index_points_to_lines(flines_in, point, search_radius = sr),
     data.frame(point_id = c(1, 2, 3),
       COMID = c(11688298, 11688808, 11688980),
+      id_measure = c(0, 53.58737, 75.37795),
       REACHCODE = c("02060003000579",
         "02060003000519",
         "02060003000253"),
@@ -166,6 +172,7 @@ test_that("point indexing to for multiple points works", {
     precision = 5),
   data.frame(point_id = c(1, 2, 3),
     COMID = c(11688298, 11688808, 11688980),
+    id_measure = c(2.1599, 50.52674, 77.40798),
     REACHCODE = c("02060003000579",
       "02060003000519",
       "02060003000253"),
@@ -282,7 +289,7 @@ test_that("disambiguate", {
   expect_equal(nrow(result), 3)
 
   expect_equal(names(result),
-    c("point_id", "COMID", "REACHCODE", "REACHCODE_measure", "offset"))
+    c("point_id", "COMID", "id_measure", "REACHCODE", "REACHCODE_measure", "offset"))
 
   result <- disambiguate_indexes(indexes,
     hy(dplyr::select(sample_flines, COMID, TotDASqKM)),
@@ -291,7 +298,7 @@ test_that("disambiguate", {
   expect_equal(nrow(result), 3)
 
   expect_equal(names(result),
-    c("point_id", "id", "aggregate_id",
+    c("point_id", "id", "id_measure", "aggregate_id",
       "aggregate_id_measure", "offset"))
 
   result <- disambiguate_indexes(indexes,
@@ -335,8 +342,75 @@ test_that("3dhp", {
 
   expect_equal(index_points_to_lines(threedhp_data, point),
     structure(list(point_id = 1L, id3dhp = "9Q1QM",
+      id_measure = 80.7,
       mainstemid = "https://geoconnex.us/ref/mainstems/377002",
       mainstemid_measure = 80.7, offset = 16.825),
     row.names = c(NA, -1L),
     class = "data.frame"), tolerance = 0.1)
+})
+
+test_that("aggregate_ids constrains placement to the named mainstem", {
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+
+  try(source(system.file("extdata", "new_hope_3dhp.R", package = "hydrogeofetch")))
+
+  if (!exists("sample_new_hope_3dhp") || !file.exists(sample_new_hope_3dhp))
+    skip("new_hope 3dhp sample not available")
+
+  d <- sf::read_sf(sample_new_hope_3dhp)
+  d <- suppressWarnings(sf::st_cast(d, "LINESTRING"))
+
+  ne <- "https://geoconnex.us/ref/mainstems/2408627"
+  nh <- "https://geoconnex.us/ref/mainstems/2408056"
+
+  # the confluence point is the end of Northeast Creek's bottom flowline
+  # nearer the receiving river
+  ne_fl <- d[d$mainstemid == ne, ]
+  nh_fl <- d[d$mainstemid == nh, ]
+  bottom <- ne_fl[which.min(ne_fl$hydrosequence), ]
+  coords <- sf::st_coordinates(bottom)
+
+  end_first <- sf::st_sfc(sf::st_point(as.numeric(coords[1, c("X", "Y")])),
+    crs = sf::st_crs(d))
+  end_last <- sf::st_sfc(sf::st_point(as.numeric(coords[nrow(coords), c("X", "Y")])),
+    crs = sf::st_crs(d))
+
+  mouth <- if (min(as.numeric(sf::st_distance(end_first, nh_fl))) <
+    min(as.numeric(sf::st_distance(end_last, nh_fl)))) {
+    end_first
+  } else {
+    end_last
+  }
+
+  sr <- units::set_units(500, "m")
+
+  without <- index_points_to_lines(d, mouth, search_radius = sr)
+  expect_equal(without$mainstemid, nh)
+
+  with_agg <- index_points_to_lines(d, mouth, search_radius = sr,
+    aggregate_ids = ne)
+  expect_equal(with_agg$mainstemid, ne)
+})
+
+test_that("aggregate_ids input errors", {
+  if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+
+  flines_in <- sf::st_transform(sample_flines, 4269)
+
+  point <- sf::st_sfc(sf::st_point(c(-76.86876, 39.49345)), crs = 4269)
+
+  expect_error(index_points_to_lines(flines_in, point,
+    ids = 11688298, aggregate_ids = "02060003000579"),
+  "aggregate_ids and ids are exclusive")
+
+  points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
+    sf::st_point(c(-76.91711, 39.40884))), crs = 4269)
+
+  expect_error(index_points_to_lines(flines_in, points,
+    aggregate_ids = "02060003000579"),
+  "aggregate_ids input must be 1:1 with points")
+
+  expect_error(index_points_to_lines(flines_in, points,
+    aggregate_ids = c("02060003000579", NA)),
+  "aggregate_ids must not contain NA")
 })

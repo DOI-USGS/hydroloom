@@ -8,6 +8,7 @@ articles:
     - articles/advanced_network
     - articles/non-dendritic
     - articles/network_navigation
+    - articles/mainstem_referencing
     - articles/accumulate_downstream
     - articles/flow-table
 reference:
@@ -70,6 +71,10 @@ reference:
       - '`get_partial_length`'
       - '`rescale_measures`'
       - '`add_measures`'
+      - '`get_confluences`'
+      - '`add_hydro_location_distance`'
+      - '`index_hydro_location_distance`'
+      - '`get_subpath`'
   - title: Deprecated
     contents:
       - '`make_fromids`'

@@ -36,7 +36,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::covr
+          # github hydrogeofetch until a CRAN release carries the new_hope_3dhp.R recipe
+          extra-packages: any::rcmdcheck, any::covr, github::DOI-USGS/hydrogeofetch
           needs: check, coverage
 
       - uses: r-lib/actions/check-r-package@v2

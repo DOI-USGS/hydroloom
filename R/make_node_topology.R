@@ -136,8 +136,9 @@ make_node_topology.hy_topo <- function(x, add_div = NULL, add = TRUE) {
 
     outlets <- is_outlet(x)
 
-    x$tonode[outlets] <- seq(max(x$tonode, na.rm = TRUE) + 1,
-      max(x$tonode, na.rm = TRUE) + sum(outlets))
+    # seed outlet tonodes above every assigned node, else they collide with fromnodes
+    nxt <- max(c(x$fromnode, x$tonode), na.rm = TRUE)
+    x$tonode[outlets] <- seq(nxt + 1, nxt + sum(outlets))
 
     if (!is.null(add_div)) {
       # we need to get the node the divergences upstream neighbor goes to

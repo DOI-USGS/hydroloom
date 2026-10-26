@@ -138,3 +138,26 @@ test_that("no duplicates in nodes", {
   expect_true(!any(duplicated(hydroloom::make_node_topology(sub, add_div = TRUE)$id)))
 
 })
+
+test_that("terminal tonodes do not collide with fromnodes", {
+  # The dendritic path numbers fromnodes 1..n and then seeds outlet tonodes
+  # above the max non-outlet tonode. When the highest-id rows are outlets (NA
+  # tonode, dropped from that max) the seed can fall inside the fromnode range
+  # and a terminal's tonode collides with another feature's fromnode, inventing
+  # a connection. A simple two-headwater, two-terminal chain reproduces it: 1->2
+  # feeds terminal 3, 4 is an independent terminal.
+  x <- dplyr::tibble(id = c("1", "2", "3", "4"),
+                     toid = c("2", "3", "", ""))
+
+  y <- make_node_topology(x, add = FALSE)
+  fn <- setNames(y$fromnode, y$id)
+  tn <- setNames(y$tonode, y$id)
+
+  # no terminal's tonode may appear in the fromnode set
+  term <- y$id[x$toid[match(y$id, x$id)] == ""]
+  expect_false(any(tn[term] %in% fn))
+
+  # the real edges still connect: 1->2 and 2->3 share a node each
+  expect_equal(unname(tn["1"]), unname(fn["2"]))
+  expect_equal(unname(tn["2"]), unname(fn["3"]))
+})

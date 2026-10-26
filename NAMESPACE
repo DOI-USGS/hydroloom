@@ -9,6 +9,10 @@ S3method(add_divergence,data.frame)
 S3method(add_divergence,hy)
 S3method(add_divergence,hy_node)
 S3method(add_divergence,hy_topo)
+S3method(add_hydro_location_distance,data.frame)
+S3method(add_hydro_location_distance,hy)
+S3method(add_hydro_location_distance,hy_node)
+S3method(add_hydro_location_distance,hy_topo)
 S3method(add_levelpaths,data.frame)
 S3method(add_levelpaths,hy)
 S3method(add_levelpaths,hy_flownetwork)
@@ -58,6 +62,18 @@ S3method(get_bridge_flowlines,hy)
 S3method(get_bridge_flowlines,hy_flownetwork)
 S3method(get_bridge_flowlines,hy_node)
 S3method(get_bridge_flowlines,hy_topo)
+S3method(get_confluences,data.frame)
+S3method(get_confluences,hy)
+S3method(get_confluences,hy_node)
+S3method(get_confluences,hy_topo)
+S3method(get_subpath,data.frame)
+S3method(get_subpath,hy)
+S3method(get_subpath,hy_node)
+S3method(get_subpath,hy_topo)
+S3method(index_hydro_location_distance,data.frame)
+S3method(index_hydro_location_distance,hy)
+S3method(index_hydro_location_distance,hy_node)
+S3method(index_hydro_location_distance,hy_topo)
 S3method(index_points_to_lines,data.frame)
 S3method(index_points_to_lines,hy)
 S3method(make_attribute_topology,data.frame)
@@ -95,6 +111,7 @@ S3method(to_flownetwork,hy_node)
 S3method(to_flownetwork,hy_topo)
 export(accumulate_downstream)
 export(add_divergence)
+export(add_hydro_location_distance)
 export(add_levelpaths)
 export(add_measures)
 export(add_pathlength)
@@ -112,15 +129,18 @@ export(dissolve_polygons)
 export(fix_flowdir)
 export(format_index_ids)
 export(get_bridge_flowlines)
+export(get_confluences)
 export(get_hydro_location)
 export(get_node)
 export(get_partial_length)
+export(get_subpath)
 export(hy)
 export(hy_capabilities)
 export(hy_network_type)
 export(hy_reverse)
 export(hydroloom_name_definitions)
 export(hydroloom_names)
+export(index_hydro_location_distance)
 export(index_points_to_lines)
 export(index_points_to_waterbodies)
 export(is.hy)
@@ -139,80 +159,98 @@ export(st_compatibalize)
 export(subset_network)
 export(to_flownetwork)
 importFrom(RANN,nn2)
-importFrom(data.table,.N)
-importFrom(data.table,.SD)
-importFrom(data.table,as.data.table)
-importFrom(data.table,copy)
-importFrom(data.table,data.table)
-importFrom(data.table,fcase)
-importFrom(data.table,rbindlist)
-importFrom(data.table,setcolorder)
-importFrom(data.table,setnames)
-importFrom(data.table,setorder)
-importFrom(data.table,setorderv)
-importFrom(dplyr,all_of)
-importFrom(dplyr,any_of)
-importFrom(dplyr,arrange)
-importFrom(dplyr,as_tibble)
-importFrom(dplyr,between)
-importFrom(dplyr,bind_cols)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,case_when)
-importFrom(dplyr,desc)
-importFrom(dplyr,distinct)
-importFrom(dplyr,everything)
-importFrom(dplyr,filter)
-importFrom(dplyr,group_by)
-importFrom(dplyr,group_split)
-importFrom(dplyr,lag)
-importFrom(dplyr,left_join)
-importFrom(dplyr,mutate)
-importFrom(dplyr,n)
-importFrom(dplyr,pull)
-importFrom(dplyr,rename)
-importFrom(dplyr,right_join)
-importFrom(dplyr,row_number)
-importFrom(dplyr,select)
-importFrom(dplyr,summarise)
-importFrom(dplyr,tibble)
-importFrom(dplyr,ungroup)
-importFrom(fastmap,fastqueue)
-importFrom(fastmap,faststack)
+importFrom(data.table,
+  .N,
+  .SD,
+  as.data.table,
+  copy,
+  data.table,
+  fcase,
+  rbindlist,
+  setcolorder,
+  setnames,
+  setorder,
+  setorderv
+)
+importFrom(dplyr,
+  all_of,
+  any_of,
+  arrange,
+  as_tibble,
+  between,
+  bind_cols,
+  bind_rows,
+  case_when,
+  desc,
+  distinct,
+  everything,
+  filter,
+  group_by,
+  group_split,
+  lag,
+  left_join,
+  mutate,
+  n,
+  pull,
+  rename,
+  right_join,
+  row_number,
+  select,
+  summarise,
+  tibble,
+  ungroup
+)
+importFrom(fastmap,
+  fastqueue,
+  faststack
+)
 importFrom(methods,as)
-importFrom(pbapply,pbapply)
-importFrom(pbapply,pblapply)
-importFrom(pbapply,pboptions)
-importFrom(pbapply,pbsapply)
+importFrom(pbapply,
+  pbapply,
+  pblapply,
+  pboptions,
+  pbsapply
+)
 importFrom(rlang,":=")
-importFrom(sf,"st_geometry<-")
-importFrom(sf,st_as_sf)
-importFrom(sf,st_buffer)
-importFrom(sf,st_cast)
-importFrom(sf,st_coordinates)
-importFrom(sf,st_crs)
-importFrom(sf,st_drop_geometry)
-importFrom(sf,st_geometry)
-importFrom(sf,st_geometry_type)
-importFrom(sf,st_intersects)
-importFrom(sf,st_is_longlat)
-importFrom(sf,st_join)
-importFrom(sf,st_linestring)
-importFrom(sf,st_point)
-importFrom(sf,st_reverse)
-importFrom(sf,st_segmentize)
-importFrom(sf,st_sf)
-importFrom(sf,st_sfc)
-importFrom(sf,st_transform)
-importFrom(sf,st_zm)
-importFrom(stats,na.omit)
-importFrom(stats,setNames)
-importFrom(tidyr,pivot_wider)
-importFrom(tidyr,replace_na)
-importFrom(tidyr,unnest)
-importFrom(units,as_units)
-importFrom(units,set_units)
-importFrom(utils,adist)
-importFrom(utils,combn)
-importFrom(utils,setTxtProgressBar)
-importFrom(utils,tail)
-importFrom(utils,txtProgressBar)
+importFrom(sf,
+  "st_geometry<-",
+  st_as_sf,
+  st_buffer,
+  st_cast,
+  st_coordinates,
+  st_crs,
+  st_drop_geometry,
+  st_geometry,
+  st_geometry_type,
+  st_intersects,
+  st_is_longlat,
+  st_join,
+  st_linestring,
+  st_point,
+  st_reverse,
+  st_segmentize,
+  st_sf,
+  st_sfc,
+  st_transform,
+  st_zm
+)
+importFrom(stats,
+  na.omit,
+  setNames
+)
+importFrom(tidyr,
+  pivot_wider,
+  replace_na,
+  unnest
+)
+importFrom(units,
+  as_units,
+  set_units
+)
+importFrom(utils,
+  adist,
+  combn,
+  setTxtProgressBar,
+  tail,
+  txtProgressBar
+)
