@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "hydroloom remedies",
+  "description": "Error and warning messages shared by the R and Python packages, keyed by condition, with str.format placeholders; each entry says what is wrong, which rows, and the one call that fixes it (SPEC S-1, A-10, A-11).",
+  "type": "object",
+  "required": ["version", "remedies"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "remedies": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/definitions/remedy" }
+    }
+  },
+  "definitions": {
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.]*$"
+    },
+    "remedy": {
+      "type": "object",
+      "required": ["kind", "message", "placeholders", "condition", "rows", "fix",
+        "raised_by", "languages", "r_text", "python_class"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["error", "warning"] },
+        "message": { "$ref": "#/definitions/text" },
+        "placeholders": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "$ref": "#/definitions/text" }
+        },
+        "condition": { "$ref": "#/definitions/text" },
+        "rows": { "$ref": "#/definitions/text" },
+        "fix": { "$ref": "#/definitions/text" },
+        "raised_by": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/name" }
+        },
+        "languages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["r", "python"] }
+        },
+        "r_text": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/text" }
+        },
+        "r_text_from": {
+          "type": "string",
+          "enum": ["dplyr", "sf", "tibble", "vctrs"]
+        },
+        "r_class": {
+          "type": "string",
+          "enum": ["hydroloom_representation_error"]
+        },
+        "python_class": {
+          "type": ["string", "null"],
+          "enum": ["HydroloomError", "RepresentationError", "CRSError", "KeyError",
+            "TypeError", "ValueError", "HydroloomWarning", "FutureWarning", null]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "warning" } } },
+          "then": {
+            "not": { "required": ["r_class"] },
+            "properties": {
+              "python_class": { "enum": ["HydroloomWarning", "FutureWarning", null] }
+            }
+          },
+          "else": {
+            "properties": {
+              "python_class": { "enum": ["HydroloomError", "RepresentationError", "CRSError",
+                "KeyError", "TypeError", "ValueError", null] }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

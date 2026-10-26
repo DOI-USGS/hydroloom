@@ -158,8 +158,9 @@ Fixture `fixtures/is_hy_source_names.gpkg`, an aspatial table in NHDPlusV2 names
 renames. Expectation layer `is_hy_source_names` holds one row, `value = FALSE`.
 
 In R, `is.hy(hy(x))` is `TRUE` (`hy()` renames to `id`, `toid` and fills the `NA` with
-`0`), and setting `toid[3]` back to `NA` keeps it `TRUE`. The harness passes fixtures to
-the function as read, so these two values stay in testthat as interface tests.
+`0`); case `is_hy_after_hy` records this path on `hy_toid_missing_with_nodes.gpkg`, run
+through `hy()` by `prepare` (D3-84). Setting `toid[3]` back to `NA` keeps it `TRUE`; that value, on an
+object altered after `hy()`, stays in testthat as an interface test.
 
 ## Changes
 
@@ -172,3 +173,5 @@ the function as read, so these two values stay in testthat as interface tests.
 - 2026-10-26, suite 0.1.0: review round. Divergence and duplicated row separated in Edge
   cases; terminal for a `toid` outside `id`; the zero-row table and `loop.gpkg` gain
   cases. No behavior change.
+- 2026-10-26, suite 0.1.0: remedies pass. Worked example states that the `TRUE` path
+  after `hy()` is case `is_hy_after_hy` (D3-84). No behavior change.

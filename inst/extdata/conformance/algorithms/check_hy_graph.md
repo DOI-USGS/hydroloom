@@ -80,12 +80,12 @@ only main paths at divergences (D3-58). Two limits follow on node input: a cycle
 passes through a minor path is not found, because the minor connection is dropped before
 the check; and a node table without `divergence` raises `divergence_required` from
 `add_toids()`, before any check runs. Converting the table to a flownetwork, which keeps
-every connection, finds such a cycle. R does not convert; today it stops inside dplyr
-("Can't rename columns that don't exist. Column `toid` doesn't exist."). A table with
-neither `toid` nor `fromnode`/`tonode` stops in both languages; the hydroloom condition,
-once the A-10 change lands, is `needs_topo` (D3-60, shared although R's text today is
-dplyr's). Raising on unusable input is read as consistent with A-10, which covers the
-graph problems the check finds (D3-61).
+every connection, finds such a cycle. R does not convert; it stops with `needs_topo`
+("check_hy_graph requires toid." followed by the guidance to build `toid` with
+`add_toids()`), raised as `hydroloom_representation_error` (D3-87, D3-90). A table with
+neither `toid` nor `fromnode`/`tonode` stops with `needs_topo` in both languages (D3-60).
+Raising on unusable input is read as consistent with A-10, which covers the graph
+problems the check finds (D3-61).
 
 `divergence_check = TRUE` reads `fromnode` and `divergence`, and `divergence_fraction`
 when that column is present. A missing `fromnode` or `divergence` column stops with
@@ -321,3 +321,7 @@ which drains into the pair, is not returned.
   (D3-57); node-input limits stated (D3-58); flownetwork `sort_network` route named as
   not calling the check (D3-55); Remedies rows split one per fix; a fixture for a
   divergence with its minor branch absent; `divergence_fraction` reference.
+- 2026-10-26, suite 0.1.0: remedies pass. Preconditions give R's stop on a table with no
+  `toid` as the D-8 text ("check_hy_graph requires toid"), raised as
+  `hydroloom_representation_error`, in place of the dplyr error (D3-88). No behavior
+  change.

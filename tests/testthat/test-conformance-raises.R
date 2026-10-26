@@ -88,3 +88,19 @@ test_that("the manifest schema accepts raises and raises_key", {
   expect_false(valid(c(base, list(raises = "stop"))))
   expect_false(valid(c(base, list(raises_key = "weight_missing"))))
 })
+
+test_that("an error case with a representation key asserts the condition class", {
+  skip_if_no_conformance()
+
+  classed <- function() hydroloom:::hy_representation_error("not this pattern")
+  plain <- function() stop("not this pattern")
+
+  expect_true(call_case_function(classed, list(), "error", "classed", "needs_topo")$raised)
+
+  failed <- tryCatch(call_case_function(plain, list(), "error", "plain", "needs_topo"),
+    expectation_failure = function(e) e)
+  expect_s3_class(failed, "expectation_failure")
+  expect_match(conditionMessage(failed), "hydroloom_representation_error")
+
+  expect_true(call_case_function(plain, list(), "error", "plain_other", "network_cycle")$raised)
+})

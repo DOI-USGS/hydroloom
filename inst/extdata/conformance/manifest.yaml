@@ -109,6 +109,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: warning
+    raises_key: nonunique_id_with_toid
 
   # changes_with: i2 (whole-valued double ids -> integer; NA toid -> 0L)
   - id: hy_worked_example
@@ -187,6 +188,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: warning
+    raises_key: name_alias_duplicate
 
   # name_alias_conflict
   - id: hy_name_conflict
@@ -198,6 +200,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+    raises_key: name_alias_conflict
 
   # changes_with: i2
   - id: hy_duplicated_id
@@ -219,6 +222,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+    raises_key: flownetwork_multiple_downmain
 
   # flownetwork_multiple_upmain (1 -> 3 and 2 -> 3 both upmain)
   - id: hy_flownetwork_upmain_conflict
@@ -230,6 +234,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+    raises_key: flownetwork_multiple_upmain
 
   - id: hy_leveled
     function: hy
@@ -489,6 +494,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+    raises_key: not_hy_object
 
   # not_hy_object; changes_with: a10; ID 1 -> 2 and 1 -> 3: hy() gives
   # hy_flownetwork, orig_names present
@@ -502,6 +508,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+    raises_key: not_hy_object
 
   # not_hy_object; changes_with: a10; raw fixture, no hy()
   - id: hy_reverse_not_hy_raises
@@ -513,6 +520,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+    raises_key: not_hy_object
 
   # is.hy ---------------------------------------------------------------------
   # The harness passes each fixture as read, so every R value is FALSE: a table
@@ -684,6 +692,7 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+    raises_key: unnamed_name_mapping
 
   # hydroloom_name_definitions -------------------------------------------------
   # A non-function export read by value (D3-12, D3-22): no fixture, args, or

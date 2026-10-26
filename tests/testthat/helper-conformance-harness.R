@@ -430,12 +430,23 @@ case_input <- function(case, dir = conformance_dir()) {
 
 write_expected_mode <- function() identical(Sys.getenv("HYDROLOOM_WRITE_EXPECTED"), "1")
 
+# remedies.json keys whose R condition class is hydroloom_representation_error
+# (A-10, D3-90).
+representation_keys <- function() {
+
+  remedies <- jsonlite::read_json(
+    system.file("extdata", "remedies.json", package = "hydroloom"))$remedies
+
+  names(Filter(function(r) identical(r$r_class, "hydroloom_representation_error"), remedies))
+}
+
 # Calls a case's function. Without `raises`, warnings and messages are
 # suppressed; they are not part of the expectation layer. With `raises`
 # ("error" or "warning", S-6) the condition is captured and asserted with a
-# testthat expectation; `raises_key` (a remedies.json key, A-10) is not yet
-# checked. Returns list(result, raised), raised TRUE for an error case.
-call_case_function <- function(fun, call_args, raises = NULL, id = "") {
+# testthat expectation; an error case whose `raises_key` (a remedies.json key,
+# A-10) is a representation error must raise hydroloom_representation_error.
+# Returns list(result, raised), raised TRUE for an error case.
+call_case_function <- function(fun, call_args, raises = NULL, id = "", raises_key = NULL) {
 
   if (is.null(raises))
     return(list(result = suppressMessages(suppressWarnings(do.call(fun, call_args))),
@@ -448,6 +459,11 @@ call_case_function <- function(fun, call_args, raises = NULL, id = "") {
     }, error = function(e) e)
 
     testthat::expect(!is.null(err), paste0("case ", id, " was expected to raise an error"))
+
+    if (!is.null(err) && !is.null(raises_key) && raises_key %in% representation_keys())
+      testthat::expect(inherits(err, "hydroloom_representation_error"),
+        paste0("case ", id, " (", raises_key, ") was expected to raise ",
+          "hydroloom_representation_error"))
 
     return(list(result = NULL, raised = TRUE))
   }
@@ -483,7 +499,7 @@ run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
     call_args <- args
     if (!is.null(case$fixture)) call_args <- c(list(case_input(case, dir)), args)
 
-    called <- call_case_function(obj, call_args, case$raises, case$id)
+    called <- call_case_function(obj, call_args, case$raises, case$id, case$raises_key)
     if (called$raised) return(character())
 
     result <- called$result
