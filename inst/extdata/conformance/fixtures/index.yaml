@@ -1182,6 +1182,57 @@ fixtures:
   rules:
   - S-6
   bytes: 98304
+- file: sort_divergence_leaves.gpkg
+  source: synthetic (hydrology reader H-01)
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'a divergence at 2 with one branch inside the table (3) and one leaving
+    it (9): 2 is its own start'
+  rules:
+  - I-4
+  - I-6
+  bytes: 73728
+- file: sort_flownetwork_cycle.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "loop warning")
+  rows: 8
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'a flownetwork (repeated id 5) holding a cycle 3 -> 4 -> 5 -> 3: no cycle
+    check, flowlines dropped with a warning'
+  rules:
+  - D-8
+  - I-6
+  bytes: 73728
+- file: sort_flownetwork_divergence.gpkg
+  source: synthetic
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: a flownetwork divergence (1 -> 3 and 1 -> 2) that rejoins at 4; rows
+    sharing an id in toid order after D-4
+  rules:
+  - D-4
+  - I-6
+  bytes: 73728
+- file: sort_mixed_types.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'INTEGER id with TEXT toid: type mismatch warning and join failure today;
+    one type after I-2'
+  rules:
+  - I-2
+  bytes: 73728
 - file: sort_network_dups.gpkg
   source: tests/testthat/data/sort_network_dups.rds
   rows: 83
@@ -1196,6 +1247,57 @@ fixtures:
   - I-1
   - I-6
   bytes: 73728
+- file: sort_no_outlet.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'a three-flowline cycle with no outlet: no_outlet warning today, network_cycle
+    after D-8'
+  rules:
+  - D-8
+  bytes: 73728
+- file: sort_siblings.gpkg
+  source: synthetic; the worked example in algorithms/sort_network.md
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'three siblings whose row order differs from identifier byte order: input
+    order today, byte order after D-4'
+  rules:
+  - D-4
+  - D-1
+  bytes: 73728
+- file: sort_siblings_permuted.gpkg
+  source: sort_siblings with rows reordered 5, 2, 4, 3, 1
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'the same network in another row order: sibling order follows the new
+    row order today'
+  rules:
+  - D-4
+  - D-7
+  bytes: 73728
+- file: sort_siblings_text.gpkg
+  source: synthetic
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: TEXT siblings whose byte order (B, _c, a, b) differs from row and locale
+    order
+  rules:
+  - D-4
+  - D-1
+  bytes: 73728
 - file: sort_test.gpkg
   source: tests/testthat/data/sort_test.rds
   rows: 104
@@ -1206,6 +1308,30 @@ fixtures:
   exercises: integer ID/toNexID with -1 outlet value (foreign reserved toid)
   rules:
   - I-4
+  bytes: 73728
+- file: sort_test_hy_names.gpkg
+  source: tests/testthat/data/sort_test.rds with ID renamed id and toNexID renamed
+    toid
+  rows: 104
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: hydroloom names on a network with the foreign outlet value -1 and an
+    unmatched toid
+  rules:
+  - I-4
+  bytes: 73728
+- file: sort_two_networks.gpkg
+  source: synthetic (tests/testthat/test_sort_network.R "get_sorted")
+  rows: 8
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: two independent chains ending at 4 and 9; split and outlets
+  rules:
+  - D-4
   bytes: 73728
 - file: three_cycle.gpkg
   source: synthetic

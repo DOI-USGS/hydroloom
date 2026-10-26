@@ -738,6 +738,86 @@ fixture(within(dvc, divergence <- c(0L, 1L, 2L, 0L))[c(1, 2, 4), ],
   "synthetic (divergence_miscoded with id 2 coded 1 and the minor branch, id 3, removed)",
   "an extract keeping only the main branch of a divergence at node 2; the remaining divergence == 1 is flagged as a split where flow does not split")
 
+# Function fixtures: sort_network (algorithms/sort_network.md) ---------------
+
+# Three siblings (30, 2, 10) join at 4, which drains to the outlet 5. Row
+# order differs from identifier byte order ("10" < "2" < "30").
+ssb <- data.frame(
+  id = c(30L, 2L, 10L, 4L, 5L),
+  toid = c(4L, 4L, 4L, 5L, 0L))
+
+fixture(ssb, "sort_siblings",
+  "synthetic; the worked example in algorithms/sort_network.md",
+  "three siblings whose row order differs from identifier byte order: input order today, byte order after D-4",
+  c("D-4", "D-1"))
+
+fixture(ssb[c(5, 2, 4, 3, 1), ], "sort_siblings_permuted",
+  "sort_siblings with rows reordered 5, 2, 4, 3, 1",
+  "the same network in another row order: sibling order follows the new row order today",
+  c("D-4", "D-7"))
+
+fixture(data.frame(
+  id = c("b", "a", "B", "_c", "o"),
+  toid = c("o", "o", "o", "o", "")),
+  "sort_siblings_text",
+  "synthetic",
+  "TEXT siblings whose byte order (B, _c, a, b) differs from row and locale order",
+  c("D-4", "D-1"))
+
+fixture(data.frame(
+  id = c(1L, 1L, 2L, 3L, 4L),
+  toid = c(3L, 2L, 4L, 4L, 0L)),
+  "sort_flownetwork_divergence",
+  "synthetic",
+  "a flownetwork divergence (1 -> 3 and 1 -> 2) that rejoins at 4; rows sharing an id in toid order after D-4",
+  c("D-4", "I-6"))
+
+fixture(data.frame(
+  id = c(1L, 2L, 3L, 4L, 6L, 7L, 8L, 9L),
+  toid = c(2L, 3L, 4L, 0L, 7L, 8L, 9L, 0L)),
+  "sort_two_networks",
+  "synthetic (tests/testthat/test_sort_network.R \"get_sorted\")",
+  "two independent chains ending at 4 and 9; split and outlets",
+  "D-4")
+
+fixture(data.frame(
+  id = 1:3,
+  toid = c(2L, 3L, 1L)),
+  "sort_no_outlet",
+  "synthetic",
+  "a three-flowline cycle with no outlet: no_outlet warning today, network_cycle after D-8",
+  "D-8")
+
+fixture(data.frame(
+  id = c(1L, 2L, 3L, 4L, 5L, 5L, 6L, 7L),
+  toid = c(3L, 4L, 4L, 5L, 6L, 3L, 7L, 0L)),
+  "sort_flownetwork_cycle",
+  "synthetic (tests/testthat/test_sort_network.R \"loop warning\")",
+  "a flownetwork (repeated id 5) holding a cycle 3 -> 4 -> 5 -> 3: no cycle check, flowlines dropped with a warning",
+  c("D-8", "I-6"))
+
+sth <- rds("sort_test")
+names(sth) <- c("id", "toid")
+
+fixture(sth, "sort_test_hy_names",
+  "tests/testthat/data/sort_test.rds with ID renamed id and toNexID renamed toid",
+  "hydroloom names on a network with the foreign outlet value -1 and an unmatched toid",
+  "I-4")
+
+fixture(data.frame(id = 1:2, toid = c("2", "0")),
+  "sort_mixed_types",
+  "synthetic",
+  "INTEGER id with TEXT toid: type mismatch warning and join failure today; one type after I-2",
+  "I-2")
+
+fixture(data.frame(
+  id = c(1L, 2L, 2L, 3L, 4L),
+  toid = c(2L, 3L, 9L, 0L, 2L)),
+  "sort_divergence_leaves",
+  "synthetic (hydrology reader H-01)",
+  "a divergence at 2 with one branch inside the table (3) and one leaving it (9): 2 is its own start",
+  c("I-4", "I-6"))
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

@@ -49,6 +49,9 @@ functions:
     requires: algorithms/check_hy_graph.md#requires
     returns: frame
     key: [row]
+  sort_network:
+    requires: algorithms/sort_network.md#requires
+    returns: frame
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -2578,3 +2581,518 @@ cases:
     supported_by: [r]
     generator: [r]
     raises: error
+
+  # sort_network --------------------------------------------------------------
+  # Annotations from the proposed cases (D3-14) are kept as comments:
+  # changes_with D-4 = sibling and outlet order by identifier byte order
+  # (ROADMAP §4, M3), so the captured order changes; D-8 = SCC cycle check on
+  # hy_topo, a warning or partial result becomes an error; I-2 = identifier
+  # ingest, types change and values compared as text do not. "post" in a
+  # note gives the post-change outcome. A warning case still compares its
+  # layer.
+
+  # changes_with: D-4; S-6; today 7, 2, 100, 4, 30 (reverse input); post 100,
+  # 2, 30, 4, 7
+  - id: sort_network_all_terminals
+    function: sort_network
+    fixture: all_terminals.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; terminal_id equals id on every row
+  - id: sort_network_all_terminals_split
+    function: sort_network
+    fixture: all_terminals.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 n = 1
+  - id: sort_network_single_flowline
+    function: sort_network
+    fixture: single_flowline.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 n = 1; terminal_id 1
+  - id: sort_network_single_flowline_split
+    function: sort_network
+    fixture: single_flowline.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 says raises; R returns 3 rows, no warning; captured (D3-46, D3-57)
+  - id: sort_network_duplicated_edge
+    function: sort_network
+    fixture: duplicated_edge.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # I-11 conflict; R stops in the index build (subscript out of bounds); no
+  # remedies key; Python returns zero rows
+  - id: sort_network_empty_network
+    function: sort_network
+    fixture: empty_network.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # S-6 fixture run through sort_network; weight not read; siblings 1, 2
+  # already in byte order
+  - id: sort_network_missing_weight
+    function: sort_network
+    fixture: missing_weight.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # id and name only; representation guidance
+  - id: sort_network_empty_name
+    function: sort_network
+    fixture: empty_name.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # changes_with: D-4; worked example; today 30, 2, 10, 4, 5; post 10, 2, 30,
+  # 4, 5
+  - id: sort_network_siblings
+    function: sort_network
+    fixture: sort_siblings.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; D-7 un-sorted variant; today 2, 10, 30, 4, 5; post
+  # equals sort_network_siblings
+  - id: sort_network_siblings_permuted
+    function: sort_network
+    fixture: sort_siblings_permuted.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; D-1 byte order; today b, a, B, _c, o; post B, _c, a, b,
+  # o
+  - id: sort_network_siblings_text
+    function: sort_network
+    fixture: sort_siblings_text.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; today 12 then 1..11; post 1..11 then 12 (outlets 11 <
+  # 12)
+  - id: sort_network_isolated_flowline
+    function: sort_network
+    fixture: isolated_flowline.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; terminal_id 11 on ids 1..11, 12 on id 12
+  - id: sort_network_isolated_flowline_split
+    function: sort_network
+    fixture: isolated_flowline.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; node route via add_toids (message); today 13, 9, 4, 1,
+  # 2, 3, 5, 6, 7, 8, 10, 11, 12; post 4, 1, 2, 3, 5, 6, 7, 8, 10, 11, 9, 12,
+  # 13
+  - id: sort_network_divergence_attribute
+    function: sort_network
+    fixture: divergence_attribute.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # node route with no divergence column; add_toids (return_dendritic = TRUE)
+  # stops
+  - id: sort_network_divergence_no_attribute
+    function: sort_network
+    fixture: divergence_no_attribute.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: divergence_required
+
+  # changes_with: D-4; 2 diverges to 3 (inside) and 9 (outside), so 2 is a
+  # start; today 3, 1, 4, 2, 2 (3 before 2); post 1, 4, 2, 2, 3; no warning
+  - id: sort_network_divergence_leaves
+    function: sort_network
+    fixture: sort_divergence_leaves.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; terminal_id 3 on id 3, 2 on ids 1, 4, 2 (the diverging
+  # flowline, not the basin outlet)
+  - id: sort_network_divergence_leaves_split
+    function: sort_network
+    fixture: sort_divergence_leaves.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # node route; 1, 2, 3, 6, 7, 4, 8, 9, 5, 10 today and post (input order
+  # equals byte order)
+  - id: sort_network_return_divergence
+    function: sort_network
+    fixture: return_divergence.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; repeated id rows; today (1,3), (1,2), (2,4), (3,4),
+  # (4,0); post (1,2), (1,3), (2,4), (3,4), (4,0)
+  - id: sort_network_flownetwork_divergence
+    function: sort_network
+    fixture: sort_flownetwork_divergence.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; terminal_id 4 on every row
+  - id: sort_network_flownetwork_divergence_split
+    function: sort_network
+    fixture: sort_flownetwork_divergence.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; today 6, 7, 8, 9, 1, 2, 3, 4; post 1, 2, 3, 4, 6, 7, 8,
+  # 9; terminal_id 4 and 9
+  - id: sort_network_two_networks_split
+    function: sort_network
+    fixture: sort_two_networks.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; argument order not read; today 6, 7, 8, 1, 2, 3; post 1,
+  # 2, 3, 6, 7, 8; terminal_id 3 and 8
+  - id: sort_network_two_networks_outlets
+    function: sort_network
+    fixture: sort_two_networks.gpkg
+    args: {split: true, outlets: [8, 3]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # 2 is inside 3's network and is visited twice; returns 1, 2, 3
+  - id: sort_network_two_networks_nested_outlets
+    function: sort_network
+    fixture: sort_two_networks.gpkg
+    args: {outlets: [3, 2]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: sort_network_two_networks_nested_outlets_split
+    function: sort_network
+    fixture: sort_two_networks.gpkg
+    args: {split: true, outlets: [3, 2]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: split_outlets_overlap
+
+  # zero rows, no warning
+  - id: sort_network_two_networks_unknown_outlet
+    function: sort_network
+    fixture: sort_two_networks.gpkg
+    args: {outlets: [99]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; node route; two sub-networks of one NHDPlusV2 basin
+  - id: sort_network_network_outlets_split
+    function: sort_network
+    fixture: network.gpkg
+    args: {split: true, outlets: [11690186, 11689280]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: sort_network_network_nested_outlets_split
+    function: sort_network
+    fixture: network.gpkg
+    args: {split: true, outlets: [11690196, 11689718]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: split_outlets_overlap
+
+  # stops today (pair join) and post (SCC); message text changes with D-8
+  - id: sort_network_reciprocal_pair
+    function: sort_network
+    fixture: reciprocal_pair.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  # the pair join catches toid == id today; SCC post
+  - id: sort_network_self_loop
+    function: sort_network
+    fixture: self_loop.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  # changes_with: D-8; today warns and returns ids 5, 6; post raises error
+  # network_cycle (no layer)
+  - id: sort_network_three_cycle
+    function: sort_network
+    fixture: three_cycle.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: sort_missed_features
+
+  # changes_with: D-8; today no_outlet then sort_missed_features, zero rows;
+  # post raises error network_cycle
+  - id: sort_network_no_outlet
+    function: sort_network
+    fixture: sort_no_outlet.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: no_outlet
+
+  # flownetwork runs no cycle check today or post; returns ids 6, 7
+  - id: sort_network_flownetwork_cycle
+    function: sort_network
+    fixture: sort_flownetwork_cycle.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: sort_missed_features
+
+  # changes_with: D-4; braced GUID ids, flownetwork with cycles; 50 of 839 rows
+  - id: sort_network_loop2
+    function: sort_network
+    fixture: loop2.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: sort_missed_features
+
+  # changes_with: D-4; character ids, flownetwork; all 1425 rows, no warning
+  - id: sort_network_loop
+    function: sort_network
+    fixture: loop.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # toNexID is not a toid alias, so hy() finds no toid
+  - id: sort_network_sort_test
+    function: sort_network
+    fixture: sort_test.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # changes_with: D-4; I-4 foreign outlet value -1 (id 1, last row) and
+  # unmatched toid 24; 104 rows, no warning
+  - id: sort_network_sort_test_hy_names
+    function: sort_network
+    fixture: sort_test_hy_names.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; nextgen wb-/nex- ids, repeated (id, toid) rows differing
+  # in divide_id/poi_id keep input order
+  - id: sort_network_sort_network_dups
+    function: sort_network
+    fixture: sort_network_dups.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; one terminal
+  - id: sort_network_sort_network_dups_split
+    function: sort_network
+    fixture: sort_network_dups.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: I-2; today id_toid_type_mismatch warning then a data.table
+  # join error; post (D3-06 pairing) both character, returns 1, 2
+  - id: sort_network_mixed_types
+    function: sort_network
+    fixture: sort_mixed_types.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # changes_with: D-4; node route (add_toids), sf, 746 rows
+  - id: sort_network_new_hope
+    function: sort_network
+    fixture: new_hope.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; one terminal
+  - id: sort_network_new_hope_split
+    function: sort_network
+    fixture: new_hope.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4, I-2; flownetwork route, 832 rows; prepare warning
+  # suppressed (D3-23)
+  - id: sort_network_new_hope_flownetwork
+    function: sort_network
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; nhdplus aliases, node route, 707 rows
+  - id: sort_network_network
+    function: sort_network
+    fixture: network.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4, I-2; 548 rows, 32 terminals; missing tocomid filled by
+  # hy() (I-5)
+  - id: sort_network_coastal_split
+    function: sort_network
+    fixture: coastal.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4; string ids, outlet toid "", 2710 rows
+  - id: sort_network_new_hope_3dhp
+    function: sort_network
+    fixture: new_hope_3dhp.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: D-4, I-2; identifiers beyond 32 bits; node route; 2691 rows
+  - id: sort_network_nhdplushr
+    function: sort_network
+    fixture: nhdplushr.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
