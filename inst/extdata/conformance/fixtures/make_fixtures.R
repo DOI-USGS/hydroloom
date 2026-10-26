@@ -12,16 +12,33 @@
 #
 # GeoPackage files are not byte-identical across runs (GDAL writes
 # timestamps); their contents are.
+#
+# To build only some fixtures, name their stems in HYDROLOOM_FIXTURES,
+# separated by commas or spaces:
+#
+#   HYDROLOOM_FIXTURES="hy_worked_example,hy_large_ids" Rscript inst/extdata/conformance/fixtures/make_fixtures.R
+#
+# Every other fixture file is left as it is and keeps its index entry, so
+# existing GeoPackages are not rewritten (D2-20). Unset, every fixture is
+# rebuilt.
 
 out_dir <- file.path("inst", "extdata", "conformance", "fixtures")
 rds <- function(name) readRDS(file.path("tests", "testthat", "data", paste0(name, ".rds")))
 
 stopifnot(dir.exists(out_dir))
 
+only <- strsplit(Sys.getenv("HYDROLOOM_FIXTURES"), "[,[:space:]]+")[[1]]
+only <- only[nzchar(only)]
+
+build <- function(name) length(only) == 0 || name %in% only
+
 index <- list()
 
-# Write one fixture and record its index entry.
+# Write one fixture and record its index entry. A fixture not selected by
+# HYDROLOOM_FIXTURES is skipped before x is evaluated.
 fixture <- function(x, name, source, exercises, rules = character()) {
+
+  if (!build(name)) return(invisible(NULL))
 
   if (!inherits(x, "sf")) x <- as.data.frame(x)
   attr(x, "orig_names") <- NULL
@@ -95,7 +112,7 @@ fixture(hr, "nhdplushr",
 
 # 3DHP: the hydrogeofetch New Hope sample, toid from dnhydrosequence as
 # helper-mainstems.R read_3dhp does, source column names kept.
-d3_file <- tryCatch({
+d3_file <- if (build("new_hope_3dhp")) tryCatch({
   e <- new.env()
   source(system.file("extdata", "new_hope_3dhp.R", package = "hydrogeofetch"), local = e)
   e$sample_new_hope_3dhp
@@ -115,7 +132,7 @@ if (!is.null(d3_file) && file.exists(d3_file)) {
   fixture(d3, "new_hope_3dhp",
     "hydrogeofetch sample_new_hope_3dhp (helper-mainstems.R read_3dhp: toid from dnhydrosequence, outlet toid \"\"); geometry dropped",
     "string identifiers; 3dhp aliases; mainstemid as aggregate_id")
-} else {
+} else if (build("new_hope_3dhp")) {
   message("hydrogeofetch 3DHP sample unavailable; new_hope_3dhp fixture not rebuilt")
 }
 
@@ -328,14 +345,131 @@ fixture(data.frame(id = integer(), toid = integer()),
   "I-11 zero-row input: zero-row output with all computed columns present and typed",
   "I-11")
 
+# Function fixtures: hy (algorithms/hy.md) ---------------------------------
+
+fixture(nh[, setdiff(names(nh), "Divergence")], "new_hope_no_divergence",
+  "new_hope fixture with the Divergence column removed",
+  "node topology without a divergence attribute: add_topo keeps every downstream connection, so id repeats")
+
+# A fixed row permutation, no seed (D-15): stepping through the rows by 389,
+# which shares no factor with 746.
+perm <- ((seq_len(nrow(nh)) - 1) * 389) %% nrow(nh) + 1
+stopifnot(!anyDuplicated(perm))
+
+fixture(nh[perm, ], "new_hope_shuffled",
+  "new_hope fixture with rows permuted: row i is new_hope row ((i - 1) * 389) %% 746 + 1",
+  "the same network in a different row order; output values do not depend on row order",
+  "D-7")
+
+fixture(data.frame(
+  COMID = c(101, 102, 103),
+  ToCOMID = c(102, 103, NA),
+  Notes = c("a", "b", "c")),
+  "hy_worked_example",
+  "synthetic; the worked example in algorithms/hy.md",
+  "whole-valued REAL identifiers under nhdplus aliases, a missing toid, and a column outside the vocabulary",
+  c("I-2", "I-5"))
+
+fixture(data.frame(comid = 1:2, tocomid = c(2L, NA)),
+  "hy_toid_missing_integer",
+  "synthetic",
+  "INTEGER identifiers with a missing toid: filled with 0",
+  "I-5")
+
+fixture(data.frame(comid = c("a", "b"), tocomid = c("b", NA)),
+  "hy_toid_missing_character",
+  "synthetic",
+  "TEXT identifiers with a missing toid: filled with \"\"",
+  "I-5")
+
+fixture(data.frame(
+  nhdplusid = c(5000000001, 5000000002, 2),
+  toid = c(5000000002, NA, 5000000002)),
+  "hy_large_ids",
+  "synthetic",
+  "REAL identifiers beyond 32 bits beside a small one in the same column",
+  c("I-1", "I-2"))
+
+fixture(data.frame(id = 1:2, toid = c("2", NA)),
+  "hy_id_integer_toid_character",
+  "synthetic",
+  "INTEGER id with TEXT toid and a missing toid: the outlet fill meets two types",
+  c("I-2", "I-5"))
+
+fixture(data.frame(ID = 1:2, ToID = c(2L, 0L), MyCol = 3:4),
+  "hy_mixed_case_names",
+  "synthetic",
+  "hy names in mixed case become lowercase; a non-vocabulary name keeps its case")
+
+fixture(data.frame(permanent_identifier = c("a", "b"), comid = 1:2, toid = c(2L, 0L)),
+  "hy_permanent_identifier_tie",
+  "synthetic",
+  "permanent_identifier beside comid: permanent_identifier drops out and keeps its name")
+
+fixture(data.frame(nhdplusid = 1:2, featureid = 3:4, toid = c(2L, 0L)),
+  "hy_duplicate_alias_tie",
+  "synthetic",
+  "two id aliases: the later in alias-map order (featureid) wins, with a warning")
+
+fixture(data.frame(comid = 1:2, id = 1:2, toid = c(2L, 0L)),
+  "hy_name_conflict",
+  "synthetic",
+  "an alias (comid) beside its hy name (id): raises")
+
+fixture(data.frame(id = c(1, 1, 2, 3), toid = c(2, 3, 0, 0)),
+  "hy_duplicated_id",
+  "synthetic",
+  "repeated id with toid and no divergence column: a flownetwork",
+  "I-6")
+
+fixture(data.frame(
+  id = c(1L, 1L, 2L, 3L),
+  toid = c(2L, 3L, 0L, 0L),
+  upmain = c(TRUE, FALSE, TRUE, FALSE),
+  downmain = c(TRUE, TRUE, TRUE, TRUE)),
+  "hy_flownetwork_downmain_conflict",
+  "synthetic",
+  "flownetwork with two downmain rows for id 1: raises")
+
+fixture(data.frame(
+  id = c(1L, 1L, 2L, 3L, 4L),
+  toid = c(3L, 4L, 3L, 0L, 0L),
+  upmain = c(TRUE, FALSE, TRUE, TRUE, TRUE),
+  downmain = c(TRUE, FALSE, TRUE, TRUE, TRUE)),
+  "hy_flownetwork_upmain_conflict",
+  "synthetic",
+  "flownetwork with two upmain rows into toid 3: raises")
+
+fixture(data.frame(
+  id = 1:3, toid = c(2L, 3L, 0L), topo_sort = 3:1,
+  levelpath = 1L, levelpath_outlet_id = 3L),
+  "hy_leveled",
+  "synthetic",
+  "id, toid, topo_sort, levelpath, and levelpath_outlet_id present: leveled")
+
+fixture(data.frame(id = 1:2, toid = c(2L, NA), fromnode = 1:2, tonode = 2:3),
+  "hy_toid_and_nodes",
+  "synthetic",
+  "toid beside fromnode and tonode: toid outranks the nodes and add_topo leaves it")
+
+fixture(data.frame(id = c(3L, 1L, 2L), fromnode = c(9L, 1L, 2L), tonode = c(NA, 2L, 3L)),
+  "hy_add_topo_isolated_first",
+  "synthetic",
+  "node topology whose first row has a missing tonode: add_topo moves it to the end",
+  "D-14")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")
 
-if (!"new_hope_3dhp" %in% names(index) && file.exists(index_file)) {
-  old <- yaml::read_yaml(index_file)$fixtures
-  kept <- Filter(function(x) identical(x$file, "new_hope_3dhp.gpkg"), old)
-  if (length(kept)) index[["new_hope_3dhp"]] <- kept[[1]]
+# A fixture not rebuilt this run (not selected, or the 3DHP source missing)
+# keeps its previous index entry while its file exists.
+if (file.exists(index_file)) {
+  for (x in yaml::read_yaml(index_file)$fixtures) {
+    stem <- sub("\\.gpkg$", "", x$file)
+    x$rules <- as.list(unlist(x$rules))
+    if (!stem %in% names(index) && file.exists(file.path(out_dir, x$file))) index[[stem]] <- x
+  }
 }
 
 entries <- unname(index[sort(names(index), method = "radix")])

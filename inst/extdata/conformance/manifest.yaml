@@ -1,4 +1,316 @@
 # hydroloom conformance manifest (SPEC S-4); schema: manifest.schema.json
 suite_version: 0.1.0
-functions: {}
-cases: []
+functions:
+  hy:
+    requires: algorithms/hy.md#requires
+    returns: frame
+cases:
+  # hy ------------------------------------------------------------------------
+  # Annotations from the proposed cases (D3-14) are kept as comments:
+  # changes_with i2 = identifier ingest (ROADMAP §4, M3); python_omitted =
+  # uses clean or add_topo, which as_hy omits (A-5).
+
+  # changes_with: i2 (fromnode/tonode double -> integer)
+  - id: hy_new_hope_default
+    function: hy
+    fixture: new_hope.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted; changes_with: i2
+  - id: hy_new_hope_clean
+    function: hy
+    fixture: new_hope.gpkg
+    args: {clean: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted; changes_with: i2 (toid double -> integer)
+  - id: hy_new_hope_add_topo
+    function: hy
+    fixture: new_hope.gpkg
+    args: {add_topo: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted; changes_with: i2; warns nonunique_id_with_toid, 832 rows (flownetwork)
+  - id: hy_new_hope_add_topo_no_divergence
+    function: hy
+    fixture: new_hope_no_divergence.gpkg
+    args: {add_topo: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+
+  # changes_with: i2 (whole-valued double ids -> integer; NA toid -> 0L)
+  - id: hy_worked_example
+    function: hy
+    fixture: hy_worked_example.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: hy_toid_missing_integer
+    function: hy
+    fixture: hy_toid_missing_integer.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: hy_toid_missing_character
+    function: hy
+    fixture: hy_toid_missing_character.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2 (double beyond 32-bit -> character, id and toid together)
+  - id: hy_large_ids
+    function: hy
+    fixture: hy_large_ids.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; current R: vctrs cast error in the toid fill
+  # (outlet_fill_type_mismatch); post-change both character, fill "", returns
+  - id: hy_id_integer_toid_character
+    function: hy
+    fixture: hy_id_integer_toid_character.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  - id: hy_mixed_case_names
+    function: hy
+    fixture: hy_mixed_case_names.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: hy_permanent_identifier_tie
+    function: hy
+    fixture: hy_permanent_identifier_tie.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # name_alias_duplicate; featureid wins over nhdplusid
+  - id: hy_duplicate_alias_tie
+    function: hy
+    fixture: hy_duplicate_alias_tie.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+
+  # name_alias_conflict
+  - id: hy_name_conflict
+    function: hy
+    fixture: hy_name_conflict.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # changes_with: i2
+  - id: hy_duplicated_id
+    function: hy
+    fixture: hy_duplicated_id.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # flownetwork_multiple_downmain
+  - id: hy_flownetwork_downmain_conflict
+    function: hy
+    fixture: hy_flownetwork_downmain_conflict.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # flownetwork_multiple_upmain (1 -> 3 and 2 -> 3 both upmain)
+  - id: hy_flownetwork_upmain_conflict
+    function: hy
+    fixture: hy_flownetwork_upmain_conflict.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  - id: hy_leveled
+    function: hy
+    fixture: hy_leveled.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted; toid outranks nodes; add_topo leaves existing toid
+  - id: hy_toid_and_nodes
+    function: hy
+    fixture: hy_toid_and_nodes.gpkg
+    args: {add_topo: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted; changes_with: i2 (toid double -> integer);
+  # D-14: the row with missing tonode moves to the end
+  - id: hy_add_topo_isolated_first
+    function: hy
+    fixture: hy_add_topo_isolated_first.gpkg
+    args: {add_topo: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; D-7: sorted on all columns, equals hy_new_hope_default's layer
+  - id: hy_new_hope_shuffled
+    function: hy
+    fixture: new_hope_shuffled.gpkg
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  - id: hy_single_flowline
+    function: hy
+    fixture: single_flowline.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  - id: hy_all_terminals
+    function: hy
+    fixture: all_terminals.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # probed: zero rows, id and toid integer, R class hy_topo
+  - id: hy_empty_network
+    function: hy
+    fixture: empty_network.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # python_omitted: R-only (D3-46, D3-57); R returns both rows as
+  # hy_flownetwork; S-6 "raises" not applied in M3
+  - id: hy_duplicated_edge
+    function: hy
+    fixture: duplicated_edge.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # probed: pass-through, da_sqkm NA on row 2 stays NA; R class hy_topo
+  - id: hy_missing_weight
+    function: hy
+    fixture: missing_weight.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # probed: sf, geometry unchanged and renamed geom in R; R class hy_topo
+  - id: hy_zero_length
+    function: hy
+    fixture: zero_length.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # probed: "" name stays ""; no toid, R class plain hy
+  - id: hy_empty_name
+    function: hy
+    fixture: empty_name.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # probed: 548 rows, 32 missing tocomid filled with 0 (I-5); R class hy_topo
+  - id: hy_coastal
+    function: hy
+    fixture: coastal.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2 (NHDPlusID double beyond 32 bits -> character; nodes
+  # double -> integer); R message "defaulting to comid rather than
+  # permanent_identifier"; Permanent_Identifier keeps its input name; no toid,
+  # R class hy_node, dendritic FALSE
+  - id: hy_nhdplushr
+    function: hy
+    fixture: nhdplushr.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # probed: id3dhp -> id, character; two outlet toid "" already present; R class hy_topo
+  - id: hy_new_hope_3dhp
+    function: hy
+    fixture: new_hope_3dhp.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]

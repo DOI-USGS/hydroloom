@@ -53,9 +53,20 @@ coerce_column <- function(x, name, id_cols = character()) {
     id = id_to_text(x),
     flag = as.logical(x),
     count = ,
-    code = as.integer(x),
+    code = whole_to_integer(x),
     text = as.character(x),
     as.double(x))
+}
+
+# Integer when every value fits the 32-bit range; otherwise double, so a
+# count or code beyond that range (NHDPlus HR hydrosequence) is kept rather
+# than turned into NA.
+whole_to_integer <- function(x) {
+
+  if (is.numeric(x) && any(abs(x) > .Machine$integer.max, na.rm = TRUE))
+    return(as.double(x))
+
+  as.integer(x)
 }
 
 # Plain column list of a table with every column coerced; geometry dropped.

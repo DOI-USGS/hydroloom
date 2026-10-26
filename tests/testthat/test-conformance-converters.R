@@ -42,6 +42,22 @@ test_that("frame layer round trips with types", {
   expect_identical(vapply(zb, typeof, ""), vapply(z, typeof, ""))
 })
 
+test_that("a count beyond the 32-bit range is kept as double", {
+  skip_if_no_conformance()
+
+  x <- data.frame(id = 1:2, topo_sort = c(550000100012345, 2), stream_order = c(1, 2))
+
+  layer <- expect_silent(frame_to_layer(x))
+
+  expect_identical(layer$topo_sort, c(550000100012345, 2))
+  expect_identical(layer$stream_order, c(1L, 2L))
+  expect_identical(compare_layers(layer, round_trip(layer)), character())
+
+  y <- x
+  y$topo_sort[1] <- 550000100012346
+  expect_match(compare_layers(frame_to_layer(y), layer), "topo_sort")
+})
+
 test_that("frame layer round trips with geometry", {
   skip_if_no_conformance()
 

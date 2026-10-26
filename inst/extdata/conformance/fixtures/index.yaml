@@ -120,6 +120,188 @@ fixtures:
   rules:
   - I-11
   bytes: 73728
+- file: hy_add_topo_isolated_first.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  exercises: 'node topology whose first row has a missing tonode: add_topo moves it
+    to the end'
+  rules:
+  - D-14
+  bytes: 73728
+- file: hy_duplicate_alias_tie.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - nhdplusid
+  - featureid
+  - toid
+  exercises: 'two id aliases: the later in alias-map order (featureid) wins, with
+    a warning'
+  rules: []
+  bytes: 73728
+- file: hy_duplicated_id.gpkg
+  source: synthetic
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'repeated id with toid and no divergence column: a flownetwork'
+  rules:
+  - I-6
+  bytes: 73728
+- file: hy_flownetwork_downmain_conflict.gpkg
+  source: synthetic
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  - upmain
+  - downmain
+  exercises: 'flownetwork with two downmain rows for id 1: raises'
+  rules: []
+  bytes: 73728
+- file: hy_flownetwork_upmain_conflict.gpkg
+  source: synthetic
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - upmain
+  - downmain
+  exercises: 'flownetwork with two upmain rows into toid 3: raises'
+  rules: []
+  bytes: 73728
+- file: hy_id_integer_toid_character.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'INTEGER id with TEXT toid and a missing toid: the outlet fill meets
+    two types'
+  rules:
+  - I-2
+  - I-5
+  bytes: 73728
+- file: hy_large_ids.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - nhdplusid
+  - toid
+  exercises: REAL identifiers beyond 32 bits beside a small one in the same column
+  rules:
+  - I-1
+  - I-2
+  bytes: 73728
+- file: hy_leveled.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  - topo_sort
+  - levelpath
+  - levelpath_outlet_id
+  exercises: 'id, toid, topo_sort, levelpath, and levelpath_outlet_id present: leveled'
+  rules: []
+  bytes: 73728
+- file: hy_mixed_case_names.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - ID
+  - ToID
+  - MyCol
+  exercises: hy names in mixed case become lowercase; a non-vocabulary name keeps
+    its case
+  rules: []
+  bytes: 73728
+- file: hy_name_conflict.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - comid
+  - id
+  - toid
+  exercises: 'an alias (comid) beside its hy name (id): raises'
+  rules: []
+  bytes: 73728
+- file: hy_permanent_identifier_tie.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - permanent_identifier
+  - comid
+  - toid
+  exercises: 'permanent_identifier beside comid: permanent_identifier drops out and
+    keeps its name'
+  rules: []
+  bytes: 73728
+- file: hy_toid_and_nodes.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - tonode
+  exercises: 'toid beside fromnode and tonode: toid outranks the nodes and add_topo
+    leaves it'
+  rules: []
+  bytes: 73728
+- file: hy_toid_missing_character.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - comid
+  - tocomid
+  exercises: 'TEXT identifiers with a missing toid: filled with ""'
+  rules:
+  - I-5
+  bytes: 73728
+- file: hy_toid_missing_integer.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - comid
+  - tocomid
+  exercises: 'INTEGER identifiers with a missing toid: filled with 0'
+  rules:
+  - I-5
+  bytes: 73728
+- file: hy_worked_example.gpkg
+  source: synthetic; the worked example in algorithms/hy.md
+  rows: 3
+  geometry: none
+  columns:
+  - COMID
+  - ToCOMID
+  - Notes
+  exercises: whole-valued REAL identifiers under nhdplus aliases, a missing toid,
+    and a column outside the vocabulary
+  rules:
+  - I-2
+  - I-5
+  bytes: 73728
 - file: isolated_flowline.gpkg
   source: synthetic
   rows: 12
@@ -264,6 +446,95 @@ fixtures:
   exercises: string identifiers; 3dhp aliases; mainstemid as aggregate_id
   rules: []
   bytes: 303104
+- file: new_hope_no_divergence.gpkg
+  source: new_hope fixture with the Divergence column removed
+  rows: 746
+  geometry: EPSG:5070
+  columns:
+  - COMID
+  - GNIS_ID
+  - GNIS_NAME
+  - LENGTHKM
+  - WBAREACOMI
+  - FTYPE
+  - FCODE
+  - StreamLeve
+  - StreamOrde
+  - StreamCalc
+  - FromNode
+  - ToNode
+  - Hydroseq
+  - LevelPathI
+  - Pathlength
+  - TerminalPa
+  - ArbolateSu
+  - StartFlag
+  - TerminalFl
+  - DnLevel
+  - UpLevelPat
+  - UpHydroseq
+  - DnLevelPat
+  - DnMinorHyd
+  - DnDrainCou
+  - DnHydroseq
+  - FromMeas
+  - ToMeas
+  - RtnDiv
+  - VPUIn
+  - VPUOut
+  - AreaSqKM
+  - TotDASqKM
+  - mainstemid
+  exercises: 'node topology without a divergence attribute: add_topo keeps every downstream
+    connection, so id repeats'
+  rules: []
+  bytes: 466944
+- file: new_hope_shuffled.gpkg
+  source: 'new_hope fixture with rows permuted: row i is new_hope row ((i - 1) * 389)
+    %% 746 + 1'
+  rows: 746
+  geometry: EPSG:5070
+  columns:
+  - COMID
+  - GNIS_ID
+  - GNIS_NAME
+  - LENGTHKM
+  - WBAREACOMI
+  - FTYPE
+  - FCODE
+  - StreamLeve
+  - StreamOrde
+  - StreamCalc
+  - FromNode
+  - ToNode
+  - Hydroseq
+  - LevelPathI
+  - Pathlength
+  - TerminalPa
+  - ArbolateSu
+  - Divergence
+  - StartFlag
+  - TerminalFl
+  - DnLevel
+  - UpLevelPat
+  - UpHydroseq
+  - DnLevelPat
+  - DnMinorHyd
+  - DnDrainCou
+  - DnHydroseq
+  - FromMeas
+  - ToMeas
+  - RtnDiv
+  - VPUIn
+  - VPUOut
+  - AreaSqKM
+  - TotDASqKM
+  - mainstemid
+  exercises: the same network in a different row order; output values do not depend
+    on row order
+  rules:
+  - D-7
+  bytes: 471040
 - file: new_hope_state_plane.gpkg
   source: new_hope fixture transformed to EPSG:2264, NAD83 / North Carolina (ftUS)
   rows: 746
