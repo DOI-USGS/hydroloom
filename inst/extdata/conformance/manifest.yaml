@@ -272,6 +272,17 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # changes_with: i2 (toid double -> integer); test_outlet_conventions.R:
+  # missing toid of 5 filled with 0 (I-5)
+  - id: hy_outlet_na
+    function: hy
+    fixture: outlet_na.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # changes_with: i2; D-7: sorted on all columns, equals hy_new_hope_default's layer
   - id: hy_new_hope_shuffled
     function: hy
@@ -3586,6 +3597,76 @@ cases:
   - id: sort_network_sort_network_dups_distinct
     function: sort_network
     fixture: sort_network_dups_distinct.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # Outlet conventions (I-4, test_outlet_conventions.R): one network,
+  # 1 -> 2 -> 3 -> 5 and 4 -> 5, hy() applied first as the test does; the
+  # outlet 5 sorts last under every convention and its toid is kept.
+
+  # numeric reserved value 0
+  - id: sort_network_outlet_numeric_zero
+    function: sort_network
+    fixture: outlet_numeric_zero.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # character reserved value ""
+  - id: sort_network_outlet_character_empty
+    function: sort_network
+    fixture: outlet_character_empty.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # missing toid, filled with 0 by hy() (I-5)
+  - id: sort_network_outlet_na
+    function: sort_network
+    fixture: outlet_na.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # implicit absence: toid 999 names no flowline
+  - id: sort_network_outlet_implicit
+    function: sort_network
+    fixture: outlet_implicit.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # foreign reserved value -1, kept on the outlet row
+  - id: sort_network_outlet_foreign
+    function: sort_network
+    fixture: outlet_foreign.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # two outlets with distinct toid OUT_001, OUT_002, not collapsed
+  - id: sort_network_outlet_unique_ids
+    function: sort_network
+    fixture: outlet_unique_ids.gpkg
+    prepare: {function: hy}
     args: {}
     compare: exact
     order: exact

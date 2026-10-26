@@ -1700,6 +1700,86 @@ fixtures:
   - I-1
   - I-2
   bytes: 524288
+- file: outlet_character_empty.gpkg
+  source: synthetic (tests/testthat/test_outlet_conventions.R "character '' reserved
+    value")
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - var
+  exercises: TEXT identifiers with the outlet marked by the character reserved value
+    ""
+  rules:
+  - I-4
+  bytes: 73728
+- file: outlet_foreign.gpkg
+  source: synthetic (tests/testthat/test_outlet_conventions.R "foreign reserved value
+    (-1)")
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - var
+  exercises: outlet marked with a foreign reserved value -1, kept rather than replaced
+    by 0
+  rules:
+  - I-4
+  bytes: 73728
+- file: outlet_implicit.gpkg
+  source: synthetic (tests/testthat/test_outlet_conventions.R "implicit absence")
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - var
+  exercises: outlet toid 999 names no flowline in the table (implicit absence)
+  rules:
+  - I-4
+  bytes: 73728
+- file: outlet_na.gpkg
+  source: synthetic (tests/testthat/test_outlet_conventions.R "NA outlet")
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - var
+  exercises: 'outlet marked by a missing toid: hy() fills 0'
+  rules:
+  - I-4
+  - I-5
+  bytes: 73728
+- file: outlet_numeric_zero.gpkg
+  source: synthetic (tests/testthat/test_outlet_conventions.R "numeric 0 reserved
+    value")
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - var
+  exercises: outlet marked with the numeric reserved value 0
+  rules:
+  - I-4
+  bytes: 73728
+- file: outlet_unique_ids.gpkg
+  source: synthetic (tests/testthat/test_outlet_conventions.R "unique-per-outlet identifiers
+    preserved")
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - var
+  exercises: two outlets (t1, t2) each with its own downstream identifier outside
+    the table; neither collapses to ""
+  rules:
+  - I-4
+  bytes: 73728
 - file: point_index_tie.gpkg
   source: synthetic; points in point_index_tie_points.gpkg
   rows: 4

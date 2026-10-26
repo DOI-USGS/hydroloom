@@ -1186,6 +1186,47 @@ fixture(data.frame(
   "the connection leaving the table (2 -> 9) before the one inside it (2 -> 3): the depth-first path split follows row order",
   c("I-4", "D-7"))
 
+# Outlet conventions (tests/testthat/test_outlet_conventions.R) --------------
+
+# One network, 1 -> 2 -> 3 -> 5 and 4 -> 5, written once per outlet
+# convention for flowline 5. toid is REAL, as the test builds it.
+outlet_net <- function(toid) data.frame(id = 1:5, toid = toid, var = c(1, 2, 3, 4, 1))
+
+fixture(outlet_net(c(2, 3, 5, 5, 0)), "outlet_numeric_zero",
+  "synthetic (tests/testthat/test_outlet_conventions.R \"numeric 0 reserved value\")",
+  "outlet marked with the numeric reserved value 0",
+  "I-4")
+
+fixture(data.frame(id = as.character(1:5), toid = c("2", "3", "5", "5", ""),
+  var = c(1, 2, 3, 4, 1)), "outlet_character_empty",
+  "synthetic (tests/testthat/test_outlet_conventions.R \"character '' reserved value\")",
+  "TEXT identifiers with the outlet marked by the character reserved value \"\"",
+  "I-4")
+
+fixture(outlet_net(c(2, 3, 5, 5, NA)), "outlet_na",
+  "synthetic (tests/testthat/test_outlet_conventions.R \"NA outlet\")",
+  "outlet marked by a missing toid: hy() fills 0",
+  c("I-4", "I-5"))
+
+fixture(outlet_net(c(2, 3, 5, 5, 999)), "outlet_implicit",
+  "synthetic (tests/testthat/test_outlet_conventions.R \"implicit absence\")",
+  "outlet toid 999 names no flowline in the table (implicit absence)",
+  "I-4")
+
+fixture(outlet_net(c(2, 3, 5, 5, -1)), "outlet_foreign",
+  "synthetic (tests/testthat/test_outlet_conventions.R \"foreign reserved value (-1)\")",
+  "outlet marked with a foreign reserved value -1, kept rather than replaced by 0",
+  "I-4")
+
+fixture(data.frame(
+  id = c("hw", "A", "B", "t1", "t2"),
+  toid = c("A", "t1", "t2", "OUT_001", "OUT_002"),
+  var = c(1, 2, 3, 4, 5)),
+  "outlet_unique_ids",
+  "synthetic (tests/testthat/test_outlet_conventions.R \"unique-per-outlet identifiers preserved\")",
+  "two outlets (t1, t2) each with its own downstream identifier outside the table; neither collapses to \"\"",
+  "I-4")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")
