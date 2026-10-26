@@ -38,7 +38,9 @@ The return lists every hydroloom column name with its definition: for each term 
 `hy_vocab.json` that is not a concept entry (`concept: true`), one element whose name is
 the term key and whose value is that term's `definition` field, unchanged. Order is the
 file's term order. The definitions are the vocabulary's maintainer-authored text (S-2);
-this description cites them by term and does not restate them.
+this description cites them by term and does not restate them. The return carries only
+the `definition` field: a term's unit (for example `offset` in meters) and any other
+vocabulary field are found in `hy_vocab.json` and not in this return.
 
 ## Algorithm
 
@@ -97,6 +99,11 @@ none
   (`.onLoad` assigns the object), `R/00_hydroloom.R` (placeholder and
   `print.hydroloom_names`), `R/align_names.R` (roxygen).
 - `tests/testthat/test_align_names.R`, `tests/testthat/test_hydroloom.R` ("test print").
+- NHDPlus Version 2 User Guide (McKay and others, 2012): the value-added attributes
+  (`Hydroseq`, `LevelPathI`, `Divergence`, `ArbolateSu`, `StreamOrde`, and others) that
+  the vocabulary aliases map to hydroloom names.
+- OGC HY_Features: a common hydrologic feature model (OGC 14-111), for the concepts the
+  vocabulary `role` field names.
 
 ## Worked example
 

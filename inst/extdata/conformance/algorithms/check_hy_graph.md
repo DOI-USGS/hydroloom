@@ -76,10 +76,16 @@ row is an edge of the graph. Missing `toid` becomes the reserved outlet value on
 
 A node-topology table (`fromnode`/`tonode`, no `toid`, A-2 `hy_node`): Python converts it
 with `add_toids()` before the check (A-3 `convert`, the `via` entry above), which keeps
-only main paths at divergences. R does not convert; today it stops inside dplyr ("Can't
-rename columns that don't exist. Column `toid` doesn't exist."). A table with neither
-`toid` nor `fromnode`/`tonode` stops in both languages; the hydroloom condition, once the
-A-10 change lands, is `needs_topo`.
+only main paths at divergences (D3-58). Two limits follow on node input: a cycle that
+passes through a minor path is not found, because the minor connection is dropped before
+the check; and a node table without `divergence` raises `divergence_required` from
+`add_toids()`, before any check runs. Converting the table to a flownetwork, which keeps
+every connection, finds such a cycle. R does not convert; today it stops inside dplyr
+("Can't rename columns that don't exist. Column `toid` doesn't exist."). A table with
+neither `toid` nor `fromnode`/`tonode` stops in both languages; the hydroloom condition,
+once the A-10 change lands, is `needs_topo` (D3-60, shared although R's text today is
+dplyr's). Raising on unusable input is read as consistent with A-10, which covers the
+graph problems the check finds (D3-61).
 
 `divergence_check = TRUE` reads `fromnode` and `divergence`, and `divergence_fraction`
 when that column is present. A missing `fromnode` or `divergence` column stops with
@@ -178,7 +184,9 @@ the join.
 `sort_network()` and `make_index_ids()` on `hy_topo` call `check_hy_graph(x)` with the
 defaults and stop unless it returns `TRUE`. After D-8 that stop covers every cycle; today
 a longer cycle passes and `sort_network()` drops its rows with the warning "some
-features missed in sort". Their descriptions carry that stop.
+features missed in sort". Their descriptions carry that stop. `sort_network()` on a
+flownetwork does not call this function, before or after D-8 (D3-41, D3-55): a cycle in
+a flownetwork, as in `loop2`, still sorts with that warning and drops rows.
 
 ## Postconditions
 
@@ -222,7 +230,17 @@ O(n · m) in the worst case, from a depth-first search at each node.
   `component = 1`, `reciprocal = FALSE`.
 - No connections (all terminals): `TRUE`.
 - Duplicated row (the same `id`/`toid` twice, a flownetwork): `TRUE` when the edge is on
-  no cycle; both copies are returned when it is.
+  no cycle; both copies are returned when it is. SPEC S-6 says a duplicated edge raises;
+  that rule is not applied here in M3 (D3-57, extending D3-46), and the case on
+  `duplicated_edge` captures `TRUE`. The duplicate is not reported as a problem row.
+- Node-topology input (Python): converted with `add_toids()`, keeping main paths only
+  (D3-58). A cycle through a minor path is not found, and a table without `divergence`
+  raises `divergence_required`.
+- A divergence whose minor branch is absent (an extract that keeps one branch, or a
+  diverted path leaving the table): with `divergence_check`, the remaining branch's
+  `divergence` of 1 or 2 is labeled `"divergence of 1 or 2 where flow does not split"`.
+  The coding is correct in the full fabric and flagged in the extract; fixture
+  `divergence_minor_absent`.
 - Zero-row network: `TRUE` (I-11).
 - Missing `toid`: filled on ingest (I-5), a terminal.
 - Missing `divergence` with `divergence_check`: the row is labeled `"divergence not in
@@ -236,8 +254,10 @@ O(n · m) in the worst case, from a depth-first search at each node.
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| `divergence_check = TRUE` without `fromnode` or `divergence` | the divergence check cannot group features or read their coding | all; the absent columns are named | `add_divergence()` on a node-topology network, or call without `divergence_check` | `divergence_check_missing_columns` |
-| no `toid` and no `fromnode`/`tonode` (R: no `toid`) | the network has no downstream connections to walk | all | `add_toids()` on a network with `fromnode`/`tonode` | `needs_topo` |
+| `divergence_check = TRUE` without `divergence` | the divergence check cannot read the coding | all; the absent columns are named | `add_divergence()` | `divergence_check_missing_columns` |
+| `divergence_check = TRUE` without `fromnode` | the divergence check cannot group features by the node they leave | all; the absent columns are named | `make_node_topology()` | `divergence_check_missing_columns` |
+| R: a node-topology table (`fromnode`/`tonode`, no `toid`) | the network has no `toid` to walk | all | `add_toids()` | `needs_topo` |
+| no recognized `toid` and no `fromnode`/`tonode` (source columns not in the vocabulary, as `ID`/`toNexID` in `sort_test`) | the network has no downstream connections to walk | all | `hydroloom_names()` mapping the source downstream column to `toid` | `needs_topo` |
 
 A cycle or a divergence issue is a returned value, never a condition (A-10). The
 `divergence_issue` labels are data values compared exactly, not `remedies.json` text.
@@ -254,6 +274,8 @@ Today's `loop_check` warnings ("stuck in a loop at", "found a loop at") and the 
 - Tarjan, R. (1972), Depth-first search and linear graph algorithms, SIAM Journal on
   Computing 1(2), 146-160.
 - NHDPlus Version 2 User Guide (McKay and others, 2012), `Divergence` attribute coding.
+- USGS hydrofabric theme, Network section, and SPEC S-2: `divergence_fraction`, the
+  fraction of flow to each branch, summing to one over `fromnode` (checks 5 to 7).
 - SPEC D-1, D-7, D-8, D-14, I-4, I-5, I-6, I-11, A-2, A-3, A-8, A-9, A-10, K-1, K-2,
   K-4, K-5, K-6, S-7; DESIGN "SCC always in `check_hy_graph`".
 
@@ -295,3 +317,7 @@ which drains into the pair, is not returned.
   R (A-9). A-10's "returns a table" is read as "returns problem rows, never raises on
   them"; `TRUE` on a clean network is kept in both languages. R does not convert a
   node-topology input as Python does (A-3).
+- 2026-10-26, suite 0.1.0: review fixes. Duplicated edge stays `TRUE`, S-6 not applied
+  (D3-57); node-input limits stated (D3-58); flownetwork `sort_network` route named as
+  not calling the check (D3-55); Remedies rows split one per fix; a fixture for a
+  divergence with its minor branch absent; `divergence_fraction` reference.

@@ -54,23 +54,34 @@ Each row reports whether one hydroloom function can run on the input as it stand
 if not, which single representation conversion would let it run. The answer comes from
 a code table, one entry per function, holding that function's `requires` (pattern,
 columns, via; S-8). Neither package reads the manifest at runtime; a testthat test (R)
-and `test_api.py` (Python) assert that each code-table entry for a function listed in
-the manifest equals the `requires` front matter of that function's description (A-4).
+and `test_api.py` (Python) assert that each code-table entry whose function is listed in
+the manifest equals the `requires` front matter of that function's description (A-4,
+D3-33). Functions in the manifest with no code-table entry (`hy`, `hy_reverse`, and the
+other name and class helpers) are not checked.
 
-The code table, as hydroloom 1.3.0 encodes it in predicates, in row order:
+`available` tests the representation and the fixed columns in `columns`. It does not
+test attributes a function reads through an argument (the name and weight of
+`add_levelpaths`, the variable of `accumulate_downstream`), and it does not test the
+data: a network with repeated edges or missing values is reported by its pattern alone.
+A `TRUE` row says the function accepts the input's shape, not that the call succeeds.
+
+The code table after the A-4 change, in row order. Each phase-1 entry is its
+description's `requires` (D3-42); the other entries are hydroloom 1.3.0's predicates
+until their descriptions land. In 1.3.0, `sort_network`, `add_topo_sort`, and
+`check_hy_graph` are `hy_topo` only, so a flownetwork reports them unavailable there:
 
 | function | pattern | columns | via |
 | --- | --- | --- | --- |
 | `add_toids` | hy_node | | hy_topo: `make_node_topology` |
 | `make_node_topology` | hy_topo | | hy_node: `add_toids` |
 | `to_flownetwork` | hy_leveled | `divergence` | |
-| `sort_network` | hy_topo | | hy_node: `add_toids` |
-| `add_topo_sort` | hy_topo | | hy_node: `add_toids` |
+| `sort_network` | hy_topo, hy_flownetwork | | hy_node: `add_toids` |
+| `add_topo_sort` | hy_topo, hy_flownetwork | | hy_node: `add_toids` |
 | `add_levelpaths` | hy_topo | | hy_node: `add_toids` |
 | `add_pathlength` | hy_topo | | hy_node: `add_toids` |
 | `add_streamorder` | hy_topo | | hy_node: `add_toids` |
 | `accumulate_downstream` | hy_topo | | hy_node: `add_toids` |
-| `check_hy_graph` | hy_topo | | hy_node: `add_toids` |
+| `check_hy_graph` | hy_topo, hy_flownetwork | | hy_node: `add_toids` |
 | `navigate_hydro_network` | hy_topo | | hy_node: `add_toids` |
 | `add_pfafstetter` | hy_leveled | | |
 | `add_streamlevel` | hy_leveled | | |
@@ -133,10 +144,13 @@ D-14). No tie rule or sentinel applies. No CSR index is built.
 - Every non-empty `via` is `add_toids` or `make_node_topology`.
 - On an input with no representation, only rows whose pattern is `any` can be `TRUE`, and
   every `via` is `""`.
-- On a `hy_flownetwork` input, `available` is `TRUE` for `navigate_network_dfs` and
-  `make_index_ids`, `FALSE` for every row not of pattern `any`, and every `via` is `""`.
-- For each function listed in the manifest, its code-table entry equals its
-  description's `requires` (A-4; the testthat test and `test_api.py`).
+- On a `hy_flownetwork` input, `available` is `TRUE` for `sort_network`,
+  `add_topo_sort`, `check_hy_graph`, `navigate_network_dfs`, and `make_index_ids`,
+  `FALSE` for every other row not of pattern `any`, and every `via` is `""`. In 1.3.0
+  only `navigate_network_dfs` and `make_index_ids` are `TRUE` (D3-42).
+- For each code-table entry whose function is listed in the manifest, the entry equals
+  that function's description `requires` (A-4, D3-33; the testthat test and
+  `test_api.py`).
 - The output is unchanged by any permutation of the input rows (D-7).
 - The input is not modified (A-8).
 
@@ -149,14 +163,23 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
 
 - One flowline: after `hy()` on `single_flowline.gpkg` (which has `toid` and node
   columns) the input is `hy_topo`, so the hy_topo rows are available and the node rows
-  are not, though the table carries `fromnode`/`tonode`. The class test reads `toid` as
-  deciding (R `classify_hy` prioritizes it).
+  are not, though the table carries `fromnode`/`tonode`. When a table has both `toid`
+  and node columns, `classify_hy` stamps `hy_topo`.
 - No connections (all terminals): the representation alone decides; `toid` values are
   not read.
 - Zero rows: after `hy()`, `hy_topo`; the same output as any `hy_topo` without node
   columns. The output's row count is the code table's, not the input's.
-- Duplicated row (repeated `id` with `toid`): `hy_flownetwork`; returns, two rows
-  available, every `via` `""`. It does not raise.
+- Duplicated row (the 1 → 2 row of `duplicated_edge.gpkg` repeated): R classes the
+  table `hy_flownetwork`; the call returns with the five flownetwork rows available (two
+  in 1.3.0) and every `via` `""`. It does not raise. `available` reflects the
+  flownetwork pattern only; the repeated row is a data error that S-6 makes the
+  consuming functions raise on, which R does not yet do (D3-46, D3-57).
+- Divergence (repeated `id` with distinct `toid`, `sort_network_dups.gpkg`,
+  `loop2.gpkg`): `hy_flownetwork`, the same output as the duplicated row.
+- Node table without a `divergence` column (`divergence_no_attribute.gpkg`):
+  `add_divergence` is available and `add_return_divergence` is not, by its `columns`
+  gate; with `include_conversions = TRUE` it stays unavailable, since its via map has no
+  `hy_node` entry.
 - Not passed through `hy()` (R): no representation; only `make_attribute_topology` and
   `index_points_to_lines` can be `TRUE`, and only on an `sf` input.
 - Missing weight, zero-length line, empty name: not read.
@@ -172,7 +195,7 @@ none
 - `tests/testthat/test_hy_classes.R`: "hy_capabilities returns correct logical vector"
   and "hy_capabilities reports aggregate flowpath functions on node input".
 - SPEC A-2, A-3, A-4, A-8, A-9, A-16, D-7, D-14, G-14, I-14, S-4, S-7, S-8; ROADMAP §2
-  and §4; milestone decisions D3-01 to D3-03 and D3-13.
+  and §4; milestone decisions D3-01 to D3-03, D3-13, D3-33, D3-42, D3-46, and D3-57.
 
 ## Worked example
 
@@ -204,3 +227,8 @@ those four become available too, nineteen in all.
   step regenerates their layers in the frame shape. Gap with SPEC A-4 and A-16, which
   give `hy_capabilities(x)` and `capabilities(network)`: R has `include_conversions =
   FALSE`, which A-9 keeps on both sides.
+- 2026-10-26, suite 0.1.0: review round. The code table takes the phase-1 entries from
+  their descriptions, so `sort_network`, `add_topo_sort`, and `check_hy_graph` accept
+  `hy_flownetwork` after A-4 (D3-42); Definition states that `available` tests shape,
+  not data or argument-named attributes; edge cases for a divergence and for a node
+  table without `divergence`.

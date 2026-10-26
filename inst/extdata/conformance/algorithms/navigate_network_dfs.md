@@ -32,14 +32,14 @@ Return: a list with one element per unique start, in the order of first appearan
 
 Named kernel (K-6, the many-start DFS of DESIGN §4). Python `_kernels/walk.py` and R `R/kernel-walk.R`, same names and order:
 
-`dfs_paths(indptr, indices, starts, main, reset, outlet_break) -> (visit, path, start_ptr)`
+`dfs_paths(indptr, indices, starts, main, reset, outside) -> (visit, path, start_ptr)`
 
-- `indptr` int64, length n + 1, and `indices` int64, length m: the CSR graph in the walk direction (K-2), `mode = "to"` for `down`/`downmain`, `"from"` for `up`/`upmain`; neighbor lists in the order `make_index_ids` gives (D-5).
-- `starts` int64: dense positions (0 to n − 1), unique, first-appearance order.
+- `indptr` int64, length n + 1, and `indices` int64, length m: the CSR walk graph (K-2), `mode = "to"` for `down`/`downmain`, `"from"` for `up`/`upmain`; neighbor lists in the order `make_index_ids` gives (D-5). For `down`/`downmain` the walk graph has one node more than there are unique `id`, at position `outside` with an empty neighbor range, and every (`id`, `toid`) row whose `toid` is not an `id` (I-4) is a slot pointing to it, in that row's place in the neighbor list; an outlet's one slot is such a slot.
+- `starts` int64: dense positions (0 to n − 1), unique, first-appearance order; never `outside`.
 - `main` bool array of length m aligned with `indices`, or `None` (R `NULL`): when given, only edges with `main` true are followed.
 - `reset` bool.
-- `outlet_break` bool: an empty neighbor range counts as one break (true for `down`, false otherwise).
-- `visit` int64: dense positions in visit order, all starts concatenated; `path` int64 aligned with `visit`, the 0-based path within its start; `start_ptr` int64, length k + 1, offsets into `visit` per start.
+- `outside` int64 scalar: the position of the node standing for every connection that leaves the table (n − 1, the last), or −1 (K-4) when the walk graph has none, as for `up`/`upmain`, where a connection leaving the table has no upstream reverse.
+- `visit` int64: dense positions in visit order, all starts concatenated, never `outside`; `path` int64 aligned with `visit`, the 0-based path within its start; `start_ptr` int64, length k + 1, offsets into `visit` per start.
 
 R passes `double` and the R kernel casts; R positions are 1-based with sentinel 0 (K-4). Today's R body (`navigate_network_dfs_internal`) does the same walk on the padded matrix and is not yet in this shape (Changes).
 
@@ -61,7 +61,7 @@ R matches `direction` by substring: a value containing `"up"` walks upstream, on
 
 Roxygen: given a starting node, return all reachable paths. Once visited, a node is marked as visited and will not take part in a future path. `reset`: if TRUE, reset graph for each start such that later paths will have overlapping results.
 
-As a property of the input: element k holds every flowline reachable from start k by following connections in the walk direction (downstream along `toid`, or upstream against it), only main connections for `downmain`/`upmain`, each once, in depth-first visit order. With `reset = FALSE` a flowline already returned for an earlier start is left out, and the walk does not pass through it. The element is split into paths where the walk backtracks after reaching an outlet (downstream only) or after arriving again at a flowline it has already expanded; a later path begins at the flowline the walk turns to next.
+As a property of the input: element k holds every flowline reachable from start k by following connections in the walk direction (downstream along `toid`, or upstream against it), only main connections for `downmain`/`upmain`, each once, in depth-first visit order. With `reset = FALSE` a flowline already returned for an earlier start is left out, and the walk does not pass through it. The element is split into paths where the walk backtracks after reaching an outlet or a connection that leaves the table (downstream only) or after arriving again at a flowline it has already expanded; a later path begins at the flowline the walk turns to next. For `up`, a path may continue from a headwater to a flowline above an earlier confluence, so for `up` only an element's flowlines and their visit order carry meaning; the path split does not.
 
 ## Algorithm
 
@@ -71,10 +71,10 @@ As a property of the input: element k holds every flowline reachable from start 
 4. Walk, below the kernel boundary (K-1, K-5), per start s in order. Binding rules:
    - Edge state is per neighbor slot. A slot is unfollowed until its source flowline is expanded; expanding a flowline marks all its slots followed. A flowline is visited the first time it is popped. With `reset = TRUE`, both states are cleared before each start; with `reset = FALSE` they carry over.
    - The stack starts as [s]. Pop an entry. A break entry sets the break flag. A flowline entry: if the break flag is set, close the current path when it is non-empty and clear the flag; if the flowline is unvisited, mark it and append it to the current path; then expand it, whether or not it was just visited.
-   - Expanding flowline v pushes, for each slot of v in neighbor-list order: the neighbor if the slot is unfollowed, else a break; then marks every slot followed. With `outlet_break`, a flowline with no slots pushes one break. With `main`, only unfollowed slots whose `main` is true are pushed, and nothing else.
+   - Expanding flowline v pushes, for each slot of v in neighbor-list order: a break if the slot points to `outside` or is followed, else the neighbor; then marks every slot followed. A slot to `outside` is a connection leaving the table (an outlet's slot, or one branch of a divergence whose other branch stays in the table); it breaks in its own place among v's slots, so the split depends on where that row sits among v's rows, and `outside` is never visited. With `main`, only unfollowed slots whose `main` is true and that do not point to `outside` are pushed, and nothing else.
    - Stop when the stack is empty; close the current path when non-empty. An element with no visited flowline is empty.
-5. Sibling tie rule, binding. The stack is last in, first out, so at a flowline with several neighbors the walk goes first to the last neighbor in its list and backtracks through the rest in reverse. Today `make_index_ids` lists neighbors in input row order: in `"to"` mode the order of the (`id`, `toid`) rows of the flowline, in `"from"` mode the order of the upstream flowlines' rows. The visit order and the path split therefore depend on input row order; D-5 and D-6 are not met, and D-7 holds only for each element's set of identifiers. No ROADMAP §4 row changes this in M3. If the proposed §4 row (Changes) lands, neighbors are listed in identifier byte order (D-1, D-5) and the walk visits the smallest identifier first (D-6), so the kernel pushes the list in reverse.
-6. Sentinel (K-4): R's padded matrix uses 0 both for an outlet slot and for a followed slot, which is why both push a break. The Python kernel uses CSR with no sentinel, a boolean array of length m for followed slots, and −1 on the stack for a break.
+5. Sibling tie rule, binding. The stack is last in, first out, so at a flowline with several neighbors the walk goes first to the last neighbor in its list and backtracks through the rest in reverse. Today `make_index_ids` lists neighbors in input row order: in `"to"` mode the order of the (`id`, `toid`) rows of the flowline, in `"from"` mode the order of the upstream flowlines' rows. The visit order and the path split therefore depend on input row order; D-5 and D-6 are not met, and D-7 holds only for each element's set of identifiers. No ROADMAP §4 row changes this in M3. If the proposed §4 row (Changes) lands, neighbors are listed in identifier byte order (D-1, D-5) and the walk visits the smallest identifier first (D-6), so the kernel pushes the list in reverse. That rule does not yet place a slot to `outside` among the neighbors; it is left to the D-5/D-6 row (D3-40).
+6. Sentinel (K-4): R's padded matrix uses 0 both for a slot leaving the table (`toindid = 0` from `make_to_dt`, in the row's place) and for a followed slot, which is why both push a break. The Python kernel uses CSR with no sentinel: a connection leaving the table is a real edge to the `outside` node, followed slots are a boolean array of length m, and −1 marks a break on the stack. Python builds the `down` walk graph from the table's (`id`, `toid`) rows after the `distinct` of `make_index_ids` step 4, not from `IndexIds`, which drops those connections (`make_index_ids` step 5). Given an `IndexIds` of mode `"to"`, the walk graph gets one slot to `outside` for each flowline with an empty neighbor range and none for a flowline that also has a neighbor; R's list input keeps every such slot. No case gives index-id input with such a flowline.
 7. Output: identifiers from dense positions (`uniques`), split by path. R names paths with a counter that runs across starts and counts empty paths; the names are not contract.
 
 D-15 holds: nothing depends on randomness or scheduling. D-3 and D-14 do not apply: nothing is sorted and no frame is returned.
@@ -90,7 +90,7 @@ D-15 holds: nothing depends on randomness or scheduling. D-3 and D-14 do not app
 - Every identifier in an element other than its first is a neighbor, in the walk direction, of an identifier earlier in the same element.
 - For `down`, `downmain`, and `upmain`, each identifier in a path after the first is a neighbor, in the walk direction, of the identifier before it.
 - For `downmain` and `upmain`, every non-empty element is one path.
-- For `down`, the last identifier of every path is an outlet (I-4) or has a downstream neighbor returned before it.
+- For `down`, the last identifier of every path is an outlet (I-4), has a `toid` that is not an `id`, or has a downstream neighbor returned before it.
 - `order` runs 0 to (element size − 1) without gaps; `path` starts at 0 and steps by 0 or 1 along `order`.
 - D-7, today: for a row-permuted input, each element's set of identifiers is unchanged, and for a main direction the whole result is unchanged. After the proposed D-6 change: the whole result is unchanged for every direction.
 
@@ -108,7 +108,7 @@ O(n + m) time and space per start with `reset = TRUE`, O(n + m) over all starts 
 - Repeated start: kept once.
 - A start already returned for an earlier start, with `reset = FALSE`: its element is an empty list.
 - A cycle in a `hy_flownetwork`: each flowline is visited once and the walk ends.
-- A flowline with both a `toid` in the table and a `toid` outside it: R pushes a break for the outside slot among the real ones, so the split depends on slot order; CSR drops the outside connection. No case covers this, and Python is not required to match it.
+- A flowline with both a `toid` in the table and a `toid` outside it, common in a clipped extract where one branch of a divergence leaves the subset: the outside connection breaks the path in its slot position (step 4, D3-59). On `sort_divergence_leaves.gpkg`, where 2 divides into 3 and into 9 outside the table, the walk from 1 returns `[[1, 2], [3]]`; with the two rows of 2 swapped (`sort_divergence_leaves_permuted.gpkg`) it returns `[[1, 2, 3]]`. Upstream the outside connection is absent. `loop.gpkg` (one such flowline) and `loop2.gpkg` (three) reach the same rule.
 - `direction = "up"` at a headwater pushes nothing, so the walk does not split there; downstream splits at every outlet.
 - Missing weight, zero-length line, empty name: not applicable.
 
@@ -116,13 +116,13 @@ O(n + m) time and space per start with `reset = TRUE`, O(n + m) over all starts 
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| list input in the wrong direction | a downstream graph cannot be walked upstream, nor the reverse | all | `make_index_ids(x, mode = "from")` for `up`/`upmain`, `mode = "to"` for `down`/`downmain` | `index_ids_direction_mismatch` |
-| list input without `main` for a main direction | main connections are not in the graph | all | `make_index_ids()` on `to_flownetwork()` output | `index_ids_missing_main` |
+| list input in the wrong direction | an index built for downstream navigation cannot be walked upstream, nor the reverse | all | `make_index_ids(x, mode = "from")` for `up`/`upmain`, `mode = "to"` for `down`/`downmain` | `index_ids_direction_mismatch` |
+| list input without `main` for a main direction | the index carries no main-path flags | all | `make_index_ids()` on `to_flownetwork()` output | `index_ids_missing_main` |
 | input neither a table nor a `make_index_ids()` list | nothing to navigate | all | pass the network table or `make_index_ids()` output | `network_not_frame_or_index_ids` |
 | not convertible to `id`/`toid` | no downstream identifiers and no node columns | all | `add_toids()`, or `hy(x, add_topo = TRUE)` | `needs_topo` |
 | cycle in a `hy_topo` table | flowlines refer back to one another | the rows `check_hy_graph()` returns | `check_hy_graph()` to find them, then correct `toid` | `network_cycle` |
 | main direction without main-path columns | no `upmain`/`downmain` to follow | all | `to_flownetwork()` | `main_path_required` |
-| `hy_node` table without `divergence`/`levelpath`, main direction (warning, then the row above) | node topology alone cannot give main connections | all | `add_divergence()`, `add_levelpaths()` | `node_to_flownetwork_no_main` |
+| `hy_node` table without `divergence`/`levelpath`, main direction (warning, then the row above) | `fromnode`/`tonode` alone do not say which flowline is the main path at a divergence or confluence | all | `add_divergence()`, `add_levelpaths()` | `node_to_flownetwork_no_main` |
 | start not in the network, or missing | a start is not an `id` | the starts | pass values of `id` | `start_not_in_network` |
 | unknown `direction` (Python only) | not one of the four directions | none | `"down"`, `"up"`, `"downmain"`, `"upmain"` | `direction_invalid` |
 
@@ -153,3 +153,4 @@ Flowline 1 divides into 10 and 9, which join at 4, the outlet. `navigate_network
 ## Changes
 
 - 2026-10-25, suite 0.1.0: first description, recording R 1.3.0 behavior. A-9 gaps against A-16: `direction` also takes `"upmain"` and `"downmain"`; the result is per unique start and split into paths, not one flat vector aligned with `starts`; plan edit proposed. Intended changes that apply (ROADMAP §4, M3): D-8, after which `make_index_ids` stops on every cycle in a `hy_topo` table, so `three_cycle` raises `network_cycle` where it now returns; I-2, after which identifiers keep the ingest type (the `nhdplushr` identifiers become `character`; values compared as text are unchanged); A-10, which classes the `needs_topo` stop. D-6 is not a §4 change: today's sibling order (step 5) is captured, a §4 row for D-5/D-6 is proposed, and the R walk would be rewritten as the `dfs_paths` kernel with it. Captured, not changed: zero-row input stops (I-11), a duplicated edge is collapsed rather than raised (S-6), `direction` is matched by substring.
+- 2026-10-25, suite 0.1.0, after the hydrology review: a connection leaving the table breaks the path in its slot position, as R does, and binds Python (D3-59); `dfs_paths` takes `outside` in place of `outlet_break`. Definition states that an upstream path split carries no meaning. Remedy wording reworded in hydrographic terms.

@@ -38,7 +38,12 @@ The alias registry is a session-scoped list of (alias, hydroloom name) pairs tha
 `align_names()`, and through it `hy()`, uses to rename input columns. At package load it
 holds one pair for every alias of every vocabulary column term in `hy_vocab.json`
 (concept entries excluded), in the file's term order and, within a term, its alias order.
-A call with no `x` and `clear = FALSE` returns the registry unchanged. A call with `x`
+Those aliases are the NHDPlusV2 attribute names in their 10-character dbf form
+(`comid`, `tocomid`, `levelpathi`, `arbolatesu`), NHDPlusHR `nhdplusid`, NHD
+`permanent_identifier` and `reachcode`, 3DHP `id3dhp`, and Mainstems `mainstemid`, with a
+few hydrofabric names (`reconciled_id`, `aggregated_id`) and identity pairs (`toid`,
+`fromnode`); a table whose columns use other names needs a call to `hydroloom_names()`
+before `hy()` will recognize them. A call with no `x` and `clear = FALSE` returns the registry unchanged. A call with `x`
 returns, and stores, the prior registry followed by `x`; with `clear = TRUE` the prior
 registry is first replaced by an empty one.
 
@@ -78,14 +83,22 @@ registry on each append. Network size (n, m) does not enter.
 
 The function reads no network, so one flowline, no connections, a missing weight, and a
 zero-length line do not apply. A duplicated alias is appended, not merged; both entries
-stay, and `align_names()` then warns about duplicate names when a table carries that
-column. An empty name in a partly named `x` is registered as `""` and never matches a
+stay, and `align_names()` counts them as two candidates when a table carries that column,
+warning with `name_alias_duplicate` for two candidates of one hydroloom name and stopping
+with `name_alias_ambiguous` for three or more (`align_names.md` steps 2 and 5, D3-24).
+Several seeded aliases of one term can also meet in one table: an NHDPlusHR flowline
+table carries both `nhdplusid` and `permanent_identifier`, both aliases of `id`;
+`align_names()` resolves that by its `permanent_identifier` rule (`align_names.md`
+step 4, D3-24), so `nhdplusid` becomes `id` and `permanent_identifier` keeps its name, with the
+message "defaulting to comid rather than permanent_identifier".
+An empty name in a partly named `x` is registered as `""` and never matches a
 column. An alias with uppercase letters is registered as given and never matches, because
 `align_names()` lowercases column names before looking them up. A value that is not a
 hydroloom name is registered; `align_names()` renames the column and then restores its
 original name, so it has no effect. A non-character `x` is coerced to character by `c()`.
 `clear = TRUE` with no `x` empties the registry, including the vocabulary aliases, so
-`hy()` renames nothing until the package is reloaded. Registrations last until R restarts.
+`hy()` renames nothing. The registry, cleared or extended, returns to the vocabulary seed
+the next time the package is loaded, which includes every R restart.
 
 ## Remedies
 
@@ -122,3 +135,6 @@ the vocabulary's alias table as two columns, `name` and `value`, 52 rows as of
   A-16 give Python `register_names(mapping, *, replace=False)`, returning nothing and
   usable as a context manager, where R is `hydroloom_names(x = NULL, clear = FALSE)`
   returning the registry; this description records R's signature.
+- 2026-10-25, suite 0.1.0: hydrology review round; Definition names the products the
+  seeded aliases come from; Edge cases add seeded aliases meeting in one table, cite the
+  `name_alias_duplicate` and `name_alias_ambiguous` keys, and state reload behavior once.

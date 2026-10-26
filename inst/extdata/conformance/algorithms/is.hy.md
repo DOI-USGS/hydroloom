@@ -40,8 +40,8 @@ that `hy()` attaches, and `FALSE` otherwise. It answers whether `x` is the outpu
 `hy()` (or of an operation that kept both markers, such as a dplyr `filter()` on an `hy`
 object), not whether the columns are in hydroloom names. A table read from a file is
 never `hy` in R, whatever its column names. Column values are not read: a missing `toid`
-does not make a table invalid, because a row whose `toid` is not present in `id` is an
-outlet (I-4, issue #85).
+does not make a table invalid, because a row whose `toid` is not present in `id` is a
+terminal (I-4, issue #85).
 
 Three R outputs follow from the class rule. A table `hy()` classifies as
 `hy_flownetwork` (repeated `id` with `toid`, I-6) is `FALSE`, because that class does not
@@ -110,11 +110,17 @@ for the `id` uniqueness test.
 - One flowline: R `TRUE` after `hy()`, `FALSE` on the raw table; no message when
   `silent`.
 - No connections (all terminals): same as one flowline; `toid` values are not read.
-- Duplicated row (repeated `id` with `toid`): R `FALSE` after `hy()`, since the result is
-  `hy_flownetwork`, with the message "no hy class attribute" unless `silent`. Python
-  `False`.
+- Divergence (repeated `id` with distinct `toid` values, as in `loop.gpkg`): the
+  flownetwork pattern I-6 treats as a representation, not an error. R `FALSE` after
+  `hy()`, since the result is `hy_flownetwork`, with the message "no hy class attribute"
+  unless `silent`. Python `False` by condition 3.
+- Duplicated row (the same `id`/`toid` pair listed twice, `duplicated_edge.gpkg`): S-6
+  says this raises, which M3 does not apply (D3-46, D3-57). `is.hy` reads no rows and
+  does not raise; `hy()` does not raise either and returns `hy_flownetwork`, so R is
+  `FALSE` both as read and after `hy()`. Python `False` by condition 3.
 - Missing `toid`: accepted; R `TRUE` on an `hy` object whose `toid` holds `NA`.
-- Zero-row table: R `TRUE` after `hy()`.
+- Zero-row table (`empty_network.gpkg`): R `FALSE` as read, `TRUE` after `hy()`.
+  Python may return `True` (I-11).
 - Not a table (`NULL`, a list): `FALSE`, with the class message unless `silent`.
 - Missing weight, zero-length line, empty name: not read; the result follows the class
   rule alone.
@@ -163,3 +169,6 @@ the function as read, so these two values stay in testthat as interface tests.
   type, and pattern test) stands in for R's class test, which I-14 makes impossible in
   Python; cases on tables already in hydroloom names are `supported_by: [r]` only. No
   ROADMAP §4 change applies.
+- 2026-10-26, suite 0.1.0: review round. Divergence and duplicated row separated in Edge
+  cases; terminal for a `toid` outside `id`; the zero-row table and `loop.gpkg` gain
+  cases. No behavior change.

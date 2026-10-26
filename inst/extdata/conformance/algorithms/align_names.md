@@ -80,18 +80,20 @@ Time O(c + a) for c columns and a alias-map pairs with hashed lookup (R's `%in%`
 - An uppercase alias registered with `hydroloom_names()` never matches, since names are lowercased before lookup.
 - sf input with an uppercase geometry column name, or with mixed-case attribute names and a rename: R stops inside sf (Preconditions); Python returns the aligned GeoDataFrame with the geometry column name unchanged (G-14). `hy()` sets the geometry aside first and does not hit either stop.
 - Two conflicts at once (`comid` beside `id` and `tocomid` beside `toid`): R stops with the second input name printed as `NA`; the condition is `name_alias_conflict` either way.
+- `permanent_identifier` beside `to_permanent_identifier` and nothing else: the two become `id` and `toid` with no message and no warning, since no hydroloom name has two candidates.
+- `permanent_identifier` beside `tocomid` and `to_permanent_identifier`: step 4 drops `permanent_identifier` because `toid` has two candidates, and step 5 gives `toid` to `to_permanent_identifier`. The result has a `toid` column pointing to permanent identifiers and no `id` column; `permanent_identifier` keeps its name. This follows from step 4 applying when any hydroloom name has several candidates (D3-24).
 
 ## Remedies
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| alias beside its hydroloom name | two columns would carry one hydroloom name | none; columns named in the message | rename or drop one of the two columns before `align_names()` | `name_alias_conflict` |
-| two aliases for one hydroloom name (warning) | the alias later in map order was used; the other keeps its input name | none; columns named in the message | drop the unwanted column, or register the intended mapping with `hydroloom_names()` | `name_alias_duplicate` |
-| three or more aliases for one hydroloom name | no single column can be chosen | none; columns named in the message | drop all but one of the aliasing columns before `align_names()` | `name_alias_ambiguous` |
-| two column names equal ignoring case | names are compared lowercased, so the two collide | none; columns named in the message | rename one column so the lowercased names differ | `column_name_duplicate` |
-| empty column name | a column has no name | none; column position in the message | give the column a name | `column_name_empty` |
-| uppercase geometry column name on sf input (R only) | sf cannot find the geometry column after lowercasing | none | `rename_geometry(x, "geom")`, or `hy(x)` | `sf_geometry_name_case` |
-| mixed-case attribute names on sf input (R only) | sf cannot match its attribute-geometry table after the rename | none | `hy(x)`, which aligns names with the geometry set aside, or `sf::st_drop_geometry(x)` first | `sf_mixed_case_names` |
+| alias beside its hydroloom name | two columns would carry one hydroloom name | none; columns named in the message | `dplyr::select(x, -<alias column>)` | `name_alias_conflict` |
+| two aliases for one hydroloom name (warning) | the column named after "using" took the hydroloom name; the other aliasing column kept its input name | none; columns named in the message | `dplyr::select(x, -<unwanted column>)` | `name_alias_duplicate` |
+| three or more aliases for one hydroloom name | no single column can be chosen | none; columns named in the message | `dplyr::select(x, -c(<all but one aliasing column>))` | `name_alias_ambiguous` |
+| two column names equal ignoring case | names are compared lowercased, so the two collide | none; columns named in the message | `names(x)[<position>] <- "<new name>"` | `column_name_duplicate` |
+| empty column name | a column has no name | none; column position in the message | `names(x)[<position>] <- "<new name>"` | `column_name_empty` |
+| uppercase geometry column name on sf input (R only) | sf cannot find the geometry column after lowercasing | none | `hy(x)` | `sf_geometry_name_case` |
+| mixed-case attribute names on sf input (R only) | sf cannot match its attribute-geometry table after the rename | none | `hy(x)` | `sf_mixed_case_names` |
 
 Python raises `KeyError` for the first five stops (A-10, a vocabulary problem) and warns with the package warning class for `name_alias_duplicate` (A-11).
 
@@ -99,7 +101,9 @@ Python raises `KeyError` for the first five stops (A-10, a vocabulary problem) a
 
 - R source: `R/align_names.R` (`align_names`, `hydroloom_names`), `R/vocab.R` (`vocab_alias_map`, `vocab_good_names`), `R/zzz.R` (`.onLoad` seeds the registry), `R/hy.R` (calls `align_names` after setting geometry aside).
 - Tests: `tests/testthat/test_align_names.R`.
-- Vocabulary: `inst/extdata/hy_vocab.json` (`aliases` of each term).
+- Vocabulary: `inst/extdata/hy_vocab.json` (`aliases` of each term, and each alias's `source` tag, `nhdplus`, `nhdplushr`, or `3dhp`, which gives the data model the alias comes from).
+- NHDPlus Version 2 User Guide (McKay and others, 2012): the NHDPlusV2 attribute names (`COMID`, `ToCOMID`, `Hydroseq`, `TotDASqKM`, and others) behind the `nhdplus` aliases.
+- USGS, USGS hydrofabric data theme, section "Hydrofabric datasets", which describes NHDPlusV2, NHDPlusHR, and 3DHP, the datasets behind the `nhdplus`, `nhdplushr`, and `3dhp` aliases: https://water.usgs.gov/themes/hydrofabric/.
 - Descriptions: `hy.md` (Algorithm step 2), `hydroloom_names.md` (the registry).
 - SPEC A-5, A-8, A-9, A-10, A-11, A-12, A-16, D-7, D-14, D-15, G-14, I-5, I-14.
 
@@ -126,3 +130,4 @@ Fixture `fixtures/hy_worked_example.gpkg` (shared with `hy`), aspatial, three ro
 ## Changes
 
 - 2026-10-25, suite 0.1.0: first description, recording R 1.3.0 behavior. No ROADMAP §4 change applies: I-2 and I-5 are `hy()`'s, and `align_names` raises no representation error, so the A-10 condition class does not reach it. Step 4 and the three-candidate stop in step 5 are stated more narrowly in `hy.md` step 2, which says `permanent_identifier` drops only from a set of candidates it belongs to and that the latest of several candidates always wins; this description records R. The two sf stops are R accidents captured as current behavior, not fixed here.
+- 2026-10-26, suite 0.1.0: hydrology review fix round. Edge cases add the `permanent_identifier`/`to_permanent_identifier` pair and the no-`id` outcome of the mixed table; References add the NHDPlusV2 user guide, the hydrofabric data theme, and the vocabulary `source` tags; the Remedies fix column gives one call per row. No behavior change.

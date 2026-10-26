@@ -47,6 +47,14 @@ levelpath); `"hy_topo"`, self-referencing edge list (id/toid, dendritic); `"hy_n
 fromnode/tonode graph (id/fromnode/tonode); `"hy_flownetwork"`, junction table
 (id/toid/upmain/downmain); `"hy"`, name-aligned base object.
 
+Two words in that list read narrower than the rule. "Dendritic" for `"hy_topo"` means each
+flowline has at most one downstream flowline, one row per `id`; a table built with
+`add_topo` from a source divergence attribute keeps its minor-path flowlines as rows whose
+upstream connection was dropped, so it is `"hy_topo"` while `is_dendritic()` returns
+`FALSE` (case `hy_network_type_new_hope_add_topo`). For `"hy_flownetwork"`, `upmain` and
+`downmain` are optional: repeated `id` with `toid` is the whole pattern, and cases `loop`,
+`duplicated_edge`, and `divergence_add_topo` carry neither column.
+
 R: the value is the first of the five class names that appears in `class(x)`, in
 class-vector order, or `"not a hydroloom object"` when none appears. Every hydroloom
 constructor prepends its class, so the first one found is the most specific. The value
@@ -62,13 +70,18 @@ typed as `as_hy` would leave them, first match wins:
 
 1. `id` and `toid` present and `id` unique: `"hy_leveled"` when `topo_sort`,
    `levelpath`, and `levelpath_outlet_id` are all present, else `"hy_topo"`;
-2. `id` and `toid` present and `id` repeated: `"hy_flownetwork"`;
+2. `id` and `toid` present and `id` repeated: `"hy_flownetwork"`. A repeated `id` with
+   `toid` is a flowline listed once per downstream flowline, as at a divergence;
 3. `id`, `fromnode`, and `tonode` present and `id` unique: `"hy_node"`;
 4. otherwise: `"hy"`.
 
 `toid` outranks the node columns: a table with `id`, `toid`, `fromnode`, and `tonode`
 is `"hy_topo"`. Values other than `id` are not read; a missing `toid` does not change
 the pattern.
+
+The pattern does not say whether the rows are flowlines or catchments. A catchment table,
+with flowpaths 1:1 with catchments, and a flowline table with the same columns get the same
+value; the caller knows which graph it holds.
 
 ## Algorithm
 
@@ -125,7 +138,11 @@ uniqueness test.
 - No connections (all terminals): `"hy_topo"`; every `toid` is an outlet, which the rule
   does not read.
 - Duplicated row (repeated `id` with `toid`, S-6 duplicated edge): `"hy_flownetwork"`;
-  the function does not raise on it.
+  the function does not raise on it. The value does not tell a divergence from an exactly
+  repeated row; both are a repeated `id` with `toid`.
+- Divergence with and without a `divergence` attribute, through `add_topo` (R only):
+  `divergence_attribute` gives `"hy_topo"`, since the attribute drops the minor paths;
+  `divergence_no_attribute` gives `"hy_flownetwork"`, since both downstream rows stay.
 - Repeated `id` with `fromnode` and `tonode` and no `toid`: `"hy"`, since neither the
   flownetwork nor the node branch applies.
 - No `id`, or `id` with neither `toid` nor both node columns: `"hy"`.
@@ -143,7 +160,8 @@ uniqueness test.
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
 | alias beside its hy name (Python) | two columns would carry one hy name | none; columns named in the message | rename or drop one of the two columns | `name_alias_conflict` |
-| several aliases for one hy name (Python, warning) | the latest alias in map order was used | none; columns named in the message | drop the unwanted columns, or register the intended mapping with `register_names()` | `name_alias_duplicate` |
+| two aliases for one hy name (Python, warning) | the alias later in map order was used | none; columns named in the message | drop the unwanted column, or register the intended mapping with `register_names()` | `name_alias_duplicate` |
+| three or more aliases for one hy name (Python) | no single column can be chosen | none; columns named in the message | drop all but one of the aliasing columns | `name_alias_ambiguous` |
 | identifier column of mixed types (Python, I-3) | one column holds both strings and numbers | rows whose type differs from the first value's | cast the column to one type | `identifier_mixed_type` |
 
 R raises and warns on nothing. Python's rows are the conditions `as_hy` raises in name
@@ -160,6 +178,8 @@ alignment and identifier typing (`hy.md` Remedies); the keys are `hy`'s, not new
 - `tests/testthat/test_hy_classes.R`, "hy_network_type returns correct type".
 - SPEC A-2, A-8, A-9, A-10, A-16, I-2, I-3, I-6, I-14, S-7, D-7, D-15; AGENTS.md "S3
   Class Hierarchy".
+- USGS hydrofabric theme, Network: the primary and secondary upstream/downstream
+  connections the four patterns encode.
 
 ## Worked example
 
@@ -185,3 +205,8 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
   class. No ROADMAP §4 change alters the value: I-2 changes identifier types, not the
   column set or `id` repetition, and the A-10 condition class applies to the
   representation errors whose text quotes this value, not to this function.
+- 2026-10-26, suite 0.1.0: hydrology review round. Definition says what "dendritic"
+  and the optional `upmain`/`downmain` mean for the value, glosses a repeated `id` as a
+  divergence, and states that the value does not tell flowlines from catchments; the
+  divergence attribute pair and the 3DHP and NHDPlusHR cases are added; the
+  `name_alias_ambiguous` row is added (D3-60). Behavior is unchanged.

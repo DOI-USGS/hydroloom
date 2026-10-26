@@ -44,14 +44,16 @@ The input, after `hy()` (R) or `as_hy` (Python), must be the `hy_node` pattern: 
 
 Roxygen: generates a toid attribute from node topology by joining tonode and fromnode attributes. `return_dendritic`: remove non dendritic paths if TRUE; requires a "divergence" flag where 1 is main and 2 is secondary.
 
-As a property of the input: a row's `toid` is the `id` of a flowline whose `fromnode` equals the row's `tonode`. A flowline can be a downstream target only if its own `tonode` is present and, with `return_dendritic = TRUE`, its `divergence` is neither 2 nor missing. A row with a missing `tonode`, or whose `tonode` matches no eligible `fromnode`, is an outlet and carries the reserved outlet value (I-5). With `return_dendritic = FALSE` a row with k eligible downstream flowlines appears k times, once per `toid`; with `return_dendritic = TRUE` it appears once whenever at most one of the flowlines leaving its `tonode` has a `divergence` other than 2.
+As a property of the input: a row's `toid` is the `id` of a flowline whose `fromnode` equals the row's `tonode`. With `return_dendritic = TRUE`, a flowline whose `divergence` is 2 (a minor path) is not a downstream target. A row with a missing `tonode`, or whose `tonode` matches no eligible `fromnode`, is an outlet and carries the reserved outlet value (I-5). With `return_dendritic = FALSE` a row with k eligible downstream flowlines appears k times, once per `toid`; with `return_dendritic = TRUE` it appears once whenever at most one of the flowlines leaving its `tonode` has a `divergence` other than 2.
+
+Two further R 1.3.0 rules are current behavior, not Python contract (D3-56): a flowline with a missing `divergence` is treated as a minor path, and a flowline with a missing `tonode` is never a downstream target. Both cut the network above that flowline without a warning; the maintainer has not chosen between warning with the rows named and stopping. Their cases are R-only.
 
 ## Algorithm
 
 1. `data.frame` method: warn if `return_dendritic = FALSE` (`return_dendritic_deprecated`); run `hy()`; dispatch on the class; restore input names on return (`hy_reverse`). Python: `_as_hy` then `_route` (A-3, A-17), then `_hy_reverse`.
 2. Dispatch by representation (Preconditions). Only the `hy_node` pattern proceeds.
-3. With `return_dendritic = TRUE`, mark each flowline whose `divergence` is 2 or missing as ineligible to receive an upstream connection. The source `divergence` attribute decides; no main path is computed here (D-9: the source attribute wins). Missing counts as ineligible because R tests `divergence == 2` through `ifelse`, which yields missing; captured, not changed.
-4. Set aside rows whose `tonode` is missing; each gets `toid` equal to the outlet value. These rows are also ineligible as downstream targets.
+3. With `return_dendritic = TRUE`, mark each flowline whose `divergence` is 2 as ineligible to receive an upstream connection. The source `divergence` attribute decides; no main path is computed here (D-9: the source attribute wins). R also marks a missing `divergence` ineligible, because it tests `divergence == 2` through `ifelse`, which yields missing; current R behavior, not Python contract (D3-56).
+4. Set aside rows whose `tonode` is missing; each gets `toid` equal to the outlet value. In R these rows are also ineligible as downstream targets; current R behavior, not Python contract (D3-56).
 5. Join the remaining rows: upstream row u matches downstream row d when `u.tonode == d.fromnode` and d is eligible. Each match is one output row (u's columns, `toid = d.id`). A row with no match gets the outlet value. Missing `fromnode` matches nothing.
 6. Outlet value (I-5): `""` when `id` is `character` (always in Python); otherwise `0`. Today R writes `0` as `double` and `toid` is `double` whatever the type of `id`; post-change (I-2) `toid` has the type of `id`, and the outlet value is `0L` for `integer`.
 7. Row order, binding: the rows from step 5 in input order of u; rows sharing one u are contiguous, their `toid` in the input order of the matching d rows; then the rows from step 4, in input order. This is the only tie rule: at a divergence the order of a flowline's downstream connections is the input row order of the downstream flowlines, not identifier order (D-5 concerns `make_index_ids` adjacency and does not apply; nothing here is sorted, D-3 holds vacuously, D-4 does not apply).
@@ -65,10 +67,10 @@ No sentinel: the join produces identifiers, not dense positions, and nothing cro
 - `toid` has no missing value and has the type of `id` (post-change in R; always `str` in Python).
 - For every output row, `toid` is either an `id` in the output or the outlet value (`""` for character `id`, `0` otherwise).
 - For every output row whose `toid` is an `id`, that flowline's `fromnode` equals the row's `tonode`.
-- No output row's `toid` is the `id` of a flowline whose `tonode` is missing.
-- With `return_dendritic = TRUE`, no output row's `toid` is the `id` of a flowline whose `divergence` is 2 or missing.
+- With `return_dendritic = TRUE`, no output row's `toid` is the `id` of a flowline whose `divergence` is 2.
+- R 1.3.0 only (D3-56): no output row's `toid` is the `id` of a flowline whose `tonode` is missing, or, with `return_dendritic = TRUE`, whose `divergence` is missing.
 - The set of `id` values in the output equals the set in the input; every input row appears at least once.
-- With `return_dendritic = TRUE`, the row count equals the input's when no `tonode` is shared by two eligible flowlines' `fromnode`; `id` is then unique.
+- With `return_dendritic = TRUE`, the row count equals the input's when no `tonode` is shared by two eligible flowlines' `fromnode`; `id` is then unique. The result is dendritic only as far as the source `divergence` codes allow: where two or more flowlines leaving one `tonode` have a `divergence` other than 2, the upstream flowline repeats once per such flowline, with no warning, and the result is the flownetwork pattern.
 - With `return_dendritic = FALSE`, a row appears once per eligible downstream flowline, or once with the outlet value when it has none.
 - Rows with a missing `tonode` follow every other row, in input order; the other rows keep input order (step 7).
 - D-7: for a row-permuted input, the multiset of (`id`, `toid`) pairs and every row's values are unchanged; only row order follows the permutation (step 7).
@@ -82,9 +84,10 @@ The join is O(n log n) time (O(n + m) with hashing) and O(n + m) space, for n ro
 - One flowline: returns one row with the outlet value as `toid`.
 - No connections (every `tonode` unmatched, or every `tonode` missing): every row is an outlet; row order is input order with missing-`tonode` rows last.
 - Zero rows: returns zero rows with `toid` typed (I-11); today `double` for an `integer` `id`, post-change `integer`.
-- A divergence whose downstream flowlines all have `divergence` other than 2, with `return_dendritic = TRUE`: the upstream flowline appears once per downstream flowline and `id` repeats; no warning; R `hy` input returns `hy_flownetwork`.
-- Missing `divergence` on a flowline below a divergence, with `return_dendritic = TRUE`: that flowline receives no upstream connection, so an upstream flowline whose other downstream has `divergence` 2 becomes an outlet.
-- A flowline with a missing `tonode` and a valid `fromnode`: it is never a downstream target, so the flowline above it becomes an outlet.
+- A divergence whose downstream flowlines all have `divergence` other than 2, with `return_dendritic = TRUE`: the upstream flowline appears once per downstream flowline and `id` repeats; no warning; R `hy` input returns `hy_flownetwork` (Postconditions).
+- A divergence whose downstream flowlines all have `divergence` 2 (no main path), with `return_dendritic = TRUE`: no downstream flowline is eligible, so the upstream flowline becomes an outlet and the network splits in two, with no warning. In `add_toids_divergence_without_main` (the worked example's first five rows with flowline 2 coded 2) the result is (1, 0), (2, 4), (3, 5), (4, 0), (5, 0); R `hy` input returns `hy_topo`.
+- Missing `divergence` on a flowline below a divergence, with `return_dendritic = TRUE`: in R 1.3.0 that flowline receives no upstream connection, so an upstream flowline whose other downstream has `divergence` 2 becomes an outlet. Not Python contract; the case is R-only (D3-56).
+- A flowline with a missing `tonode` and a valid `fromnode`: in R 1.3.0 it is never a downstream target, so the flowline above it becomes an outlet. A flowline's upstream connection is decided at its `fromnode`, so the expected result for `add_toids_missing_tonode_target` would be (1, 2), (3, 2), (2, outlet); R gives (1, 0), (3, 0), (2, 0). Not Python contract; the case is R-only (D3-56).
 - Duplicated row (repeated `id`) without `toid`: stops (`needs_node`). With `toid`: Preconditions.
 - Input already has `toid`: stops (`toid_already_present`); with `return_dendritic = FALSE` the deprecation warning comes first.
 - Missing weight, zero-length line, empty name: not applicable; those columns pass through.
@@ -93,9 +96,10 @@ The join is O(n log n) time (O(n + m) with hashing) and O(n + m) space, for n ro
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| `return_dendritic = FALSE` (warning) | the non-dendritic edge list from `add_toids` is deprecated | all | `to_flownetwork()` for a non-dendritic edge list | `return_dendritic_deprecated` |
-| `toid` already present | the network already has downstream identifiers; `add_toids` builds them from `fromnode`/`tonode` | all | use the network as it is, or drop `toid` first | `toid_already_present` |
-| not the node pattern | no `fromnode`/`tonode` columns, or `id` repeats | all | supply `fromnode`/`tonode`, or `make_node_topology()` to build them | `needs_node` |
+| `return_dendritic = FALSE` (warning) | keeping every downstream connection at a divergence from `add_toids` is deprecated | all | `to_flownetwork()`, which keeps both the main and minor paths | `return_dendritic_deprecated` |
+| `toid` already present | the network already gives each flowline its downstream flowline in `toid`; `add_toids` builds `toid` from `fromnode`/`tonode` | all | none needed: the network can be used as it is, without `add_toids()` | `toid_already_present` |
+| not the node pattern: no `fromnode`/`tonode` | the flowlines have no upstream and downstream node identifiers | all | supply `fromnode`/`tonode` from the source data | `needs_node` |
+| not the node pattern: `id` repeats | one flowline appears on more than one row | the rows sharing an `id` | remove the duplicated flowline rows | `needs_node` |
 | no `divergence` with `return_dendritic = TRUE` | minor paths cannot be removed without a divergence flag | all | `add_divergence()` to compute one, or `to_flownetwork()` to keep every path | `divergence_required` |
 
 ## References
@@ -108,7 +112,7 @@ The join is O(n log n) time (O(n + m) with hashing) and O(n + m) space, for n ro
 
 ## Worked example
 
-Fixture `fixtures/add_toids_worked_example.gpkg`, aspatial, five rows, all columns INTEGER:
+Fixture `fixtures/add_toids_worked_example.gpkg`, aspatial, six rows, all columns INTEGER:
 
 | id | fromnode | tonode | divergence |
 | --- | --- | --- | --- |
@@ -117,9 +121,11 @@ Fixture `fixtures/add_toids_worked_example.gpkg`, aspatial, five rows, all colum
 | 3 | 20 | 40 | 2 |
 | 4 | 30 | 50 | 0 |
 | 5 | 40 | 50 | 0 |
+| 6 | 50 | 60 | 0 |
 
-`add_toids(x)` returns five rows: (`id`, `toid`) = (1, 2), (2, 4), (3, 5), (4, 0), (5, 0); flowline 3 is the minor path and receives no upstream connection. `add_toids(x, return_dendritic = FALSE)` warns and returns six rows: (1, 2), (1, 3), (2, 4), (3, 5), (4, 0), (5, 0); with rows 2 and 3 of the input swapped it returns (1, 3), (1, 2), (3, 5), (2, 4), (4, 0), (5, 0). `toid` is `double` today, `integer` post-change; Python `str` with `""` for the outlets.
+Flowline 1 splits at node 20 into the main path 2 and the minor path 3, which rejoin through 4 and 5 at node 50 above the single outlet 6. `add_toids(x)` returns six rows: (`id`, `toid`) = (1, 2), (2, 4), (3, 5), (4, 6), (5, 6), (6, 0). Flowline 3 receives no upstream connection, so its upstream end becomes a headwater while its downstream end still feeds the main path through 5 and 6. `add_toids(x, return_dendritic = FALSE)` warns and returns seven rows: (1, 2), (1, 3), (2, 4), (3, 5), (4, 6), (5, 6), (6, 0); with rows 2 and 3 of the input swapped it returns (1, 3), (1, 2), (3, 5), (2, 4), (4, 6), (5, 6), (6, 0). `toid` is `double` today, `integer` post-change; Python `str` with `""` for the outlet.
 
 ## Changes
 
 - 2026-10-25, suite 0.1.0: first description, recording R 1.3.0 behavior. Intended change I-2 (ROADMAP §4, M3): `toid` takes the type of `id` (pairing per D3-06) and the integer outlet value is `0L`; today `toid` is `double` for every non-character `id`. Captured, not changed (no §4 row): rows with a missing `tonode` move to the end (a D-14 departure); a missing `divergence` makes a flowline ineligible as a target; a flowline with a missing `tonode` is never a target; flownetwork input recurses in R, where Python raises `toid_already_present`. The A-10 condition-class change applies to the `needs_node` stop. A-11: Python's deprecation is a `FutureWarning`. No A-9 gap: A-16 matches R.
+- 2026-10-26, suite 0.1.0, review fix round: a missing `divergence` treated as a minor path and a flowline with a missing `tonode` never a target are recorded as R 1.3.0 behavior, not Python contract; their cases are R-only (D3-56, narrowing D3-37). Postconditions state that a divergence coded other than 2 on two branches gives a repeated `id` under `return_dendritic = TRUE`. Added the edge case and case for a divergence with no main path. The worked example gains flowline 6 so the minor path rejoins above one outlet. Remedies cells reworded; `needs_node` split by cause.

@@ -97,8 +97,15 @@ repeat test, O(1) otherwise.
 
 - One flowline: `TRUE`, unless its `divergence` is 2.
 - No connections (all terminals): `TRUE`; `toid` values are not read.
-- Duplicated row (repeated `id` with `toid`): `FALSE` with `validate_data` true; `TRUE`
-  with it false when there is no `divergence` 2.
+- Divergence in flownetwork form (a repeated `id` with distinct `toid` values, I-6): `FALSE`
+  with `validate_data` true; `TRUE` with it false when there is no `divergence` 2.
+- Duplicated edge (the same `id`/`toid` pair listed twice, S-6 `duplicated_edge.gpkg`): a
+  data error, not a divergence, but the repeat test cannot tell the two apart, so the
+  result is the same as for a divergence. `is_dendritic` reads no connections and does not
+  raise; S-6 "raises" is not applied (D3-57).
+- Minor path that leaves a divergence and returns to the main stem downstream
+  (`return_divergence.gpkg`): `FALSE` for both values of `validate_data`, by the
+  `divergence` 2 test.
 - Repeated `id` without `toid` (node topology): `TRUE`; the repeat test needs `toid`.
 - Missing `divergence` value: ignored. Missing `id` values: two or more count as a
   repeat.
@@ -124,19 +131,25 @@ The function raises and warns on nothing of its own. The base R error on
 
 ## Worked example
 
-Fixture `fixtures/duplicated_edge.gpkg`, an aspatial table of three rows in which the
-`1 -> 2` row appears twice:
+A four-flowline table in flownetwork form, where flowline 1 divides and both branches
+reach flowline 4:
 
 | id | toid |
 | --- | --- |
 | 1 | 2 |
-| 1 | 2 |
-| 2 | 0 |
+| 1 | 3 |
+| 2 | 4 |
+| 3 | 4 |
+| 4 | 0 |
 
-`is_dendritic(x)` is `FALSE`: `toid` is present and `id` 1 repeats. Expectation layer
-`is_dendritic_duplicated_edge` holds one row, `value = FALSE`.
-`is_dendritic(x, validate_data = FALSE)` is `TRUE`: there is no `divergence` column.
-Layer `is_dendritic_duplicated_edge_no_validate` holds `value = TRUE`.
+`is_dendritic(x)` is `FALSE`: `toid` is present and `id` 1 repeats, so flowline 1 has two
+downstream connections. `is_dendritic(x, validate_data = FALSE)` is `TRUE`: the repeat
+test is skipped and there is no `divergence` column to say which branch is minor.
+
+With a `divergence` column the second form also finds it. Fixture
+`fixtures/divergence_attribute.gpkg` codes the minor path leaving its divergence as 2, so
+`is_dendritic(x)` and `is_dendritic(x, validate_data = FALSE)` are both `FALSE`;
+expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FALSE`.
 
 ## Changes
 
@@ -144,4 +157,8 @@ Layer `is_dendritic_duplicated_edge_no_validate` holds `value = TRUE`.
   A-16 does not list `is_dendritic`; the signature follows R (A-9) with `network` first.
   No ROADMAP §4 change alters the result. The I-2 identifier ingest change alters the
   type of `id` after `hy()` but not whether it repeats, so cases that run `hy()` first
-  keep their values.
+  keep their values; `is_dendritic_nhdplushr` pins this on identifiers outside 32-bit
+  range.
+- 2026-10-26, suite 0.1.0: review round. Worked example moved from the duplicated edge
+  to a divergence; divergence and duplicated edge separated in Edge cases, with the S-6
+  departure stated (D3-57); return-divergence and NHDPlusHR cases added.
