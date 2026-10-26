@@ -49,19 +49,20 @@ Moved to VERIFICATION §1 (tree, `.Rbuildignore`, hatchling, environments, depen
 
 **S-1 Five artifacts, one copy each**, under `inst/extdata/`: the vocabulary (`hy_vocab.json` with `abbreviations.json`), the algorithm descriptions (`conformance/algorithms/<function>.md`), the manifest (`conformance/manifest.yaml`), the fixtures and expectations (`conformance/fixtures/`, `conformance/expected/`), and the remedies catalog (`remedies.json`, authored; keyed by condition, `str.format` placeholders, read by both packages at the raise site, A-10). No derived or generated form of any of these is committed. One derived file is committed beside them: `docstrings.json`, generated from `man/` by `parse_Rd` (A-13), CI-diffed against a fresh run, with `man/` itself as the precedent for a committed generated file. Test code and API shape are language-local and not shared. Neither package hard-codes an attribute name; an addition is a JSON change with a version bump.
 
-**S-2 Vocabulary schema** (`until: hy_vocab.schema.json`, validated in pre-commit and CI). Top level: `version`, `terms` map keyed by hy name. Each term: `role` (HY_Features concept or none), `type`, `definition` (the precise paragraph), `unit` where the type implies one (`km`, `km2`, `m`, `percent`; UDUNITS-compatible), `aliases` (map from source `nhdplus`, `nhdplushr`, `3dhp`, `hydrofabric` to that source's column name), `computed_by` (function name, on computed terms; read by `capabilities()`), `tier` (`core`, `standard`, `derived`), `plain` (one sentence for a reader who does not know the term). Eight types, each a set of harness checks:
+**S-2 Vocabulary schema** (`until: hy_vocab.schema.json`, validated in pre-commit and CI). Top level: `version`, `terms` map keyed by hy name. Each term: `role` (HY_Features concept or none), `type`, `definition` (the precise paragraph), `unit` where the type implies one (`km`, `km2`, `m`, `percent`; UDUNITS-compatible), `aliases` (list of input column names that rename to the term, lowercase, each optionally tagged with the `source` it comes from, one of `nhdplus`, `nhdplushr`, `3dhp`, `hydrofabric`; an alias that belongs to no one source, such as `featureid` or `reconciled_id`, carries no tag), `computed_by` (function name, on computed terms; read by `capabilities()`), `tier` (`core`, `standard`, `derived`), `plain` (one sentence for a reader who does not know the term; a sentence not yet reviewed by the maintainer starts with `DRAFT:`). A term with `concept: true` names an idea, not a column, and carries no `type`, `unit`, or `aliases`. Nine types, each a set of harness checks:
 
 | type | value | checks |
 | --- | --- | --- |
 | `id` | opaque identifier | section I |
 | `flag` | boolean | never missing once computed |
-| `count` | non-negative integer | complete on every returned row; the definition states the domain (`stream_calc` 0 is a domain value) |
+| `count` | non-negative integer | complete on every returned row; the definition states the domain (`stream_calculator` 0 is a domain value) |
 | `measure` | float, percent along a flowline | float; NaN is the missing marker |
 | `length`, `area` | float with unit | tolerance per D-13; a `length` may be signed when its definition says so (`distance_km`: negative toward the outlet, positive toward the head) |
-| `code` | integer from an enumerated set | `values` map from integer to meaning (`divergence`: `{0: none, 1: main, 2: minor}`); every value checked; a source alias may carry its own coding, converted on ingest |
+| `code` | integer from an enumerated set | `values` map from integer to meaning (`divergence`: `{0: none, 1: main, 2: minor}`); every value checked; a source alias may carry its own coding, converted on ingest; `values` omitted where the set is open and defined by the source (`feature_type_code`), and then only integer is checked |
+| `text` | free-text label | character; no domain (`feature_type`) |
 | `fraction` | float in [0, 1] | optional `sums_to_one_over` naming a grouping column, checked per group at the D-13 tolerance (`divergence_fraction` over `fromnode`) |
 
-`core` tier is the six the pipeline article uses: `id`, `toid`, `topo_sort`, `levelpath`, `stream_order`, `pathlength_km`; `derived` is the `up_`, `dn_`, `terminal_` family. `mainstem` gets a concept entry, marked as a concept, not a column. Absent by design: per-source type overrides beyond a `code`'s `values`; any grouping or hierarchy. `abbreviations.json` is a sibling file, versioned the same way, schema-validated the same way.
+`core` tier is the six the pipeline article uses: `id`, `toid`, `topo_sort`, `levelpath`, `stream_order`, `pathlength_km`; `derived` is the `up_`, `dn_`, `terminal_` family. `mainstem` gets a concept entry (`concept: true`), not a column. Absent by design: per-source type overrides beyond a `code`'s `values`; any grouping or hierarchy. `abbreviations.json` is a sibling file, versioned the same way, schema-validated the same way.
 
 **S-3 Reading the vocabulary.** R: jsonlite on first use via `system.file("extdata", ..., package = "hydroloom")`, cached in a package environment; jsonlite in Imports. No `sysdata.rda`, no `data-raw/` step, no sync test. Python: `importlib.resources` from the wheel copy (VERIFICATION §1.3).
 
@@ -111,9 +112,9 @@ Every rule is asserted by the harness on dtype, not only value.
 | I-11 | Empty network | Zero-row input returns zero-row output with all computed columns present and typed. | | |
 | I-12 | Index vs identifier | The row index is never load-bearing. | row names ignored | index reset on ingest, never consulted; output keeps input row order unless the function is a sort |
 | I-13 | pandas 3 strings | `as_hy()` does not cast around the `str`/NaN default. I-1 and I-5 keep missing markers out of kernels; the harness compares after coercion (S-7), so pandas 2 and 3 results compare equal. | | |
-| I-14 | Original names | `as_hy()` keeps no state on the frame; nothing rides on `df.attrs`. `hy_reverse(df, source=)` inverts from the vocabulary's `aliases` or `register_names()`; an ad hoc mapping is passed back explicitly. | `orig_names` attribute | no frame state |
+| I-14 | Original names | `as_hy()` keeps no state on the frame; nothing rides on `df.attrs`. `hy_reverse(df, source=)` inverts from the vocabulary's `aliases` tagged with that source or `register_names()`; an ad hoc mapping is passed back explicitly. | `orig_names` attribute | no frame state |
 
-**I-15 Type policy.** Every vocabulary term carries one of the eight S-2 types; the harness maps each to its R and Python dtype from this table. A term cannot be added without a type.
+**I-15 Type policy.** Every vocabulary term carries one of the nine S-2 types; the harness maps each to its R and Python dtype from this table. A term cannot be added without a type, except a concept entry (S-2), which is not a column.
 
 ## D. Determinism
 
