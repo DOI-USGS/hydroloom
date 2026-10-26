@@ -645,6 +645,55 @@ fixture(data.frame(id = integer(), fromnode = integer(), tonode = integer(),
   "I-11 zero rows on the node pattern: toid typed",
   "I-11")
 
+# Function fixtures: make_index_ids (algorithms/make_index_ids.md) -----------
+
+# Three headwaters join at 10, which drains to the outlet 7. Identifier byte
+# order (100, 30, 4) differs from row order (30, 4, 100) at node 10.
+miw <- data.frame(
+  id = c(30L, 4L, 100L, 10L, 7L),
+  toid = c(10L, 10L, 10L, 7L, 0L))
+
+fixture(miw, "make_index_ids_worked_example",
+  "synthetic; the worked example in algorithms/make_index_ids.md",
+  "a three-way confluence whose upstream list follows row order today and identifier byte order after D-5",
+  c("D-5", "D-7"))
+
+fixture(miw[c(4, 3, 5, 1, 2), ], "make_index_ids_worked_example_permuted",
+  "make_index_ids_worked_example with rows reordered 4, 3, 5, 1, 2",
+  "the same network in another row order: the upstream list at 10 follows the new row order",
+  "D-7")
+
+fixture(data.frame(
+  id = c(1L, 1L, 1L, 30L, 4L, 100L),
+  toid = c(30L, 4L, 100L, 0L, 0L, 0L)),
+  "make_index_ids_divergence_order",
+  "synthetic",
+  "a flownetwork with three downstream connections from id 1 whose row order (30, 4, 100) differs from byte order",
+  c("I-6", "D-5"))
+
+fixture(data.frame(
+  id = c(1L, 1L, 2L, 3L),
+  toid = c(2L, 3L, 1L, 0L)),
+  "make_index_ids_flownetwork_cycle",
+  "synthetic",
+  "a flownetwork holding a two-flowline cycle (1 <-> 2): the flownetwork route runs no cycle check",
+  c("I-6", "D-8"))
+
+fixture(data.frame(
+  id = c(1L, 1L, 2L),
+  toid = c(2L, 2L, 0L),
+  downmain = c(TRUE, FALSE, TRUE)),
+  "make_index_ids_conflicting_downmain",
+  "synthetic (duplicated_edge with a downmain column; the repeated 1 -> 2 row is FALSE)",
+  "one connection on two rows that differ in downmain: both rows are kept as edges",
+  c("S-6", "I-6"))
+
+fixture(data.frame(id = 1:2, toid = c("2", "")),
+  "make_index_ids_type_mismatch",
+  "synthetic",
+  "INTEGER id with TEXT toid and the character outlet value: the outlet check warns and the join fails",
+  "I-2")
+
 # Index ---------------------------------------------------------------------
 
 index_file <- file.path(out_dir, "index.yaml")

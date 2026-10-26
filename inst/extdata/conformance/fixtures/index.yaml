@@ -668,6 +668,84 @@ fixtures:
   - I-6
   - D-8
   bytes: 147456
+- file: make_index_ids_conflicting_downmain.gpkg
+  source: synthetic (duplicated_edge with a downmain column; the repeated 1 -> 2 row
+    is FALSE)
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - toid
+  - downmain
+  exercises: 'one connection on two rows that differ in downmain: both rows are kept
+    as edges'
+  rules:
+  - S-6
+  - I-6
+  bytes: 73728
+- file: make_index_ids_divergence_order.gpkg
+  source: synthetic
+  rows: 6
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: a flownetwork with three downstream connections from id 1 whose row order
+    (30, 4, 100) differs from byte order
+  rules:
+  - I-6
+  - D-5
+  bytes: 73728
+- file: make_index_ids_flownetwork_cycle.gpkg
+  source: synthetic
+  rows: 4
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'a flownetwork holding a two-flowline cycle (1 <-> 2): the flownetwork
+    route runs no cycle check'
+  rules:
+  - I-6
+  - D-8
+  bytes: 73728
+- file: make_index_ids_type_mismatch.gpkg
+  source: synthetic
+  rows: 2
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'INTEGER id with TEXT toid and the character outlet value: the outlet
+    check warns and the join fails'
+  rules:
+  - I-2
+  bytes: 73728
+- file: make_index_ids_worked_example.gpkg
+  source: synthetic; the worked example in algorithms/make_index_ids.md
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: a three-way confluence whose upstream list follows row order today and
+    identifier byte order after D-5
+  rules:
+  - D-5
+  - D-7
+  bytes: 73728
+- file: make_index_ids_worked_example_permuted.gpkg
+  source: make_index_ids_worked_example with rows reordered 4, 3, 5, 1, 2
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'the same network in another row order: the upstream list at 10 follows
+    the new row order'
+  rules:
+  - D-7
+  bytes: 73728
 - file: missing_weight.gpkg
   source: synthetic
   rows: 3

@@ -37,6 +37,12 @@ functions:
   add_toids:
     requires: algorithms/add_toids.md#requires
     returns: frame
+  # key omits mode: single-mode layers have no mode column; the radix sort is
+  # stable, so "to" rows stay before "from" rows in a mode "both" layer.
+  make_index_ids:
+    requires: algorithms/make_index_ids.md#requires
+    returns: graph
+    key: [id, position, neighbor]
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
@@ -1832,3 +1838,356 @@ cases:
 
   # Not added: duplicated_edge.gpkg (repeated id with toid). R 1.3.0 recurses
   # until the evaluation depth limit (algorithms/add_toids.md Preconditions).
+
+  # make_index_ids ------------------------------------------------------------
+  # Annotations from the proposed cases (D3-14) are kept as comments:
+  # changes_with i2 = identifier ingest (ROADMAP §4, M3); d8 = SCC always in
+  # check_hy_graph (ROADMAP §4, M3); d5 = neighbor order by identifier byte
+  # order (pending, D3-40); from_upmain = "from" mode upmain joined per edge
+  # (pending with D-5, D3-43). Every case is order: ignore; position carries
+  # the neighbor order (S-7). A hy_topo with downmain but no upmain in mode
+  # "both" is not a case: graph_to_layer cannot put main on one direction
+  # only, so such inputs are split into "to" and "from" cases.
+
+  # changes_with: d5; D-5 tie at node 10; R today from 10 -> 30, 4, 100 (input
+  # order); after D-5 100, 30, 4
+  - id: make_index_ids_worked_example
+    function: make_index_ids
+    fixture: make_index_ids_worked_example.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; D-7; R today from 10 -> 100, 30, 4; after D-5 equal to
+  # make_index_ids_worked_example
+  - id: make_index_ids_worked_example_permuted
+    function: make_index_ids
+    fixture: make_index_ids_worked_example_permuted.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; flownetwork; D-5 tie in "to" at id 1; R today 30, 4,
+  # 100; after D-5 100, 30, 4
+  - id: make_index_ids_divergence_order
+    function: make_index_ids
+    fixture: make_index_ids_divergence_order.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # flownetwork route runs no cycle check; 1 <-> 2 returns; to (1,0,2),
+  # (1,1,3), (2,0,1)
+  - id: make_index_ids_flownetwork_cycle
+    function: make_index_ids
+    fixture: make_index_ids_flownetwork_cycle.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; data.frame route, hy_topo; 745 edges for 746 flowlines
+  # (one outlet)
+  - id: make_index_ids_new_hope
+    function: make_index_ids
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; confluences; 745 edges; about half the multi-neighbor
+  # lists are in byte order today
+  - id: make_index_ids_new_hope_from
+    function: make_index_ids
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    args: {mode: from}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; one layer with a mode column; 745 + 745 rows
+  - id: make_index_ids_new_hope_both
+    function: make_index_ids
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids}
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; flownetwork without main; 831 + 831 rows; divergences
+  # give "to" ties
+  - id: make_index_ids_new_hope_not_dendritic
+    function: make_index_ids
+    fixture: new_hope.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; main from downmain; 831 rows
+  - id: make_index_ids_new_hope_flownetwork
+    function: make_index_ids
+    fixture: new_hope.gpkg
+    prepare: {function: to_flownetwork}
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: from_upmain; R defect captured; 998 rows today (167
+  # duplicated edges, mislabeled main), 831 after the fix
+  - id: make_index_ids_new_hope_flownetwork_from
+    function: make_index_ids
+    fixture: new_hope.gpkg
+    prepare: {function: to_flownetwork}
+    args: {mode: from}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: i2; identifiers beyond 32 bits; double today, character
+  # after I-2; 2690 edges
+  - id: make_index_ids_nhdplushr
+    function: make_index_ids
+    fixture: nhdplushr.gpkg
+    prepare: {function: add_toids}
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; 32 missing tocomid filled by hy (I-5); many outlets;
+  # 516 edges
+  - id: make_index_ids_coastal
+    function: make_index_ids
+    fixture: coastal.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; flownetwork, character ids, cycles not checked; 1423 +
+  # 1423 rows
+  - id: make_index_ids_loop
+    function: make_index_ids
+    fixture: loop.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; braced GUID ids; byte order on mixed-case hex; 834 +
+  # 834 rows
+  - id: make_index_ids_loop2
+    function: make_index_ids
+    fixture: loop2.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: d5; wb-/nex- string ids, repeated id; 79 + 79 rows
+  - id: make_index_ids_sort_network_dups
+    function: make_index_ids
+    fixture: sort_network_dups.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # id 12 has no rows in either mode; confluence lists 3 <- 1,2; 6 <- 3,5;
+  # 10 <- 7,9 already in byte order
+  - id: make_index_ids_isolated_flowline
+    function: make_index_ids
+    fixture: isolated_flowline.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 n = 1; no rows; Python indptr [0, 0]
+  - id: make_index_ids_single_flowline
+    function: make_index_ids
+    fixture: single_flowline.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 all terminals; no rows
+  - id: make_index_ids_all_terminals
+    function: make_index_ids
+    fixture: all_terminals.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # S-6 duplicated edge; R collapses it (to (1,0,2), from (2,0,1)); S-6
+  # "raises" not applied; R-only (D3-46)
+  - id: make_index_ids_duplicated_edge
+    function: make_index_ids
+    fixture: duplicated_edge.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # one connection on two rows differing in downmain; both kept, to
+  # (1,0,2,main TRUE), (1,1,2,main FALSE); R-only (D3-46)
+  - id: make_index_ids_conflicting_downmain
+    function: make_index_ids
+    fixture: make_index_ids_conflicting_downmain.gpkg
+    args: {mode: to}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # from (2,0,1), (2,1,1), no main (no upmain); separate from the "to" case
+  # because mode "both" fails in graph_to_layer when only one direction has
+  # main; R-only (D3-46)
+  - id: make_index_ids_conflicting_downmain_from
+    function: make_index_ids
+    fixture: make_index_ids_conflicting_downmain.gpkg
+    args: {mode: from}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # I-11; R stops "subscript out of bounds" after a max() warning; Python
+  # returns an empty IndexIds; R-only (D3-46); no remedies key
+  - id: make_index_ids_empty_network
+    function: make_index_ids
+    fixture: empty_network.gpkg
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # ids 5 and 6 reference each other; stops today and after D-8
+  - id: make_index_ids_reciprocal_pair
+    function: make_index_ids
+    fixture: reciprocal_pair.gpkg
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  # id 3 toid 3; the reciprocal join catches it today; D-8 keeps it a cycle
+  - id: make_index_ids_self_loop
+    function: make_index_ids
+    fixture: self_loop.gpkg
+    args: {mode: from}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: network_cycle
+
+  # changes_with: d8; returns today (ids 2, 3, 4 cycle unseen by the pairwise
+  # join); after D-8 raises error network_cycle
+  - id: make_index_ids_three_cycle
+    function: make_index_ids
+    fixture: three_cycle.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  - id: make_index_ids_mode_invalid
+    function: make_index_ids
+    fixture: make_index_ids_worked_example.gpkg
+    args: {mode: borked}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: index_mode_invalid
+
+  - id: make_index_ids_mode_invalid_flownetwork
+    function: make_index_ids
+    fixture: make_index_ids_divergence_order.gpkg
+    args: {mode: borked}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: index_mode_invalid
+
+  # hy_node (no toid); no automatic add_toids
+  - id: make_index_ids_node_pattern
+    function: make_index_ids
+    fixture: nhdplushr.gpkg
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # plain hy (id and name only)
+  - id: make_index_ids_no_topology
+    function: make_index_ids
+    fixture: empty_name.gpkg
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_topo
+
+  # changes_with: i2; integer id, character toid; warns id_toid_type_mismatch
+  # then data.table join error today; after I-2 pairing returns (1,0,2)
+  - id: make_index_ids_type_mismatch
+    function: make_index_ids
+    fixture: make_index_ids_type_mismatch.gpkg
+    args: {}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+    raises: error
+
+  # Not added: long_form (deprecated, R only, not a graph; stays a testthat
+  # interface test); hy_leveled input (prepare is one level and add_levelpaths
+  # needs toid first; hy_leveled reaches the hy_topo method by inheritance).
