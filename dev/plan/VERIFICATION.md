@@ -257,6 +257,8 @@ The conformance suite tests one function per case on fixtures small enough to co
 
 **WBD dissolve benchmark**, run once before the `dissolve_polygons` implementation is chosen (ROADMAP M6). Inputs: Watershed Boundary Dataset HUC12 polygons for several HUC2 regions, dissolved to HUC8 and HUC4. Compared: `union_all`, `coverage_union_all`, and `GeoDataFrame.dissolve` in Python against `sf::st_union` and the `geos` path in R, on wall time, validity of the result, and hole and gap counts before and after the fill steps. The same inputs exercise `check_valid` on the `GEOMETRYCOLLECTION` case. The result is a benchmark note under `benchmarks/`, not a test.
 
+**Indexing against NHDPlusV2 gage addresses**, run once with the G-6 R change (ROADMAP M6). The indexing article compares `index_points_to_lines` with the flowline and reachcode measure the NHDPlusV2 gage layer assigns each gage; under nearest-vertex selection, 26 of 31 match without `precision` and 31 of 31 with `precision = 10`. The comparison is rerun with and without `precision` after the change; under G-6 and G-8 the two calls should give the same flowlines and measures. The result goes in the M6 record for `index_points_to_lines`, not a test.
+
 ## 6. Documentation checks and tooling defaults
 
 Rules that keep the two-language documentation honest:

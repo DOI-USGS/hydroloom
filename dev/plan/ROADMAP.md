@@ -72,7 +72,7 @@ Two gates hold inside every milestone from M3 on. The per-function gate, checked
 
 ### M7. Documentation with two tabs
 
-- Deliverable: the pipeline article "From a file to a model-ready network" as the first page and the end-to-end test (VERIFICATION §5); the generated representation map; one existing vignette converted to a Quarto article with `{.panel-tabset}`; tabs added to the rest as functions reach parity; quartodoc reference under `python/`; the README first screen and the three orientation paragraphs (DESIGN §8). Started once M5 ships, grown through M6.
+- Deliverable: the pipeline article "From a file to a model-ready network" as the first page and the end-to-end test (VERIFICATION §5); the generated representation map; one existing vignette converted to a Quarto article with `{.panel-tabset}`; tabs added to the rest as functions reach parity, the indexing article with the indexing group (its R chunks read hydrogeofetch's `sample_data.R`, so its Python tab needs the same GeoPackage by path or pooch key, VERIFICATION §6); quartodoc reference under `python/`; the README first screen and the three orientation paragraphs (DESIGN §8). Started once M5 ships, grown through M6.
 - Done when: every code tab runs at build time in the `docs` environment; the pipeline article passes as the end-to-end test in both languages; an article without a Python tab says so in one line.
 - Load: DESIGN §8; SPEC A-13; VERIFICATION §6.
 - Do not touch: the R API reference build (pkgdown as today).
@@ -104,7 +104,7 @@ Every hydroloom 1.3.0 export and its treatment. Phase 1 is M5; phases 2 and 3 ar
 | `navigate_hydro_network` | navigation | 2 | same | UT / UM / DM / DD with distance limits; G-3 |
 | `make_attribute_topology` | topology | 3 | same | endpoint kd-tree with the D-10 rule |
 | `index_points_to_lines` | indexing | 3 | same | G-6 to G-8; `aggregate_ids` constrains each point to the flowlines carrying its `aggregate_id`, exclusive with `ids` (1.3.0); `id_measure` returned on every call |
-| `index_points_to_waterbodies` | indexing | 3 | same | point-in-polygon: `STRtree` with a predicate |
+| `index_points_to_waterbodies` | indexing | 3 | same | point-in-polygon: `STRtree` with a predicate; a multipart waterbody raises; the outlet flowline is the lowest `topo_sort` among flowlines carrying the waterbody's `wbid`; `near_wb_dist` is to the nearest boundary vertex in R (the indexing article calls it the nearest shoreline), and the description decides whether G-6's projection applies |
 | `disambiguate_indexes` | indexing | 3 | same | G-16 |
 | `get_hydro_location` | linear referencing | 3 | same | `line_interpolate_point` on the fraction from `frommeas`/`tomeas` |
 | `add_measures`, `rescale_measures` | linear referencing | 3 | same | arithmetic over `frommeas`/`tomeas`; aggregate-id measures from lengths along a reachcode or mainstem |
