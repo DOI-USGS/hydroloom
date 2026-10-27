@@ -31,18 +31,64 @@ oldoption <- options(scipen = 9999)
 An index ties a point (a streamgage, a sample site, an intake) to a network.
 `index_points_to_lines()` finds the flowline nearest each point and returns a
 position on it: the flowline `id` and an `id_measure` along it. Where the
-network carries an `aggregate_id` such as a reachcode, the index also carries
-the `aggregate_id` and an `aggregate_id_measure` along the whole aggregate
-flowpath. Both measures run from 0 at the outlet (downstream end) to 100 at the
-inlet (upstream end).
+network carries an `aggregate_id` such as a reachcode or mainstem, the index
+also carries the `aggregate_id` and an `aggregate_id_measure` along the whole
+aggregate flowpath. Both measures are "interpolative" (a percent of the length)
+and run from 0 at the outlet (downstream end) to 100 at the inlet (upstream
+end). In contrast, `add_hydro_location_distance()` records "absolute" measures:
+a distance in kilometers upstream or downstream of a reference location such as
+a confluence.
 
-The nearest flowline is often not the right one. A point near a confluence is
-near two rivers, and a point on a lake shore is near a flowline that only
-stands in for the lake. This article works through those cases with the
-streamgages of the NHDPlusV2 sample in hydrogeofetch: indexing to vertices and
-at higher precision, resolving ambiguity among nearby flowlines, locating an
-index on its flowline, indexing to waterbodies, and measuring network distance
-between two indexes. This article is website-only and does not run on CRAN.
+`hydroloom` indexing functions fall in two groups. The first finds and works
+with indexes to flowlines and waterbodies:
+
+- `index_points_to_lines()` finds flowlines near each point and returns a
+  position on each.
+- `index_points_to_waterbodies()` finds the waterbody each point is in or near
+  and, with flowlines supplied, the flowline at the waterbody's outlet.
+- `disambiguate_indexes()` picks the best of several candidate flowlines per
+  point using a numeric (such as drainage area) or character (such as name)
+  attribute.
+- `get_hydro_location()` returns the point on the flowline that an index
+  refers to.
+- `rescale_measures()` converts an `aggregate_id_measure` (such as a reachcode
+  measure) to an `id_measure` along one flowline.
+- `get_partial_length()` returns the length of a flowline below and above an
+  index.
+- `navigate_connected_paths()` returns the network distance between the
+  outlets of pairs of flowlines. With `get_partial_length()`, it gives the
+  network distance between two indexes.
+
+The second records and places positions along identified mainstems, where the
+`aggregate_id` is a mainstem identifier:
+
+- `add_measures()` computes `aggregate_id` from and to measures for flowlines
+  that lack them.
+- `get_confluences()` returns a hydro location for each place one identified
+  mainstem enters another.
+- `add_hydro_location_distance()` records a position as a signed distance
+  along its mainstem from the nearest hydro location, such as a confluence.
+- `index_hydro_location_distance()` places such a distance back on a network
+  as a flowline `id` and `id_measure`.
+- `get_subpath()` returns the flowline pieces between two positions on one
+  mainstem.
+
+This article covers the first group. The [distances from confluences along
+mainstems
+article](https://doi-usgs.github.io/hydroloom/articles/mainstem_referencing.html)
+covers the second.
+
+# Background
+
+The nearest flowline to a point is not always the "right" one hydrologically.
+For example, a point near a confluence is near two rivers but can only measure
+one of them, and a point along a lake shore may be near a flowline that
+represents flow through the lake. This article works through those cases with
+the streamgages of an NHDPlusV2 sample dataset from `hydrogeofetch`: indexing to
+vertices and at higher precision, resolving ambiguity among nearby flowlines,
+locating an index on its flowline, indexing to waterbodies, and measuring
+network distance between two indexes. This article is website-only and does
+not run on CRAN.
 
 # Flowlines
 
@@ -108,16 +154,15 @@ compare <- function(indexes, gages) {
 compare(indexes, gages)
 ```
 
-26 of the 31 gages land on the same flowline, and the reachcode measures of
+Of the 31 gages, 26 land on the same flowline, and the reachcode measures of
 those on the same reachcode differ by up to about 20 (percent of the reachcode
 length).
 
 # Higher precision
 
 Snapping to vertices limits a measure to the positions of the flowline
-vertices. `precision` densifies the flowlines near
-each point to the given spacing in meters (with `sf::st_segmentize()`) before
-the search.
+vertices. `precision` densifies the flowlines near each point to the given
+spacing in meters (with `sf::st_segmentize()`) before the search.
 
 ```{r precision}
 indexes <- index_points_to_lines(flowlines_5070, gages_5070,
@@ -126,7 +171,7 @@ indexes <- index_points_to_lines(flowlines_5070, gages_5070,
 compare(indexes, gages)
 ```
 
-All 31 gages now land on the gage layer's flowline and the measure differences
+All 31 gages now land on the gage layer's flowline, and the measure differences
 fall within 1. The flowline match improves along with the measure: with
 vertices alone, the nearest vertex can belong to a neighboring flowline,
 especially where two flowlines share an endpoint.
@@ -160,7 +205,7 @@ compare(candidates, sites)
 ```
 
 Taking the nearest candidate puts 22 of the 30 reported sites on the gage
-layer's flowline. 12 sites have more than one candidate.
+layer's flowline. Twelve sites have more than one candidate.
 
 `disambiguate_indexes()` picks among the candidates for each point by comparing
 an attribute of the flowline with an attribute of the point. Numeric attributes
@@ -191,7 +236,7 @@ compare(by_name, sites)
 ```
 
 Both do worse against the gage layer than the nearest candidate: 15 of 30 by
-drainage area and 19 by name. The table shows where they part ways.
+drainage area and 19 by name. The table shows where they differ.
 
 ```{r disambiguate-table}
 multi <- as.integer(names(n_candidates[n_candidates > 1]))
@@ -213,12 +258,12 @@ drainage area seldom agrees exactly with the network's. On the same river, the
 flowline just upstream or downstream of the gage often comes closer in
 drainage area than the flowline the gage is on (Lake Waubesa and Yahara River
 at McFarland both pick the flowline with 847.9 km² over the one with 841.8
-km²). Drainage area separates a large river from a small tributary well and
-neighboring flowlines on one river poorly. Name has the opposite trouble: it
-cannot separate flowlines on the same named river, and where a flowline has no
-name it has nothing to compare.
+km²). Drainage area separates a large river from a small tributary well but
+separates neighboring flowlines on one river poorly. Name has the same
+trouble on one river — it cannot separate flowlines that share a name — and
+where a flowline has no name, there is nothing to compare.
 
-The Yahara River at Windsor shows the case drainage area is good for.
+The Yahara River at Windsor shows the case drainage area handles well.
 
 ```{r windsor}
 windsor <- which(sites$SOURCE_FEA == "05427718")
@@ -276,7 +321,7 @@ constrained <- index_points_to_lines(flowlines_5070, sites_5070,
 compare(constrained, sites)
 ```
 
-28 of 30 sites land on the gage layer's flowline. The other two, on Lake
+Of the 30 sites, 28 land on the gage layer's flowline. The other two, on Lake
 Kegonsa and Lake Monona, are more than 500 m from any flowline on their
 reachcode and are not indexed; the waterbody section below returns to them.
 
@@ -311,7 +356,7 @@ round(quantile(constrained$offset))
 Seven of the gages are on lakes. For a point on a lake, the nearest flowline is
 an artificial path through the lake, which stands in for the lake in the
 network but is not the lake. `index_points_to_waterbodies()` finds the
-waterbody each point is in or near, and with flowlines supplied, the flowline
+waterbody each point is in or near and, with flowlines supplied, the flowline
 at the waterbody's outlet (the lowest `Hydroseq` among the flowlines that carry
 the waterbody's id).
 
@@ -331,11 +376,11 @@ cbind(station = substr(sites$STATION_NM[lakes], 1, 32),
   gage_layer = sites$FLComID[lakes])
 ```
 
-`in_wb_COMID` is set when a point falls inside a waterbody and `near_wb_COMID`
+`in_wb_COMID` is set when a point falls inside a waterbody, and `near_wb_COMID`
 names the waterbody with the nearest shoreline within `search_radius`, at
 `near_wb_dist` meters. For six of the seven lake gages, the outlet flowline
 matches the gage layer's flowline, including Lake Monona, which the reachcode
-constraint could not place. The Lake Kegonsa gage gets the outlet of the lake
+constraint could not place. The Lake Kegonsa gage gets the outlet of the lake,
 while the gage layer puts it on another flowline.
 
 Waterbody polygons must be single part. The NHDWaterbody layer stores
@@ -351,7 +396,7 @@ an index on its flowline. `navigate_connected_paths()` returns the distance
 from the outlet of one flowline to the outlet of another, which needs the
 network topology (`toid`) and `length_km`.
 
-The Yahara River at Westport Road is above Lake Mendota and the Yahara River at
+The Yahara River at Westport Road is above Lake Mendota, and the Yahara River at
 McFarland is below Lake Monona.
 
 ```{r distance}
