@@ -73,6 +73,48 @@
       ],
       "python_class": "HydroloomError"
     },
+    "divergence_missing": {
+      "kind": "error",
+      "message": "Column divergence is missing on these rows: {rows}. Keeping only the main path where a flowline splits needs divergence on every flowline: 0 not below a divergence, 1 the main path, 2 a minor path. Compute it with add_divergence() and call again.",
+      "placeholders": {
+        "rows": "the rows where divergence is missing"
+      },
+      "condition": "add_toids() was asked to keep only the main path at each divergence (return_dendritic), and divergence is missing on one or more flowlines, so the main path cannot be told from a minor one there.",
+      "rows": "the rows where divergence is missing",
+      "fix": "add_divergence(), given the coastal and inland outlets, to compute divergence.",
+      "raised_by": [
+        "add_toids"
+      ],
+      "languages": [
+        "r",
+        "python"
+      ],
+      "r_text": [
+        "Column divergence is missing on these rows: <rows>. Keeping only the main path where a flowline splits needs divergence on every flowline: 0 not below a divergence, 1 the main path, 2 a minor path. Compute it with add_divergence() and call again."
+      ],
+      "python_class": "HydroloomError"
+    },
+    "divergence_coding_invalid": {
+      "kind": "error",
+      "message": "Where a flowline splits, exactly one downstream flowline is the main path (divergence other than 2) and the rest are minor paths (divergence 2). On these rows the split has no main path or more than one: {rows}. Recompute divergence with add_divergence() and call again.",
+      "placeholders": {
+        "rows": "the rows of the downstream flowlines at each split whose divergence coding is broken"
+      },
+      "condition": "add_toids() was asked to keep only the main path at each divergence (return_dendritic), and at one or more splits every downstream flowline is coded 2, leaving no main path, or two or more are not coded 2, leaving a flowline with more than one downstream flowline.",
+      "rows": "the rows of the downstream flowlines at each split whose divergence coding is broken",
+      "fix": "add_divergence(), given the coastal and inland outlets, to recompute divergence.",
+      "raised_by": [
+        "add_toids"
+      ],
+      "languages": [
+        "r",
+        "python"
+      ],
+      "r_text": [
+        "Where a flowline splits, exactly one downstream flowline is the main path (divergence other than 2) and the rest are minor paths (divergence 2). On these rows the split has no main path or more than one: <rows>. Recompute divergence with add_divergence() and call again."
+      ],
+      "python_class": "HydroloomError"
+    },
     "return_dendritic_deprecated": {
       "kind": "warning",
       "message": "return_dendritic = FALSE is deprecated. Use to_flownetwork() for non-dendritic edge lists.",
@@ -187,6 +229,28 @@
       "languages": ["r", "python"],
       "r_text": [
         "Are two or more outlets within the same network?"
+      ],
+      "python_class": "HydroloomError"
+    },
+    "outlet_not_in_network": {
+      "kind": "error",
+      "message": "These outlets are not ids in the network: {outlets}. Every outlet must be the id of a flowline in it; pass values of id as outlets.",
+      "placeholders": {
+        "outlets": "the outlets not found among id"
+      },
+      "condition": "An outlet passed to the sort is not the id of any flowline in the network, so the sort has no flowline to start from for it.",
+      "rows": "the outlets not found among id",
+      "fix": "Pass values of id as outlets.",
+      "raised_by": [
+        "sort_network",
+        "add_topo_sort"
+      ],
+      "languages": [
+        "r",
+        "python"
+      ],
+      "r_text": [
+        "These outlets are not ids in the network: <outlets>. Every outlet must be the id of a flowline in it; pass values of id as outlets."
       ],
       "python_class": "HydroloomError"
     },
@@ -534,6 +598,28 @@
       "languages": ["python"],
       "r_text": [],
       "python_class": "TypeError"
+    },
+    "identifier_not_whole": {
+      "kind": "error",
+      "message": "Column {column} holds numbers with a fractional part on these rows: {rows}. An identifier is a whole number or text; correct those values, or cast the column to text, and call again.",
+      "placeholders": {
+        "column": "the identifier column",
+        "rows": "the rows whose value has a fractional part"
+      },
+      "condition": "An identifier column arrives as floating-point numbers and one or more values has a fractional part, so it cannot be read as a whole-number identifier without changing the value.",
+      "rows": "the rows whose value has a fractional part",
+      "fix": "Correct the values, or cast the column to text, before hy().",
+      "raised_by": [
+        "hy"
+      ],
+      "languages": [
+        "r",
+        "python"
+      ],
+      "r_text": [
+        "Column <column> holds numbers with a fractional part on these rows: <rows>. An identifier is a whole number or text; correct those values, or cast the column to text, and call again."
+      ],
+      "python_class": "HydroloomError"
     },
     "unnamed_name_mapping": {
       "kind": "error",
