@@ -18,7 +18,7 @@ One repository, one root, both packages interleaved. The R package stays where i
 | `inst/extdata/docstrings.json` | shared, derived | generated from `man/` by the `dev/` script (A-13); committed, CI-diffed, force-included |
 | `inst/extdata/conformance/` | shared | `fixtures/`, `expected/`, `manifest.yaml`, `algorithms/` (S-1); Rbuildignored |
 | `dev/plan/` | shared | SPEC, ROADMAP, VERIFICATION, DESIGN; Rbuildignored under `^dev$` |
-| `dev/milestones/M<n>.md` | shared | the review record, one file per milestone, created with its branch; the disposition column is the maintainer's; Rbuildignored under `^dev$` |
+| `dev/milestones/M<n>.md` | shared | the review record, one file per milestone, created with its branch; the disposition column holds the maintainer's decisions, written by an agent only with the maintainer's specific permission; Rbuildignored under `^dev$` |
 | `dev/` scripts | R | the `docstrings.json` generator; Rbuildignored |
 | `src/hydroloom/`, `src/hydroloom/CLAUDE.md` | Python | the package, standard src layout (K-9); the agent notes for the package tree |
 | `tests/python/`, `tests/python/CLAUDE.md` | Python | pytest and the conformance harness; the agent notes for the test tree |
