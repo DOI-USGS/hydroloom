@@ -204,8 +204,9 @@ Rules that hold in every session:
    transcript or reasoning into your output; pass findings, not deliberation.
 8. Every commit an agent makes carries `Assisted-by: <agent> (<model-id>)` as a git
    trailer (`git commit --trailer "Assisted-by: Kiro (claude-opus-5.5)"`) and never
-   `Signed-off-by` or `Co-Authored-By`. Agents never write the disposition column of a
-   milestone file; that column is the maintainer's.
+   `Signed-off-by` or `Co-Authored-By`. Agents write the disposition column of a
+   milestone file only with the maintainer's specific permission; the decisions in it
+   are the maintainer's.
 9. Prose follows `.kiro/context/prose.md`. Existing roxygen, vignette, and
    name-definition text is reused, not rewritten. Agents author user-facing prose only
    in changelog fragments, doctests, and PR bodies; README, articles, `plain` and
