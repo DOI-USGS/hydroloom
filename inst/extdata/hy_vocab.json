@@ -35,7 +35,7 @@
         }
       ],
       "tier": "core",
-      "plain": "DRAFT: The identifier of a catchment (the land area draining to a stretch of river) and of its flowline where it has one, the key that links each row to other rows through toid and to other tables."
+      "plain": "The identifier of a catchment (the land area draining to a stretch of river) and of its flowline where it has one, the key that links each row to other rows through toid and to other tables."
     },
     "toid": {
       "role": null,
@@ -61,7 +61,7 @@
       ],
       "computed_by": "add_toids",
       "tier": "core",
-      "plain": "DRAFT: The id of the flowline or catchment that water flows into next, so each row points downstream; where a river splits, the same id appears on one row for each channel water flows into, and an outlet's toid matches no id in the table."
+      "plain": "The id of the flowline or catchment that water flows into next, so each row points downstream; where a river splits, the same id appears on one row for each channel water flows into, and an outlet's toid matches no id in the table."
     },
     "fromnode": {
       "role": "HY_HydroNexus",
@@ -74,7 +74,7 @@
       ],
       "computed_by": "make_node_topology",
       "tier": "standard",
-      "plain": "DRAFT: The identifier of the junction point at the upstream end of a flowline or catchment, shared with the downstream end of every flowline or catchment that flows into it."
+      "plain": "The identifier of the junction point at the upstream end of a flowline or catchment, shared with the downstream end of every flowline or catchment that flows into it."
     },
     "tonode": {
       "role": "HY_HydroNexus",
@@ -87,7 +87,7 @@
       ],
       "computed_by": "make_node_topology",
       "tier": "standard",
-      "plain": "DRAFT: The identifier of the junction point at the downstream end of a flowline or catchment, shared with the upstream end of each flowline or catchment that water flows into next."
+      "plain": "The identifier of the junction point at the downstream end of a flowline or catchment, shared with the upstream end of each flowline or catchment that water flows into next."
     },
     "divergence": {
       "role": null,
@@ -105,7 +105,7 @@
       ],
       "computed_by": "add_divergence",
       "tier": "standard",
-      "plain": "DRAFT: A code that marks where a river splits into two or more channels (a divergence): 0 for a flowline not immediately below a split, 1 for the main channel immediately below one, and 2 for a minor channel immediately below one."
+      "plain": "A code that marks where a river splits into two or more channels (a divergence): 0 for a flowline not immediately below a split, 1 for the main channel immediately below one, and 2 for a minor channel immediately below one."
     },
     "divergence_fraction": {
       "role": null,
@@ -118,7 +118,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The share of flow, from 0 to 1, sent down each channel below a divergence (a place where a river splits), so the shares of the main and minor channels leaving one split add up to 1 and a flowline with no split above it holds 1."
+      "plain": "The share of flow, from 0 to 1, sent down each channel below a divergence (a place where a river splits), so the shares leaving one split add up to 1 and a flowline with no split above it holds 1."
     },
     "wbid": {
       "role": "HY_WaterBody",
@@ -131,7 +131,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The identifier of the lake, reservoir, or other waterbody a flowline runs through."
+      "plain": "The identifier of the lake, reservoir, or other waterbody a flowline runs through."
     },
     "total_da_sqkm": {
       "role": null,
@@ -148,7 +148,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The land area, in square kilometers, draining through the downstream end of a catchment: its own area plus every catchment upstream, with each channel below a divergence (a place where a river splits) carrying the full upstream area and no area counted twice where the channels rejoin."
+      "plain": "The land area, in square kilometers, draining through the downstream end of a catchment: its own area plus every catchment upstream, carried down the main channel at a divergence (a place where a river splits) and not down the minor channel unless divergence_fraction apportions it."
     },
     "da_sqkm": {
       "role": null,
@@ -162,7 +162,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The land area, in square kilometers, of a single catchment, not counting anything upstream of it."
+      "plain": "The land area, in square kilometers, of a single catchment, not counting anything upstream of it."
     },
     "length_km": {
       "role": null,
@@ -176,7 +176,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The length, in kilometers, of one flowline."
+      "plain": "The length, in kilometers, of one flowline."
     },
     "pathlength_km": {
       "role": null,
@@ -191,7 +191,7 @@
       ],
       "computed_by": "add_pathlength",
       "tier": "core",
-      "plain": "DRAFT: The distance, in kilometers, along the river from the downstream end of a flowline to the outlet where its network ends."
+      "plain": "The distance, in kilometers, along the river from the downstream end of a flowline to the outlet where its network ends."
     },
     "arbolate_sum": {
       "role": null,
@@ -205,7 +205,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The total length, in kilometers, of a flowline and every flowline upstream of it, which shows how much river network feeds a point."
+      "plain": "The total length, in kilometers, of a flowline and every flowline upstream of it, accumulated down the main channel at a divergence (a place where a river splits) so a minor channel's sum restarts from its own length."
     },
     "topo_sort": {
       "role": null,
@@ -219,7 +219,7 @@
       ],
       "computed_by": "add_topo_sort",
       "tier": "core",
-      "plain": "DRAFT: An integer that is larger on every flowline or catchment than on any downstream of it, so sorting by descending topo_sort lists each one before everything it drains to."
+      "plain": "An integer that is larger on every flowline or catchment than on any downstream of it, so sorting by descending topo_sort lists each one before everything it drains to."
     },
     "up_topo_sort": {
       "role": null,
@@ -232,7 +232,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: The topo_sort value of the flowline or catchment directly upstream that shares this one's levelpath (its main river path), which at a confluence is the upstream branch that continues the same river."
+      "plain": "The topo_sort of the flowline or catchment directly upstream on the same levelpath (its main river path), which at a confluence is the branch that continues the same river, and 0 on a headwater."
     },
     "dn_topo_sort": {
       "role": null,
@@ -245,7 +245,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: The topo_sort value of the flowline or catchment directly downstream along the main path, which is the main channel below a divergence (a place where a river splits) and the receiving river's flowline where a tributary ends."
+      "plain": "The topo_sort of the flowline or catchment directly downstream along the main path — the main channel below a divergence, or the receiving river's flowline where a tributary ends — and 0 at a network outlet."
     },
     "dn_minor_topo_sort": {
       "role": null,
@@ -258,7 +258,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: The topo_sort value of the minor channel directly below a divergence (a place where a river splits), stored on the flowline just above the split, taking the one first in identifier byte order when there are several, and 0 on a flowline with no minor channel below it."
+      "plain": "The topo_sort of the minor channel directly below a divergence (a place where a river splits), stored on the flowline just above the split, the first in identifier byte order when there are several, and 0 where no minor channel leaves."
     },
     "terminal_topo_sort": {
       "role": null,
@@ -271,7 +271,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: The topo_sort value of the outlet flowline where this flowline's network ends, so rows that share it belong to the same drainage basin."
+      "plain": "The topo_sort value of the outlet flowline where this flowline's network ends, so rows that share it belong to the same drainage basin."
     },
     "terminal_flag": {
       "role": null,
@@ -284,7 +284,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: Marks with 1 the flowline at the outlet where a network ends, such as a river mouth or the low point of a closed basin, and with 0 every other flowline."
+      "plain": "TRUE on the flowline at the outlet where a network ends, such as a river mouth or the low point of a closed basin, and FALSE on every other flowline (source data carries this as 1 and 0)."
     },
     "terminal_id": {
       "role": null,
@@ -292,7 +292,7 @@
       "definition": "id of terminal catchment for entire drainage basin",
       "aliases": [],
       "tier": "derived",
-      "plain": "DRAFT: The id of the outlet catchment of the whole drainage basin, so rows that share it drain to the same outlet."
+      "plain": "The id of the outlet catchment of the whole drainage basin, so rows that share it drain to the same outlet."
     },
     "start_flag": {
       "role": null,
@@ -305,7 +305,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: Marks with 1 a headwater flowline, one that no other flowline flows into, and with 0 every other flowline."
+      "plain": "TRUE on a headwater flowline, one that no other flowline flows into, and FALSE on every other flowline (source data carries this as 1 and 0)."
     },
     "levelpath": {
       "role": "HY_Flowpath",
@@ -322,7 +322,7 @@
       ],
       "computed_by": "add_levelpaths",
       "tier": "core",
-      "plain": "DRAFT: An identifier shared by every flowline along one main river path (a mainstem) from its headwater to where it ends, so one river can be selected by one value within this table; the value is not a persistent mainstem identifier."
+      "plain": "An identifier shared by every flowline along one main river path (a mainstem) from its headwater to where it ends, so one river can be selected by one value within this table; the value is not a persistent mainstem identifier."
     },
     "up_levelpath": {
       "role": null,
@@ -335,7 +335,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: The levelpath of the main river path directly upstream of this flowline."
+      "plain": "The levelpath of the flowline directly upstream on the main path, equal to this flowline's own levelpath except on a headwater (0) and on the first flowline of a minor channel below a divergence, where it is the levelpath above the split."
     },
     "dn_levelpath": {
       "role": null,
@@ -348,7 +348,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: The levelpath of the main river path directly downstream, which differs from this flowline's own levelpath where a tributary joins a larger river."
+      "plain": "The levelpath of the main river path directly downstream, which differs from this flowline's own levelpath where a tributary joins a larger river."
     },
     "levelpath_outlet_id": {
       "role": null,
@@ -361,7 +361,7 @@
       ],
       "computed_by": "add_levelpaths",
       "tier": "standard",
-      "plain": "DRAFT: The id of the most downstream catchment on this flowline's levelpath (its main river path), where that river ends."
+      "plain": "The id of the most downstream catchment on this flowline's levelpath (its main river path), where that river ends."
     },
     "stream_level": {
       "role": null,
@@ -375,7 +375,7 @@
       ],
       "computed_by": "add_streamlevel",
       "tier": "standard",
-      "plain": "DRAFT: A number that rises by 1 for each step from a main river into its smaller tributaries, starting at 1 on rivers that reach the coast and 4 on rivers that end inland."
+      "plain": "A number that rises by 1 at each step from a river into a tributary, starting at 1 on a river that reaches the coast and at 4 on one that ends inland when the coastal terminals are identified."
     },
     "dn_stream_level": {
       "role": null,
@@ -388,7 +388,7 @@
         }
       ],
       "tier": "derived",
-      "plain": "DRAFT: The stream_level of the main river path directly downstream of this flowline."
+      "plain": "The stream_level of the main river path directly downstream of this flowline."
     },
     "stream_order": {
       "role": null,
@@ -402,7 +402,7 @@
       ],
       "computed_by": "add_streamorder",
       "tier": "core",
-      "plain": "DRAFT: The Strahler stream order, a ranking of streams that starts at 1 on headwater streams and rises by 1 where two streams of the same order join, except that a channel split off at a divergence (a place where a river splits) keeps the order from upstream and its return does not raise the order."
+      "plain": "The Strahler stream order — 1 on headwater streams, rising by 1 where two streams of the same order join — except that a channel split off at a divergence (a place where a river splits) keeps the order from upstream and its return does not raise the order."
     },
     "stream_calculator": {
       "role": null,
@@ -416,7 +416,7 @@
       ],
       "computed_by": "add_streamorder",
       "tier": "standard",
-      "plain": "DRAFT: Stream order counted along the main network only, equal to stream_order everywhere except on minor channels below a divergence (a place where a river splits), where it is 0."
+      "plain": "Stream order counted along the main network only, equal to stream_order except on a minor channel below a divergence (a place where a river splits) and the path downstream of it, where it is 0."
     },
     "feature_type": {
       "role": null,
@@ -428,7 +428,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: A short text label for the kind of feature a flowline is, such as a stream, a canal, or an artificial path through a lake."
+      "plain": "A short text label for the kind of feature a flowline is, such as a stream, a canal, or an artificial path through a lake."
     },
     "feature_type_code": {
       "role": null,
@@ -440,7 +440,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: A numeric code for the kind of feature a flowline is, with values defined by the source dataset."
+      "plain": "A numeric code for the kind of feature a flowline is, with values defined by the source dataset."
     },
     "vector_proc_unit": {
       "role": null,
@@ -453,7 +453,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The NHDPlus vector processing unit, the region over which the source hydrography was processed, that a feature belongs to."
+      "plain": "The NHDPlus vector processing unit, the region over which the source hydrography was processed, that a feature belongs to."
     },
     "raster_proc_unit": {
       "role": null,
@@ -466,7 +466,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: The NHDPlus raster processing unit, the region over which elevation data were processed to delineate catchments, that a feature belongs to."
+      "plain": "The NHDPlus raster processing unit, the region over which elevation data were processed to delineate catchments, that a feature belongs to."
     },
     "id_measure": {
       "role": null,
@@ -475,7 +475,7 @@
       "unit": "percent",
       "aliases": [],
       "tier": "standard",
-      "plain": "DRAFT: A position along one flowline as a percent of its length, from 0 at the downstream end to 100 at the upstream end."
+      "plain": "A position along one flowline as a percent of its length, from 0 at the downstream end to 100 at the upstream end."
     },
     "aggregate_id": {
       "role": null,
@@ -490,7 +490,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: An identifier shared by flowlines grouped into a longer feature, such as an NHD reach (the run of flowlines sharing one reachcode) or an identified mainstem (a river traced from its source to where it ends)."
+      "plain": "An identifier shared by flowlines grouped into a longer feature, such as an NHD reach (the run of flowlines sharing one reachcode) or an identified mainstem (a river traced from its source to where it ends)."
     },
     "aggregate_id_measure": {
       "role": null,
@@ -506,7 +506,7 @@
         }
       ],
       "tier": "standard",
-      "plain": "DRAFT: A position along the grouped feature given by aggregate_id, as a percent of its length from 0 at the downstream end to 100 at the upstream end."
+      "plain": "A position along the grouped feature given by aggregate_id, as a percent of its length from 0 at the downstream end to 100 at the upstream end."
     },
     "aggregate_id_from_measure": {
       "role": null,
@@ -524,7 +524,7 @@
       ],
       "computed_by": "add_measures",
       "tier": "standard",
-      "plain": "DRAFT: Where the downstream end of one flowline falls along its aggregate feature, as a percent of that feature's length from its downstream end."
+      "plain": "Where the downstream end of one flowline falls along its aggregate feature, as a percent of that feature's length from its downstream end."
     },
     "aggregate_id_to_measure": {
       "role": null,
@@ -542,7 +542,7 @@
       ],
       "computed_by": "add_measures",
       "tier": "standard",
-      "plain": "DRAFT: Where the upstream end of one flowline falls along its aggregate feature, as a percent of that feature's length from its downstream end."
+      "plain": "Where the upstream end of one flowline falls along its aggregate feature, as a percent of that feature's length from its downstream end."
     },
     "point_id": {
       "role": "HY_HydroLocation",
@@ -550,7 +550,7 @@
       "definition": "identifier of hydrologic location point",
       "aliases": [],
       "tier": "standard",
-      "plain": "DRAFT: The identifier of a point of interest on the network, such as a stream gage, carried through to the flowline it is matched to."
+      "plain": "The identifier of a point of interest on the network, such as a stream gage, carried through to the flowline it is matched to."
     },
     "offset": {
       "role": null,
@@ -559,7 +559,7 @@
       "unit": "m",
       "aliases": [],
       "tier": "standard",
-      "plain": "DRAFT: How far a point lies from the flowline it was matched to, in meters."
+      "plain": "How far a point lies from the flowline it was matched to, in meters."
     },
     "upmain": {
       "role": null,
@@ -568,7 +568,7 @@
       "aliases": [],
       "computed_by": "to_flownetwork",
       "tier": "standard",
-      "plain": "DRAFT: TRUE on the id-to-toid row that continues the same levelpath (the same named or main river) into its downstream flowline or catchment, so at a confluence one inflowing row is TRUE and the rest FALSE, and a row that is the only inflow is TRUE."
+      "plain": "TRUE on the id-to-toid row that carries this flowline's levelpath (the same main river) into its downstream flowline or catchment, so one inflowing row at a confluence is TRUE and the rest FALSE, and a row that is the only inflow is TRUE."
     },
     "downmain": {
       "role": null,
@@ -577,7 +577,7 @@
       "aliases": [],
       "computed_by": "to_flownetwork",
       "tier": "standard",
-      "plain": "DRAFT: TRUE on the id-to-toid row that follows the main path where a river splits into two or more channels, FALSE on the rows into the other channels, and TRUE on a row that is its flowline's only downstream connection, so keeping the TRUE rows leaves a network with no splits."
+      "plain": "TRUE on the id-to-toid row that follows the main channel where a river splits, FALSE on the rows into the other channels, and TRUE on a row that is its flowline's only downstream connection, so keeping the TRUE rows leaves a network with no splits."
     },
     "hydro_location_id": {
       "role": null,
@@ -586,7 +586,7 @@
       "aliases": [],
       "computed_by": "add_hydro_location_distance",
       "tier": "standard",
-      "plain": "DRAFT: The identifier of the feature linked to the reference point a distance is measured from, which at a confluence (where a tributary joins) is the tributary's aggregate_id (its mainstem), while the point itself sits on the receiving river at the upstream end of the first flowline below the junction."
+      "plain": "The identifier of the feature linked to the reference point a distance is measured from — at a confluence (where a tributary joins), the tributary's aggregate_id — while the point sits on the receiving river at the upstream end of the first flowline below the junction."
     },
     "distance_km": {
       "role": null,
@@ -596,7 +596,7 @@
       "aliases": [],
       "computed_by": "add_hydro_location_distance",
       "tier": "standard",
-      "plain": "DRAFT: The distance, in kilometers, along a river from a reference point such as a confluence, negative downstream toward the outlet and positive upstream toward the headwater."
+      "plain": "The distance, in kilometers, along a river from a reference point such as a confluence, negative downstream toward the outlet and positive upstream toward the headwater."
     },
     "past_end_km": {
       "role": null,
@@ -605,7 +605,7 @@
       "unit": "km",
       "aliases": [],
       "tier": "standard",
-      "plain": "DRAFT: How many kilometers a distance from a hydro location, when placed on a network, ran past the downstream or upstream end of the flowlines that share its aggregate_id before it was moved back to that end, 0 when it fell within them."
+      "plain": "How far, in kilometers, a distance from a hydro location ran past the downstream or upstream end of the flowlines sharing its aggregate_id before being placed at that end, and 0 when it fell within them."
     },
     "id_from_measure": {
       "role": null,
@@ -614,7 +614,7 @@
       "unit": "percent",
       "aliases": [],
       "tier": "standard",
-      "plain": "DRAFT: The downstream end of a piece of one flowline, such as a flowline cut at a gage when pulling a stretch of river out of a network, as a percent of that flowline's length from its downstream end."
+      "plain": "The downstream end of a piece of one flowline (a stretch cut at a gage, say) as a percent of that flowline's length from its downstream end."
     },
     "id_to_measure": {
       "role": null,
@@ -623,14 +623,14 @@
       "unit": "percent",
       "aliases": [],
       "tier": "standard",
-      "plain": "DRAFT: The upstream end of a piece of one flowline, such as a flowline cut at a gage when pulling a stretch of river out of a network, as a percent of that flowline's length from its downstream end."
+      "plain": "The upstream end of a piece of one flowline (a stretch cut at a gage, say) as a percent of that flowline's length from its downstream end."
     },
     "mainstem": {
       "concept": true,
       "role": "HY_Flowpath",
       "definition": "the predominant flowpath of a drainage basin, from headwater to outlet, made up of the flowlines that share a levelpath; the least resolved of the three classes of flowpath (flowline, flowpath, mainstem) and the only one that carries a persistent identifier",
       "tier": "standard",
-      "plain": "DRAFT: A river traced from its source to where it ends, represented in one table by the flowlines that share a levelpath, and the only kind of river feature that can carry a lasting identifier from one dataset to the next."
+      "plain": "A river traced from its source to where it ends, represented in one table by the flowlines that share a levelpath, and the only kind of river feature that can carry a lasting identifier from one dataset to the next."
     }
   }
 }
