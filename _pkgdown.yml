@@ -8,6 +8,7 @@ articles:
     - articles/advanced_network
     - articles/non-dendritic
     - articles/network_navigation
+    - articles/indexing
     - articles/mainstem_referencing
     - articles/accumulate_downstream
     - articles/flow-table
