@@ -24,6 +24,8 @@ flowlines that share an `aggregate_id` and link end to end), so any
   `aggregate_ids` to constrain a point to one mainstem's flowlines.
 - `hy_capabilities()` reports the four new functions. A new website article,
   "Distances from confluences along mainstems", walks a worked example.
+- The "Indexing points to a network" website article moves over from
+  hydrogeofetch and is rewritten around hydroloom's indexing functions.
 
 hydroloom 1.2.2
 ==========

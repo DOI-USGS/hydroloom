@@ -148,10 +148,10 @@ confluence is durable, the flowline is not.
 # A point on the receiving mainstem
 
 Take a point near the confluence and index it to the receiving mainstem on the
-first network. `aggregate_ids` constrains the search to that mainstem's
-flowlines, so a point near the confluence lands on the receiving mainstem and
-not on the tributary. `precision` refines the measure beyond vertex
-resolution.
+first network, constraining the search with `aggregate_ids` and refining the
+measure with `precision` (see [resolving
+ambiguity](https://doi-usgs.github.io/hydroloom/articles/indexing.html#resolving-ambiguity)
+in the indexing article).
 
 ```{r index}
 point <- sf::st_centroid(sf::st_geometry(v2[v2$id == ne_v2$id, ]))
@@ -364,9 +364,9 @@ A single flowline of the first network maps to a span of flowlines on the
 second. Index both of its ends to the second network with `aggregate_ids`,
 then `get_subpath()` returns the ordered pieces between them. An end can sit a
 few hundred meters from the second network's line, so the search radius is
-raised to 500 m. `aggregate_ids` constrains each end to the mainstem's
-flowlines, so the wider radius cannot pull an end onto a tributary flowline
-that falls within it.
+raised to 500 m; `aggregate_ids` keeps the wider radius from pulling an end
+onto a tributary (see [resolving
+ambiguity](https://doi-usgs.github.io/hydroloom/articles/indexing.html#resolving-ambiguity)).
 
 ```{r subpath}
 src <- v2[v2$id == idx$id, ]
