@@ -255,7 +255,7 @@ add_divergence_issue <- function(issue, hit, msg) {
 
 # Check divergence coding against the attribute contract documented in
 # accumulate_downstream(). Returns NULL when clean, otherwise the problem
-# rows of x with `row` and `divergence_issue` appended.
+# rows of x with `divergence_issue` appended (D3-160).
 check_divergence_internal <- function(x, fraction_tol = 1e-6) {
 
   missing_atts <- setdiff(required_atts_check_divergence, names(x))
@@ -323,7 +323,6 @@ check_divergence_internal <- function(x, fraction_tol = 1e-6) {
 
   out <- x[hit, , drop = FALSE]
 
-  out$row <- which(hit)
   out$divergence_issue <- issue[hit]
 
   out

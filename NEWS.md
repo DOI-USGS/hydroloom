@@ -56,8 +56,10 @@ hydroloom (development version)
   The "no outlets detected" and "some features missed in sort" warnings
   are gone: only a cycle caused them, and a cycle now stops first.
   `check_hy_graph()` no longer adds a `row` column to the rows on a
-  cycle; `id` identifies them. Rows returned by `divergence_check` keep
-  `row`.
+  cycle; `id` identifies them.
+- Rows returned by `check_hy_graph(divergence_check = TRUE)` no longer
+  carry a `row` column; `id` identifies them, as it does for the rows on
+  a cycle.
 - `hy_capabilities()` now returns a data.frame with one row per function
   and columns `function`, `available`, and `via`, in place of a named
   logical vector. `via` names the one conversion (`add_toids` or
