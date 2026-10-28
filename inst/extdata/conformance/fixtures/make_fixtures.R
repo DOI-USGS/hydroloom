@@ -360,7 +360,7 @@ stopifnot(!anyDuplicated(perm))
 fixture(nh[perm, ], "new_hope_shuffled",
   "new_hope fixture with rows permuted: row i is new_hope row ((i - 1) * 389) %% 746 + 1",
   "the same network in a different row order; output values do not depend on row order",
-  "D-7")
+  c("D-3", "D-7", "D-14"))
 
 fixture(data.frame(
   COMID = c(101, 102, 103),
@@ -486,6 +486,13 @@ fixture(data.frame(ID = 1:3, toID = c(2L, 3L, NA), extra = c("a", "b", "c")),
   "user-style names (ID, toID) restored by hy_reverse; a column outside the vocabulary; a missing toid filled on ingest and not restored",
   "I-5")
 
+# A fixed permutation, no seed (D-15).
+fixture(data.frame(ID = 1:3, toID = c(2L, 3L, NA), extra = c("a", "b", "c"))[c(3, 1, 2), ],
+  "hy_reverse_renamed_shuffled",
+  "hy_reverse_renamed with rows reordered 3, 1, 2",
+  "the same table in another row order: names restored, rows in the new input order",
+  c("D-3", "D-7", "D-14"))
+
 fixture(data.frame(ID = integer(), toID = integer(), extra = character()),
   "hy_reverse_zero_rows",
   "synthetic",
@@ -523,7 +530,7 @@ stopifnot(!anyDuplicated(perm_net))
 fixture(net[perm_net, ], "network_shuffled",
   "network fixture with rows permuted: row i is network row ((i - 1) * 389) %% 707 + 1",
   "the NHDPlusV2 attribute table in a different row order; names do not depend on row order",
-  "D-7")
+  c("D-3", "D-7", "D-14"))
 
 fixture(data.frame(featureid = 3:4, nhdplusid = 1:2, toid = c(2L, 0L)),
   "align_names_duplicate_alias_swapped",
@@ -647,6 +654,13 @@ fixture(atw[c(1, 3, 2, 4, 5, 6), ], "add_toids_downstream_swapped",
   "downstream connections at a divergence follow input row order, not identifier order",
   "D-7")
 
+# A fixed permutation that moves every row, no seed (D-15); ids 3 and 2 swap
+# their relative order, so the divergence tie order changes too.
+fixture(atw[c(5, 3, 6, 1, 4, 2), ], "add_toids_worked_example_shuffled",
+  "add_toids_worked_example with rows reordered 5, 3, 6, 1, 4, 2",
+  "the same network in another row order: the same (id, toid) rows, in the new input order",
+  c("D-3", "D-7", "D-14"))
+
 atw5 <- atw[1:5, ]
 
 fixture(within(atw5, divergence[2] <- NA_integer_), "add_toids_missing_divergence",
@@ -726,12 +740,12 @@ miw <- data.frame(
 fixture(miw, "make_index_ids_worked_example",
   "synthetic; the worked example in algorithms/make_index_ids.md",
   "a three-way confluence whose upstream list follows row order today and identifier byte order after D-5",
-  c("D-5", "D-7"))
+  c("D-5", "D-7", "D-1"))
 
 fixture(miw[c(4, 3, 5, 1, 2), ], "make_index_ids_worked_example_permuted",
   "make_index_ids_worked_example with rows reordered 4, 3, 5, 1, 2",
   "the same network in another row order: the upstream list at 10 follows the new row order",
-  "D-7")
+  c("D-1", "D-3", "D-5", "D-7"))
 
 fixture(data.frame(
   id = c(1L, 1L, 1L, 30L, 4L, 100L),
@@ -739,7 +753,7 @@ fixture(data.frame(
   "make_index_ids_divergence_order",
   "synthetic",
   "a flownetwork with three downstream connections from id 1 whose row order (30, 4, 100) differs from byte order",
-  c("I-6", "D-5"))
+  c("I-6", "D-5", "D-1"))
 
 fixture(data.frame(
   id = c(1L, 1L, 2L, 3L),
@@ -768,13 +782,24 @@ fixture(data.frame(id = 1:2, toid = c("2", "")),
 
 # Three cycles whose least identifiers are 9, 10, and 20: byte order numbers
 # them 10, 20, 9; numeric order 9, 10, 20; input order meets 9 first.
-fixture(data.frame(
+tcb <- data.frame(
   id = c(9L, 1L, 22L, 12L, 11L, 20L, 2L, 10L, 21L),
-  toid = c(12L, 9L, 20L, 9L, 10L, 21L, 0L, 11L, 22L)),
+  toid = c(12L, 9L, 20L, 9L, 10L, 21L, 0L, 11L, 22L))
+
+fixture(tcb,
   "two_cycles_byte_order",
   "synthetic",
   "three cycles whose numbering by least identifier differs between byte order (\"10\" < \"20\" < \"9\") and numeric order; input order matches neither",
   c("D-8", "D-1", "S-6"))
+
+# A fixed permutation, no seed (D-15). The rows off any cycle (1 -> 9 and
+# 2 -> 0) move and the cycle rows keep their relative order, so the returned
+# rows, which follow input order (D-14), are the same rows in the same order.
+fixture(tcb[c(7, 1, 3, 4, 5, 2, 6, 8, 9), ],
+  "two_cycles_byte_order_shuffled",
+  "two_cycles_byte_order with rows reordered 7, 1, 3, 4, 5, 2, 6, 8, 9",
+  "the same network with the acyclic rows moved: component numbering and returned rows unchanged",
+  c("D-1", "D-3", "D-7", "D-8", "D-14"))
 
 fixture(data.frame(
   id = c(1L, 1L, 2L, 3L, 4L, 5L, 6L, 6L, 7L, 8L),
@@ -928,7 +953,7 @@ fixture(ssb, "sort_siblings",
 fixture(ssb[c(5, 2, 4, 3, 1), ], "sort_siblings_permuted",
   "sort_siblings with rows reordered 5, 2, 4, 3, 1",
   "the same network in another row order: sibling order follows the new row order today",
-  c("D-4", "D-7"))
+  c("D-1", "D-3", "D-4", "D-7", "D-14"))
 
 fixture(data.frame(
   id = c("b", "a", "B", "_c", "o"),
@@ -1071,7 +1096,7 @@ fixture(atw, "add_topo_sort_worked_example",
 fixture(atw[rev(seq_len(nrow(atw))), ], "add_topo_sort_worked_example_reversed",
   "add_topo_sort_worked_example with rows in reverse order",
   "the same network in another row order: topo_sort follows row order today, not after D-4",
-  c("D-4", "D-7"))
+  c("D-1", "D-3", "D-4", "D-7", "D-14"))
 
 fixture(data.frame(
   id = c("a", "B", "_c", "d"),
@@ -1126,12 +1151,12 @@ dft <- data.frame(
 fixture(dft, "dfs_tie",
   "synthetic; the worked example in algorithms/navigate_network_dfs.md",
   "a divergence at 1 (to 10 and 9) rejoining at the outlet 4: visit order and path split follow row order today",
-  c("D-5", "D-6", "D-7"))
+  c("D-5", "D-6", "D-7", "D-1"))
 
 fixture(dft[c(2, 1, 4, 3, 5), ], "dfs_tie_permuted",
   "dfs_tie with the rows of 1 swapped and the rows of 10 and 9 swapped",
   "the same network in another row order: the walk follows the new row order",
-  c("D-6", "D-7"))
+  c("D-1", "D-3", "D-5", "D-6", "D-7"))
 
 fixture(data.frame(
   id = c(2L, 3L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L),

@@ -135,6 +135,22 @@ fixtures:
     one outlet
   rules: []
   bytes: 73728
+- file: add_toids_worked_example_shuffled.gpkg
+  source: add_toids_worked_example with rows reordered 5, 3, 6, 1, 4, 2
+  rows: 6
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  - divergence
+  exercises: 'the same network in another row order: the same (id, toid) rows, in
+    the new input order'
+  rules:
+  - D-3
+  - D-7
+  - D-14
+  bytes: 73728
 - file: add_toids_zero_rows.gpkg
   source: synthetic
   rows: 0
@@ -199,8 +215,11 @@ fixtures:
   exercises: 'the same network in another row order: topo_sort follows row order today,
     not after D-4'
   rules:
+  - D-1
+  - D-3
   - D-4
   - D-7
+  - D-14
   bytes: 73728
 - file: align_names_conflict_toid.gpkg
   source: synthetic
@@ -479,6 +498,7 @@ fixtures:
   - D-5
   - D-6
   - D-7
+  - D-1
   bytes: 73728
 - file: dfs_tie_permuted.gpkg
   source: dfs_tie with the rows of 1 swapped and the rows of 10 and 9 swapped
@@ -490,6 +510,9 @@ fixtures:
   exercises: 'the same network in another row order: the walk follows the new row
     order'
   rules:
+  - D-1
+  - D-3
+  - D-5
   - D-6
   - D-7
   bytes: 73728
@@ -989,6 +1012,21 @@ fixtures:
   rules:
   - I-5
   bytes: 73728
+- file: hy_reverse_renamed_shuffled.gpkg
+  source: hy_reverse_renamed with rows reordered 3, 1, 2
+  rows: 3
+  geometry: none
+  columns:
+  - ID
+  - toID
+  - extra
+  exercises: 'the same table in another row order: names restored, rows in the new
+    input order'
+  rules:
+  - D-3
+  - D-7
+  - D-14
+  bytes: 73728
 - file: hy_reverse_zero_rows.gpkg
   source: synthetic
   rows: 0
@@ -1245,6 +1283,7 @@ fixtures:
   rules:
   - I-6
   - D-5
+  - D-1
   bytes: 73728
 - file: make_index_ids_flownetwork_cycle.gpkg
   source: synthetic
@@ -1283,6 +1322,7 @@ fixtures:
   rules:
   - D-5
   - D-7
+  - D-1
   bytes: 73728
 - file: make_index_ids_worked_example_permuted.gpkg
   source: make_index_ids_worked_example with rows reordered 4, 3, 5, 1, 2
@@ -1294,6 +1334,9 @@ fixtures:
   exercises: 'the same network in another row order: the upstream list at 10 follows
     the new row order'
   rules:
+  - D-1
+  - D-3
+  - D-5
   - D-7
   bytes: 73728
 - file: missing_weight.gpkg
@@ -1361,7 +1404,9 @@ fixtures:
   exercises: the NHDPlusV2 attribute table in a different row order; names do not
     depend on row order
   rules:
+  - D-3
   - D-7
+  - D-14
   bytes: 135168
 - file: new_hope.gpkg
   source: inst/extdata/new_hope.gpkg with mainstemid from inst/extdata/new_hope_mainstems.csv
@@ -1571,7 +1616,9 @@ fixtures:
   exercises: the same network in a different row order; output values do not depend
     on row order
   rules:
+  - D-3
   - D-7
+  - D-14
   bytes: 471040
 - file: new_hope_state_plane.gpkg
   source: new_hope fixture transformed to EPSG:2264, NAD83 / North Carolina (ftUS)
@@ -2051,8 +2098,11 @@ fixtures:
   exercises: 'the same network in another row order: sibling order follows the new
     row order today'
   rules:
+  - D-1
+  - D-3
   - D-4
   - D-7
+  - D-14
   bytes: 73728
 - file: sort_siblings_text.gpkg
   source: synthetic
@@ -2126,6 +2176,22 @@ fixtures:
   - D-8
   - D-1
   - S-6
+  bytes: 73728
+- file: two_cycles_byte_order_shuffled.gpkg
+  source: two_cycles_byte_order with rows reordered 7, 1, 3, 4, 5, 2, 6, 8, 9
+  rows: 9
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'the same network with the acyclic rows moved: component numbering and
+    returned rows unchanged'
+  rules:
+  - D-1
+  - D-3
+  - D-7
+  - D-8
+  - D-14
   bytes: 73728
 - file: zero_length.gpkg
   source: synthetic; points in zero_length_points.gpkg
