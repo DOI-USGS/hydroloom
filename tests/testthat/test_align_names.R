@@ -23,17 +23,28 @@ test_that("hydroloom_names", {
 
   hln_clear <- hydroloom_names(clear = TRUE)
 
-  expect_equal(hln_clear, c())
+  expect_equal(hln_clear, hydroloom:::vocab_alias_map())
+  expect_equal(hydroloom:::hydroloom_env$hydroloom_name_map, hln_clear)
+})
 
-  hln_reset <- hydroloom_names(hln)
+test_that("hydroloom_names clear = TRUE resets to the vocabulary aliases plus x (H-03, D3-20)", {
+  on.exit(hydroloom_names(clear = TRUE))
 
-  expect_equal(hln, hln_reset)
-  expect_equal(hydroloom:::hydroloom_env$hydroloom_name_map, hln_reset)
+  hydroloom_names(c(foo = "bar"))
+
+  out <- hydroloom_names(c(FlowlineID = "id"), clear = TRUE)
+
+  expect_equal(out, c(hydroloom:::vocab_alias_map(), c(flowlineid = "id")))
+  expect_false("foo" %in% names(out))
+  expect_equal(hydroloom:::hydroloom_env$hydroloom_name_map, out)
+
+  x <- data.frame(FlowlineID = c(1, 2), TOCOMID = c(2, 0))
+
+  expect_equal(names(hy(x))[1:2], c("id", "toid"))
 })
 
 test_that("hydroloom_names lowercases a registered alias (D3-65)", {
-  hln <- hydroloom_names()
-  on.exit(hydroloom_names(hln, clear = TRUE))
+  on.exit(hydroloom_names(clear = TRUE))
 
   out <- hydroloom_names(c(FlowlineID = "id"))
 

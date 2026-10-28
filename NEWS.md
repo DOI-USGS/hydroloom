@@ -141,6 +141,11 @@ hydroloom (development version)
   not coded 2 is coded 0 rather than 1, `add_toids()` still reads it as the
   main path and now warns naming it by `id`. Functions that build `toid`
   with `add_toids()` change the same way.
+- `hydroloom_names(clear = TRUE)` now resets the name registry to the
+  aliases it holds when the package loads (those in the vocabulary file),
+  followed by any names given in the same call. It used to remove every
+  alias, so `hy()` and `align_names()` renamed no column until the
+  aliases were registered again.
 
 hydroloom 1.3.0
 ==========

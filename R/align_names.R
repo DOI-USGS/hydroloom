@@ -123,8 +123,10 @@ hydroloom_names <- function(x = NULL, clear = FALSE) {
 
   if (!is.null(x) && is.null(names(x))) stop("input must be named")
 
+  # clear = TRUE resets to the registry seeded at load: the vocabulary
+  # aliases (hydroloom_names H-03, D3-20)
   if (clear) {
-    hl <- c()
+    hl <- vocab_alias_map()
     assign("hydroloom_name_map", hl, envir = hydroloom_env)
   }
 
