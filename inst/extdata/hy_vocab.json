@@ -215,6 +215,10 @@
         {
           "name": "hydroseq",
           "source": "nhdplus"
+        },
+        {
+          "name": "hydrosequence",
+          "source": "3dhp"
         }
       ],
       "computed_by": "add_topo_sort",

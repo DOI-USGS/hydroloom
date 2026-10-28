@@ -9,6 +9,11 @@ hydroloom (development version)
 - The `outletID` alias for `levelpath_outlet_id` is now `outletid`. Input
   names are lowercased before matching, so the camelCase entry never
   matched.
+- The 3DHP `hydrosequence` column is now an alias of `topo_sort`, as
+  NHDPlus `Hydroseq` is. `hy()` and `align_names()` rename it to
+  `topo_sort`, and `add_topo_sort()` replaces it with the computed
+  `topo_sort` (under the name `hydrosequence` on a `data.frame`) where it
+  used to pass through beside a new `topo_sort` column.
 - `hy()` now fixes the type of identifier columns (`id`, `toid`,
   `fromnode`, `tonode`, `levelpath`, and the other identifier names) on
   ingest. A whole-valued `double` or `integer64` column becomes `integer`

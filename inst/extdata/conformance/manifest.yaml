@@ -4047,8 +4047,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; string identifiers, topo route, no topo_sort alias
-  # collision (3DHP hydrosequence is not a topo_sort alias today; H-08);
+  # changes_with: D-4; string identifiers, topo route; computed topo_sort
+  # replaces 3DHP hydrosequence, the topo_sort alias (add_topo_sort H-04);
   # 2710 rows
   - id: add_topo_sort_new_hope_3dhp
     function: add_topo_sort

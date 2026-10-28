@@ -20,3 +20,11 @@ test_that("vocabulary covers good_names and aliases", {
 
   expect_equal(hydroloom_names()[["outletid"]], "levelpath_outlet_id")
 })
+
+test_that("3DHP hydrosequence is a topo_sort alias", {
+  expect_equal(hydroloom_names()[["hydrosequence"]], "topo_sort")
+
+  x <- data.frame(id3dhp = c("a", "b"), hydrosequence = c(2, 1))
+
+  expect_true("topo_sort" %in% names(align_names(x)))
+})
