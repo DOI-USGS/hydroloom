@@ -44,8 +44,8 @@ Those aliases are the NHDPlusV2 attribute names in their 10-character dbf form
 few hydrofabric names (`reconciled_id`, `aggregated_id`) and identity pairs (`toid`,
 `fromnode`); a table whose columns use other names needs a call to `hydroloom_names()`
 before `hy()` will recognize them. A call with no `x` and `clear = FALSE` returns the registry unchanged. A call with `x`
-returns, and stores, the prior registry followed by `x`; with `clear = TRUE` the prior
-registry is first replaced by an empty one.
+returns, and stores, the prior registry followed by `x` with its names lowercased; with
+`clear = TRUE` the prior registry is first replaced by an empty one.
 
 ## Algorithm
 
@@ -53,7 +53,8 @@ registry is first replaced by an empty one.
 2. If `x` is given and has no names, stop (`unnamed_name_mapping`).
 3. If `clear`, store an empty registry.
 4. If `x` is `NULL`, return the registry as it now stands.
-5. Otherwise append `x` to the registry with `c()`, store the result, and return it.
+5. Otherwise lowercase the names of `x` (D3-65), append `x` to the registry with `c()`,
+   store the result, and return it.
 
 No sort and no tie rule: order is the vocabulary file's order followed by call order
 (D-15, the input order is defined, not hashed). Appending neither deduplicates nor
@@ -65,10 +66,11 @@ No sentinel and no CSR index; nothing lies below the kernel boundary (K-1).
 - The return is `NULL` or a character vector whose `names` attribute is not `NULL`.
 - After the call, the stored registry equals the return value.
 - With `x = NULL` and `clear = FALSE`, the registry before and after the call are equal.
-- With `x` given and `clear = FALSE`, the return is the prior registry followed by `x`:
-  length is prior length plus `length(x)`, and the leading elements equal the prior
-  registry element for element.
-- With `x` given and `clear = TRUE`, the return equals `x` coerced to character.
+- With `x` given and `clear = FALSE`, the return is the prior registry followed by `x`
+  with its names lowercased: length is prior length plus `length(x)`, and the leading
+  elements equal the prior registry element for element.
+- With `x` given and `clear = TRUE`, the return equals `x` coerced to character with its
+  names lowercased.
 - With `x = NULL` and `clear = TRUE`, the return is `NULL`.
 - In the registry at load, no alias repeats, every alias is lowercase, and every value is
   a vocabulary column term.
@@ -92,10 +94,11 @@ table carries both `nhdplusid` and `permanent_identifier`, both aliases of `id`;
 step 4, D3-24), so `nhdplusid` becomes `id` and `permanent_identifier` keeps its name, with the
 message "defaulting to comid rather than permanent_identifier".
 An empty name in a partly named `x` is registered as `""` and never matches a
-column. An alias with uppercase letters is registered as given and never matches, because
-`align_names()` lowercases column names before looking them up. A value that is not a
-hydroloom name is registered; `align_names()` renames the column and then restores its
-original name, so it has no effect. A non-character `x` is coerced to character by `c()`.
+column. An alias with uppercase letters is registered in lowercase (`FlowlineID` as
+`flowlineid`), so it matches the column, which `align_names()` also lowercases before
+looking it up. A value that is not a hydroloom name is registered; `align_names()` renames
+the column and then restores its original name, so it has no effect. A non-character `x`
+is coerced to character by `c()`.
 `clear = TRUE` with no `x` empties the registry, including the vocabulary aliases, so
 `hy()` renames nothing. The registry, cleared or extended, returns to the vocabulary seed
 the next time the package is loaded, which includes every R restart.
@@ -104,7 +107,7 @@ the next time the package is loaded, which includes every R restart.
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| `x` has no names | the mapping gives hydroloom names without the input column names they apply to | every element of `x` | `hydroloom_names(c(<input column> = "<hydroloom name>"))` | `unnamed_name_mapping` |
+| `x` has no names | the mapping gives hydroloom names without the input column names they apply to | every element of the mapping | `hydroloom_names(c(<input column> = "<hydroloom name>"))` | `unnamed_name_mapping` |
 
 ## References
 
@@ -112,6 +115,10 @@ the next time the package is loaded, which includes every R restart.
   `R/zzz.R` (`.onLoad` seeds the registry), `R/00_hydroloom.R` (`hydroloom_env`).
 - `inst/extdata/hy_vocab.json`, the `aliases` field of each term (SPEC S-2, S-3).
 - `tests/testthat/test_align_names.R`, `tests/testthat/test_vocab.R`.
+- Source data models: McKay and others (2012), NHDPlus Version 2: User Guide, the
+  NHDPlusV2 attribute names behind the `nhdplus` aliases; Moore and others (2019),
+  User's Guide for the National Hydrography Dataset Plus (NHDPlus) High Resolution, USGS
+  Open-File Report 2019-1096, behind the `nhdplushr` aliases.
 
 ## Worked example
 
@@ -138,3 +145,13 @@ the vocabulary's alias table as two columns, `name` and `value`, 52 rows as of
 - 2026-10-25, suite 0.1.0: hydrology review round; Definition names the products the
   seeded aliases come from; Edge cases add seeded aliases meeting in one table, cite the
   `name_alias_duplicate` and `name_alias_ambiguous` keys, and state reload behavior once.
+- 2026-10-27, suite 0.1.0: M3 close. D3-65: `hydroloom_names()` lowercases each alias on
+  registration, with a NEWS line, so an alias given with uppercase letters matches instead
+  of being a silent no-op; Definition, Algorithm step 5, Postconditions, and Edge cases
+  state the post-change behavior. ROADMAP §4 has no row for this change (a row is
+  proposed). D3-146: the Remedies row's `which rows` matches `remedies.json`. D3-20: Python's
+  `register_names(mapping, *, replace=False)` stays a gap against R's signature;
+  `replace=True` replaces registered mappings only and never the vocabulary's aliases,
+  because S-2 makes the vocabulary file the one copy and a runtime call that hid its
+  aliases could not be seen by `capabilities()` or the harness. M3 H-05: References cite
+  the NHDPlusV2 and NHDPlusHR user guides.
