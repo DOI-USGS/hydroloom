@@ -46,7 +46,7 @@ terminal (I-4, issue #85).
 
 Three R outputs follow from the class rule. A table `hy()` classifies as
 `hy_flownetwork` (repeated `id` with `toid`, I-6) is `TRUE`, because that class carries
-`orig_names` and `hy_reverse.hy_flownetwork` restores its names (D3-16). A table
+`orig_names` and `hy_reverse()` restores its names (D3-16, D3-170). A table
 returned by any hydroloom function called on an `hy` object is `FALSE`, because the
 `.data.frame` methods restore user names and strip the hy classes. A table `hy()`
 produced with no `id` column is `TRUE`.
@@ -83,7 +83,8 @@ Python: evaluate the two conditions of Definition and return their conjunction.
 Nothing is printed or logged (A-12).
 
 No tie rule, sentinel, or D rule applies: the output is one value and does not depend on
-row order (D-7 holds trivially). No CSR index is built.
+row order (D-7 holds trivially; case `is_hy_new_hope_shuffled` is the D-7 pair of
+`is_hy_new_hope`). No CSR index is built.
 
 ## Postconditions
 
@@ -113,13 +114,13 @@ column's values must be read to confirm they are strings.
   table as read, with the message "no hy class attribute" unless `silent`, and `TRUE`
   after `hy()`, since the result is an `hy_flownetwork` carrying `orig_names` (D3-64).
   Python `False` on `loop.gpkg` as read, by condition 2: its `id` and `toid` are
-  strings but its `fromnode` and `tonode` are numeric. Dropping the flownetwork
-  condition (D3-64) does not change this value.
+  strings but its `fromnode` and `tonode` are numeric. Cases `is_hy_loop` (shared) and
+  `is_hy_loop_after_hy` (R only) hold the two values.
 - Duplicated row (the same `id`/`toid` pair listed twice, `duplicated_edge.gpkg`): S-6
-  says this raises, which M3 does not apply (D3-46, D3-57). `is.hy` reads no rows and
+  lists this as a raise; D3-46 and D3-57 keep it from raising. `is.hy` reads no rows and
   does not raise; `hy()` does not raise either and returns `hy_flownetwork`, so R is
   `FALSE` as read and `TRUE` after `hy()` (D3-64). Python `False` by condition 2: the
-  fixture's identifiers are integers.
+  fixture's identifiers are integers (case `is_hy_boundary_duplicated_edge`, shared).
 - Missing `toid`: accepted; R `TRUE` on an `hy` object whose `toid` holds `NA`.
 - Zero-row table (`empty_network.gpkg`): R `FALSE` as read, `TRUE` after `hy()`.
   Python `False` on `empty_network.gpkg` by condition 2, since its identifiers are
@@ -127,6 +128,11 @@ column's values must be read to confirm they are strings.
 - Not a table (`NULL`, a list): `FALSE`, with the class message unless `silent`.
 - Missing weight, zero-length line, empty name: not read; the result follows the class
   rule alone.
+
+The `is_hy_boundary_*` cases and `is_hy_empty_network` are shared and run with no
+arguments; their integer identifiers make Python `False` by condition 2, matching R.
+Only `is_hy_new_hope_silent` and `is_hy_hy_names_na_toid` pass `silent = TRUE`, and
+both are R only (D3-17, D3-18).
 
 ## Remedies
 
@@ -190,3 +196,10 @@ object altered after `hy()`, stays in testthat as an interface test.
 - 2026-10-28, suite 0.1.0: M3 close, unit 2 fix (H-01, H-02, H-04). Edge cases give
   Python `False` on `loop.gpkg` and `empty_network.gpkg` by condition 2; the D3-64 entry
   above records the `is.hy` flip as a changed result and cites D3-151. No behavior change.
+- 2026-10-28, suite 0.1.0: M3 close, run 2 sweep. The D3-64 change has landed in
+  `R/hy.R` with a NEWS line, and its ROADMAP §4 row is accepted (D3-151).
+  `hy_reverse()` stays a plain function, so Definition says `hy_reverse()` rather than
+  `hy_reverse.hy_flownetwork` (D3-170). Algorithm gives the D-7 case
+  `is_hy_new_hope_shuffled`; Edge cases give the loop and duplicated-row cases and state
+  that the boundary cases and `is_hy_empty_network` are shared and run without `silent`
+  (is.hy H-03, D3-190). No behavior change.
