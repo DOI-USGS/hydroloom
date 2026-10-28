@@ -115,6 +115,38 @@
       ],
       "python_class": "HydroloomError"
     },
+    "divergence_zero_main_path": {
+      "kind": "warning",
+      "message": "Where a flowline splits, the main path is coded divergence 1 and the minor paths 2. On these rows a downstream flowline at a split is coded 0 and was read as the main path: {rows}. Recompute divergence with add_divergence() so the main path is coded 1.",
+      "placeholders": {
+        "rows": "the ids of the downstream flowlines coded 0 at a split"
+      },
+      "condition": "add_toids() was asked to keep only the main path at each divergence (return_dendritic), and at one or more splits the one downstream flowline not coded 2 is coded 0, the code for a flowline not below a divergence, where NHDPlus codes the main path 1. The 0 has one reading, the main path, so add_toids() connects to it and warns.",
+      "rows": "the downstream flowlines coded 0 at a split, by id",
+      "fix": "add_divergence(), given the coastal and inland outlets, to recompute divergence.",
+      "raised_by": ["add_toids"],
+      "languages": ["r", "python"],
+      "r_text": [
+        "Where a flowline splits, the main path is coded divergence 1 and the minor paths 2. On these rows a downstream flowline at a split is coded 0 and was read as the main path: <rows>. Recompute divergence with add_divergence() so the main path is coded 1."
+      ],
+      "python_class": "HydroloomWarning"
+    },
+    "divergence_minor_only_path": {
+      "kind": "warning",
+      "message": "These flowlines are coded divergence 2, a minor path, and each is the only flowline downstream of the flowline above it: {rows}. Each was connected to as the main path, so the flowline above it is not left as a terminal. Recompute divergence with add_divergence() so the only downstream flowline is not coded 2.",
+      "placeholders": {
+        "rows": "the ids of the lone downstream flowlines coded 2"
+      },
+      "condition": "add_toids() was asked to keep only the main path at each divergence (return_dendritic), and one or more flowlines coded 2 (a minor path) is the only flowline leaving the point where the flowline above it ends. A clipped network leaves this shape where the main path of a divergence lies outside it. Leaving the flowline above as a terminal would cut the network in two, so add_toids() connects to the lone flowline and warns.",
+      "rows": "the lone downstream flowlines coded 2, by id",
+      "fix": "add_divergence(), given the coastal and inland outlets, to recompute divergence on the network as clipped.",
+      "raised_by": ["add_toids"],
+      "languages": ["r", "python"],
+      "r_text": [
+        "These flowlines are coded divergence 2, a minor path, and each is the only flowline downstream of the flowline above it: <rows>. Each was connected to as the main path, so the flowline above it is not left as a terminal. Recompute divergence with add_divergence() so the only downstream flowline is not coded 2."
+      ],
+      "python_class": "HydroloomWarning"
+    },
     "return_dendritic_deprecated": {
       "kind": "warning",
       "message": "return_dendritic = FALSE is deprecated. Use to_flownetwork() for non-dendritic edge lists.",
@@ -620,6 +652,40 @@
         "Column <column> holds numbers with a fractional part on these rows: <rows>. An identifier is a whole number or text; correct those values, or cast the column to text, and call again."
       ],
       "python_class": "HydroloomError"
+    },
+    "identifier_not_finite": {
+      "kind": "error",
+      "message": "Column {column} holds an infinite number (Inf or -Inf) on these rows: {rows}. An identifier is a whole number or text, and an infinite value is neither; correct those values and call again.",
+      "placeholders": {
+        "column": "the identifier column",
+        "rows": "the rows whose value is infinite"
+      },
+      "condition": "An identifier column arrives as floating-point numbers and one or more values is infinite, which has no reading as an identifier: it is not a whole number, and its text form would make a different identifier of it.",
+      "rows": "the rows whose value is infinite",
+      "fix": "Correct the values before hy().",
+      "raised_by": ["hy"],
+      "languages": ["r", "python"],
+      "r_text": [
+        "Column <column> holds an infinite number (Inf or -Inf) on these rows: <rows>. An identifier is a whole number or text, and an infinite value is neither; correct those values and call again."
+      ],
+      "python_class": "HydroloomError"
+    },
+    "flag_value_not_binary": {
+      "kind": "warning",
+      "message": "Flag column {column} holds values other than 0, 1, or missing on these rows: {rows}. The column is left as it arrives, not read as true and false. Recode those values to 0 or 1 and call again.",
+      "placeholders": {
+        "column": "the flag column",
+        "rows": "the ids of the rows whose value is not 0, 1, or missing"
+      },
+      "condition": "A flag column (terminal_flag, start_flag, upmain, downmain) arrives as numbers and one or more values is not 0, 1, or missing, so the column cannot be read as true and false without changing a value. hy() leaves the column as it arrives and warns.",
+      "rows": "the rows whose value is not 0, 1, or missing, by id",
+      "fix": "Recode the values to 0 or 1 before hy().",
+      "raised_by": ["hy"],
+      "languages": ["r", "python"],
+      "r_text": [
+        "Flag column <column> holds values other than 0, 1, or missing on these rows: <rows>. The column is left as it arrives, not read as true and false. Recode those values to 0 or 1 and call again."
+      ],
+      "python_class": "HydroloomWarning"
     },
     "unnamed_name_mapping": {
       "kind": "error",
