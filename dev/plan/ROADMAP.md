@@ -37,7 +37,7 @@ Two gates hold inside every milestone from M3 on. The per-function gate, checked
 ### M3. Descriptions, cases, and intended changes for the phase-1 functions
 
 - Deliverable: for the phase-1 functions (§2), the algorithm description with its YAML `requires` front matter, the boundary and tie cases, and the R-generated expectations; `remedies.json` with the keys those descriptions cite (A-10); the intended changes that land on these functions (§4: sibling order, SCC cycle check, `hy_capabilities()` shape, identifier ingest, the one condition class, adjacency and traversal order, zero-row input, `add_toids` missing divergence and `tonode`) as edits to the existing bodies, new R code written to K-4 and K-6, with their NEWS entries and new expectations. Each description runs through `review-description` (the hydrology reader) before its expectations are generated. On `python-port`.
-- Done when: every phase-1 function has a description passing the template validator (M2's R conformance test) and a `review-description` round dispositioned in the Log; every D rule the description cites has a fixture that exercises it, except D-15, which the D-7 hypothesis property holds (VERIFICATION §4); conformance passes before and after each intended change except where its NEWS entry says otherwise; `hy_capabilities()` returns the (function, available, via) frame from a code table that a testthat test checks against the manifest's `requires`; `remedies.json` text has a read by both readers dispositioned in the Log (prose.md).
+- Done when: every phase-1 function has a description passing the template validator (M2's R conformance test) and a `review-description` round dispositioned in the Log; every D rule the description cites has a fixture that exercises it, except D-15, which the D-7 hypothesis property holds (VERIFICATION §4); conformance passes before and after each intended change except where its NEWS entry says otherwise; `hy_capabilities()` returns the (function, available, via) frame from a code table that a testthat test checks against the manifest's `requires`.
 - Load: SPEC K-1 to K-11, D (all), I (all), A-2 to A-4, A-10, S-6, S-8.
 - Do not touch: functions outside phase 1; any Python file; existing R bodies beyond the intended changes.
 - Record: `dev/milestones/M3.md`; one Log entry per description review and per intended change.
@@ -64,7 +64,7 @@ Two gates hold inside every milestone from M3 on. The per-function gate, checked
 ### M6. Port in dependency order
 
 - Deliverable: phase 2 then phase 3 from §2, each function by the unit of work above. Arrivals with the function that first needs them: asv and the scale harness with `add_levelpaths` (the first sequential kernel, VERIFICATION §5); pooch and the domain fixture with the scale harness; the WBD benchmark before `dissolve_polygons`; the units conformance case with `navigate_hydro_network` (G-3); the state-plane case with `index_points_to_lines` (G-4). A `py-v0.x` release when a group lands. 1.0 is parity with hydroloom 1.3.0, phases 1 to 3 (DESIGN §9; 2026-10-25).
-- Done when, per function: its description, cases, R-generated expectations, and Python function are one logged round on `python-port` and the parity table row reads `r, python`; per release: `pixi run scale` and `pixi run bench` on record for that tag (VERIFICATION §5).
+- Done when, per function: its description, cases, R-generated expectations, and Python function are one logged round on `python-port` and the parity table row reads `r, python`; per release: `pixi run scale` and `pixi run bench` on record for that tag (VERIFICATION §5); `remedies.json` text has a read by both readers dispositioned in the Log (prose.md; moved from M3, D3-178).
 - Load: per function, the SPEC anchors its description cites; for phase 3, G (all).
 - Do not touch: a function whose upstream in the dependency order is not yet at parity.
 - Record: `dev/milestones/M6<letter>.md`, one per function group; items flagged for a later second review: every named kernel (`add_levelpaths`, `add_pfafstetter`, `get_bridge_flowlines`, `navigate_hydro_network`, `index_points_to_lines`' `project_point_to_line`, `disambiguate_indexes`' Levenshtein).
@@ -144,16 +144,18 @@ Each is a NEWS entry and new expectations, landed on `python-port` in the milest
 | --- | --- | --- |
 | jsonlite to Imports; vocabulary read from `inst/extdata` at runtime | S-3 | M1 |
 | Version floors on every Import; `dplyr (>= 1.1.0)`, `sf (>= 1.0-0)` | D-2 | M2 |
-| Identifier ingest: whole-valued double or integer64 to `integer` when within 32-bit range, else `character`; a non-whole double raises (`identifier_not_whole`) | I-2 | M3 |
+| Identifier ingest: whole-valued double or integer64 to `integer` when within 32-bit range, else `character`; a non-whole double raises (`identifier_not_whole`); a non-finite value (`Inf`) raises (I2-3) | I-2 | M3 |
 | Sibling order in `sort_network` by identifier only; an outlet absent from the network raises (`outlet_not_in_network`); `add_topo_sort` replaces an input `topo_sort` column (no `.x`/`.y`) and writes it as `integer` | D-4 | M3 |
-| `check_hy_graph`: SCC always; `loop_check` removed; `component` and `reciprocal` labels; `sort_network` and `make_index_ids` call it on the flownetwork route too | D-8 | M3 |
+| `check_hy_graph`: SCC always; `loop_check` removed; `component` and `reciprocal` labels; `sort_network` and `make_index_ids` call it on the flownetwork route too; the divergence result drops `row` (D3-160) | D-8 | M3 |
 | `hy_capabilities()` returns a frame (function, available, via) from a hand-written code table, checked by a testthat test against the manifest's `requires` | A-4 | M3 |
 | One condition class, `hydroloom_representation_error` | A-10 | M3 |
 | Neighbor order in `make_index_ids` and sibling order in `navigate_network_dfs` by identifier, not input row order; a `toid` outside the network is a terminal | D-5, D-6 | M3 |
 | Zero-row input returns typed zero-row output in `make_index_ids`, `sort_network`, `add_topo_sort`, `navigate_network_dfs` | I-11 | M3 |
 | `add_toids`: a missing `divergence` with `return_dendritic = TRUE` raises naming the rows (`divergence_missing`); a flowline with a missing `tonode` is a terminal and stays the target of its upstream flowlines; a broken divergence coding raises (`divergence_coding_invalid`, D3-72); flownetwork input raises (`toid_already_present`, D3-38) | I-9, I-5 | M3 |
-| `hydroloom_names()` lowercases an alias on registration (D3-65) | S-2 | M3 |
+| `hydroloom_names()` lowercases an alias on registration (D3-65); `clear = TRUE` resets the registry to the vocabulary aliases plus `x` in place of emptying it (hydroloom_names H-03, D3-20) | S-2 | M3 |
 | Flag columns coded 1/0 become logical on ingest in `hy()` (M1 M-18) | S-2 | M3 |
+| Tolerated codings warn, naming the rows by `id`: a flag column value other than 0, 1, or missing passes through (D3-152); in `add_toids`, a 0 at a split is read as the main path (D3-174), and a lone downstream flowline coded 2 is connected to in place of leaving the flowline above a terminal (D3-158) | S-2, I-6 | M3 |
+| 3DHP `hydrosequence` becomes an alias of `topo_sort` in the vocabulary (add_topo_sort H-04) | S-2 | M3 |
 | `hy_reverse()` restores names on an `hy_flownetwork`; `is.hy()` accepts one carrying `orig_names` (D3-16, D3-64) | I-14 | M3 |
 | Divergence and level-path ties fall through to identifier byte order | D-9, D-11 | M6 |
 | Missing `weight_attribute` raises naming the row | S-6 | M6 |
