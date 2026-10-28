@@ -19,7 +19,7 @@ validate_data=True)` (SPEC A-16; A-9 keeps the R argument).
 
 Returns one value of vocabulary type `flag`: R `logical` of length one, never `NA`;
 Python `bool`. The expectation is the S-7 scalar layer: one row, one column named
-`value`.
+`value`, compared `exact`. No case raises or warns, so every case stores a layer.
 
 Roxygen gives the argument and return prose: "Checks whether the network contains any
 divergences"; `x` "data.frame or hy object to test"; `validate_data` "If `FALSE`, only
@@ -69,8 +69,9 @@ attribute that R's `hy()` sets is not read.
 The divergence test is numeric equality with 2: R compares with `==`, so a character
 `"2"` also matches. Values other than 0, 1, 2 (such as 3) do not make the result `FALSE`.
 
-No tie rule or sentinel applies. The result does not depend on row order (D-7). No CSR
-index is built.
+No tie rule or sentinel applies. The result does not depend on row order (D-7); case
+`is_dendritic_new_hope_shuffled` holds the same value as `is_dendritic_new_hope` on the
+permuted rows of `new_hope_shuffled.gpkg`. No CSR index is built.
 
 ## Postconditions
 
@@ -101,8 +102,21 @@ repeat test, O(1) otherwise.
   with `validate_data` true; `TRUE` with it false when there is no `divergence` 2.
 - Duplicated edge (the same `id`/`toid` pair listed twice, S-6 `duplicated_edge.gpkg`): a
   data error, not a divergence, but the repeat test cannot tell the two apart, so the
-  result is the same as for a divergence. `is_dendritic` reads no connections and does not
-  raise; S-6 "raises" is not applied (D3-57).
+  result is the same as for a divergence: `FALSE` with `validate_data` true
+  (`is_dendritic_duplicated_edge`), `TRUE` with it false
+  (`is_dendritic_duplicated_edge_no_validate`). `is_dendritic` reads no connections and
+  does not raise. S-6 places the raise on a repeated (`id`, `toid`) pair in the ingest
+  step, `hy()` (Python `as_hy`), and `is_dendritic` does not call it; the R raise, with
+  `is_dendritic` no longer reading such a repeat as a divergence, is the ROADMAP §4 row
+  for M6 (D3-57).
+- Divergence shown only by a shared `fromnode` in a node table with no `divergence`
+  column (`divergence_no_attribute.gpkg`, case `is_dendritic_divergence_no_attribute`):
+  `TRUE`, as the Definition says. Detecting it from the repeated `fromnode` lands with
+  `add_divergence` in M6 (D3-34).
+- 3DHP `divergence` (`new_hope_3dhp.gpkg`, case `is_dendritic_new_hope_3dhp`): read as
+  NHDPlus 0/1/2 coding without `hy()`. That coding is to be confirmed before M5; if it
+  differs, the 3DHP alias carries its own values map (S-2) and `hy()` converts on ingest
+  (D3-69).
 - Minor path that leaves a divergence and returns to the main stem downstream
   (`return_divergence.gpkg`): `FALSE` for both values of `validate_data`, by the
   `divergence` 2 test.
@@ -164,3 +178,8 @@ expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FA
   departure stated (D3-57); return-divergence and NHDPlusHR cases added.
 - 2026-10-27, suite 0.1.0: M3 close. SPEC A-16 now lists `is_dendritic` with the
   signature above (D3-35); Signature cites it. No binding change.
+- 2026-10-28, suite 0.1.0: M3 close-out sweep. No R change in this run touches
+  `is_dendritic`. D-7 case `is_dendritic_new_hope_shuffled` added (D3-175, D3-177).
+  Edge cases give the ROADMAP §4 M6 row for the duplicated edge (D3-57), the deferred
+  node-table detection (D3-34), and the unconfirmed 3DHP coding (D3-69). No binding
+  change.
