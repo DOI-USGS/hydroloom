@@ -52,8 +52,7 @@ vocabulary field are found in `hy_vocab.json` and not in this return.
    in `.onLoad`, so the value is fixed for the session. Python: build the frame on call.
 
 No sort and no tie rule: order is the vocabulary file's order (D-15; the order is
-defined by the file, not by hashing or dict iteration of unsorted input). Output row
-order follows that order (D-14). No sentinel and no CSR index; nothing lies below the
+defined by the file, not by hashing or dict iteration of unsorted input). No sentinel and no CSR index; nothing lies below the
 kernel boundary (K-1).
 
 ## Postconditions
@@ -124,3 +123,6 @@ The conformance case's expectation is the full 46-row layer in file order, start
   object read by name where SPEC A-5 and A-16 give Python a function,
   `name_definitions()`, returning a frame; the description takes the frame's columns as
   exactly `name` and `definition`, which A-16 leaves unstated.
+- 2026-10-28, suite 0.1.0: Algorithm no longer cites D-14; the function reads no input
+  rows, and its order is the vocabulary file's, held by D-15 (M3 close-out unit 4, D3-177
+  disposition "close the gaps now"). No R change touches this function.
