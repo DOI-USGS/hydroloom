@@ -416,6 +416,15 @@ fixture(data.frame(
   "flag column with a value other than 0, 1, or missing (TerminalFl 2 on COMID 30, row 3): warns flag_value_not_binary naming COMID 30",
   c("S-2"))
 
+fixture(data.frame(
+  COMID = c(10L, 20L, 30L),
+  ToCOMID = c(20L, 30L, NA),
+  TerminalFl = c(0L, NA, 1L)),
+  "hy_flag_missing",
+  "synthetic",
+  "flag column coded 0/1 with a missing value (TerminalFl missing on COMID 20, row 2): logical with the value missing; Python nullable boolean",
+  c("S-2"))
+
 fixture(data.frame(id = 1:2, toid = c("2", NA)),
   "hy_id_integer_toid_character",
   "synthetic",
@@ -684,6 +693,11 @@ fixture(within(atw5, divergence[2] <- NA_integer_), "add_toids_missing_divergenc
   "first five rows of add_toids_worked_example with id 2 divergence missing",
   "a missing divergence below a divergence: in R 1.3.0 the flowline receives no upstream connection")
 
+fixture(within(atw, divergence[4] <- NA_integer_), "add_toids_missing_divergence_off_split",
+  "add_toids_worked_example with id 4 divergence missing",
+  "a missing divergence on a flowline not below a split (id 4, the only flowline leaving node 30): stops divergence_missing naming id 4",
+  "I-9")
+
 fixture(within(atw5, divergence[3] <- 1L), "add_toids_divergence_without_minor",
   "first five rows of add_toids_worked_example with id 3 divergence 1",
   "both downstream flowlines coded main (1): the upstream flowline repeats under return_dendritic = TRUE")
@@ -798,6 +812,19 @@ fixture(data.frame(
   "synthetic (duplicated_edge with a downmain column; the repeated 1 -> 2 row is FALSE)",
   "one connection on two rows that differ in downmain: both rows are kept as edges",
   c("S-6", "I-6"))
+
+# return_divergence as an id, toid edge list with the main flags to_flownetwork()
+# gives: downmain FALSE on the minor connections out of 1 and 6, upmain FALSE
+# on the minor connections into 4 (from 7) and 5 (from 9).
+fixture(data.frame(
+  id = c(1L, 1L, 2L, 3L, 4L, 5L, 6L, 6L, 7L, 8L, 9L, 10L),
+  toid = c(2L, 6L, 3L, 4L, 5L, 10L, 7L, 8L, 4L, 9L, 5L, 0L),
+  downmain = c(TRUE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE),
+  upmain = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE)),
+  "make_index_ids_return_divergence_main",
+  "synthetic (return_divergence as a flownetwork with downmain and upmain)",
+  "two nested divergences with main flags: main FALSE on 1 -> 6 and 6 -> 8 downstream, on 4 <- 7 and 5 <- 9 upstream",
+  c("I-6", "D-5"))
 
 fixture(data.frame(id = 1:2, toid = c("2", "")),
   "make_index_ids_type_mismatch",
@@ -975,12 +1002,12 @@ ssb <- data.frame(
 fixture(ssb, "sort_siblings",
   "synthetic; the worked example in algorithms/sort_network.md",
   "three siblings whose row order differs from identifier byte order: input order today, byte order after D-4",
-  c("D-4", "D-1"))
+  c("D-4", "D-1", "D-5"))
 
 fixture(ssb[c(5, 2, 4, 3, 1), ], "sort_siblings_permuted",
   "sort_siblings with rows reordered 5, 2, 4, 3, 1",
   "the same network in another row order: sibling order follows the new row order today",
-  c("D-1", "D-3", "D-4", "D-7", "D-14"))
+  c("D-1", "D-3", "D-4", "D-5", "D-7", "D-14"))
 
 fixture(data.frame(
   id = c("b", "a", "B", "_c", "o"),
@@ -988,7 +1015,7 @@ fixture(data.frame(
   "sort_siblings_text",
   "synthetic",
   "TEXT siblings whose byte order (B, _c, a, b) differs from row and locale order",
-  c("D-4", "D-1"))
+  c("D-4", "D-1", "D-5"))
 
 fixture(data.frame(
   id = c(1L, 1L, 2L, 3L, 4L),
@@ -1043,6 +1070,16 @@ fixture(data.frame(
   "synthetic (hydrology reader H-01)",
   "a divergence at 2 with one branch inside the table (3) and one leaving it (9): 2 is its own start",
   c("I-4", "I-6"))
+
+# sort_divergence_leaves with the diverging flowline relabelled 2 -> 5, so its
+# identifier sorts after the outlet's (3) in byte order.
+fixture(data.frame(
+  id = c(1L, 5L, 5L, 3L, 4L),
+  toid = c(5L, 3L, 9L, 0L, 5L)),
+  "sort_divergence_leaves_relabelled",
+  "sort_divergence_leaves with id 2 relabelled 5",
+  "a divergence at 5 with one branch inside the table (3) and one leaving it (9), 5 sorting after the outlet 3: the block of 5 lands below 3",
+  c("I-4", "I-6", "D-1", "D-4"))
 
 fixture(data.frame(
   id = 1:4,

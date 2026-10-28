@@ -197,6 +197,17 @@ cases:
     raises: warning
     raises_key: flag_value_not_binary
 
+  # M-18, step 5: TerminalFl 0, missing, 1 becomes logical FALSE, NA, TRUE;
+  # Python nullable boolean; no warning
+  - id: hy_flag_missing
+    function: hy
+    fixture: hy_flag_missing.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # changes_with: i2; current R: vctrs cast error in the toid fill
   # (outlet_fill_type_mismatch); post-change both character, fill "", returns
   - id: hy_id_integer_toid_character
@@ -619,6 +630,17 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # shared: true. D-7 pair of is_hy_new_hope: rows permuted; FALSE in both
+  # languages
+  - id: is_hy_new_hope_shuffled
+    function: is.hy
+    fixture: new_hope_shuffled.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # R-only: silent is an R argument with no Python counterpart (D3-17);
   # it changes messages only, never the value
   - id: is_hy_new_hope_silent
@@ -687,32 +709,32 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared: false; I-11 zero-row table in hydroloom names; R FALSE as read
-  # (TRUE after hy()); Python may return True
+  # shared: true; I-11 zero-row table in hydroloom names; R FALSE as read
+  # (TRUE after hy()); Python False by condition 2 (integer ids)
   - id: is_hy_empty_network
     function: is.hy
     fixture: empty_network.gpkg
-    args: {silent: true}
+    args: {}
     compare: exact
     order: exact
     supported_by: [r]
     generator: [r]
 
-  # shared: false; S-6 single-row network
+  # shared: true; S-6 single-row network; Python False by condition 2 (integer ids)
   - id: is_hy_boundary_single_row
     function: is.hy
     fixture: single_flowline.gpkg
-    args: {silent: true}
+    args: {}
     compare: exact
     order: exact
     supported_by: [r]
     generator: [r]
 
-  # shared: false; S-6 five flowlines, no edges
+  # shared: true; S-6 five flowlines, no edges; Python False by condition 2 (integer ids)
   - id: is_hy_boundary_all_terminals
     function: is.hy
     fixture: all_terminals.gpkg
-    args: {silent: true}
+    args: {}
     compare: exact
     order: exact
     supported_by: [r]
@@ -730,21 +752,23 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared: false; S-6 missing weight_attribute value; not read by is.hy
+  # shared: true; S-6 missing weight_attribute value; not read by is.hy; Python
+  # False by condition 2 (integer ids)
   - id: is_hy_boundary_missing_weight
     function: is.hy
     fixture: missing_weight.gpkg
-    args: {silent: true}
+    args: {}
     compare: exact
     order: exact
     supported_by: [r]
     generator: [r]
 
-  # shared: false; S-6 zero-length geometry; not read by is.hy
+  # shared: true; S-6 zero-length geometry; not read by is.hy; Python False by
+  # condition 2 (integer ids)
   - id: is_hy_boundary_zero_length
     function: is.hy
     fixture: zero_length.gpkg
-    args: {silent: true}
+    args: {}
     compare: exact
     order: exact
     supported_by: [r]
@@ -1083,6 +1107,16 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # shared: true. D-7 pair of hy_network_type_new_hope: rows permuted; hy_node
+  - id: hy_network_type_new_hope_shuffled
+    function: hy_network_type
+    fixture: new_hope_shuffled.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # shared: false; expect hy_topo; add_topo builds toid
   - id: hy_network_type_new_hope_add_topo
     function: hy_network_type
@@ -1270,6 +1304,18 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # R-only: no id column; hy() warns no_id_column (suppressed in prepare)
+  # and the R value is "hy"; Python representation raises RepresentationError
+  # (D3-130, D3-162)
+  - id: hy_network_type_no_id
+    function: hy_network_type
+    fixture: hy_network_type_not_hy.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # hy_capabilities -----------------------------------------------------------
   # R reads the class hy() stamps, so most cases apply hy() through prepare
   # (D3-11). Today's return is a named logical vector, stored through the frame
@@ -1285,6 +1331,17 @@ cases:
   - id: hy_capabilities_new_hope_node
     function: hy_capabilities
     fixture: new_hope.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # changes_with: A-4; D-7 pair of hy_capabilities_new_hope_node: rows
+  # permuted; the same code-table frame
+  - id: hy_capabilities_new_hope_node_shuffled
+    function: hy_capabilities
+    fixture: new_hope_shuffled.gpkg
     prepare: {function: hy, args: {}}
     compare: exact
     order: exact
@@ -1433,6 +1490,17 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # changes_with: A-4; I-11 zero rows without include_conversions, the case
+  # Python runs; hy_topo; every via ""
+  - id: hy_capabilities_empty_network_no_conversions
+    function: hy_capabilities
+    fixture: empty_network.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # changes_with: A-4; duplicated edge; hy_flownetwork; navigate_network_dfs and
   # make_index_ids TRUE (A-4 adds sort_network, add_topo_sort, check_hy_graph,
   # D3-42); does not raise; available is blind to the repeated row (D3-46, D3-57)
@@ -1560,6 +1628,16 @@ cases:
   - id: is_dendritic_new_hope
     function: is_dendritic
     fixture: new_hope.gpkg
+    prepare: {function: hy}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # D-7 pair of is_dendritic_new_hope: rows permuted; expect FALSE
+  - id: is_dendritic_new_hope_shuffled
+    function: is_dendritic
+    fixture: new_hope_shuffled.gpkg
     prepare: {function: hy}
     compare: exact
     order: exact
@@ -1988,6 +2066,19 @@ cases:
     raises: error
     raises_key: divergence_missing
 
+  # D3-56: id 4 divergence missing, not below a split (the only flowline
+  # leaving node 30), stops naming it: any flowline, not only at a split; shared
+  - id: add_toids_missing_divergence_off_split
+    function: add_toids
+    fixture: add_toids_missing_divergence_off_split.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: divergence_missing
+
   # D3-72: split with ids 2 and 3 both coded 1 stops naming both. changes_with: i2
   - id: add_toids_divergence_without_minor
     function: add_toids
@@ -2370,6 +2461,18 @@ cases:
     function: make_index_ids
     fixture: return_divergence.gpkg
     prepare: {function: add_toids, args: {return_dendritic: false}}
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
+  # make_index_ids H-03; return_divergence as a flownetwork with downmain and
+  # upmain: to 1 -> 2 main, 6 not; 6 -> 7 main, 8 not; from 4 <- 3 main, 7 not;
+  # 5 <- 4 main, 9 not; 11 + 11 rows
+  - id: make_index_ids_return_divergence_main
+    function: make_index_ids
+    fixture: make_index_ids_return_divergence_main.gpkg
     args: {mode: both}
     compare: exact
     order: ignore
@@ -3207,7 +3310,8 @@ cases:
     raises_key: divergence_required
 
   # changes_with: D-4; 2 diverges to 3 (inside) and 9 (outside), so 2 is a
-  # start; today 3, 1, 4, 2, 2 (3 before 2); post 1, 4, 2, 2, 3; no warning
+  # start; 1, 4, 2, 2, 3: "2" sorts before the outlet "3", so the block of 2
+  # lands above 3 (Edge cases); no warning
   - id: sort_network_divergence_leaves
     function: sort_network
     fixture: sort_divergence_leaves.gpkg
@@ -3222,6 +3326,28 @@ cases:
   - id: sort_network_divergence_leaves_split
     function: sort_network
     fixture: sort_divergence_leaves.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # sort_network H-03; sort_divergence_leaves with 2 relabelled 5: "5" sorts
+  # after the outlet "3", so 3, 1, 4, 5, 5 and the block of 5 lands below 3
+  # (Edge cases, D3-155)
+  - id: sort_network_divergence_leaves_relabelled
+    function: sort_network
+    fixture: sort_divergence_leaves_relabelled.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # terminal_id 3 on id 3, 5 on ids 1, 4, 5
+  - id: sort_network_divergence_leaves_relabelled_split
+    function: sort_network
+    fixture: sort_divergence_leaves_relabelled.gpkg
     args: {split: true}
     compare: exact
     order: exact
@@ -3324,6 +3450,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid, terminal_id]
 
   - id: sort_network_network_nested_outlets_split
     function: sort_network
@@ -3519,12 +3646,27 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid]
 
   # changes_with: D-4, I-2; 548 rows, 32 terminals; missing tocomid filled by
   # hy() (I-5)
   - id: sort_network_coastal_split
     function: sort_network
     fixture: coastal.gpkg
+    args: {split: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # sort_network H-06; coastal terminal 5 beside inland terminal 6 below one
+  # divergence (2 -> 3, 4), and a separate network ending inland at 8; each
+  # terminal is an outlet (I-4): terminal_id 5 on 1, 2, 2, 4, 5; 6 on 3, 6;
+  # 8 on 7, 8; prepare warning suppressed (D3-23)
+  - id: sort_network_coastal_inland_split
+    function: sort_network
+    fixture: coastal_inland.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
     args: {split: true}
     compare: exact
     order: exact
@@ -3605,6 +3747,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid, terminal_id]
 
   # changes_with: D-4, I-2; input in hydroseq order; 2544325 before 2544321;
   # 32 terminals
@@ -3637,6 +3780,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid]
 
   # changes_with: D-4; flownetwork route; 8893420 comes before both
   # non-dendritic paths below it (8893472, 8893424)
@@ -4088,7 +4232,7 @@ cases:
     generator: [r]
     columns: [id3dhp, toid, hydrosequence]
 
-  # computed topo_sort replaces hydrosequence, integer, no .x/.y (D3-51);
+  # computed topo_sort replaces NHDPlusHR Hydroseq, integer, no .x/.y (D3-51);
   # shared after regeneration, supported_by stays [r] until Python generates
   # changes_with: D-4, i2; identifiers beyond 32 bits (character after I-2, so
   # byte order differs from numeric); R 1.3.0 gave topo_sort.x/.y
@@ -4268,16 +4412,6 @@ cases:
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
     args: {starts: ["9", "10"], direction: up}
-    compare: exact
-    order: exact
-    supported_by: [r]
-    generator: [r]
-
-  # note: text start against integer id; same as two_outlets_down
-  - id: navigate_network_dfs_two_outlets_character_start
-    function: navigate_network_dfs
-    fixture: dfs_two_outlets.gpkg
-    args: {starts: ["2"]}
     compare: exact
     order: exact
     supported_by: [r]

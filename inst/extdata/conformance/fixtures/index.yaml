@@ -96,6 +96,20 @@ fixtures:
     no upstream connection'
   rules: []
   bytes: 73728
+- file: add_toids_missing_divergence_off_split.gpkg
+  source: add_toids_worked_example with id 4 divergence missing
+  rows: 6
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  - divergence
+  exercises: 'a missing divergence on a flowline not below a split (id 4, the only
+    flowline leaving node 30): stops divergence_missing naming id 4'
+  rules:
+  - I-9
+  bytes: 73728
 - file: add_toids_missing_tonode_first.gpkg
   source: synthetic
   rows: 4
@@ -886,6 +900,19 @@ fixtures:
   rules:
   - I-6
   bytes: 73728
+- file: hy_flag_missing.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - COMID
+  - ToCOMID
+  - TerminalFl
+  exercises: 'flag column coded 0/1 with a missing value (TerminalFl missing on COMID
+    20, row 2): logical with the value missing; Python nullable boolean'
+  rules:
+  - S-2
+  bytes: 73728
 - file: hy_flag_value_not_binary.gpkg
   source: synthetic
   rows: 3
@@ -1350,6 +1377,21 @@ fixtures:
   rules:
   - I-6
   - D-8
+  bytes: 73728
+- file: make_index_ids_return_divergence_main.gpkg
+  source: synthetic (return_divergence as a flownetwork with downmain and upmain)
+  rows: 12
+  geometry: none
+  columns:
+  - id
+  - toid
+  - downmain
+  - upmain
+  exercises: 'two nested divergences with main flags: main FALSE on 1 -> 6 and 6 ->
+    8 downstream, on 4 <- 7 and 5 <- 9 upstream'
+  rules:
+  - I-6
+  - D-5
   bytes: 73728
 - file: make_index_ids_type_mismatch.gpkg
   source: synthetic
@@ -2023,6 +2065,21 @@ fixtures:
   - I-4
   - D-7
   bytes: 73728
+- file: sort_divergence_leaves_relabelled.gpkg
+  source: sort_divergence_leaves with id 2 relabelled 5
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'a divergence at 5 with one branch inside the table (3) and one leaving
+    it (9), 5 sorting after the outlet 3: the block of 5 lands below 3'
+  rules:
+  - I-4
+  - I-6
+  - D-1
+  - D-4
+  bytes: 73728
 - file: sort_divergence_outlets.gpkg
   source: synthetic (tests/testthat/test_sort_network.R "divergences as outlets limit
     the result")
@@ -2140,6 +2197,7 @@ fixtures:
   rules:
   - D-4
   - D-1
+  - D-5
   bytes: 73728
 - file: sort_siblings_permuted.gpkg
   source: sort_siblings with rows reordered 5, 2, 4, 3, 1
@@ -2154,6 +2212,7 @@ fixtures:
   - D-1
   - D-3
   - D-4
+  - D-5
   - D-7
   - D-14
   bytes: 73728
@@ -2169,6 +2228,7 @@ fixtures:
   rules:
   - D-4
   - D-1
+  - D-5
   bytes: 73728
 - file: sort_test.gpkg
   source: tests/testthat/data/sort_test.rds
