@@ -151,7 +151,10 @@ Each is a NEWS entry and new expectations, landed on `python-port` in the milest
 | One condition class, `hydroloom_representation_error` | A-10 | M3 |
 | Neighbor order in `make_index_ids` and sibling order in `navigate_network_dfs` by identifier, not input row order; a `toid` outside the network is a terminal | D-5, D-6 | M3 |
 | Zero-row input returns typed zero-row output in `make_index_ids`, `sort_network`, `add_topo_sort`, `navigate_network_dfs` | I-11 | M3 |
-| `add_toids`: a missing `divergence` with `return_dendritic = TRUE` raises naming the rows (`divergence_missing`); a flowline with a missing `tonode` is a terminal and stays the target of its upstream flowlines | I-9, I-5 | M3 |
+| `add_toids`: a missing `divergence` with `return_dendritic = TRUE` raises naming the rows (`divergence_missing`); a flowline with a missing `tonode` is a terminal and stays the target of its upstream flowlines; a broken divergence coding raises (`divergence_coding_invalid`, D3-72); flownetwork input raises (`toid_already_present`, D3-38) | I-9, I-5 | M3 |
+| `hydroloom_names()` lowercases an alias on registration (D3-65) | S-2 | M3 |
+| Flag columns coded 1/0 become logical on ingest in `hy()` (M1 M-18) | S-2 | M3 |
+| `hy_reverse()` restores names on an `hy_flownetwork`; `is.hy()` accepts one carrying `orig_names` (D3-16, D3-64) | I-14 | M3 |
 | Divergence and level-path ties fall through to identifier byte order | D-9, D-11 | M6 |
 | Missing `weight_attribute` raises naming the row | S-6 | M6 |
 | A repeated (`id`, `toid`) pair raises at ingest; `check_hy_graph` lists the rows; `is_dendritic` no longer reads a repeat as a divergence | S-6 | M6 |
