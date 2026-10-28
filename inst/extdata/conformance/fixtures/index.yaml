@@ -1135,7 +1135,9 @@ fixtures:
   - tonode
   - gnis_id
   - feature_type
-  exercises: non-dendritic network with repeated id and character identifiers; cycles
+  exercises: non-dendritic network with repeated id at divergences whose branches rejoin
+    downstream (braided reaches) and character identifiers; holds no directed cycle, so the
+    strongly connected components check returns TRUE
   rules:
   - I-6
   - D-8

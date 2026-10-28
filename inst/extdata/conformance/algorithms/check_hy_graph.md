@@ -78,10 +78,13 @@ in either language (D3-45, superseding D3-58). The function stops with `needs_to
 ("check_hy_graph requires toid." followed by the guidance to build `toid` with
 `add_toids()` in R), raised
 as `hydroloom_representation_error` in R and `RepresentationError` in Python (D3-87,
-D3-90). The `via` entry above is guidance, the one call that gives the function a
-`toid`, not a conversion the function applies. `add_toids()` keeps only main paths at
-divergences, so a cycle through a minor path is not found on its output; converting the
-table to a flownetwork, which keeps every connection, finds such a cycle. A table with
+D3-90). The `via` entry above is guidance, not a conversion the function applies. The
+one call that gives the function a `toid` is `add_toids(return_dendritic = FALSE)`,
+which keeps every connection at a divergence (and warns that the argument is
+deprecated), so a cycle through a minor path is found on its output and a table without
+`divergence` does not stop. `add_toids()` with its
+default keeps only main paths, so such a cycle is not found, and it stops with
+`divergence_required` on a table without `divergence`. A table with
 neither `toid` nor `fromnode`/`tonode` stops with `needs_topo` in both languages (D3-60).
 Raising on unusable input is read as consistent with A-10, which covers the graph
 problems the check finds (D3-61).
@@ -101,9 +104,9 @@ A cycle is a set of flowlines in which water leaving any one of them can, by fol
 `toid`, return to it. In graph terms these are the strongly connected components of the
 `id` to `toid` graph that hold more than one flowline, plus any flowline whose `toid` is
 its own `id` (a self-loop). A dendritic or divergent river network has none: flow never
-returns upstream. The `reciprocal` label marks the cycle with a direct reading: a pair
-of flowlines each giving the other as `toid` is one `toid` pointing the wrong way
-(D3-75).
+returns upstream. `reciprocal` marks a cycle a user repairs at one flowline: two
+flowlines each giving the other as `toid` means one of the two is coded against the
+flow, and the label does not say which (D3-75).
 
 After D-8 the result is `TRUE` exactly when the network has no cycle (and, with
 `divergence_check`, no divergence coding problem). Otherwise it lists every row whose
@@ -198,11 +201,18 @@ unchanged.
 
 After D-8, for every input that does not stop:
 
-- The result is `TRUE` or a table; it is `TRUE` exactly when no row is on a cycle and,
-  with `divergence_check`, no row has a divergence issue.
+- The result is `TRUE` or a table; it is `TRUE` exactly when no row is on a cycle,
+  no (`id`, `toid`) pair is repeated, and, with `divergence_check`, no row has a
+  divergence issue. The repeated-pair clause holds in Python from its first release and
+  in R from M6 (D3-57, D3-166); until then R returns `TRUE` on a repeated pair on no
+  cycle.
+- A repeated (`id`, `toid`) pair does not raise here, unlike every other function,
+  which raises at ingest (S-6, D3-57): Python returns every row of each repeated pair,
+  in input order, as problem rows (A-10); R does so in M6 (D3-166).
 - Every returned row (cycle result) has `toid` equal to some `id`, and following `toid`
   from that `toid` returns to the row's `id`.
-- Every row whose `id` and `toid` lie on a common cycle is returned; no other row is.
+- Every row whose `id` and `toid` lie on a common cycle is returned; no other row is,
+  apart from the rows of a repeated pair.
 - Returned rows keep input order, and each equals an input row in its hydroloom
   columns; no input row is returned twice.
 - `component` takes every value in `1..k` for some `k >= 1`; two rows share a
@@ -235,10 +245,13 @@ O(n · m) in the worst case, from a depth-first search at each node.
 - One flowline: `TRUE`, unless its `toid` is its own `id`, which returns the row with
   `component = 1`, `reciprocal = FALSE`.
 - No connections (all terminals): `TRUE`.
-- Duplicated row (the same `id`/`toid` twice, a flownetwork): `TRUE` when the edge is on
-  no cycle; both copies are returned when it is. SPEC S-6 says a duplicated edge raises;
-  that rule is not applied here in M3 (D3-57, extending D3-46), and the case on
-  `duplicated_edge` captures `TRUE`. The duplicate is not reported as a problem row.
+- Duplicated row (the same `id`/`toid` twice, a flownetwork): SPEC S-6 makes a repeated
+  pair an error, raised at ingest by every other function (D3-57). `check_hy_graph` is
+  the one function that does not raise on it: Python lists both copies in its result
+  from its first release, and R does so in M6 (D3-166). R today returns `TRUE` when the
+  edge is on no cycle and both copies, as cycle rows, when it is; the case on
+  `duplicated_edge` keeps R's `TRUE` capture until the Python-only case is added when
+  Python generates (M5).
 - Node-topology input: stops with `needs_topo` in both languages (D3-45); with
   `divergence_check`, only after the divergence check passes.
 - A divergence whose minor branch is absent (an extract that keeps one branch, or a
@@ -261,7 +274,7 @@ O(n · m) in the worst case, from a depth-first search at each node.
 | --- | --- | --- | --- | --- |
 | `divergence_check = TRUE` without `divergence` | the divergence check reads which path is main (`divergence`), and the column is absent | all; the absent columns are listed | `add_divergence()`, given the coastal and inland outlets, for `divergence` | `divergence_check_missing_columns` |
 | `divergence_check = TRUE` without `fromnode` | the divergence check groups flowlines by the point where they begin (`fromnode`), which the flowlines leaving a divergence share, and the column is absent | all; the absent columns are listed | `make_node_topology()`, which builds `fromnode` from `toid` | `divergence_check_missing_columns` |
-| a node-topology table (`fromnode`/`tonode`, no `toid`), both languages (D3-45) | the network has no `toid`, each flowline's downstream flowline | all | `add_toids()` | `needs_topo` |
+| a node-topology table (`fromnode`/`tonode`, no `toid`), both languages (D3-45) | the network has no `toid`, each flowline's downstream flowline | all | `add_toids(return_dendritic = FALSE)` | `needs_topo` |
 | no recognized `toid` and no `fromnode`/`tonode` (source columns not in the vocabulary, as `ID`/`toNexID` in `sort_test`) | the network has neither `toid` nor the `fromnode`/`tonode` identifiers to build it from | all | add a `toid` column giving each flowline's downstream flowline; where the column exists under a source name, register it as `toid` (`hydroloom_names()` in R, `register_names()` in Python) | `needs_topo` |
 
 A cycle or a divergence issue is a returned value, never a condition (A-10). The
@@ -339,3 +352,8 @@ which drains into the pair, is not returned.
   requirement so node-table cases share. D3-75: the "almost always" sentence replaced by
   what `reciprocal` marks. D3-47: A-16 now carries this signature. D3-146: Remedies
   conditions and fixes aligned with `remedies.json`.
+- 2026-10-28, suite 0.1.0: unit-2 fixes H-01, H-02, H-05. H-01 (D3-57, D3-166): a
+  repeated (`id`, `toid`) pair is listed in the result, Python from its first release
+  and R in M6; Postconditions and Edge cases restated, the `duplicated_edge` case keeps
+  R's `TRUE`. H-02: the node-table fix is `add_toids(return_dendritic = FALSE)` in
+  Preconditions and Remedies. H-05: the `reciprocal` sentence in Definition.
