@@ -39,7 +39,7 @@ As a property of the input: a column carries a hydroloom name when its lowercase
 
 ## Algorithm
 
-The alias map is the registry `hydroloom_names()` returns: one (alias, hydroloom name) pair per vocabulary alias in `hy_vocab.json` term order and, within a term, alias order, followed by pairs registered with `hydroloom_names()` in registration order. The vocabulary includes the identity pair `toid` → `toid`. Python's map is the same list, vocabulary first, then `register_names()` entries (A-5).
+The alias map is the registry `hydroloom_names()` returns: one (alias, hydroloom name) pair per vocabulary alias in `hy_vocab.json` term order and, within a term, alias order, followed by pairs registered with `hydroloom_names()` in registration order, each alias lowercased on registration (D3-65). The vocabulary includes the identity pair `toid` → `toid`. Python's map is the same list, vocabulary first, then `register_names()` entries with each alias lowercased (A-5).
 
 1. Record the input names. Lowercase every column name; in R this includes the geometry column.
 2. Candidates: the map pairs whose alias is a lowercased column name, in map order. A pair registered twice is two candidates.
@@ -77,7 +77,7 @@ Time O(c + a) for c columns and a alias-map pairs with hashed lookup (R's `%in%`
 - A missing `toid`: stays missing; filling it is `hy()`'s work (I-5).
 - Two column names equal ignoring case (`ID` and `id`): stops (`column_name_duplicate`). A GeoPackage cannot hold such a pair, so no manifest case exercises it.
 - An empty column name: stops (`column_name_empty`); not expressible in a GeoPackage either.
-- An uppercase alias registered with `hydroloom_names()` never matches, since names are lowercased before lookup.
+- An alias registered with `hydroloom_names()` in uppercase or mixed case matches the column whose lowercased name equals it, since registration lowercases the alias and lookup lowercases the column names (D3-65): `hydroloom_names(c(MyID = "id"))` renames a column `MyID` or `myid` to `id`.
 - sf input with an uppercase geometry column name, or with mixed-case attribute names and a rename: R stops inside sf (Preconditions); Python returns the aligned GeoDataFrame with the geometry column name unchanged (G-14). `hy()` sets the geometry aside first and does not hit either stop.
 - Two conflicts at once (`comid` beside `id` and `tocomid` beside `toid`): R stops with the second input name printed as `NA`; the condition is `name_alias_conflict` either way.
 - `permanent_identifier` beside `to_permanent_identifier` and nothing else: the two become `id` and `toid` with no message and no warning, since no hydroloom name has two candidates.
@@ -87,15 +87,15 @@ Time O(c + a) for c columns and a alias-map pairs with hashed lookup (R's `%in%`
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| alias beside its hydroloom name | two columns would carry one hydroloom name | none; columns named in the message | `dplyr::select(x, -<alias column>)` | `name_alias_conflict` |
-| two aliases for one hydroloom name (warning) | the column named after "using" took the hydroloom name; the other aliasing column kept its input name | none; columns named in the message | `dplyr::select(x, -<unwanted column>)` | `name_alias_duplicate` |
-| three or more aliases for one hydroloom name | no single column can be chosen | none; columns named in the message | `dplyr::select(x, -c(<all but one aliasing column>))` | `name_alias_ambiguous` |
-| two column names equal ignoring case | names are compared lowercased, so the two collide | none; columns named in the message | `names(x)[<position>] <- "<new name>"` | `column_name_duplicate` |
-| empty column name | a column has no name | none; column position in the message | `names(x)[<position>] <- "<new name>"` | `column_name_empty` |
-| uppercase geometry column name on sf input (R only) | sf cannot find the geometry column after lowercasing | none | `hy(x)` | `sf_geometry_name_case` |
-| mixed-case attribute names on sf input (R only) | sf cannot match its attribute-geometry table after the rename | none | `hy(x)` | `sf_mixed_case_names` |
+| alias beside its hydroloom name | An input column renames to a hydroloom name that another column already has, so two columns would carry one name. | none; the columns are named in the message | Drop or rename one of the two columns. | `name_alias_conflict` |
+| two aliases for one hydroloom name (warning) | Two input columns are aliases of one hydroloom name. The one later in the alias list (a registered alias comes after the vocabulary's) took the name, and the message gives it after "using"; the other column kept its input name. | none; the columns are named in the message | Drop the column that should not carry the hydroloom name. | `name_alias_duplicate` |
+| three or more aliases for one hydroloom name | Three or more input columns are aliases of one hydroloom name. When aliases compete, the one earliest in the alias list is set aside: with two, the other takes the name (name_alias_duplicate); with three or more, two or more remain and none can be chosen to carry it. | none; the columns are named in the message | Drop all but one of the aliasing columns. | `name_alias_ambiguous` |
+| two column names equal ignoring case | Column names are compared lowercased, so two names equal ignoring case collide. | none; the columns are named in the message | Rename one column so the lowercased names differ. | `column_name_duplicate` |
+| empty column name | A column has no name. | none; the column position is in the message | Give the column a name. | `column_name_empty` |
+| uppercase geometry column name on sf input (R only) | On an sf table, sf cannot find the geometry column after its name is lowercased. | none | `hy(x)` | `sf_geometry_name_case` |
+| mixed-case attribute names on sf input (R only) | On an sf table with mixed-case attribute names, sf loses track of which attribute columns go with the geometry after the rename. | none | `hy(x)` | `sf_mixed_case_names` |
 
-Python raises `KeyError` for the first five stops (A-10, a vocabulary problem) and warns with the package warning class for `name_alias_duplicate` (A-11).
+Python raises `KeyError` for the four stops `name_alias_conflict`, `name_alias_ambiguous`, `column_name_duplicate`, and `column_name_empty` (A-10, a vocabulary problem; D3-26) and warns with `HydroloomWarning` for `name_alias_duplicate` (A-11). The two sf keys carry no Python class.
 
 ## References
 
@@ -131,3 +131,4 @@ Fixture `fixtures/hy_worked_example.gpkg` (shared with `hy`), aspatial, three ro
 
 - 2026-10-25, suite 0.1.0: first description, recording R 1.3.0 behavior. No ROADMAP §4 change applies: I-2 and I-5 are `hy()`'s, and `align_names` raises no representation error, so the A-10 condition class does not reach it. Step 4 and the three-candidate stop in step 5 are stated more narrowly in `hy.md` step 2, which says `permanent_identifier` drops only from a set of candidates it belongs to and that the latest of several candidates always wins; this description records R. The two sf stops are R accidents captured as current behavior, not fixed here.
 - 2026-10-26, suite 0.1.0: hydrology review fix round. Edge cases add the `permanent_identifier`/`to_permanent_identifier` pair and the no-`id` outcome of the mixed table; References add the NHDPlusV2 user guide, the hydrofabric data theme, and the vocabulary `source` tags; the Remedies fix column gives one call per row. No behavior change.
+- 2026-10-28, suite 0.1.0: M3 close. `hydroloom_names()` lowercases an alias on registration (D3-65), so an uppercase registered alias now matches; the alias map in Algorithm and the Edge case state this, and Python's `register_names()` does the same. No ROADMAP §4 row carries D3-65 yet; it lands in R with a NEWS line in this run. The Remedies table takes its condition, rows, and fix texts from `remedies.json` (D3-146), and the Python class sentence lists the four `KeyError` stops (D3-26).
