@@ -88,6 +88,10 @@ zero-length line do not apply. A duplicated alias is appended, not merged; both 
 stay, and `align_names()` counts them as two candidates when a table carries that column,
 warning with `name_alias_duplicate` for two candidates of one hydroloom name and stopping
 with `name_alias_ambiguous` for three or more (`align_names.md` steps 2 and 5, D3-24).
+Because names are lowercased on registration (D3-65), an alias that lowercases to a
+seeded alias repeats it: registering `COMID = "id"` as printed in the NHDPlusV2 User
+Guide adds a second `comid` entry, and every NHDPlusV2 table then warns with
+`name_alias_duplicate`.
 Several seeded aliases of one term can also meet in one table: an NHDPlusHR flowline
 table carries both `nhdplusid` and `permanent_identifier`, both aliases of `id`;
 `align_names()` resolves that by its `permanent_identifier` rule (`align_names.md`
@@ -100,7 +104,9 @@ looking it up. A value that is not a hydroloom name is registered; `align_names(
 the column and then restores its original name, so it has no effect. A non-character `x`
 is coerced to character by `c()`.
 `clear = TRUE` with no `x` empties the registry, including the vocabulary aliases, so
-`hy()` renames nothing. The registry, cleared or extended, returns to the vocabulary seed
+`hy()` renames nothing. Python differs here (D3-20): `register_names(replace=True)`
+replaces registered mappings and keeps the vocabulary aliases, so `hy()` still renames
+the seeded columns. The registry, cleared or extended, returns to the vocabulary seed
 the next time the package is loaded, which includes every R restart.
 
 ## Remedies
@@ -155,3 +161,7 @@ the vocabulary's alias table as two columns, `name` and `value`, 52 rows as of
   because S-2 makes the vocabulary file the one copy and a runtime call that hid its
   aliases could not be seen by `capabilities()` or the harness. M3 H-05: References cite
   the NHDPlusV2 and NHDPlusHR user guides.
+- 2026-10-28, suite 0.1.0: M3 close, unit 2. H-01: Edge cases state that an alias which
+  lowercases to a seeded alias repeats it and warns `name_alias_duplicate`. H-02: Edge
+  cases state that R `clear = TRUE` empties the vocabulary aliases and Python
+  `replace=True` keeps them.
