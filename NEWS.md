@@ -89,6 +89,14 @@ hydroloom (development version)
   (and `terminal_id` or `topo_sort` in their usual types), and an empty
   list for no starts. They used to stop with "subscript out of bounds"
   after a warning from `max()`.
+- `add_topo_sort()` now writes `topo_sort` as an integer and replaces a
+  `topo_sort` column already in the input, such as NHDPlus `Hydroseq`,
+  which it used to keep beside the computed one as `topo_sort.x` and
+  `topo_sort.y`. `DnHydroseq`, `UpHydroseq`, and `DnMinorHyd` pass through
+  unchanged and no longer point at values in the table. `sort_network()`
+  and `add_topo_sort()` now stop, naming the values, when `outlets`
+  holds a value that is not an `id` in the network; they used to ignore
+  such values, or stop with an internal error when no value was an `id`.
 
 hydroloom 1.3.0
 ==========

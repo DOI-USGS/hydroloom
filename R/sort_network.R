@@ -84,6 +84,13 @@ sort_network.hy_node <- function(x, split = FALSE, outlets = NULL) {
 #' @noRd
 sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
 
+  # D3-154: every outlet must be an id, zero-row input included
+  absent <- unique(outlets[!outlets %in% x$id])
+  if (length(absent)) {
+    stop("These outlets are not ids in the network: ", paste(absent, collapse = ", "),
+      ". Every outlet must be the id of a flowline in it; pass values of id as outlets.")
+  }
+
   # index for fast traversal (no dispatch, no validation)
   index_ids <- make_index_ids_impl(x, mode = "both")
 
@@ -352,12 +359,9 @@ add_topo_sort.hy_flownetwork <- function(x, outlets = NULL) {
 
   ids <- unique(out$id)
 
-  # I-11: zero-row input with outlets missing gives zero rows
-  topo_sort <- numeric()
-  if (nrow(x) || !is.null(outlets)) topo_sort <- seq(from = length(ids), to = 1, by = -1)
-
-  dplyr::left_join(out,
-    data.frame(id = ids, topo_sort = topo_sort),
+  # D3-51: the computed topo_sort replaces an input one, as integer
+  dplyr::left_join(select(out, -any_of("topo_sort")),
+    data.frame(id = ids, topo_sort = rev(seq_along(ids))),
     by = "id")
 
 }
@@ -370,12 +374,9 @@ add_topo_sort.hy_topo <- function(x, outlets = NULL) {
 
   ids <- unique(out$id)
 
-  # I-11: zero-row input with outlets missing gives zero rows
-  topo_sort <- numeric()
-  if (nrow(x) || !is.null(outlets)) topo_sort <- seq(from = length(ids), to = 1, by = -1)
-
-  out <- dplyr::left_join(out,
-    data.frame(id = ids, topo_sort = topo_sort),
+  # D3-51: the computed topo_sort replaces an input one, as integer
+  out <- dplyr::left_join(select(out, -any_of("topo_sort")),
+    data.frame(id = ids, topo_sort = rev(seq_along(ids))),
     by = "id")
 
   classify_hy(out)

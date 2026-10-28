@@ -3196,9 +3196,7 @@ cases:
     raises: error
     raises_key: split_outlets_overlap
 
-  # zero rows, no warning
-  # changes_with: D3-51 (zero rows to raises: error, raises_key:
-  # outlet_not_in_network; layer dropped)
+  # outlet 99 is not an id: raises outlet_not_in_network (D3-154)
   - id: sort_network_two_networks_unknown_outlet
     function: sort_network
     fixture: sort_two_networks.gpkg
@@ -3207,6 +3205,8 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    raises: error
+    raises_key: outlet_not_in_network
 
   # changes_with: D-4; node route; two sub-networks of one NHDPlusV2 basin
   - id: sort_network_network_outlets_split
@@ -3719,16 +3719,16 @@ cases:
 
   # D3-51: one outlet absent among present ones still raises; R 1.3.0 ignored
   # 99 and returned the network of outlet 3
-  # - id: add_topo_sort_outlets_partly_absent
-  #   function: add_topo_sort
-  #   fixture: add_topo_sort_worked_example.gpkg
-  #   args: {outlets: ["3", "99"]}
-  #   compare: exact
-  #   order: exact
-  #   supported_by: [r]
-  #   generator: [r]
-  #   raises: error
-  #   raises_key: outlet_not_in_network
+  - id: add_topo_sort_outlets_partly_absent
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example.gpkg
+    args: {outlets: ["3", "99"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: outlet_not_in_network
 
   # changes_with: D-4; D-1 byte order on character siblings; today a, B, _c,
   # d; post B, _c, a, d
@@ -3933,8 +3933,8 @@ cases:
     raises: error
     raises_key: needs_topo
 
-  # changes_with: D3-51 (computed topo_sort replaces Hydroseq, integer; no
-  # .x/.y; shared after regeneration)
+  # computed topo_sort replaces Hydroseq, integer, no .x/.y (D3-51); shared
+  # after regeneration, supported_by stays [r] until Python generates
   # changes_with: D-4, i2; node route, 746 rows; R 1.3.0 gave Hydroseq as
   # topo_sort.x, computed topo_sort.y
   - id: add_topo_sort_new_hope
@@ -3946,8 +3946,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-51 (computed topo_sort replaces Hydroseq, integer; no
-  # .x/.y; shared after regeneration)
+  # computed topo_sort replaces Hydroseq, integer, no .x/.y (D3-51); shared
+  # after regeneration, supported_by stays [r] until Python generates
   # changes_with: D-4, i2; flownetwork route, 832 rows, 746 topo_sort values;
   # R 1.3.0 gave topo_sort.x/.y
   - id: add_topo_sort_new_hope_flownetwork
@@ -3972,8 +3972,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-51 (computed topo_sort replaces hydrosequence, integer;
-  # no .x/.y; shared after regeneration)
+  # computed topo_sort replaces hydrosequence, integer, no .x/.y (D3-51);
+  # shared after regeneration, supported_by stays [r] until Python generates
   # changes_with: D-4, i2; identifiers beyond 32 bits (character after I-2, so
   # byte order differs from numeric); R 1.3.0 gave topo_sort.x/.y
   - id: add_topo_sort_nhdplushr
@@ -3985,8 +3985,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-51 (computed topo_sort replaces hydroseq, integer; no
-  # .x/.y; shared after regeneration)
+  # computed topo_sort replaces hydroseq, integer, no .x/.y (D3-51); shared
+  # after regeneration, supported_by stays [r] until Python generates
   # changes_with: D-4; many terminals with I-5 filled toid; R 1.3.0 gave
   # hydroseq as topo_sort.x
   - id: add_topo_sort_coastal
