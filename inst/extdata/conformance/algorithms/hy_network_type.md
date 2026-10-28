@@ -104,7 +104,9 @@ Python:
 The tie rules that bind are the order of the four branches (`toid` before the node
 columns; leveled only within unique-`id` topo) and, in R, the first-in-class-vector rule.
 No sentinel (K-4) is read. The output is one value that depends only on the column set
-and whether `id` repeats, not on row order (D-7), and on nothing random (D-15). No CSR
+and whether `id` repeats, not on row order (D-7; case `hy_network_type_new_hope_shuffled`
+holds `new_hope` with its rows permuted and gives `"hy_node"`, as
+`hy_network_type_new_hope` does), and on nothing random (D-15). No CSR
 index is built.
 
 ## Postconditions
@@ -148,7 +150,9 @@ uniqueness test.
 - Repeated `id` with `fromnode` and `tonode` and no `toid`: `"hy"`, since neither the
   flownetwork nor the node branch applies.
 - No `id`: R `"hy"` after `hy()`, which warns (`no_id_column`); Python raises
-  `RepresentationError` (D3-130).
+  `RepresentationError` (D3-130). Case `hy_network_type_no_id` is R only: it applies
+  `hy()` with the warning suppressed in `prepare` and stores `"hy"`; the Python raise has
+  no case yet.
 - `id` with neither `toid` nor both node columns: `"hy"`.
 - Zero rows with `id` and `toid`: `"hy_topo"`.
 - Two of the three level-path columns: `"hy_topo"`.
@@ -168,10 +172,11 @@ uniqueness test.
 | three or more aliases for one hy name (Python) | three or more input columns are aliases of one hy name, and none can be chosen to carry it | none; the columns are named in the message | drop all but one of the aliasing columns | `name_alias_ambiguous` |
 | no `id` column (Python error, D3-130) | no input column is `id` or one of its aliases, so the catchments or flowlines have no identifier | all | rename the identifier column to `id` | `no_id_column` |
 | identifier column of mixed types (Python, I-3) | one identifier column holds both strings and numbers | the rows whose type differs from the first value's | cast the column to one type before the call | `identifier_mixed_type` |
-| non-whole floating-point identifier (R `hy()` and Python, post-change, D3-07) | an identifier column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
+| non-whole floating-point identifier (R `hy()` and Python, D3-07) | an identifier column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
+| infinite identifier (R `hy()` and Python, I2-3; key drafted, D3-180) | an identifier column arrives as floating-point numbers and a value is `Inf` or `-Inf`, which is neither a whole number nor text that names the same identifier | the rows whose value is infinite | correct the values before the call | `identifier_not_finite` |
 
-R's `hy_network_type` raises and warns on nothing; in R the `no_id_column` warning and,
-post-change, the `identifier_not_whole` raise come from `hy()` in `prepare`. Python's rows are the conditions `as_hy` raises in name
+R's `hy_network_type` raises and warns on nothing; in R the `no_id_column` warning and the
+`identifier_not_whole` and `identifier_not_finite` raises come from `hy()` in `prepare`. Python's rows are the conditions `as_hy` raises in name
 alignment and identifier typing (`hy.md` Remedies); the keys are `hy`'s, not new ones.
 
 ## References
@@ -222,8 +227,8 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
   `name_alias_ambiguous` row is added (D3-60). Behavior is unchanged.
 - 2026-10-27, suite 0.1.0, M3 close: D3-28's plan edit gives `"hy"` in SPEC A-2 and the
   A-16 table, which closes the gap the 2026-10-25 line records for that value; the sixth
-  R value stays R-only. D3-07 (ROADMAP §4 identifier-ingest row, I-2): post-change, a
-  non-whole floating-point identifier raises `identifier_not_whole` in `as_hy`, and so in
+  R value stays R-only. D3-07 (ROADMAP §4 identifier-ingest row, I-2): a non-whole
+  floating-point identifier raises `identifier_not_whole` in `as_hy`, and so in
   `representation` (Remedies). D3-130: Python raises `RepresentationError` on a table with
   no `id` column, where R's `hy()` warns and gives `"hy"` (Preconditions, Postconditions,
   Edge cases, Remedies). D3-146: Remedies texts aligned with `remedies.json`. H-08: the
@@ -232,3 +237,14 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
   warning and raise come from `hy()` in `prepare`, not from `hy_network_type`, and the
   `identifier_not_whole` row covers R `hy()` too; the `identifier_mixed_type` fix reads
   "before the call". Behavior is unchanged.
+- 2026-10-28, suite 0.1.0, M3 close run 2 sweep: the I-2 clause of the ROADMAP §4
+  identifier-ingest row has landed in R `hy()`: an infinite identifier raises
+  `identifier_not_finite` (I2-3, key drafted under D3-180), in `prepare` in R and in
+  `representation` in Python (Remedies row added); `hy_network_type` itself is unchanged.
+  Cases `hy_network_type_new_hope_shuffled` (D-7) and `hy_network_type_no_id` (H-03) are
+  named where the description states their rule. Remedies drops its dated wording
+  (D3-159, D3-172). H-05: under D3-147, R's `no_id_column` becomes an error in M6, with
+  the ROADMAP §4 row "Error text from the per-function `remedies` table" (A-10); R's
+  `hy()` then raises on a table with no `id`, as Python does, case
+  `hy_network_type_no_id` becomes an error case, and the Postconditions exclusion of
+  tables on which `hy()` warns `no_id_column` falls away.
