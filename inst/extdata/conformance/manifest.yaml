@@ -82,6 +82,7 @@ cases:
     supported_by: [r]
     generator: [r]
     geometry: true
+    columns: [id, start_flag, terminal_flag]
 
   # python_omitted; changes_with: i2
   # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
@@ -93,6 +94,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id, start_flag, terminal_flag]
 
   # python_omitted; changes_with: i2 (toid double -> integer)
   # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
@@ -104,9 +106,10 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id, toid, start_flag, terminal_flag]
 
-  # python_omitted; changes_with: i2; warns nonunique_id_with_toid, 832 rows (flownetwork)
-  # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
+  # python_omitted; changes_with: i2; warns nonunique_id_with_toid, 832 rows
+  # (flownetwork); the case asserts the warning and stores no layer (D3-182)
   - id: hy_new_hope_add_topo_no_divergence
     function: hy
     fixture: new_hope_no_divergence.gpkg
@@ -181,8 +184,8 @@ cases:
     raises_key: identifier_not_finite
 
   # D3-152: TerminalFl 2 on COMID 30 warns flag_value_not_binary naming COMID 30;
-  # tolerated coding (rule 5): the case is for the warning, and the layer the
-  # harness stores for a warning case is not a supported output
+  # tolerated coding (rule 5): the case asserts the warning and stores no
+  # layer (D3-182)
   - id: hy_flag_value_not_binary
     function: hy
     fixture: hy_flag_value_not_binary.gpkg
@@ -223,7 +226,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # name_alias_duplicate; featureid wins over nhdplusid
+  # name_alias_duplicate; the case asserts the warning and stores no layer
+  # (D3-182); featureid winning over nhdplusid is compared by
+  # align_names_duplicate_alias
   - id: hy_duplicate_alias_tie
     function: hy
     fixture: hy_duplicate_alias_tie.gpkg
@@ -343,6 +348,7 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
+    columns: [id, start_flag, terminal_flag]
 
   - id: hy_single_flowline
     function: hy
@@ -436,6 +442,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id, start_flag, terminal_flag]
 
   # probed: id3dhp -> id, character; two outlet toid "" already present; R class hy_topo
   - id: hy_new_hope_3dhp
@@ -446,6 +453,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id, toid]
 
   # hy_reverse ----------------------------------------------------------------
   # Every case but the last applies hy() first through prepare (D3-11); the
@@ -817,6 +825,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id]
 
   # 3DHP aliases on string identifiers; id3dhp -> id, toid identity pair
   - id: align_names_new_hope_3dhp
@@ -827,6 +836,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id, toid]
 
   # unmatched column (toNexID) keeps its name; ID lowercases to id
   - id: align_names_sort_test
@@ -905,6 +915,17 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+
+  # D3-182: the name_alias_duplicate warning from align_names; the tie's
+  # output is compared by align_names_duplicate_alias
+  - id: align_names_duplicate_alias_warns
+    function: align_names
+    fixture: hy_duplicate_alias_tie.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
     raises: warning
     raises_key: name_alias_duplicate
 
@@ -917,8 +938,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: name_alias_duplicate
 
   # totda beside TotDASqKM (test_align_names.R): totda wins
   - id: align_names_totda
@@ -929,8 +948,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: name_alias_duplicate
 
   # sf New Hope as read in source names with TotDA added (test_align_names.R):
   # totda wins with a warning; COMID, LENGTHKM, REACHCODE -> id, length_km,
@@ -943,8 +960,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: name_alias_duplicate
+    columns: [id, total_da_sqkm, TotDASqKM]
 
   # three aliases of id: stops after two warnings
   - id: align_names_three_aliases
@@ -979,8 +995,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: name_alias_duplicate
 
   # permanent_identifier with to_permanent_identifier only: id, toid; no
   # message, no warning
@@ -1803,6 +1817,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid]
 
   # changes_with: i2; hy route, hy names, R class hy_topo
   - id: add_toids_new_hope_hy
@@ -1814,6 +1829,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id, toid]
 
   # changes_with: i2; 832 rows; id repeats (flownetwork pattern)
   - id: add_toids_new_hope_not_dendritic
@@ -1824,8 +1840,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: return_dendritic_deprecated
+    columns: [COMID, toid]
 
   # changes_with: i2; identifiers beyond 32 bits; post-change id and toid
   # character, outlet ""; one three-way divergence (node 15000500012351:
@@ -1838,6 +1853,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [NHDPlusID, toid]
 
   # changes_with: i2; D-9, the source divergence attribute decides; ids 4, 9,
   # 13 (divergence 2) receive no upstream; 13 rows
@@ -1860,8 +1876,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: return_dendritic_deprecated
 
   - id: add_toids_divergence_no_attribute
     function: add_toids
@@ -1883,8 +1897,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: return_dendritic_deprecated
 
   # changes_with: i2; minor path returning to the main path at nodes 104 and
   # 105; 10 rows
@@ -1917,6 +1929,17 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+
+  # D3-182: the return_dendritic_deprecated warning; the output is compared
+  # by add_toids_worked_example_not_dendritic
+  - id: add_toids_return_dendritic_deprecated
+    function: add_toids
+    fixture: add_toids_worked_example.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
     raises: warning
     raises_key: return_dendritic_deprecated
 
@@ -1941,8 +1964,6 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: return_dendritic_deprecated
 
   # changes_with: i2; step 7 tie rule; (1,3),(1,2),(3,5),(2,4),(4,6),(5,6),(6,0)
   # because id 3 precedes id 2 in input
@@ -1954,8 +1975,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: warning
-    raises_key: return_dendritic_deprecated
 
   # D3-56: id 2 divergence missing stops naming it; shared. changes_with: i2
   - id: add_toids_missing_divergence
@@ -1995,8 +2014,7 @@ cases:
 
   # D3-174: split at node 20 coded 0 (id 2) and 2 (id 3) warns
   # divergence_zero_main_path naming id 2; tolerated coding (rule 5): the case
-  # is for the warning, and the layer the harness stores for a warning case is
-  # not a supported output
+  # asserts the warning and stores no layer (D3-182)
   - id: add_toids_divergence_zero_main
     function: add_toids
     fixture: add_toids_divergence_zero_main.gpkg
@@ -2010,8 +2028,8 @@ cases:
 
   # D3-158: id 3, coded 2, is the only flowline leaving node 20 (main path
   # clipped away) and is connected to, warning divergence_minor_only_path
-  # naming id 3; tolerated coding (rule 5): the case is for the warning, and
-  # the layer the harness stores for a warning case is not a supported output
+  # naming id 3; tolerated coding (rule 5): the case asserts the warning and
+  # stores no layer (D3-182)
   - id: add_toids_divergence_minor_only
     function: add_toids
     fixture: add_toids_divergence_minor_only.gpkg
@@ -2098,6 +2116,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id, toid]
 
   # test_add_toids.R migration: character COMID; outlet toid "" at the rows
   # where add_toids_new_hope_hy has 0
@@ -2109,6 +2128,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid]
 
   # S-6 single-row fixture carries toid, so the hy_topo stop applies
   - id: add_toids_single_flowline_has_toid
@@ -3464,6 +3484,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid]
 
   # changes_with: D-4; one terminal
   - id: sort_network_new_hope_split
@@ -3474,6 +3495,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid, terminal_id]
 
   # changes_with: D-4, I-2; flownetwork route, 832 rows; prepare warning
   # suppressed (D3-23)
@@ -3486,6 +3508,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid]
 
   # changes_with: D-4; nhdplus aliases, node route, 707 rows
   - id: sort_network_network
@@ -3517,6 +3540,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id3dhp, toid]
 
   # changes_with: D-4, I-2; identifiers beyond 32 bits; node route; 2691 rows
   - id: sort_network_nhdplushr
@@ -3527,6 +3551,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [NHDPlusID, toid]
 
   # headwater 1 first, outlet 4 (toid 0) last; test_sort_network.R
   - id: sort_network_chain
@@ -3624,6 +3649,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid]
 
   # changes_with: D-4; I-4 implicit-absence outlets; all 21 rows
   - id: sort_network_huc12_implicit_outlets
@@ -4032,6 +4058,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid, Hydroseq]
 
   # computed topo_sort replaces Hydroseq, integer, no .x/.y (D3-51); shared
   # after regeneration, supported_by stays [r] until Python generates
@@ -4046,6 +4073,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [COMID, toid, Hydroseq]
 
   # changes_with: D-4; string identifiers, topo route; computed topo_sort
   # replaces 3DHP hydrosequence, the topo_sort alias (add_topo_sort H-04);
@@ -4058,6 +4086,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [id3dhp, toid, hydrosequence]
 
   # computed topo_sort replaces hydrosequence, integer, no .x/.y (D3-51);
   # shared after regeneration, supported_by stays [r] until Python generates
@@ -4071,6 +4100,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    columns: [NHDPlusID, toid, Hydroseq]
 
   # computed topo_sort replaces hydroseq, integer, no .x/.y (D3-51); shared
   # after regeneration, supported_by stays [r] until Python generates

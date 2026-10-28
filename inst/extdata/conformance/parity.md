@@ -12,13 +12,13 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | `hy` | `as_hy` | r | 35 |
 | `hy_reverse` | `hy_reverse` | r | 11 |
 | `is.hy` | `is_hy` | r | 14 |
-| `align_names` | `align_names` | r | 24 |
+| `align_names` | `align_names` | r | 25 |
 | `hydroloom_name_definitions` | `name_definitions` | r | 1 |
 | `hydroloom_names` | `register_names` | r | 2 |
 | `hy_network_type` | `representation` | r | 19 |
 | `hy_capabilities` | `capabilities` | r | 24 |
 | `is_dendritic` | `is_dendritic` | r | 25 |
-| `add_toids` | `add_toids` | r | 31 |
+| `add_toids` | `add_toids` | r | 32 |
 | `make_index_ids` | `make_index_ids` | r | 31 |
 | `check_hy_graph` | `check_hy_graph` | r | 44 |
 | `sort_network` | `sort_network` | r | 64 |

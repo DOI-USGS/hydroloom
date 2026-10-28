@@ -130,7 +130,7 @@
           "$ref": "#/definitions/languages"
         },
         "raises": {
-          "description": "A condition the call must signal (S-6 boundary cases). An error case writes and compares no layer; a warning case still compares its layer.",
+          "description": "A condition the call must signal (S-6 boundary cases). The case asserts the condition and writes and compares no layer (D3-182); a warning case with raises_key must warn with that key's r_text.",
           "type": "string",
           "enum": ["error", "warning"]
         },
@@ -142,6 +142,13 @@
         "geometry": {
           "description": "Keep the geometry column in the expectation layer to check pass-through (G-14). Absent or false: the layer stores attributes only and the fixture holds the geometry (S-5).",
           "type": "boolean"
+        },
+        "columns": {
+          "description": "The columns, by result name, the expectation layer keeps (D3-163): a real-network case keeps id, toid, and the columns the function writes. Absent: every column.",
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+          "minItems": 1,
+          "uniqueItems": true
         }
       },
       "dependencies": {
@@ -149,6 +156,10 @@
         "prepare": ["fixture"]
       },
       "allOf": [
+        {
+          "if": { "required": ["raises"] },
+          "then": { "not": { "anyOf": [{ "required": ["columns"] }, { "required": ["geometry"] }] } }
+        },
         {
           "if": {
             "anyOf": [

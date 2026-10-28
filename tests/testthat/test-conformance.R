@@ -19,3 +19,19 @@ for (cc in cases) {
     expect_identical(run_conformance_case(cc$case, cc$fn_entry), character())
   })
 }
+
+# Write mode: delete layers no case stores and VACUUM what changed (D3-163,
+# D3-182).
+if (write_expected_mode() && length(cases)) {
+  test_that("write mode leaves only stored layers in the expectation files", {
+    manifest <- read_conformance_yaml(file.path(conformance_dir(), "manifest.yaml"))
+
+    tidy_expected(manifest)
+
+    stored <- vapply(Filter(function(x) is.null(x$raises), manifest$cases), `[[`, "", "id")
+    layers <- unlist(lapply(list.files(file.path(conformance_dir(), "expected"),
+      pattern = "\\.gpkg$", full.names = TRUE), function(p) sf::st_layers(p)$name))
+
+    expect_identical(setdiff(layers, stored), character())
+  })
+}

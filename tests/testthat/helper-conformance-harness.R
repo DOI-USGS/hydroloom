@@ -41,7 +41,9 @@ id_to_text <- function(x) {
 }
 
 # Coerce one column to the R type of its vocabulary type (I-15 table).
-# id_cols names extra identifier columns that are not vocabulary terms.
+# id_cols names extra identifier columns that are not vocabulary terms. A flag
+# column keeps its type, so logical from hy() and a number passed through
+# compare as stored (D3-171).
 coerce_column <- function(x, name, id_cols = character()) {
 
   if (name %in% id_cols) return(id_to_text(x))
@@ -51,7 +53,7 @@ coerce_column <- function(x, name, id_cols = character()) {
 
   switch(type,
     id = id_to_text(x),
-    flag = as.logical(x),
+    flag = x,
     count = ,
     code = whole_to_integer(x),
     text = as.character(x),
@@ -236,6 +238,10 @@ to_layer <- function(result, returns, args = list()) {
     stop("unknown returns kind: ", returns))
 }
 
+# Expectation files written to or with a layer deleted in this session; write
+# mode VACUUMs them at the end so freed pages leave the file (D3-163).
+touched_expected <- new.env()
+
 write_layer <- function(layer, path, name) {
 
   dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
@@ -243,8 +249,46 @@ write_layer <- function(layer, path, name) {
   exists <- file.exists(path) && name %in% sf::st_layers(path)$name
 
   sf::st_write(layer, path, layer = name, delete_layer = exists, quiet = TRUE)
+  assign(normalizePath(path), TRUE, envir = touched_expected)
 
   invisible(path)
+}
+
+delete_layer <- function(path, name) {
+
+  sf::st_delete(path, layer = name, quiet = TRUE)
+  assign(normalizePath(path), TRUE, envir = touched_expected)
+
+  invisible(path)
+}
+
+# Write mode, after every case has run: delete each expectation layer no
+# manifest case stores (an error or warning case, or a case gone from the
+# manifest), then VACUUM the files touched. VACUUM goes through GDAL's
+# ogrinfo, which opens the file for update (GDAL >= 3.7).
+tidy_expected <- function(manifest, dir = conformance_dir()) {
+
+  stores <- Filter(function(x) is.null(x$raises), manifest$cases)
+  owner_file <- vapply(stores, function(x)
+    if (is.null(x$expected)) paste0(x[["function"]], ".gpkg") else x$expected, "")
+  owner_id <- vapply(stores, `[[`, "", "id")
+
+  for (path in list.files(file.path(dir, "expected"), pattern = "\\.gpkg$", full.names = TRUE)) {
+    stale <- setdiff(sf::st_layers(path)$name, owner_id[owner_file == basename(path)])
+
+    for (l in stale) {
+      message("conformance ", l, ": stale layer deleted from ", basename(path))
+      delete_layer(path, l)
+    }
+  }
+
+  for (path in Filter(file.exists, ls(touched_expected))) {
+    tryCatch(sf::gdal_utils("ogrinfo", path, options = c("-q", "-sql", "VACUUM")),
+      error = function(e) message("VACUUM of ", basename(path), " failed: ", conditionMessage(e)))
+    rm(list = path, envir = touched_expected)
+  }
+
+  invisible(NULL)
 }
 
 read_layer <- function(path, name) {
@@ -440,12 +484,40 @@ representation_keys <- function() {
   names(Filter(function(r) identical(r$r_class, "hydroloom_representation_error"), remedies))
 }
 
+# Regular expressions matching a remedies.json key's R text, one per r_text
+# entry: the text literal, each <placeholder> a wildcard (D3-182). NULL for a
+# key remedies.json does not hold.
+remedy_patterns <- function(key) {
+
+  remedies <- jsonlite::read_json(
+    system.file("extdata", "remedies.json", package = "hydroloom"))$remedies
+
+  if (!key %in% names(remedies)) return(NULL)
+
+  vapply(unlist(remedies[[key]]$r_text), function(t) {
+    t <- gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", t)
+    paste0("^", gsub("<[^<>]+>", "(?s:.*)", t), "$")
+  }, "", USE.NAMES = FALSE)
+}
+
+# TRUE when any warning message matches any pattern of the key.
+warning_matches_key <- function(messages, key) {
+
+  patterns <- remedy_patterns(key)
+  if (is.null(patterns)) return(FALSE)
+
+  any(vapply(patterns, function(p) any(grepl(p, messages, perl = TRUE)), TRUE))
+}
+
 # Calls a case's function. Without `raises`, warnings and messages are
 # suppressed; they are not part of the expectation layer. With `raises`
 # ("error" or "warning", S-6) the condition is captured and asserted with a
-# testthat expectation; an error case whose `raises_key` (a remedies.json key,
-# A-10) is a representation error must raise hydroloom_representation_error.
-# Returns list(result, raised), raised TRUE for an error case.
+# testthat expectation, and the case has no layer (D3-182). An error case
+# whose `raises_key` (a remedies.json key, A-10) is a representation error
+# must raise hydroloom_representation_error. A warning case with a
+# `raises_key` must raise a warning whose message matches that key's r_text,
+# placeholders as wildcards; without one, any warning passes.
+# Returns list(result, raised), raised TRUE for an error or warning case.
 call_case_function <- function(fun, call_args, raises = NULL, id = "", raises_key = NULL) {
 
   if (is.null(raises))
@@ -468,21 +540,29 @@ call_case_function <- function(fun, call_args, raises = NULL, id = "", raises_ke
     return(list(result = NULL, raised = TRUE))
   }
 
-  warned <- FALSE
-  result <- withCallingHandlers(suppressMessages(do.call(fun, call_args)),
+  warnings <- character()
+  withCallingHandlers(suppressMessages(do.call(fun, call_args)),
     warning = function(w) {
-      warned <<- TRUE
+      warnings <<- c(warnings, conditionMessage(w))
       invokeRestart("muffleWarning")
     })
 
-  testthat::expect(warned, paste0("case ", id, " was expected to warn"))
+  if (is.null(raises_key)) {
+    testthat::expect(length(warnings) > 0, paste0("case ", id, " was expected to warn"))
+  } else {
+    testthat::expect(length(warnings) > 0 && warning_matches_key(warnings, raises_key),
+      paste0("case ", id, " was expected to warn ", raises_key, "; it warned: ",
+        if (length(warnings)) paste(warnings, collapse = " | ") else "nothing"))
+  }
 
-  list(result = result, raised = FALSE)
+  list(result = NULL, raised = TRUE)
 }
 
 # Runs one manifest case. In write mode the expectation layer is written
 # first when it is missing or any value changed from the previous layer; a
-# change is reported with message(). A case with `raises: error` asserts the error and has no layer.
+# change is reported with message(). A case with `raises` ("error" or
+# "warning") asserts the condition and has no layer (D3-182); write mode's
+# tidy_expected() deletes a layer left from before.
 # A case with no fixture calls the function with args only; a manifest
 # function that names a non-function export is read by value and takes no
 # fixture, args, or raises (D3-12). Returns the comparison problems; empty
@@ -516,6 +596,16 @@ run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
   # Attributes only unless the case checks geometry pass-through (S-5, G-14,
   # D3-79): the fixture holds the geometry.
   if (!isTRUE(case$geometry) && inherits(layer, "sf")) layer <- sf::st_drop_geometry(layer)
+
+  # Only the listed columns when the case names them (D3-163): a real-network
+  # layer keeps id, toid, and what the function writes.
+  if (!is.null(case$columns)) {
+    keep <- unlist(case$columns)
+    absent <- setdiff(keep, names(layer))
+    if (length(absent)) return(paste("listed column not in the result:", absent))
+
+    layer <- layer[, keep, drop = FALSE]
+  }
 
   id_problems <- if (fn != "align_names") id_type_problems(result) else character()
 
