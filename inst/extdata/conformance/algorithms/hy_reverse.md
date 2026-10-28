@@ -1,8 +1,8 @@
 ---
 requires:
   # Renaming reads names, not topology. R runs on any object hy() returned:
-  # hy_topo, hy_leveled, hy_node, a plain hy with neither toid nor nodes, and,
-  # with hy_reverse.hy_flownetwork (D3-16), hy_flownetwork. Python needs
+  # hy_topo, hy_leveled, hy_node, a plain hy with neither toid nor nodes, and
+  # an hy_flownetwork carrying orig_names (D3-16, D3-64, D3-170). Python needs
   # nothing on the frame (I-14). Restored to [any] by D3-63.
   pattern: [any]
   columns: []
@@ -24,7 +24,7 @@ Returns the same table, same class as the input after its hydroloom subclasses a
 
 ## Preconditions
 
-R: `x` must pass `is.hy(x)`, which needs the `orig_names` attribute and either the `hy` class or the `hy_flownetwork` class (D3-64). An object that fails stops with the `not_hy_object` remedy, after `is.hy()` emits its own message for the missing class or attribute; the stop carries the condition class `hydroloom_representation_error` (A-10, D3-90). A table that `hy()` routed to `hy_flownetwork` (repeated `id` with `toid`, I-6) does not inherit `hy` but carries `orig_names`, and `hy_reverse.hy_flownetwork` restores its names (D3-16). A plain `hy` table (an `id` with neither `toid` nor `fromnode`/`tonode`) also passes although A-2 gives it no pattern name; `requires.pattern` is `[any]` for these reasons (D3-63).
+R: `x` must pass `is.hy(x)`, which needs the `orig_names` attribute and either the `hy` class or the `hy_flownetwork` class (D3-64). An object that fails stops with the `not_hy_object` remedy, after `is.hy()` emits its own message for the missing class or attribute; the stop carries the condition class `hydroloom_representation_error` (A-10, D3-90). A table that `hy()` routed to `hy_flownetwork` (repeated `id` with `toid`, I-6) does not inherit `hy` but carries `orig_names`, so it passes `is.hy()` and `hy_reverse()` restores its names (D3-16). `hy_reverse()` is a plain function, not an S3 generic; accepting `hy_flownetwork` in `is.hy()` is the whole of that behavior (D3-170). A plain `hy` table (an `id` with neither `toid` nor `fromnode`/`tonode`) also passes although A-2 gives it no pattern name; `requires.pattern` is `[any]` for these reasons (D3-63).
 
 Python: any frame. No state rides on the frame (I-14), so the inverse mapping comes from `source` or from `register_names()`. An unknown `source` raises `KeyError` with the `unknown_alias_source` remedy (A-10, vocabulary problems). Until the naming block of M5 (ROADMAP M5 "Do not touch"), only the private `_hy_reverse(out, names)` exists, taking the local mapping `as_hy` returned (A-17).
 
@@ -42,7 +42,7 @@ The output is the input with every column that `hy()` renamed carrying its origi
 
 Python: build the inverse map (hydroloom name to source alias) from the vocabulary for `source`, or from the registry, and rename with `DataFrame.rename(columns=...)`, returning a new frame (A-8). Geometry follows `GeoDataFrame.rename`, which keeps the active geometry when the column is renamed.
 
-Tie rules: none apply. Each hydroloom name maps to at most one original name, because `hy()` renames one input column to each hydroloom name; in the vocabulary each term carries at most one alias per source tag (S-2). Nothing is sorted, so D-1 and D-3 do not apply; no sentinel (K-4); everything is above the kernel boundary (K-1) and no CSR index is built.
+Tie rules: none apply. Each hydroloom name maps to at most one original name, because `hy()` renames one input column to each hydroloom name; in the vocabulary each term carries at most one alias per source tag (S-2). Nothing is sorted, so no order rule is needed; no sentinel (K-4); everything is above the kernel boundary (K-1) and no CSR index is built.
 
 ## Postconditions
 
@@ -70,12 +70,13 @@ One flowline: returns the row with its names restored; on `single_flowline.gpkg`
 | input is not an hy object (R) | the table did not come from `hy()` | all | call `hy_reverse()` on the object `hy()` returned | `not_hy_object` |
 | unknown alias source (Python) | `source` is not one of the vocabulary's alias sources; registering the mapping with `register_names()` is the alternative to a vocabulary source | none | pass one of `nhdplus`, `nhdplushr`, `3dhp`, `hydrofabric` | `unknown_alias_source` |
 
-The `not_hy_object` row states the text after D3-16, with the flownetwork clause removed as D3-144 directs; `remedies.json` carries that clause until the maintainer edits the entry (D3-153).
+The `not_hy_object` row states the text after D3-16, with the flownetwork clause removed as D3-144 directs; `remedies.json` carries that clause until the maintainer edits the entry in the M6 review (D3-153, D3-178).
 
 ## References
 
 - `R/hy.R` (`hy_reverse()`, `hy()`, `is.hy()`); `R/00_hydroloom.R` (`hy_classes`); `R/align_names.R`.
 - `inst/extdata/hy_vocab.json`, the `aliases` and their `source` tags (S-2).
+- NHDPlus Version 2 User Guide (McKay and others, 2012): the NHDPlusV2 attribute names (`COMID`, `ToCOMID`, `StartFlag`, `TerminalFl`) that the `nhdplus` aliases restore, and the 0 written at a terminal that the worked example follows.
 - SPEC I-5, I-6, I-14, A-4, A-5, A-8, A-9, A-16, A-17.
 - USGS, USGS hydrofabric data theme, section "Hydrofabric datasets", which describes NHDPlusV2, NHDPlusHR, and 3DHP, the datasets whose attribute names the `nhdplus`, `nhdplushr`, and `3dhp` alias sets restore: https://water.usgs.gov/themes/hydrofabric/.
 
@@ -103,3 +104,4 @@ Fixture `fixtures/hy_reverse_renamed.gpkg`, aspatial, three rows:
 - 2026-10-25, suite 0.1.0: review round (H-01 to H-08). `requires.pattern` narrowed from `[any]` to `[hy_topo, hy_node]`, what R accepts (D3-16, D3-42); edge cases, the `not_hy_object` remedy, and References revised; a divergence case added.
 - 2026-10-27, suite 0.1.0: M3 close. D3-16 (pre-M5 R change set, D3-148): `hy_reverse.hy_flownetwork` restores names on a table `hy()` routed to `hy_flownetwork`, and with D3-64 `is.hy()` returns `TRUE` for an `hy_flownetwork` carrying `orig_names`; Preconditions, Postconditions, and Edge cases state this behavior, and `requires.pattern` returns to `[any]` (D3-63). D3-144: the `not_hy_object` row drops the flownetwork clause. A-10 (ROADMAP §4, M3; D3-90): the classed stop has landed and is stated as current. M-18 (pre-M5 R set, stated in `hy.md`): `hy()` converts 1/0 flag columns to logical, so the round trip returns logical where 1/0 arrived. Remedies aligned to `remedies.json` (D3-146). Worked example states the NHDPlusV2 terminal convention (H-09).
 - 2026-10-28, suite 0.1.0: M3 close unit 2 (H-10, H-11). The Remedies note ties the `remedies.json` flownetwork clause to D3-153; Edge cases state that `to_flownetwork()` output carries no `orig_names` and stops with `not_hy_object`.
+- 2026-10-28, suite 0.1.0: M3 close run 2, unit 6 sweep. D3-170: the front matter and Preconditions state that `hy_reverse()` is a plain function and that `is.hy()` accepting an `hy_flownetwork` with `orig_names` is what lets it restore names; no behavior change. D3-177 (decision 7a): the tie-rule sentence drops the D-1 and D-3 anchors, since the function sorts nothing. H-13: References add the NHDPlusV2 User Guide. The Remedies note ties the `remedies.json` edit to the M6 review (D3-178).
