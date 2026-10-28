@@ -112,8 +112,9 @@ column's values must be read to confirm they are strings.
   flownetwork pattern I-6 treats as a representation, not an error. R `FALSE` on the
   table as read, with the message "no hy class attribute" unless `silent`, and `TRUE`
   after `hy()`, since the result is an `hy_flownetwork` carrying `orig_names` (D3-64).
-  Python `True` on `loop.gpkg` as read: its columns are in hydroloom names and its
-  identifiers are strings.
+  Python `False` on `loop.gpkg` as read, by condition 2: its `id` and `toid` are
+  strings but its `fromnode` and `tonode` are numeric. Dropping the flownetwork
+  condition (D3-64) does not change this value.
 - Duplicated row (the same `id`/`toid` pair listed twice, `duplicated_edge.gpkg`): S-6
   says this raises, which M3 does not apply (D3-46, D3-57). `is.hy` reads no rows and
   does not raise; `hy()` does not raise either and returns `hy_flownetwork`, so R is
@@ -121,7 +122,8 @@ column's values must be read to confirm they are strings.
   fixture's identifiers are integers.
 - Missing `toid`: accepted; R `TRUE` on an `hy` object whose `toid` holds `NA`.
 - Zero-row table (`empty_network.gpkg`): R `FALSE` as read, `TRUE` after `hy()`.
-  Python may return `True` (I-11).
+  Python `False` on `empty_network.gpkg` by condition 2, since its identifiers are
+  integers; a zero-row table with string identifier columns is `True` (I-11).
 - Not a table (`NULL`, a list): `FALSE`, with the class message unless `silent`.
 - Missing weight, zero-length line, empty name: not read; the result follows the class
   rule alone.
@@ -178,8 +180,13 @@ object altered after `hy()`, stays in testthat as an interface test.
   after `hy()` is case `is_hy_after_hy` (D3-84). No behavior change.
 - 2026-10-28, suite 0.1.0: M3 close. D3-17: Python `is_hy(network)` has no `silent`,
   as A-16 lists it; the 2026-10-25 gap is closed. D3-64 with D3-16 (pre-M5 R change set,
-  D3-148; no ROADMAP §4 row, since D3-16 is recorded as additive with a NEWS line):
-  `is.hy()` returns `TRUE` for an `hy_flownetwork` carrying `orig_names`, so
+  D3-148): `is.hy(hy(x))` on a divergent network changes from `FALSE` to `TRUE`, a
+  changed result recorded by NEWS (D3-64), with its ROADMAP §4 row proposed in D3-151;
+  D3-16's additivity covers only `hy_reverse()`. `is.hy()` returns `TRUE` for an
+  `hy_flownetwork` carrying `orig_names`, so
   `hy_reverse()` can run on it; Definition, Algorithm, Postconditions, and Edge cases
   state this, and Python drops its flownetwork condition to match (D3-64 over D3-18).
   D3-19: the two R messages get no remedies keys, stated in Remedies.
+- 2026-10-28, suite 0.1.0: M3 close, unit 2 fix (H-01, H-02, H-04). Edge cases give
+  Python `False` on `loop.gpkg` and `empty_network.gpkg` by condition 2; the D3-64 entry
+  above records the `is.hy` flip as a changed result and cites D3-151. No behavior change.
