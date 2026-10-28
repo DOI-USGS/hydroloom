@@ -10,7 +10,7 @@ requires:
 ## Signature
 
 R: `is_dendritic(x, validate_data = TRUE)`. Python: `is_dendritic(network, *,
-validate_data=True)` (ROADMAP §2; A-16 puts `network` first, A-9 keeps the R argument).
+validate_data=True)` (SPEC A-16; A-9 keeps the R argument).
 
 | argument | type | default |
 | --- | --- | --- |
@@ -162,3 +162,5 @@ expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FA
 - 2026-10-26, suite 0.1.0: review round. Worked example moved from the duplicated edge
   to a divergence; divergence and duplicated edge separated in Edge cases, with the S-6
   departure stated (D3-57); return-divergence and NHDPlusHR cases added.
+- 2026-10-27, suite 0.1.0: M3 close. SPEC A-16 now lists `is_dendritic` with the
+  signature above (D3-35); Signature cites it. No binding change.
