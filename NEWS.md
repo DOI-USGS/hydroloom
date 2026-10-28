@@ -49,23 +49,19 @@ hydroloom (development version)
 - `check_hy_graph()` now finds every cycle in a network, not only two
   flowlines that point at each other: a cycle of three or more flowlines
   is now reported. It returns the rows on a cycle in input order with
-  `row`, `component` (which cycle, numbered from 1), and `reciprocal`
-  (`TRUE` for a cycle of two flowlines), in place of the `toid_check`
-  column ordered by `toid`. The `loop_check` argument is removed.
-  `sort_network()`, `add_topo_sort()`, `make_index_ids()`,
+  `component` (which cycle, numbered from 1) and `reciprocal` (`TRUE`
+  for a cycle of two flowlines), in place of the `toid_check` column
+  ordered by `toid`; `id` identifies the rows. The `loop_check` argument
+  is removed. `sort_network()`, `add_topo_sort()`, `make_index_ids()`,
   `navigate_network_dfs()`, and other functions that build their index
-  with `make_index_ids()` now stop on any cycle in a network with unique
-  `id`, where a longer cycle used to warn and drop rows; the error says
-  the flowlines drain back into themselves and points to
-  `check_hy_graph()`. A network with repeated `id` is sorted as before.
-- `sort_network()`, `add_topo_sort()`, `make_index_ids()`, and
-  `navigate_network_dfs()` now also stop on a cycle in a network with
-  repeated `id` (an `hy_flownetwork`), where they used to warn that
-  features were missed and return only the rows that drain to an outlet.
-  The "no outlets detected" and "some features missed in sort" warnings
-  are gone: only a cycle caused them, and a cycle now stops first.
-  `check_hy_graph()` no longer adds a `row` column to the rows on a
-  cycle; `id` identifies them.
+  with `make_index_ids()` now stop on any cycle, with unique or repeated
+  `id`; the error says the flowlines drain back into themselves and
+  points to `check_hy_graph()`. With unique `id` a longer cycle used to
+  warn and drop rows; with repeated `id` (an `hy_flownetwork`) they used
+  to warn that features were missed and return only the rows that drain
+  to an outlet. The "no outlets detected" and "some features missed in
+  sort" warnings are gone: only a cycle caused them, and a cycle now
+  stops first.
 - Rows returned by `check_hy_graph(divergence_check = TRUE)` no longer
   carry a `row` column; `id` identifies them, as it does for the rows on
   a cycle.

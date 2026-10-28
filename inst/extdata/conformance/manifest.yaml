@@ -48,7 +48,6 @@ functions:
   check_hy_graph:
     requires: algorithms/check_hy_graph.md#requires
     returns: frame
-    key: [row]
   sort_network:
     requires: algorithms/sort_network.md#requires
     returns: frame
@@ -66,7 +65,8 @@ functions:
 cases:
   # hy ------------------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
-  # changes_with i2 = identifier ingest (ROADMAP §4, M3); python_omitted =
+  # changes_with i2 = the layer was set by identifier ingest (ROADMAP §4, M3),
+  # which has landed; python_omitted =
   # uses clean or add_topo, which as_hy omits (A-5).
 
   # changes_with: i2 (fromnode/tonode double -> integer)
@@ -208,8 +208,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: i2; current R: vctrs cast error in the toid fill
-  # (outlet_fill_type_mismatch); post-change both character, fill "", returns
+  # changes_with: i2; id and toid become character together and the outlet
+  # toid is "" (I-2); R 1.3.0 stopped with a vctrs cast error in the toid fill
+  # (outlet_fill_type_mismatch)
   - id: hy_id_integer_toid_character
     function: hy
     fixture: hy_id_integer_toid_character.gpkg
@@ -741,7 +742,7 @@ cases:
     generator: [r]
 
   # shared: true; S-6 duplicated row (1 -> 2 twice); FALSE as read (TRUE after
-  # hy() once D3-64 lands); Python False by condition 2 (integer ids); no raise
+  # hy(), D3-64); Python False by condition 2 (integer ids); no raise
   # (D3-46, D3-57)
   - id: is_hy_boundary_duplicated_edge
     function: is.hy
@@ -1318,10 +1319,9 @@ cases:
 
   # hy_capabilities -----------------------------------------------------------
   # R reads the class hy() stamps, so most cases apply hy() through prepare
-  # (D3-11). Today's return is a named logical vector, stored through the frame
-  # converter as name, value in vector order (D3-13). Every case carries
-  # changes_with: A-4 (D3-14): the A-4 step regenerates the same case ids as
-  # (function, available, via) frame layers. order: exact pins code-table
+  # (D3-11). The return is a (function, available, via) frame (A-4). Every
+  # case carries changes_with: A-4 (D3-14), the change that regenerated its
+  # layer from the named logical vector R 1.3.0 returned. order: exact pins code-table
   # order (D-14). Cases without prepare stay R only: R reads a class, Python
   # reads columns. Cases passing include_conversions stay R only: Python
   # capabilities(network) takes no such argument (D3-31). No case raises.
@@ -1546,8 +1546,8 @@ cases:
     generator: [r]
 
   # changes_with: A-4; real non-dendritic network (repeated id, distinct toid);
-  # hy_flownetwork; navigate_network_dfs and make_index_ids TRUE today, A-4
-  # adds sort_network, add_topo_sort, check_hy_graph (D3-42)
+  # hy_flownetwork; navigate_network_dfs, make_index_ids, sort_network,
+  # add_topo_sort, and check_hy_graph available (A-4 added the last three, D3-42)
   - id: hy_capabilities_sort_network_dups
     function: hy_capabilities
     fixture: sort_network_dups.gpkg
@@ -1877,7 +1877,8 @@ cases:
 
   # add_toids -----------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
-  # changes_with i2 = identifier ingest (ROADMAP §4, M3): toid takes id's type,
+  # changes_with i2 = the layer was set by identifier ingest (ROADMAP §4, M3,
+  # landed): toid takes id's type,
   # integer outlet 0L; D3-56 / D3-72 / D3-38 (ROADMAP §4, M3, landed): missing
   # divergence and broken divergence coding raise, a missing tonode is a
   # terminal in its input position, flownetwork input raises
@@ -1920,7 +1921,7 @@ cases:
     generator: [r]
     columns: [COMID, toid]
 
-  # changes_with: i2; identifiers beyond 32 bits; post-change id and toid
+  # changes_with: i2; identifiers beyond 32 bits; id and toid
   # character, outlet ""; one three-way divergence (node 15000500012351:
   # 15000500017703 main, 15000500017704 and 15000500073501 minor)
   - id: add_toids_nhdplushr
@@ -2272,11 +2273,10 @@ cases:
 
   # make_index_ids ------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
-  # changes_with i2 = identifier ingest (ROADMAP §4, M3); d8 = SCC always in
-  # check_hy_graph (ROADMAP §4, M3); d5 = neighbor order by identifier byte
-  # order (ROADMAP §4, M3, D3-40); from_upmain = "from" mode upmain joined per
-  # edge (inside the D-5 row, D3-43); D3-41 = cycle check on the flownetwork
-  # route; D3-46 = typed zero-row output. Every case is order: ignore; position carries
+  # changes_with i2 = the layer was set by identifier ingest (ROADMAP §4, M3,
+  # landed). The d8, d5, from_upmain, D3-41, and D3-46 tags were dropped when
+  # those changes landed; notes cite the decision instead. Every case is
+  # order: ignore; position carries
   # the neighbor order (S-7). A hy_topo with downmain but no upmain in mode
   # "both" is not a case: graph_to_layer cannot put main on one direction
   # only, so such inputs are split into "to" and "from" cases.
@@ -2390,8 +2390,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: i2; identifiers beyond 32 bits; double today, character
-  # after I-2; 2690 edges
+  # changes_with: i2; identifiers beyond 32 bits, character (I-2); 2690 edges
   - id: make_index_ids_nhdplushr
     function: make_index_ids
     fixture: nhdplushr.gpkg
@@ -2544,7 +2543,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # ids 5 and 6 reference each other; stops today and after D-8
+  # ids 5 and 6 reference each other; stops (D-8)
   - id: make_index_ids_reciprocal_pair
     function: make_index_ids
     fixture: reciprocal_pair.gpkg
@@ -2556,7 +2555,7 @@ cases:
     raises: error
     raises_key: network_cycle
 
-  # id 3 toid 3; the reciprocal join catches it today; D-8 keeps it a cycle
+  # id 3 toid 3; a cycle of one flowline; stops (D-8)
   - id: make_index_ids_self_loop
     function: make_index_ids
     fixture: self_loop.gpkg
@@ -2626,8 +2625,9 @@ cases:
     raises: error
     raises_key: needs_topo
 
-  # changes_with: i2; integer id, character toid; warns id_toid_type_mismatch
-  # then data.table join error today; after I-2 pairing returns (1,0,2)
+  # changes_with: i2; integer id, character toid; I-2 pairing makes both
+  # character and returns (1,0,2), no warning; R 1.3.0 warned
+  # id_toid_type_mismatch and then failed in a data.table join
   - id: make_index_ids_type_mismatch
     function: make_index_ids
     fixture: make_index_ids_type_mismatch.gpkg
@@ -2643,12 +2643,12 @@ cases:
 
   # check_hy_graph ------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
-  # changes_with D-8 = today's value changes at the D-8 change (ROADMAP §4,
-  # M3); the loop_check cases are deleted then, not regenerated. shared =
+  # changes_with D-8 = the layer was set by the D-8 change (ROADMAP §4, M3,
+  # landed); the loop_check cases were deleted with it, not regenerated. shared =
   # Python gives the same value once ported. python_omitted = the R value is
   # an R-only behavior.
 
-  # shared. Rows 5, 6 (ids 5, 6), component 1, reciprocal TRUE; id 7 not
+  # shared. ids 5, 6, component 1, reciprocal TRUE; id 7 not
   # returned.
   # note: the cycle result carries no row column (D3-54)
   - id: check_hy_graph_reciprocal_pair
@@ -2680,10 +2680,9 @@ cases:
     generator: [r]
 
   # shared. Braced GUID ids, flownetwork. 6 rows, two three-flowline cycles;
-  # component 1 = {3C365B59..} row 210, {782C5B65..} row 383, {DB8B740D..}
-  # row 721; component 2 = {4E7E9D38..} row 266, {B3F20B3F..} row 584,
-  # {E49CFC31..} row 742; reciprocal FALSE. Row positions are input order,
-  # not a column.
+  # component 1 = {3C365B59..}, {782C5B65..}, {DB8B740D..}; component 2 =
+  # {4E7E9D38..}, {B3F20B3F..}, {E49CFC31..}; reciprocal FALSE; rows in input
+  # order.
   # note: the cycle result carries no row column (D3-54)
   - id: check_hy_graph_loop2
     function: check_hy_graph
@@ -2693,8 +2692,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. S-6 tie case for component numbering: input rows 1, 3, 4, 5, 6,
-  # 8, 9; component 1 = {10, 11} reciprocal TRUE, 2 = {9, 12} TRUE, 3 = {20,
+  # shared. S-6 tie case for component numbering: every row but ids 1 and 2,
+  # in input order; component 1 = {10, 11} reciprocal TRUE, 2 = {9, 12} TRUE, 3 = {20,
   # 21, 22} FALSE (least identifier as text "10" < "12" < "20").
   # note: the cycle result carries no row column (D3-54)
   - id: check_hy_graph_two_cycles_byte_order
@@ -2707,8 +2706,8 @@ cases:
 
   # shared. D-7 pair of check_hy_graph_two_cycles_byte_order: the acyclic
   # rows (1 -> 9, 2 -> 0) move and the cycle rows keep their relative order,
-  # so the layer equals the partner's in order (the key [row] is absent from
-  # the cycle layer, so order: ignore has no key to sort on)
+  # so the layer equals the partner's in order (the layer has no key, so
+  # order stays exact)
   # note: the cycle result carries no row column (D3-54)
   - id: check_hy_graph_two_cycles_byte_order_shuffled
     function: check_hy_graph
@@ -2718,9 +2717,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Repeated id 6 with an edge out of the cycle (6 -> 7): input rows
-  # 3, 5, 6, 7 (2->4, 4->5, 5->6, 6->2), component 1, reciprocal FALSE; row
-  # 8 (6->7) not returned.
+  # shared. Repeated id 6 with an edge out of the cycle (6 -> 7): edges
+  # 2->4, 4->5, 5->6, 6->2 in input order, component 1, reciprocal FALSE; the
+  # edge 6->7 not returned.
   # note: the cycle result carries no row column (D3-54)
   - id: check_hy_graph_flownetwork_cycle
     function: check_hy_graph
@@ -2911,7 +2910,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Rows 2, 3, divergence_issue "node without exactly one divergence
+  # shared. ids 2, 3, divergence_issue "node without exactly one divergence
   # == 1"; unchanged by D-8.
   - id: check_hy_graph_divergence_miscoded
     function: check_hy_graph
@@ -2923,7 +2922,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Rows 2, 3, divergence_issue "divergence_fraction does not sum to
+  # shared. ids 2, 3, divergence_issue "divergence_fraction does not sum to
   # 1 at a node".
   - id: check_hy_graph_divergence_fraction_short
     function: check_hy_graph
@@ -2935,7 +2934,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. 1 row, row 2 (id 2, divergence 1), divergence_issue "divergence
+  # shared. 1 row, id 2 (divergence 1), divergence_issue "divergence
   # of 1 or 2 where flow does not split"; unchanged by D-8.
   - id: check_hy_graph_divergence_minor_absent
     function: check_hy_graph
@@ -2989,7 +2988,7 @@ cases:
 
   # test_check_hy_graph.R migration (M2) --------------------------------------
 
-  # shared. Reciprocal pair 4 <-> 9 between two chains; input rows 4 and 8,
+  # shared. Reciprocal pair 4 <-> 9 between two chains; ids 4 and 9,
   # component 1, reciprocal TRUE.
   # note: the cycle result carries no row column (D3-54)
   - id: check_hy_graph_reciprocal_chains
@@ -3035,7 +3034,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Row 3, divergence_issue "divergence == 0 at a divergence".
+  # shared. id 3, divergence_issue "divergence == 0 at a divergence".
   - id: check_hy_graph_divergence_at_split
     function: check_hy_graph
     fixture: divergence_at_split.gpkg
@@ -3046,7 +3045,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Row 4, divergence_issue "... where flow does not split".
+  # shared. id 4, divergence_issue "... where flow does not split".
   - id: check_hy_graph_divergence_flagged_no_split
     function: check_hy_graph
     fixture: divergence_flagged_no_split.gpkg
@@ -3057,7 +3056,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Row 4, divergence_issue "divergence not in {0, 1, 2}".
+  # shared. id 4, divergence_issue "divergence not in {0, 1, 2}".
   - id: check_hy_graph_divergence_na
     function: check_hy_graph
     fixture: divergence_na.gpkg
@@ -3090,7 +3089,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. fraction_tol 1e-12; rows 2, 3, "does not sum to 1".
+  # shared. fraction_tol 1e-12; ids 2, 3, "does not sum to 1".
   - id: check_hy_graph_divergence_fraction_near_tight_tol
     function: check_hy_graph
     fixture: divergence_fraction_near.gpkg
@@ -3102,7 +3101,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Row 3 reported with "divergence_fraction not in [0, 1]".
+  # shared. ids 2, 3 "does not sum to 1"; id 3 also "divergence_fraction not
+  # in [0, 1]".
   - id: check_hy_graph_divergence_fraction_over
     function: check_hy_graph
     fixture: divergence_fraction_over.gpkg
@@ -3113,7 +3113,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Row 3, divergence_issue "... takes all flow".
+  # shared. id 3, divergence_issue "... takes all flow".
   - id: check_hy_graph_divergence_fraction_all_flow
     function: check_hy_graph
     fixture: divergence_fraction_all_flow.gpkg
@@ -3137,16 +3137,15 @@ cases:
 
   # sort_network --------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
-  # changes_with D-4 = sibling and outlet order by identifier byte order
-  # (ROADMAP §4, M3), so the captured order changes; D-8 = SCC cycle check on
-  # hy_topo and hy_flownetwork (D3-41), a warning or partial result becomes
-  # an error; I-2 = identifier
-  # ingest, types change and values compared as text do not. "post" in a
-  # note gives the post-change outcome. A warning case still compares its
-  # layer.
+  # changes_with names the change that set the layer (ROADMAP §4, M3; all
+  # have landed): D-4 = sibling and outlet order by identifier byte order;
+  # D-8 = SCC cycle check on hy_topo and hy_flownetwork (D3-41), where a
+  # warning or partial result became an error; I-2 = identifier ingest, types
+  # change and values compared as text do not. "R 1.3.0" in a note gives the
+  # outcome before the change. A warning case still compares its layer.
 
-  # changes_with: D-4; S-6; today 7, 2, 100, 4, 30 (reverse input); post 100,
-  # 2, 30, 4, 7
+  # changes_with: D-4; S-6; 100, 2, 30, 4, 7; R 1.3.0 gave 7, 2, 100, 4, 30
+  # (reverse input)
   - id: sort_network_all_terminals
     function: sort_network
     fixture: all_terminals.gpkg
@@ -3230,8 +3229,8 @@ cases:
     raises: error
     raises_key: needs_topo
 
-  # changes_with: D-4; worked example; today 30, 2, 10, 4, 5; post 10, 2, 30,
-  # 4, 5
+  # changes_with: D-4; worked example; 10, 2, 30, 4, 5; R 1.3.0 gave 30, 2,
+  # 10, 4, 5
   - id: sort_network_siblings
     function: sort_network
     fixture: sort_siblings.gpkg
@@ -3241,8 +3240,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; D-7 un-sorted variant; today 2, 10, 30, 4, 5; post
-  # equals sort_network_siblings
+  # changes_with: D-4; D-7 un-sorted variant; equals sort_network_siblings;
+  # R 1.3.0 gave 2, 10, 30, 4, 5
   - id: sort_network_siblings_permuted
     function: sort_network
     fixture: sort_siblings_permuted.gpkg
@@ -3252,8 +3251,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; D-1 byte order; today b, a, B, _c, o; post B, _c, a, b,
-  # o
+  # changes_with: D-4; D-1 byte order; B, _c, a, b, o; R 1.3.0 gave b, a, B,
+  # _c, o
   - id: sort_network_siblings_text
     function: sort_network
     fixture: sort_siblings_text.gpkg
@@ -3263,8 +3262,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; today 12 then 1..11; post 1..11 then 12 (outlets 11 <
-  # 12)
+  # changes_with: D-4; 1..11 then 12 (outlets 11 < 12); R 1.3.0 gave 12 then
+  # 1..11
   - id: sort_network_isolated_flowline
     function: sort_network
     fixture: isolated_flowline.gpkg
@@ -3284,9 +3283,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; node route via add_toids (message); today 13, 9, 4, 1,
-  # 2, 3, 5, 6, 7, 8, 10, 11, 12; post 4, 1, 2, 3, 5, 6, 7, 8, 10, 11, 9, 12,
-  # 13
+  # changes_with: D-4; node route via add_toids (message); 4, 1, 2, 3, 5, 6,
+  # 7, 8, 10, 11, 9, 12, 13; R 1.3.0 gave 13, 9, 4, 1, 2, 3, 5, 6, 7, 8, 10,
+  # 11, 12
   - id: sort_network_divergence_attribute
     function: sort_network
     fixture: divergence_attribute.gpkg
@@ -3354,7 +3353,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # node route; 1, 2, 3, 6, 7, 4, 8, 9, 5, 10 today and post (input order
+  # node route; 1, 2, 3, 6, 7, 4, 8, 9, 5, 10, as in R 1.3.0 (input order
   # equals byte order)
   - id: sort_network_return_divergence
     function: sort_network
@@ -3365,8 +3364,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; repeated id rows; today (1,3), (1,2), (2,4), (3,4),
-  # (4,0); post (1,2), (1,3), (2,4), (3,4), (4,0)
+  # changes_with: D-4; repeated id rows; (1,2), (1,3), (2,4), (3,4), (4,0);
+  # R 1.3.0 gave (1,3), (1,2), (2,4), (3,4), (4,0)
   - id: sort_network_flownetwork_divergence
     function: sort_network
     fixture: sort_flownetwork_divergence.gpkg
@@ -3386,8 +3385,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; today 6, 7, 8, 9, 1, 2, 3, 4; post 1, 2, 3, 4, 6, 7, 8,
-  # 9; terminal_id 4 and 9
+  # changes_with: D-4; 1, 2, 3, 4, 6, 7, 8, 9; terminal_id 4 and 9; R 1.3.0
+  # gave 6, 7, 8, 9, 1, 2, 3, 4
   - id: sort_network_two_networks_split
     function: sort_network
     fixture: sort_two_networks.gpkg
@@ -3397,8 +3396,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; argument order not read; today 6, 7, 8, 1, 2, 3; post 1,
-  # 2, 3, 6, 7, 8; terminal_id 3 and 8
+  # changes_with: D-4; argument order not read; 1, 2, 3, 6, 7, 8; terminal_id
+  # 3 and 8; R 1.3.0 gave 6, 7, 8, 1, 2, 3
   - id: sort_network_two_networks_outlets
     function: sort_network
     fixture: sort_two_networks.gpkg
@@ -3463,7 +3462,8 @@ cases:
     raises: error
     raises_key: split_outlets_overlap
 
-  # stops today (pair join) and post (SCC); message text changes with D-8
+  # stops on the SCC check (D-8); R 1.3.0 stopped in a pair join with other
+  # message text
   - id: sort_network_reciprocal_pair
     function: sort_network
     fixture: reciprocal_pair.gpkg
@@ -3475,7 +3475,7 @@ cases:
     raises: error
     raises_key: network_cycle
 
-  # the pair join catches toid == id today; SCC post
+  # toid == id stops on the SCC check (D-8); R 1.3.0 caught it in a pair join
   - id: sort_network_self_loop
     function: sort_network
     fixture: self_loop.gpkg
@@ -3524,7 +3524,7 @@ cases:
     raises: error
     raises_key: network_cycle
 
-  # changes_with: D-4; braced GUID ids, flownetwork with cycles
+  # changes_with: D-8; braced GUID ids, flownetwork with cycles
   # note: two three-flowline cycles stop the flownetwork sort (D3-41)
   - id: sort_network_loop2
     function: sort_network
@@ -3591,8 +3591,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: I-2; today id_toid_type_mismatch warning then a data.table
-  # join error; post (D3-06 pairing) both character, returns 1, 2
+  # changes_with: I-2; D3-06 pairing makes id and toid character; returns 1,
+  # 2; R 1.3.0 warned id_toid_type_mismatch and then failed in a data.table
+  # join
   - id: sort_network_mixed_types
     function: sort_network
     fixture: sort_mixed_types.gpkg
@@ -3726,7 +3727,7 @@ cases:
     generator: [r]
 
   # changes_with: D-4; outlets in the test's order (3, 8); 6 rows,
-  # terminal_id 8, 8, 8, 3, 3, 3 today
+  # terminal_id 3, 3, 3, 8, 8, 8; R 1.3.0 gave 8, 8, 8, 3, 3, 3
   - id: sort_network_two_networks_outlets_listed
     function: sort_network
     fixture: sort_two_networks.gpkg
@@ -3900,15 +3901,17 @@ cases:
 
   # add_topo_sort -------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
-  # changes_with D-4 = sibling and outlet order by identifier byte order
-  # (ROADMAP §4, M3), so row order and topo_sort values change; D-8 = SCC
-  # cycle check on the hy_topo route only (D3-41); i2 = identifier ingest,
+  # changes_with names the change that set the layer (ROADMAP §4, M3; all
+  # have landed): D-4 = sibling and outlet order by identifier byte order,
+  # so row order and topo_sort values changed; D-8 = SCC cycle check on the
+  # hy_topo and hy_flownetwork routes (D3-41); i2 = identifier ingest,
   # values compared as text are unchanged; A-10 = the stop takes class
-  # hydroloom_representation_error. "R-only after port" marks R behavior
+  # hydroloom_representation_error. "R 1.3.0" in a note gives the outcome
+  # before the change. "R-only after port" marks R behavior
   # Python will not reproduce. A warning case still compares its layer.
 
-  # changes_with: D-4; today (7,6), (10,5), (9,4), (2,3), (5,2), (3,1); post
-  # (10,6), (9,5), (2,4), (5,3), (3,2), (7,1); "10" before "9"
+  # changes_with: D-4; (10,6), (9,5), (2,4), (5,3), (3,2), (7,1); "10" before
+  # "9"; R 1.3.0 gave (7,6), (10,5), (9,4), (2,3), (5,2), (3,1)
   - id: add_topo_sort_worked_example
     function: add_topo_sort
     fixture: add_topo_sort_worked_example.gpkg
@@ -3918,8 +3921,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; D-7 un-sorted variant; today (5,6), (9,5), (10,4),
-  # (2,3), (3,2), (7,1); post equal to add_topo_sort_worked_example
+  # changes_with: D-4; D-7 un-sorted variant; equal to
+  # add_topo_sort_worked_example; R 1.3.0 gave (5,6), (9,5), (10,4), (2,3),
+  # (3,2), (7,1)
   - id: add_topo_sort_worked_example_permuted
     function: add_topo_sort
     fixture: add_topo_sort_worked_example_reversed.gpkg
@@ -3987,8 +3991,8 @@ cases:
     raises: error
     raises_key: outlet_not_in_network
 
-  # changes_with: D-4; D-1 byte order on character siblings; today a, B, _c,
-  # d; post B, _c, a, d
+  # changes_with: D-4; D-1 byte order on character siblings; B, _c, a, d;
+  # R 1.3.0 gave a, B, _c, d
   - id: add_topo_sort_collation
     function: add_topo_sort
     fixture: add_topo_sort_collation.gpkg
@@ -3998,7 +4002,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # S-6 n = 1; topo_sort 1 (integer today); sf input, geometry kept
+  # S-6 n = 1; topo_sort 1 (integer); sf input, geometry kept
   - id: add_topo_sort_single_flowline
     function: add_topo_sort
     fixture: single_flowline.gpkg
@@ -4008,8 +4012,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; S-6 all terminals; today 7, 2, 100, 4, 30 (reverse
-  # input); post 100, 2, 30, 4, 7
+  # changes_with: D-4; S-6 all terminals; 100, 2, 30, 4, 7; R 1.3.0 gave 7,
+  # 2, 100, 4, 30 (reverse input)
   - id: add_topo_sort_all_terminals
     function: add_topo_sort
     fixture: all_terminals.gpkg
@@ -4155,8 +4159,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4, i2; node route; outlets 12 and 13; today 13's network
-  # first, post 12's first
+  # changes_with: D-4, i2; node route; outlets 12 and 13; 12's network first;
+  # R 1.3.0 put 13's first
   - id: add_topo_sort_divergence_attribute
     function: add_topo_sort
     fixture: divergence_attribute.gpkg
@@ -4271,8 +4275,8 @@ cases:
     generator: [r]
 
   # changes_with: D-4; flownetwork route, 1425 rows, 1327 values, no warning;
-  # the D-8 check runs on this route after D3-41 and finds no cycle
-  # (check_hy_graph TRUE), so the case keeps returning
+  # the D-8 check runs on this route (D3-41) and finds no cycle
+  # (check_hy_graph TRUE), so the case returns
   - id: add_topo_sort_loop
     function: add_topo_sort
     fixture: loop.gpkg
@@ -4283,7 +4287,7 @@ cases:
     generator: [r]
 
   # note: flownetwork route stops on two three-flowline cycles (D3-41)
-  # changes_with: D-4; flownetwork route; check_hy_graph finds 6 cycle rows;
+  # changes_with: D-8; flownetwork route; check_hy_graph finds 6 cycle rows;
   # R 1.3.0 warned and returned 50 of 839 rows
   - id: add_topo_sort_loop2
     function: add_topo_sort
@@ -4310,11 +4314,12 @@ cases:
 
   # navigate_network_dfs ------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
-  # changes_with d6 = sibling order by identifier byte order, and a toid
-  # outside the network a terminal with no path break (ROADMAP section 4,
-  # M3; D3-40, D3-76); d8 = SCC in check_hy_graph (section 4, M3), after
-  # which the case raises network_cycle; i2 = identifier ingest (section 4,
-  # M3). The traversal converter reads starts from args.
+  # changes_with i2 = the layer was set by identifier ingest (section 4, M3,
+  # landed). The d6 tag (sibling order by identifier byte order, and a toid
+  # outside the network a terminal with no path break; D3-40, D3-76) and the
+  # d8 tag (SCC in check_hy_graph, after which a case raises network_cycle)
+  # were dropped when those changes landed; notes cite the decision instead.
+  # The traversal converter reads starts from args.
   # Worked example and the sibling tie (D-5, D-6, D-7)
   # note: worked example; 10 before 9 (D-6), break at outlet 4; [[1,10,4],[9]]
   - id: navigate_network_dfs_tie_down
@@ -4848,8 +4853,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: i2; note: identifiers beyond 32 bits (double today, character
-  # after I-2); one path, 49 ids
+  # changes_with: i2; note: identifiers beyond 32 bits (character, I-2); one
+  # path, 49 ids
   - id: navigate_network_dfs_nhdplushr_downmain
     function: navigate_network_dfs
     fixture: nhdplushr.gpkg
