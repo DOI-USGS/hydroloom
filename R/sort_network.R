@@ -99,12 +99,6 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
     # All the start nodes -- outlets are rows whose toid does not refer to
     # any id in the network (tolerates any reserved-value convention).
     starts <- which(index_ids$to$to_list$id %in% x$id[is_outlet(x)])
-
-    if (length(starts) == 0L) {
-      warning("no outlets detected in network -- sort may produce incomplete ",
-        "results. A future release will treat this as an error.",
-        call. = FALSE)
-    }
   }
 
   # D-4: starts in descending byte order, so outlets come out ascending
@@ -202,9 +196,6 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
 
   if (split && o - 1 != length(id_order)) stop("Are two or more outlets within the same network?")
 
-  if (is.null(outlets) && length(unique(x$id)) != length(out))
-    warning("some features missed in sort. Are there loops in the network?")
-
   x <- filter(x, .data$id %in% id_order) |>
     left_join(tibble(id = id_order, sorter = out), by = "id") |>
     arrange(desc(.data$sorter), as.character(.data$toid)) |>
@@ -277,6 +268,12 @@ sort_network.hy_flownetwork <- function(x, split = FALSE, outlets = NULL) {
   hy_g <- get_hyg(x, add = TRUE, id = id)
 
   x <- check_hy_outlets(x, fix = FALSE)
+
+  if (!isTRUE(check_hy_graph(x))) {
+    stop("Some flowlines drain back into themselves: following toid downstream ",
+      "returns to the flowline it started from (a cycle). ",
+      "Run check_hy_graph() to list them, then correct their toid.")
+  }
 
   x <- select(st_drop_geometry(x), id, toid, everything())
 

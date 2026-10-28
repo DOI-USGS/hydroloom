@@ -42,6 +42,15 @@ hydroloom (development version)
   `id`, where a longer cycle used to warn and drop rows; the error says
   the flowlines drain back into themselves and points to
   `check_hy_graph()`. A network with repeated `id` is sorted as before.
+- `sort_network()`, `add_topo_sort()`, `make_index_ids()`, and
+  `navigate_network_dfs()` now also stop on a cycle in a network with
+  repeated `id` (an `hy_flownetwork`), where they used to warn that
+  features were missed and return only the rows that drain to an outlet.
+  The "no outlets detected" and "some features missed in sort" warnings
+  are gone: only a cycle caused them, and a cycle now stops first.
+  `check_hy_graph()` no longer adds a `row` column to the rows on a
+  cycle; `id` identifies them. Rows returned by `divergence_check` keep
+  `row`.
 - `hy_capabilities()` now returns a data.frame with one row per function
   and columns `function`, `available`, and `via`, in place of a named
   logical vector. `via` names the one conversion (`add_toids` or

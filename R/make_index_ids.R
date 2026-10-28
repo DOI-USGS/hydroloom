@@ -125,6 +125,12 @@ make_index_ids.hy_flownetwork <- function(x, mode = "to", long_form = NULL) {
   if (!mode %in% c("to", "from", "both"))
     stop("mode must be one of 'to', 'from', or 'both'.")
 
+  if (!isTRUE(check_hy_graph(x))) {
+    stop("Some flowlines drain back into themselves: following toid downstream ",
+      "returns to the flowline it started from (a cycle). ",
+      "Run check_hy_graph() to list them, then correct their toid.")
+  }
+
   if (!is.null(long_form))
     warning("long_form is deprecated and will be removed in a future release.")
 

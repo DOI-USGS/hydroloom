@@ -57,8 +57,8 @@ required_atts_check_divergence <- c("id", "fromnode", "divergence")
 #' @param fraction_tol numeric tolerance used when checking that
 #' `divergence_fraction` sums to 1 across a `fromnode` group.
 #' @returns if no problems are found, returns TRUE. If problems are found,
-#' problem rows with a row number added. Rows returned by the divergence
-#' check carry a `divergence_issue` column naming the failed checks. Rows
+#' problem rows. Rows returned by the divergence check carry a row number
+#' (`row`) and a `divergence_issue` column naming the failed checks. Rows
 #' returned by the cycle check are every row whose `id` and `toid` lie on a
 #' common cycle, in input order, with `component` (which cycle, numbered from
 #' 1 in byte order of each cycle's least identifier compared as text) and
@@ -104,9 +104,9 @@ check_hy_graph <- function(x, divergence_check = FALSE, fraction_tol = 1e-6) {
 
 }
 
-# Rows of x whose id and toid lie on a common cycle, with `row`, `component`,
-# and `reciprocal` appended (D-8); TRUE when there is none. Builds its own
-# CSR index: make_index_ids() on a hy_topo calls check_hy_graph().
+# Rows of x whose id and toid lie on a common cycle, with `component` and
+# `reciprocal` appended (D-8, D3-54); TRUE when there is none. Builds its own
+# CSR index: make_index_ids() calls check_hy_graph().
 check_cycles_internal <- function(x) {
 
   if (!"toid" %in% names(x)) hy_representation_error("check_hy_graph requires toid. ",
@@ -141,7 +141,6 @@ check_cycles_internal <- function(x) {
 
   out <- x[hit, , drop = FALSE]
 
-  out$row <- hit
   out$component <- match(hit_comp, comp_order)
   out$reciprocal <- size[hit_comp] == 2L
 

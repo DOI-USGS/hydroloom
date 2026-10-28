@@ -68,7 +68,7 @@ test_that("custom outlet values aren't messed up", {
 test_that("loop warning", {
   test_data <- data.frame(id = c(1, 2, 3, 4, 5, 5, 6, 7),
     toid = c(3, 4, 4, 5, 6, 3, 7, 0))
-  expect_warning(sort_network(test_data), "loops")
+  expect_error(sort_network(test_data), "Some flowlines drain back into themselves")
 })
 
 test_that("duplicated attributes", {
