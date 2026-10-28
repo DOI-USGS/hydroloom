@@ -37,9 +37,13 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
     x <- st_drop_geometry(x)
   }
 
+  in_names <- names(x)
+
   x <- align_names(x)
 
-  x <- ingest_ids(x)
+  x <- ingest_ids(x, in_names)
+
+  x <- ingest_flags(x)
 
   keep_names <- orig_names
 
@@ -126,19 +130,54 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
 # Identifier ingest (SPEC I-2). Each identifier column that is integer,
 # integer64, or whole-valued double becomes integer when every value fits in
 # 32 bits, else its exact decimal string. id/toid and fromnode/tonode are
-# typed as pairs: if either is character, both are (D3-06). Character columns
-# and non-whole double, factor, or logical columns are left as they arrive
-# (D3-07).
+# typed as pairs: if either is character, both are (D3-06). A double column
+# with a fractional value stops (identifier_not_whole, D3-07); character,
+# factor, and logical columns are left as they arrive. in_names are the input
+# column names, position for position with names(x), for the error message.
 #' @noRd
-ingest_ids <- function(x) {
+ingest_ids <- function(x, in_names) {
 
   cols <- intersect(vocab_id_names(), names(x))
 
-  for (n in cols) x[[n]] <- ingest_id(x[[n]])
+  for (n in cols) {
+    v <- x[[n]]
+
+    if (is.double(v) && !inherits(v, "integer64")) {
+      bad <- which(is.finite(v) & v != round(v))
+
+      if (length(bad)) {
+        stop("Column ", in_names[match(n, names(x))],
+          " holds numbers with a fractional part on these rows: ",
+          paste(bad, collapse = ", "),
+          ". An identifier is a whole number or text; correct those values, ",
+          "or cast the column to text, and call again.", call. = FALSE)
+      }
+    }
+
+    x[[n]] <- ingest_id(v)
+  }
 
   for (p in list(c(id, toid), c(fromnode, tonode))) {
     if (all(p %in% names(x)) && any(vapply(p, function(n) is.character(x[[n]]), logical(1)))) {
       for (n in p) x[[n]] <- as.character(x[[n]])
+    }
+  }
+
+  x
+}
+
+# Flag ingest (S-2, M1 M-18). Each flag column that is integer or double with
+# every non-missing value 0 or 1 becomes logical; any other column is left as
+# it arrives (D3-152).
+#' @noRd
+ingest_flags <- function(x) {
+
+  for (n in intersect(vocab_flag_names(), names(x))) {
+    v <- x[[n]]
+
+    if ((is.integer(v) || is.double(v)) && !inherits(v, "integer64") &&
+      all(is.na(v) | v %in% c(0, 1))) {
+      x[[n]] <- v == 1
     }
   }
 

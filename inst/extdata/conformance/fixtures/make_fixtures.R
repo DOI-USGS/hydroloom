@@ -391,6 +391,14 @@ fixture(data.frame(
   "REAL identifiers beyond 32 bits beside a small one in the same column",
   c("I-1", "I-2"))
 
+fixture(data.frame(
+  COMID = c(1, 2, 3.5),
+  ToCOMID = c(2, 3, NA)),
+  "hy_identifier_not_whole",
+  "synthetic",
+  "REAL identifier with a fractional part (COMID 3.5, row 3): raises identifier_not_whole",
+  c("I-1", "I-2"))
+
 fixture(data.frame(id = 1:2, toid = c("2", NA)),
   "hy_id_integer_toid_character",
   "synthetic",

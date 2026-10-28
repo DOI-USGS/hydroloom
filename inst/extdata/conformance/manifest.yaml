@@ -70,7 +70,7 @@ cases:
   # uses clean or add_topo, which as_hy omits (A-5).
 
   # changes_with: i2 (fromnode/tonode double -> integer)
-  # changes_with: M-18 (start_flag, terminal_flag integer 1/0 -> logical)
+  # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
   # geometry: the one layer that keeps geometry, checking G-14 pass-through
   # (S-5, D3-79); every other layer stores attributes only
   - id: hy_new_hope_default
@@ -84,7 +84,7 @@ cases:
     geometry: true
 
   # python_omitted; changes_with: i2
-  # changes_with: M-18 (start_flag, terminal_flag integer 1/0 -> logical)
+  # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
   - id: hy_new_hope_clean
     function: hy
     fixture: new_hope.gpkg
@@ -95,7 +95,7 @@ cases:
     generator: [r]
 
   # python_omitted; changes_with: i2 (toid double -> integer)
-  # changes_with: M-18 (start_flag, terminal_flag integer 1/0 -> logical)
+  # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
   - id: hy_new_hope_add_topo
     function: hy
     fixture: new_hope.gpkg
@@ -106,7 +106,7 @@ cases:
     generator: [r]
 
   # python_omitted; changes_with: i2; warns nonunique_id_with_toid, 832 rows (flownetwork)
-  # changes_with: M-18 (start_flag, terminal_flag integer 1/0 -> logical)
+  # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
   - id: hy_new_hope_add_topo_no_divergence
     function: hy
     fixture: new_hope_no_divergence.gpkg
@@ -156,18 +156,17 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-07 (non-whole double identifier: current R leaves it
-  # double and returns; post-change raises identifier_not_whole)
-  # - id: hy_identifier_not_whole
-  #   function: hy
-  #   fixture: hy_identifier_not_whole.gpkg
-  #   args: {}
-  #   compare: exact
-  #   order: exact
-  #   supported_by: [r]
-  #   generator: [r]
-  #   raises: error
-  #   raises_key: identifier_not_whole
+  # D3-07: COMID 3.5 on row 3 raises identifier_not_whole naming COMID and row 3
+  - id: hy_identifier_not_whole
+    function: hy
+    fixture: hy_identifier_not_whole.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: identifier_not_whole
 
   # changes_with: i2; current R: vctrs cast error in the toid fill
   # (outlet_fill_type_mismatch); post-change both character, fill "", returns
@@ -308,7 +307,7 @@ cases:
     generator: [r]
 
   # changes_with: i2; D-7: sorted on all columns, equals hy_new_hope_default's layer
-  # changes_with: M-18 (start_flag, terminal_flag integer 1/0 -> logical)
+  # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
   - id: hy_new_hope_shuffled
     function: hy
     fixture: new_hope_shuffled.gpkg
@@ -401,7 +400,7 @@ cases:
   # double -> integer); R message "defaulting to comid rather than
   # permanent_identifier"; Permanent_Identifier keeps its input name; no toid,
   # R class hy_node, dendritic FALSE
-  # changes_with: M-18 (StartFlag, TerminalFl double 1/0 -> logical)
+  # M-18: StartFlag, TerminalFl arrive double 1/0 and are logical
   - id: hy_nhdplushr
     function: hy
     fixture: nhdplushr.gpkg
@@ -428,7 +427,7 @@ cases:
   # keeps those assertions.
 
   # changes_with: i2 (COMID et al. arrive double; integer after I-2, text-equal)
-  # changes_with: m-18 (StartFlag, TerminalFl integer 1/0 -> logical)
+  # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
   - id: hy_reverse_new_hope
     function: hy_reverse
     fixture: new_hope.gpkg
@@ -440,7 +439,7 @@ cases:
     generator: [r]
 
   # changes_with: i2; toid stays hydroloom-named; add_toids moved FromNode
-  # changes_with: m-18 (StartFlag, TerminalFl integer 1/0 -> logical)
+  # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
   - id: hy_reverse_new_hope_add_topo
     function: hy_reverse
     fixture: new_hope.gpkg
@@ -452,7 +451,7 @@ cases:
     generator: [r]
 
   # changes_with: i2; non-vocabulary columns and geometry stay dropped
-  # changes_with: m-18 (StartFlag, TerminalFl integer 1/0 -> logical)
+  # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
   - id: hy_reverse_new_hope_clean
     function: hy_reverse
     fixture: new_hope.gpkg

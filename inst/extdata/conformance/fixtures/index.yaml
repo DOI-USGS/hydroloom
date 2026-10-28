@@ -872,6 +872,18 @@ fixtures:
   - I-2
   - I-5
   bytes: 73728
+- file: hy_identifier_not_whole.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - COMID
+  - ToCOMID
+  exercises: 'REAL identifier with a fractional part (COMID 3.5, row 3): raises identifier_not_whole'
+  rules:
+  - I-1
+  - I-2
+  bytes: 73728
 - file: hy_large_ids.gpkg
   source: synthetic
   rows: 3

@@ -41,6 +41,10 @@ test_that("s3 class creation", {
 
   x <- sf::st_sf(dplyr::as_tibble(x))
 
+  # 1/0 flags become logical in hy() (M-18)
+  x$StartFlag <- x$StartFlag == 1
+  x$TerminalFl <- x$TerminalFl == 1
+
   expect_equal(x, hy_reverse(hy(x)))
 })
 

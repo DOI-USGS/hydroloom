@@ -20,6 +20,13 @@ hydroloom (development version)
   for integer identifiers, and `add_toids()` returns `toid` in the type of
   `id`. Functions called on a `data.frame` return these types under the
   input column names.
+- `hy()` now stops, naming the column and rows, when an identifier column
+  arrives as `double` and a value has a fractional part; it used to leave
+  the column `double`. Flag columns (`terminal_flag`, `start_flag`,
+  `upmain`, `downmain`) coded 1/0 now become `logical` on ingest, so
+  NHDPlus `TerminalFl` and `StartFlag` come back `TRUE`/`FALSE`, also from
+  functions called on a `data.frame`. A flag column holding any other value
+  is left as it arrives.
 - `sort_network()` and `add_topo_sort()` now return one order for a
   network whatever the order of its input rows. Flowlines that flow to
   the same flowline, and separate outlet networks, are placed in
