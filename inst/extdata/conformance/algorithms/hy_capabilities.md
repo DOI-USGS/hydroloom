@@ -9,14 +9,15 @@ requires:
 
 ## Signature
 
-R: `hy_capabilities(x, include_conversions = FALSE)`. Python:
-`capabilities(network, *, include_conversions=False)` (ROADMAP §2; A-9 renames the first
-argument and keeps R's second, see Changes).
+R: `hy_capabilities(x, include_conversions = FALSE)`. Python: `capabilities(network)`
+(ROADMAP §2; A-4 and A-16). Python takes no second argument, since `via` carries what
+`include_conversions` reports: `available` is directly callable and `via` gives the one
+conversion (D3-31, see Changes).
 
 | argument | type | default |
 | --- | --- | --- |
 | `x` / `network` | any object; a table in practice | none |
-| `include_conversions` | logical / `bool` | `FALSE` / `False` |
+| `include_conversions` | logical; R only | `FALSE` |
 
 Returns, after the A-4 change, a frame with one row per function in the code table, in
 code-table order:
@@ -110,7 +111,8 @@ For a function `f` and input with representation `r`:
   directly callable, and `""` otherwise or when the map has no entry for `r`. The via
   entry is reported without testing `f`'s columns.
 - `available` is "directly callable" when `include_conversions` is `FALSE`, and
-  "directly callable or `via` is not `""`" when it is `TRUE`.
+  "directly callable or `via` is not `""`" when it is `TRUE`. Python's `available` is
+  always "directly callable", the R `FALSE` call.
 
 ## Algorithm
 
@@ -138,9 +140,10 @@ D-14). No tie rule or sentinel applies. No CSR index is built.
 - The output has one row per code-table entry; `function` is unique and in code-table
   order (D-14).
 - `available` and `via` are never missing.
-- With `include_conversions = FALSE`, `via != ""` implies `available` is `FALSE`.
-- With `include_conversions = TRUE`, `available` is the `FALSE`-call `available` or
-  `via != ""`, row by row; `via` is the same for both calls.
+- With `include_conversions = FALSE` in R, and always in Python, `via != ""` implies
+  `available` is `FALSE`.
+- With `include_conversions = TRUE` (R only), `available` is the `FALSE`-call
+  `available` or `via != ""`, row by row; `via` is the same for both calls.
 - Every non-empty `via` is `add_toids` or `make_node_topology`.
 - On an input with no representation, only rows whose pattern is `any` can be `TRUE`, and
   every `via` is `""`.
@@ -232,3 +235,7 @@ those four become available too, nineteen in all.
   `hy_flownetwork` after A-4 (D3-42); Definition states that `available` tests shape,
   not data or argument-named attributes; edge cases for a divergence and for a node
   table without `divergence`.
+- 2026-10-28, suite 0.1.0: per D3-31 and D3-89, Python `capabilities(network)` takes no
+  `include_conversions` argument, as SPEC A-4 and A-16 give it; R keeps the argument.
+  The cases that pass `include_conversions = TRUE` stay R only. This closes the A-9 gap
+  the first entry recorded.
