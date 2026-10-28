@@ -124,10 +124,10 @@ test_that("with downmain", {
   expect_equal(j$froms_list$indid, k$froms_list$indid)
   expect_equal(j$froms_list$toindid, k$froms_list$toindid)
 
-  expect_equal(j$froms_list$main, k$froms_list$main)
-
-  expect_equal(j$froms, k$froms)
-  expect_equal(j$lengths, k$lengths)
+  # make_fromids joins upmain by id; make_index_ids joins it per edge (D3-43),
+  # so k has one upstream entry per "to" edge and lists in byte order (D-5)
+  expect_equal(sum(!is.na(unlist(k$froms_list$fromindid))),
+    sum(unlist(i$to_list$toindid) != 0))
 })
 
 test_that("with upmain", {
@@ -200,5 +200,6 @@ test_that("make fromid", {
 
   y <- make_index_ids(y, mode = "both")
 
-  expect_equal(y$from$froms[, which(y$to$to_list$id == 8893420)], c(25, 534, NA))
+  # upstream list in identifier byte order (D-5)
+  expect_equal(y$from$froms[, which(y$to$to_list$id == 8893420)], c(534, 25, NA))
 })

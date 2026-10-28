@@ -59,6 +59,21 @@ hydroloom (development version)
   already has `toid`, `hy_reverse()` on an object that is not an hy
   object, and `check_hy_graph()` on a network without `toid`. The message
   text is unchanged.
+- `make_index_ids()` now lists each flowline's downstream and upstream
+  neighbors in ascending order of their identifiers compared as text, and
+  `navigate_network_dfs()` goes first to the neighbor that comes first in
+  that order, so both return one result for a network whatever the order
+  of its input rows. Previously the order followed the input rows, and
+  the walk took the last listed neighbor first. `navigate_network_dfs()`
+  now also ends a path at every headwater when walking upstream, as it
+  already did at every outlet walking downstream, so each path is a run
+  of flowlines that drain one to the next. A `toid` outside the network
+  beside one inside it no longer splits a downstream path. Path contents
+  and order change on most networks with a divergence or a confluence.
+  `make_index_ids(mode = "from")` on a network with `upmain` now takes
+  `main` from the row of each connection; it used to list a flowline
+  whose rows differ in `upmain` once per value upstream of each flowline
+  it drains to, and could mark the wrong connection as main.
 
 hydroloom 1.3.0
 ==========

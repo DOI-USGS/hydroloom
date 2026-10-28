@@ -190,9 +190,11 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main, ind_id_mod
       }
 
       # now look at what's downtream
+      # neighbor lists are in identifier byte order (D-5); pushing them in
+      # reverse visits the smallest identifier first (D-6)
       if (main) {
 
-        for (to in seq_len(g$lengths[node])) {
+        for (to in rev(seq_len(g$lengths[node]))) {
           if (g$to[to, node] != 0 && g$main[to, node]) {
             # Add the next node to visit to the tracking vector
             to_visit_pointer[visit_index] <- g$to[to, node]
@@ -206,16 +208,27 @@ navigate_network_dfs_internal <- function(g, all_starts, reset, main, ind_id_mod
         }
 
       } else {
-        for (to in seq_len(g$lengths[node])) {
-          # Add the next node to visit to the tracking vector
-          to_visit_pointer[visit_index] <- g$to[to, node]
+        slots <- seq_len(g$lengths[node])
+        nbrs <- g$to[slots, node]
 
-          # break the graph where we've been so we stop next time
-          g$to[to, node] <- 0
+        # a 0 is a slot already followed or a toid outside the network;
+        # neither is pushed while another slot is unfollowed (D3-76)
+        nbrs <- rev(nbrs[nbrs != 0])
+
+        # a terminal, or a flowline already expanded, pushes one break
+        # on every arrival (D3-156)
+        if (!length(nbrs)) nbrs <- 0
+
+        for (nb in nbrs) {
+          # Add the next node to visit to the tracking vector
+          to_visit_pointer[visit_index] <- nb
 
           # add to the visit index
           visit_index <- visit_index + 1
         }
+
+        # break the graph where we've been so we stop next time
+        g$to[slots, node] <- 0
       }
 
       # go to the last element added in to_visit_pointer

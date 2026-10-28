@@ -99,13 +99,19 @@ make_index_ids_impl <- function(x, mode = "to") {
 
   out <- make_to_dt(x)
 
+  # D-5: rank each dense position by identifier byte order
+  ids <- unique(out[, c("indid", "id")])
+  rank <- id_byte_rank(ids$id[order(ids$indid)])
+
+  out <- order_by_neighbor_rank(out, "toindid", rank)
+
   if (mode == "both") {
     list(
       to = call_format_index_ids(out, return_list = TRUE, mode = "to"),
-      from = make_from(x, out)
+      from = make_from(out, rank)
     )
   } else if (mode == "from") {
-    make_from(x, out)
+    make_from(out, rank)
   } else {
     call_format_index_ids(out, return_list = TRUE, mode = "to")
   }
@@ -160,20 +166,39 @@ make_index_ids.hy_topo <- function(x, mode = "to", long_form = NULL) {
 #' @description Internal helper to generate upstream adjacency matrix from
 #' the to direction table
 #' Used as a wrapper for call_format_index_ids with mode = "from"
-#' @param x hy object with optional upmain attribute
-#' @param out data.table from make_to_dt with id, indid, toindid columns
+#' @param out data.table from make_to_dt with id, indid, toindid columns and
+#' upmain per edge when present
+#' @param rank integer identifier byte-order rank of each dense position
 #' @returns list with froms matrix, lengths vector, and froms_list data.frame
 #' @noRd
-make_from <- function(x, out) {
-  upmain_atts <- NULL
+make_from <- function(out, rank) {
 
-  if ("upmain" %in% names(x)) {
-    upmain_atts <- distinct(select(x, all_of(c(id, upmain))))
-  }
-
-  out <- make_from_dt(out, upmain = upmain_atts, convert_list = TRUE)
+  # upmain is carried per edge in out (D3-43), not joined by id
+  out <- make_from_dt(out, upmain = NULL, convert_list = TRUE, rank = rank)
 
   call_format_index_ids(out, return_list = TRUE, mode = "from")
+}
+
+#' Order index rows by neighbor identifier
+#' @description orders a long-form index table by dense position, then by the
+#' identifier byte-order rank of the neighbor (SPEC D-5). Outside connections
+#' (0) and missing neighbors go last; ties keep row order (stable).
+#' @param g data.table with indid and the neighbor column
+#' @param col name of the neighbor column
+#' @param rank integer rank of each dense position
+#' @returns g reordered
+#' @noRd
+order_by_neighbor_rank <- function(g, col, rank) {
+
+  nb <- g[[col]]
+  nb_rank <- rep(NA_integer_, length(nb))
+
+  inside <- !is.na(nb) & nb != 0
+  nb_rank[inside] <- rank[nb[inside]]
+
+  o <- order(g$indid, nb_rank, na.last = TRUE, method = "radix")
+
+  g[o, ]
 }
 
 #' @title Format index table to adjacency matrix
@@ -276,14 +301,18 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
 #' @param upmain optional data.frame containing id and upmain columns, where
 #' upmain is a logical value indicating if the id is the upmain connection
 #' from its downstream neighbors. If provided, the output will include a main
-#' list column indicating which upstream connections are main paths.
+#' list column indicating which upstream connections are main paths. If NULL,
+#' an upmain column of index_ids, one value per edge, is used when present.
+#' @param rank optional integer identifier byte-order rank of each dense
+#' position; when given, each upstream list is in that order (SPEC D-5).
 #' @returns data.frame with columns: id, indid, and fromindid (list column
 #' containing upstream index ids). If upmain is provided, also includes a main
 #' list column.
 #' @importFrom data.table setcolorder
 #' @noRd
-make_from_dt <- function(index_ids, upmain, convert_list = FALSE) {
-  index_ids <- select(index_ids, -any_of(c("upmain", "main")))
+make_from_dt <- function(index_ids, upmain, convert_list = FALSE, rank = NULL) {
+  drop <- if (is.null(upmain)) "main" else c("upmain", "main")
+  index_ids <- select(index_ids, -any_of(drop))
 
   # slightly faster but requires data.table
   index_ids <- as.data.table(index_ids)
@@ -300,8 +329,10 @@ make_from_dt <- function(index_ids, upmain, convert_list = FALSE) {
     by = "indid", all.x = TRUE
   ))
 
+  if (!is.null(rank)) froms <- order_by_neighbor_rank(froms, "fromindid", rank)
+
   if (convert_list) {
-    if (!is.null(upmain)) {
+    if ("upmain" %in% names(froms)) {
       froms <- froms[, list(
         fromindid = list(c(fromindid)),
         main = list(c(upmain))

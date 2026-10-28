@@ -2096,8 +2096,7 @@ cases:
   # "both" is not a case: graph_to_layer cannot put main on one direction
   # only, so such inputs are split into "to" and "from" cases.
 
-  # changes_with: d5; D-5 tie at node 10; R today from 10 -> 30, 4, 100 (input
-  # order); after D-5 100, 30, 4
+  # D-5 tie at node 10: from 10 -> 100, 30, 4 (identifier byte order)
   - id: make_index_ids_worked_example
     function: make_index_ids
     fixture: make_index_ids_worked_example.gpkg
@@ -2107,8 +2106,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; D-7; R today from 10 -> 100, 30, 4; after D-5 equal to
-  # make_index_ids_worked_example
+  # D-7: rows permuted; equal to make_index_ids_worked_example
   - id: make_index_ids_worked_example_permuted
     function: make_index_ids
     fixture: make_index_ids_worked_example_permuted.gpkg
@@ -2118,8 +2116,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; flownetwork; D-5 tie in "to" at id 1; R today 30, 4,
-  # 100; after D-5 100, 30, 4
+  # flownetwork; D-5 tie in "to" at id 1: 100, 30, 4 (identifier byte order)
   - id: make_index_ids_divergence_order
     function: make_index_ids
     fixture: make_index_ids_divergence_order.gpkg
@@ -2154,8 +2151,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; confluences; 745 edges; about half the multi-neighbor
-  # lists are in byte order today
+  # confluences; 745 edges; upstream lists in identifier byte order (D-5)
   - id: make_index_ids_new_hope_from
     function: make_index_ids
     fixture: new_hope.gpkg
@@ -2166,7 +2162,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; one layer with a mode column; 745 + 745 rows
+  # one layer with a mode column; 745 + 745 rows, byte order (D-5)
   - id: make_index_ids_new_hope_both
     function: make_index_ids
     fixture: new_hope.gpkg
@@ -2177,8 +2173,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; flownetwork without main; 831 + 831 rows; divergences
-  # give "to" ties
+  # flownetwork without main; 831 + 831 rows; divergences in byte order (D-5)
   - id: make_index_ids_new_hope_not_dendritic
     function: make_index_ids
     fixture: new_hope.gpkg
@@ -2189,7 +2184,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; main from downmain; 831 rows
+  # main from downmain; 831 rows; divergences in byte order (D-5)
   - id: make_index_ids_new_hope_flownetwork
     function: make_index_ids
     fixture: new_hope.gpkg
@@ -2200,8 +2195,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: from_upmain; R defect captured; 998 rows today (167
-  # duplicated edges, mislabeled main), 831 after the fix
+  # main from upmain per edge (D3-43); 831 rows, the "to" edges reversed
   - id: make_index_ids_new_hope_flownetwork_from
     function: make_index_ids
     fixture: new_hope.gpkg
@@ -2224,8 +2218,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; 32 missing tocomid filled by hy (I-5); many outlets;
-  # 516 edges
+  # 32 missing tocomid filled by hy (I-5); many outlets; 516 edges, byte order
   - id: make_index_ids_coastal
     function: make_index_ids
     fixture: coastal.gpkg
@@ -2235,8 +2228,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; flownetwork, character ids; the D3-41 cycle check runs
-  # and finds no cycle, so the case returns; 1423 + 1423 rows
+  # flownetwork, character ids, braided, no cycle; 1423 + 1423 rows, byte order
   - id: make_index_ids_loop
     function: make_index_ids
     fixture: loop.gpkg
@@ -2246,8 +2238,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; braced GUID ids; byte order on mixed-case hex; 834 +
-  # 834 rows
+  # braced GUID ids; byte order on mixed-case hex; 834 + 834 rows
   # changes_with: D3-41 (the flownetwork route runs check_hy_graph, which
   # finds 6 cycle rows; flips to raises: error, raises_key: network_cycle,
   # layer dropped; the d5 note then falls)
@@ -2260,7 +2251,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d5; wb-/nex- string ids, repeated id; 79 + 79 rows
+  # wb-/nex- string ids, repeated id; 79 + 79 rows, byte order (D-5)
   - id: make_index_ids_sort_network_dups
     function: make_index_ids
     fixture: sort_network_dups.gpkg
@@ -4085,8 +4076,7 @@ cases:
   # which the case raises network_cycle; i2 = identifier ingest (section 4,
   # M3). The traversal converter reads starts from args.
   # Worked example and the sibling tie (D-5, D-6, D-7)
-  # changes_with: d6; note: worked example; [[1,9,4],[10]]; post-change
-  # [[1,10,4,9]]
+  # note: worked example; 10 before 9 (D-6), break at outlet 4; [[1,10,4],[9]]
   - id: navigate_network_dfs_tie_down
     function: navigate_network_dfs
     fixture: dfs_tie.gpkg
@@ -4096,8 +4086,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: no split at a headwater; [[4,9,1,10]]; post-change
-  # [[4,10,1,9]]
+  # note: break at headwater 1 (D3-156); [[4,10,1],[9]]
   - id: navigate_network_dfs_tie_up
     function: navigate_network_dfs
     fixture: dfs_tie.gpkg
@@ -4107,8 +4096,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6 (D3-76: no break at outlet 4); note: D-7 against
-  # tie_down; [[1,10,4],[9]]; post-change [[1,10,4,9]], equal to tie_down
+  # note: D-7 against tie_down; [[1,10,4],[9]]
   - id: navigate_network_dfs_tie_permuted_down
     function: navigate_network_dfs
     fixture: dfs_tie_permuted.gpkg
@@ -4118,7 +4106,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # note: D-7 against tie_up; [[4,10,1,9]]
+  # note: D-7 against tie_up; [[4,10,1],[9]]
   - id: navigate_network_dfs_tie_permuted_up
     function: navigate_network_dfs
     fixture: dfs_tie_permuted.gpkg
@@ -4129,8 +4117,7 @@ cases:
     generator: [r]
 
   # reset, repeated and visited starts, start order (roxygen tests "total div")
-  # changes_with: d6; note: split at outlet 9; [[2,3,5,7,9],[4,6,8,10]];
-  # post-change [[2,3,4,6,8,10,5,7,9]] (no split at an outlet)
+  # note: 4 before 5 (D-6), split at outlet 10; [[2,3,4,6,8,10],[5,7,9]]
   - id: navigate_network_dfs_two_outlets_down
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
@@ -4140,8 +4127,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: reset FALSE, start 5 already returned; second
-  # element empty, no rows
+  # note: reset FALSE, start 5 already returned; second element empty, no rows
   - id: navigate_network_dfs_two_outlets_visited_start
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
@@ -4151,7 +4137,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: second element [[5,7,9]]
+  # note: [[2,3,4,6,8,10],[5,7,9]], then [[5,7,9]]
   - id: navigate_network_dfs_two_outlets_reset
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
@@ -4161,8 +4147,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: walk stops at visited 5 and splits; [[5,7,9]],
-  # [[2,3],[4,6,8,10]]; post-change [[2,3,4,6,8,10]]
+  # note: [[5,7,9]], then [[2,3,4,6,8,10]] (visited 5 not entered)
   - id: navigate_network_dfs_two_outlets_start_order
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
@@ -4172,7 +4157,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: repeated start kept once; two elements
+  # note: repeated start kept once; two elements
   - id: navigate_network_dfs_two_outlets_duplicate_starts
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
@@ -4192,8 +4177,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: text start against integer id; same as
-  # two_outlets_down
+  # note: text start against integer id; same as two_outlets_down
   - id: navigate_network_dfs_two_outlets_character_start
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
@@ -4333,7 +4317,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: three confluences, one path of 11
+  # note: three confluences, break at each headwater; four paths
   - id: navigate_network_dfs_isolated_flowline_up
     function: navigate_network_dfs
     fixture: isolated_flowline.gpkg
@@ -4344,8 +4328,7 @@ cases:
     generator: [r]
 
   # New Hope: node route, main directions, dendritic, flownetwork, index ids
-  # changes_with: d6; note: hy_node via add_toids(return_dendritic = FALSE); 7
-  # paths, 38 ids (roxygen example)
+  # note: hy_node via add_toids(return_dendritic = FALSE); 7 paths, 38 ids
   - id: navigate_network_dfs_new_hope_down
     function: navigate_network_dfs
     fixture: new_hope.gpkg
@@ -4355,7 +4338,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: 83 paths, 746 ids (roxygen example)
+  # note: break at each headwater; 228 paths, 746 ids (roxygen example)
   - id: navigate_network_dfs_new_hope_up
     function: navigate_network_dfs
     fixture: new_hope.gpkg
@@ -4385,7 +4368,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: reset FALSE; 7 and 40 paths, 187 ids
+  # note: reset FALSE; 7 and 40 paths, 187 ids
   - id: navigate_network_dfs_new_hope_starts
     function: navigate_network_dfs
     fixture: new_hope.gpkg
@@ -4395,7 +4378,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: 7 and 46 paths, 223 ids
+  # note: 7 and 46 paths, 223 ids
   - id: navigate_network_dfs_new_hope_starts_reset
     function: navigate_network_dfs
     fixture: new_hope.gpkg
@@ -4479,7 +4462,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: whole basin from the outlet; one path, 2708 ids
+  # note: whole basin from the outlet; 885 paths, 2708 ids
   - id: navigate_network_dfs_index_ids_up
     function: navigate_network_dfs
     fixture: new_hope_3dhp.gpkg
@@ -4501,7 +4484,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: one path, 39 ids
+  # note: 18 paths, 39 ids
   - id: navigate_network_dfs_network_up
     function: navigate_network_dfs
     fixture: network.gpkg
@@ -4511,8 +4494,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: every connection kept (return_dendritic FALSE);
-  # [[1,3,5,6,7,13],[8,10,11,12],[9],[4]]
+  # note: every connection kept; [[1,3,4,7,13],[8,10,11,12],[9],[5,6]]
   - id: navigate_network_dfs_divergence_attribute_down
     function: navigate_network_dfs
     fixture: divergence_attribute.gpkg
@@ -4522,8 +4504,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: minor paths end where they rejoin;
-  # [[1,6,8,9,5,10],[7,4],[2,3]]
+  # note: minor paths end where they rejoin; [[1,2,3,4,5,10],[6,7],[8,9]]
   - id: navigate_network_dfs_return_divergence_down
     function: navigate_network_dfs
     fixture: return_divergence.gpkg
@@ -4533,8 +4514,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: split at a revisited flowline with upstream slots;
-  # [[10,5,9,8,6,1,4,7],[3,2]]
+  # note: split at headwaters and revisits; [[10,5,4,3,2,1],[7,6],[9,8]]
   - id: navigate_network_dfs_return_divergence_up
     function: navigate_network_dfs
     fixture: return_divergence.gpkg
@@ -4544,9 +4524,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: hy_flownetwork with no cycle (check_hy_graph_loop
-  # is TRUE), so D3-41 does not flip it; 58 paths, 311 ids; flowline 31325083
-  # has one toid in the table and one outside, a terminal post-change (D3-76)
+  # note: braided flownetwork, no cycle; the outside toid of 31325083 adds no
+  # break; 57 paths, 311 ids
   - id: navigate_network_dfs_loop_down
     function: navigate_network_dfs
     fixture: loop.gpkg
@@ -4569,9 +4548,7 @@ cases:
     generator: [r]
 
   # A divergence with one branch leaving the table (H-01, D3-59, D3-76)
-  # changes_with: d6; note: 2 divides into 3 and 9 (outside); the outside slot
-  # follows 3, so a break splits [[1,2],[3]]; post-change [[1,2,3]] (9 is a
-  # terminal, no break)
+  # note: 2 divides into 3 and 9 (outside); 9 adds no break; [[1,2,3]]
   - id: navigate_network_dfs_divergence_leaves_down
     function: navigate_network_dfs
     fixture: sort_divergence_leaves.gpkg
@@ -4581,8 +4558,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: rows of 2 swapped; the outside slot precedes 3, so
-  # [[1,2,3]]; post-change the same, equal to divergence_leaves_down (D-7)
+  # note: rows of 2 swapped; [[1,2,3]], equal to divergence_leaves_down (D-7)
   - id: navigate_network_dfs_divergence_leaves_permuted_down
     function: navigate_network_dfs
     fixture: sort_divergence_leaves_permuted.gpkg
@@ -4592,8 +4568,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: the outside connection has no upstream reverse;
-  # [[3,2,4,1]], same for the permuted rows; post-change [[3,2,1,4]]
+  # note: 1 before 4 (D-6), break at headwater 1; [[3,2,1],[4]]
   - id: navigate_network_dfs_divergence_leaves_up
     function: navigate_network_dfs
     fixture: sort_divergence_leaves.gpkg
@@ -4635,7 +4610,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: one path, 80 ids
+  # note: break at each headwater; 31 paths, 80 ids
   - id: navigate_network_dfs_sort_network_dups_up
     function: navigate_network_dfs
     fixture: sort_network_dups.gpkg
@@ -4657,8 +4632,7 @@ cases:
     generator: [r]
 
   # Migrated from tests/testthat/test_navigate_network_dfs.R (M2)
-  # changes_with: d6; note: "super basic"; the minor path ends where it
-  # rejoins at 8; [[2,3,5,7,8,9],[4,6]]; post-change [[2,3,4,6,8,9,5,7]]
+  # note: "super basic"; the minor path ends where it rejoins; [[2,3,4,6,8,9],[5,7]]
   - id: navigate_network_dfs_rejoin_down
     function: navigate_network_dfs
     fixture: dfs_rejoin.gpkg
@@ -4668,8 +4642,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: one path; [[9,8,7,5,3,2,6,4]]; post-change
-  # [[9,8,6,4,3,2,7,5]]
+  # note: break at headwater 2; [[9,8,6,4,3,2],[7,5]]
   - id: navigate_network_dfs_rejoin_up
     function: navigate_network_dfs
     fixture: dfs_rejoin.gpkg
@@ -4679,7 +4652,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: 46 paths
+  # note: 46 paths, 185 ids
   - id: navigate_network_dfs_new_hope_down_8891152
     function: navigate_network_dfs
     fixture: new_hope.gpkg
@@ -4689,7 +4662,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # note: hy_topo route; one path
+  # note: hy_topo route; break at each headwater; 228 paths, 746 ids
   - id: navigate_network_dfs_new_hope_dendritic_up
     function: navigate_network_dfs
     fixture: new_hope.gpkg
@@ -4700,7 +4673,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: id, toid frame route; equals new_hope_down
+  # note: id, toid frame route; equals new_hope_down
   - id: navigate_network_dfs_new_hope_not_dendritic_down
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
@@ -4710,7 +4683,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: index-id route; equals new_hope_not_dendritic_down
+  # note: index-id route; equals new_hope_not_dendritic_down
   - id: navigate_network_dfs_new_hope_not_dendritic_index_ids_down
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
@@ -4721,7 +4694,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: id, toid frame route; equals new_hope_up
+  # note: id, toid frame route; equals new_hope_up
   - id: navigate_network_dfs_new_hope_not_dendritic_up
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
@@ -4731,7 +4704,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: d6; note: index-id route; equals new_hope_not_dendritic_up
+  # note: index-id route; equals new_hope_not_dendritic_up
   - id: navigate_network_dfs_new_hope_not_dendritic_index_ids_up
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
