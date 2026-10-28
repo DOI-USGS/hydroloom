@@ -69,6 +69,14 @@ add_toids.hy_topo <- function(x, return_dendritic = TRUE) {
 
 #' @name add_toids
 #' @export
+add_toids.hy_flownetwork <- function(x, return_dendritic = TRUE) {
+  hy_representation_error("This network already has toid (class: ", hy_network_type(x),
+    "). add_toids() converts fromnode/tonode to toid.",
+    call. = FALSE)
+}
+
+#' @name add_toids
+#' @export
 add_toids.hy_node <- function(x, return_dendritic = TRUE) {
 
   if ("toid" %in% names(x)) hy_representation_error("network already contains a toid attribute")
@@ -83,10 +91,13 @@ add_toids.hy_node <- function(x, return_dendritic = TRUE) {
   # nolint end
 
   # slightly faster data.table
+  # rows with a missing fromnode are never targets; a missing tonode matches
+  # nothing, so its row keeps its position and takes the outlet value
   joiner_fun <- function(x) {
+    keep <- !is.na(x$fromnode)
     as.data.frame(
-      data.table(toid = x$id,
-        node = x$fromnode)[data.table(id = x$id,
+      data.table(toid = x$id[keep],
+        node = x$fromnode[keep])[data.table(id = x$id,
         node = x$tonode),
       on = "node"]
     )[, c("id", "toid")]
@@ -97,25 +108,42 @@ add_toids.hy_node <- function(x, return_dendritic = TRUE) {
       stop("To remove non dendritic paths, a divergence attribute is required.")
     }
 
+    miss <- is.na(x$divergence)
+
+    if (any(miss))
+      stop("Column divergence is missing on these rows: ",
+        paste(x$id[miss], collapse = ", "),
+        ". Keeping only the main path where a flowline splits needs divergence ",
+        "on every flowline: 0 not below a divergence, 1 the main path, 2 a minor ",
+        "path. Compute it with add_divergence() and call again.", call. = FALSE)
+
+    # a split is a node that is some flowline's tonode and the fromnode of two
+    # or more flowlines; exactly one of those must not be coded 2
+    fn <- x$fromnode
+    at_split <- !is.na(fn) & fn %in% x$tonode &
+      (duplicated(fn) | duplicated(fn, fromLast = TRUE))
+
+    n_main <- tapply(x$divergence[at_split] != 2, fn[at_split], sum)
+    bad <- at_split & as.character(fn) %in% names(n_main)[n_main != 1]
+
+    if (any(bad))
+      stop("Where a flowline splits, exactly one downstream flowline is the main ",
+        "path (divergence other than 2) and the rest are minor paths (divergence ",
+        "2). On these rows the split has no main path or more than one: ",
+        paste(x$id[bad], collapse = ", "),
+        ". Recompute divergence with add_divergence() and call again.",
+        call. = FALSE)
+
     x <- mutate(x,
       orig_fromnode = fromnode,
       fromnode = ifelse(.data$divergence == 2, NA, fromnode))
 
   }
 
-  d <- is.na(x$tonode)
-
-  # avoid cartesian join on disconnected lines!
-  disconnected <- filter(x, d)
-
   out_val <- get_outlet_value(x)
 
-  disconnected$toid <- rep(out_val, nrow(disconnected))
-
-  x <- filter(x, !d) |>
-    left_join(joiner_fun(filter(x, !d)), by = c("id")) |>
-    mutate(toid = replace_na(toid, out_val)) |>
-    bind_rows(disconnected)
+  x <- left_join(x, joiner_fun(x), by = c("id")) |>
+    mutate(toid = replace_na(toid, out_val))
 
   sf_t <- inherits(x, "sf")
 

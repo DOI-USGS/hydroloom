@@ -113,6 +113,20 @@ hydroloom (development version)
   given with capital letters, such as `FlowlineID`, renames the column in
   `hy()` and `align_names()`. It used to be stored as given and never
   matched.
+- `add_toids()` now stops, naming the flowlines, when `divergence` is
+  missing on some rows, and when a flowline splits into two or more
+  downstream flowlines with no main path (every one coded 2) or more than
+  one (two or more not coded 2). It used to treat a missing `divergence`
+  as a minor path, make the flowline above a split with no main path an
+  outlet, and return a flowline above a split with two main paths twice.
+  A flowline with a missing `tonode` now keeps its input row position and
+  still receives `toid` from the flowlines that drain to it; it used to
+  move to the end and leave those flowlines as outlets. `add_toids()` on a
+  network that already has `toid` with repeated `id` now stops as it does
+  for one with unique `id`, where it used to fail with an evaluation depth
+  error. Functions that build `toid` with `add_toids()`, among them
+  `sort_network()`, `add_topo_sort()`, `hy()`, and `to_flownetwork()`,
+  change the same way.
 
 hydroloom 1.3.0
 ==========

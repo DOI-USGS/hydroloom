@@ -5,6 +5,7 @@
 \alias{add_toids.data.frame}
 \alias{add_toids.hy}
 \alias{add_toids.hy_topo}
+\alias{add_toids.hy_flownetwork}
 \alias{add_toids.hy_node}
 \title{Add Downstream IDs}
 \usage{
@@ -15,6 +16,8 @@ add_toids(x, return_dendritic = TRUE)
 \method{add_toids}{hy}(x, return_dendritic = TRUE)
 
 \method{add_toids}{hy_topo}(x, return_dendritic = TRUE)
+
+\method{add_toids}{hy_flownetwork}(x, return_dendritic = TRUE)
 
 \method{add_toids}{hy_node}(x, return_dendritic = TRUE)
 }

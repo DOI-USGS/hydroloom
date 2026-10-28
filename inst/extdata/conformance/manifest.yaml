@@ -275,7 +275,8 @@ cases:
     generator: [r]
 
   # python_omitted; changes_with: i2 (toid double -> integer);
-  # D-14: the row with missing tonode moves to the end
+  # D3-56 (through add_toids): the row with missing tonode keeps its first
+  # position (D-14)
   - id: hy_add_topo_isolated_first
     function: hy
     fixture: hy_add_topo_isolated_first.gpkg
@@ -1747,10 +1748,10 @@ cases:
   # add_toids -----------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
   # changes_with i2 = identifier ingest (ROADMAP §4, M3): toid takes id's type,
-  # integer outlet 0L; changes_with D3-56 / D3-72 / D3-38 = the add_toids R
-  # change (ROADMAP §4, M3): missing divergence and broken divergence coding
-  # raise, a missing tonode is a terminal in its input position, flownetwork
-  # input raises toid_already_present. Every return_dendritic = FALSE case warns
+  # integer outlet 0L; D3-56 / D3-72 / D3-38 (ROADMAP §4, M3, landed): missing
+  # divergence and broken divergence coding raise, a missing tonode is a
+  # terminal in its input position, flownetwork input raises
+  # toid_already_present. Every return_dendritic = FALSE case warns
   # (return_dendritic_deprecated) and still compares its layer.
 
   # changes_with: i2; data.frame route, source names back, 746 rows, toid
@@ -1894,10 +1895,7 @@ cases:
     raises: warning
     raises_key: return_dendritic_deprecated
 
-  # changes_with: D3-56 (flips to raises: error, raises_key:
-  # divergence_missing, naming the row of id 2; shared after regeneration);
-  # changes_with: i2; R 1.3.0: id 2 divergence missing; id 1 becomes an outlet
-  # (1,0),(2,4),(3,5),(4,0),(5,0)
+  # D3-56: id 2 divergence missing stops naming it; shared. changes_with: i2
   - id: add_toids_missing_divergence
     function: add_toids
     fixture: add_toids_missing_divergence.gpkg
@@ -1906,11 +1904,10 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    raises: error
+    raises_key: divergence_missing
 
-  # changes_with: D3-72 (flips to raises: error, raises_key:
-  # divergence_coding_invalid, naming the rows of ids 2 and 3);
-  # changes_with: i2; R 1.3.0: both downstream divergence 1; id 1 appears
-  # twice with return_dendritic TRUE, no warning
+  # D3-72: split with ids 2 and 3 both coded 1 stops naming both. changes_with: i2
   - id: add_toids_divergence_without_minor
     function: add_toids
     fixture: add_toids_divergence_without_minor.gpkg
@@ -1919,11 +1916,10 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    raises: error
+    raises_key: divergence_coding_invalid
 
-  # changes_with: D3-72 (flips to raises: error, raises_key:
-  # divergence_coding_invalid, naming the rows of ids 2 and 3);
-  # changes_with: i2; R 1.3.0: both downstream divergence 2; id 1 becomes an
-  # outlet, no warning (1,0),(2,4),(3,5),(4,0),(5,0)
+  # D3-72: split with ids 2 and 3 both coded 2 stops naming both. changes_with: i2
   - id: add_toids_divergence_without_main
     function: add_toids
     fixture: add_toids_divergence_without_main.gpkg
@@ -1932,11 +1928,11 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    raises: error
+    raises_key: divergence_coding_invalid
 
-  # changes_with: D3-56 (expectation regenerates: id 9, missing tonode, keeps
-  # its first position under D-14; (9,0),(1,2),(2,0),(3,0));
-  # changes_with: i2; R 1.3.0: D-14 departure; id 9 moves last; id 3 tonode
-  # unmatched; ids 1,2,3,9
+  # D3-56: id 9 (missing tonode) keeps its first position (D-14);
+  # (9,0),(1,2),(2,0),(3,0); id 3 tonode unmatched. changes_with: i2
   - id: add_toids_missing_tonode_first
     function: add_toids
     fixture: add_toids_missing_tonode_first.gpkg
@@ -1946,11 +1942,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-56 (expectation regenerates: id 2, missing tonode, is a
-  # terminal and stays the target of ids 1 and 3, input order;
-  # (1,2),(2,0),(3,2); shared after regeneration);
-  # changes_with: i2; R 1.3.0: id 2 is never a target; ids 1 and 3 become
-  # outlets; order 1,3,2
+  # D3-56: id 2 (missing tonode) is a terminal and stays the target of ids 1
+  # and 3, input order; (1,2),(2,0),(3,2); shared. changes_with: i2
   - id: add_toids_missing_tonode_target
     function: add_toids
     fixture: add_toids_missing_tonode_target.gpkg
@@ -2061,19 +2054,18 @@ cases:
     raises: error
     raises_key: needs_node
 
-  # changes_with: D3-38 (R 1.3.0 recurses until the evaluation depth limit;
-  # add_toids.hy_flownetwork lands with the D3-56 change and stops with
-  # toid_already_present); repeated id with toid, the flownetwork pattern
-  # - id: add_toids_duplicated_edge
-  #   function: add_toids
-  #   fixture: duplicated_edge.gpkg
-  #   args: {}
-  #   compare: exact
-  #   order: exact
-  #   supported_by: [r]
-  #   generator: [r]
-  #   raises: error
-  #   raises_key: toid_already_present
+  # D3-38: repeated id with toid (the flownetwork pattern) stops as a
+  # representation error
+  - id: add_toids_duplicated_edge
+    function: add_toids
+    fixture: duplicated_edge.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: toid_already_present
 
   # make_index_ids ------------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:
