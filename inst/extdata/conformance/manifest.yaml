@@ -1993,6 +1993,36 @@ cases:
     raises: error
     raises_key: divergence_coding_invalid
 
+  # D3-174: split at node 20 coded 0 (id 2) and 2 (id 3) warns
+  # divergence_zero_main_path naming id 2; tolerated coding (rule 5): the case
+  # is for the warning, and the layer the harness stores for a warning case is
+  # not a supported output
+  - id: add_toids_divergence_zero_main
+    function: add_toids
+    fixture: add_toids_divergence_zero_main.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: divergence_zero_main_path
+
+  # D3-158: id 3, coded 2, is the only flowline leaving node 20 (main path
+  # clipped away) and is connected to, warning divergence_minor_only_path
+  # naming id 3; tolerated coding (rule 5): the case is for the warning, and
+  # the layer the harness stores for a warning case is not a supported output
+  - id: add_toids_divergence_minor_only
+    function: add_toids
+    fixture: add_toids_divergence_minor_only.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: divergence_minor_only_path
+
   # D3-56: id 9 (missing tonode) keeps its first position (D-14);
   # (9,0),(1,2),(2,0),(3,0); id 3 tonode unmatched. changes_with: i2
   - id: add_toids_missing_tonode_first

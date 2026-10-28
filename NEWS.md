@@ -133,6 +133,14 @@ hydroloom (development version)
   error. Functions that build `toid` with `add_toids()`, among them
   `sort_network()`, `add_topo_sort()`, `hy()`, and `to_flownetwork()`,
   change the same way.
+- `add_toids()` now connects a flowline coded `divergence` 2 that is the
+  only flowline leaving the end of the flowline above it, as left where a
+  clipped network drops the main path, and warns naming those flowlines by
+  `id`; it used to leave the flowline above as an outlet, cutting the
+  network in two. Where a flowline splits and the one downstream flowline
+  not coded 2 is coded 0 rather than 1, `add_toids()` still reads it as the
+  main path and now warns naming it by `id`. Functions that build `toid`
+  with `add_toids()` change the same way.
 
 hydroloom 1.3.0
 ==========

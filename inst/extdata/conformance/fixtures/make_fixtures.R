@@ -692,6 +692,16 @@ fixture(within(atw5, divergence[2] <- 2L), "add_toids_divergence_without_main",
   "first five rows of add_toids_worked_example with id 2 divergence 2",
   "both downstream flowlines coded minor (2): the upstream flowline becomes an outlet")
 
+fixture(within(atw5, divergence[2] <- 0L), "add_toids_divergence_zero_main",
+  "first five rows of add_toids_worked_example with id 2 divergence 0",
+  "a split at node 20 coded 0 (id 2) and 2 (id 3): warns divergence_zero_main_path naming id 2",
+  "I-6")
+
+fixture(atw[-2, ], "add_toids_divergence_minor_only",
+  "add_toids_worked_example with the main path (id 2) removed",
+  "a lone downstream flowline coded 2 (id 3, the only flowline leaving node 20): warns divergence_minor_only_path naming id 3",
+  "I-6")
+
 fixture(data.frame(
   id = c(9L, 1L, 2L, 3L),
   fromnode = c(90L, 1L, 2L, 5L),

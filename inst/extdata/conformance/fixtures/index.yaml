@@ -15,6 +15,20 @@ fixtures:
   rules:
   - I-5
   bytes: 73728
+- file: add_toids_divergence_minor_only.gpkg
+  source: add_toids_worked_example with the main path (id 2) removed
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  - divergence
+  exercises: 'a lone downstream flowline coded 2 (id 3, the only flowline leaving
+    node 20): warns divergence_minor_only_path naming id 3'
+  rules:
+  - I-6
+  bytes: 73728
 - file: add_toids_divergence_without_main.gpkg
   source: first five rows of add_toids_worked_example with id 2 divergence 2
   rows: 5
@@ -40,6 +54,20 @@ fixtures:
   exercises: 'both downstream flowlines coded main (1): the upstream flowline repeats
     under return_dendritic = TRUE'
   rules: []
+  bytes: 73728
+- file: add_toids_divergence_zero_main.gpkg
+  source: first five rows of add_toids_worked_example with id 2 divergence 0
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  - divergence
+  exercises: 'a split at node 20 coded 0 (id 2) and 2 (id 3): warns divergence_zero_main_path
+    naming id 2'
+  rules:
+  - I-6
   bytes: 73728
 - file: add_toids_downstream_swapped.gpkg
   source: add_toids_worked_example with input rows 2 and 3 swapped

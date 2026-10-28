@@ -134,9 +134,33 @@ add_toids.hy_node <- function(x, return_dendritic = TRUE) {
         ". Recompute divergence with add_divergence() and call again.",
         call. = FALSE)
 
+    # the one flowline not coded 2 at a split is the main path, 0 included
+    zero_main <- at_split & x$divergence == 0
+
+    if (any(zero_main))
+      warning("Where a flowline splits, the main path is coded divergence 1 and ",
+        "the minor paths 2. On these rows a downstream flowline at a split is ",
+        "coded 0 and was read as the main path: ",
+        paste(x$id[zero_main], collapse = ", "),
+        ". Recompute divergence with add_divergence() so the main path is coded 1.",
+        call. = FALSE)
+
+    # a flowline coded 2 that is the only one leaving a reached node is kept
+    # connected so the flowline above it is not left a terminal
+    lone_minor <- !is.na(fn) & fn %in% x$tonode & !at_split & x$divergence == 2
+
+    if (any(lone_minor))
+      warning("These flowlines are coded divergence 2, a minor path, and each is ",
+        "the only flowline downstream of the flowline above it: ",
+        paste(x$id[lone_minor], collapse = ", "),
+        ". Each was connected to as the main path, so the flowline above it is ",
+        "not left as a terminal. Recompute divergence with add_divergence() so ",
+        "the only downstream flowline is not coded 2.",
+        call. = FALSE)
+
     x <- mutate(x,
       orig_fromnode = fromnode,
-      fromnode = ifelse(.data$divergence == 2, NA, fromnode))
+      fromnode = ifelse(.data$divergence == 2 & !lone_minor, NA, fromnode))
 
   }
 
