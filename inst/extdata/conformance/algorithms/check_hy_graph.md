@@ -10,25 +10,23 @@ requires:
 
 ## Signature
 
-R today: `check_hy_graph(x, loop_check = FALSE, divergence_check = FALSE, fraction_tol =
-1e-6)`. After the D-8 change (ROADMAP §4, M3): `check_hy_graph(x, divergence_check =
-FALSE, fraction_tol = 1e-6)`; `loop_check` is removed, so a call that passes it stops
-with R's "unused argument" error. Python (ROADMAP §2, A-9): `check_hy_graph(network, *,
-divergence_check=False, fraction_tol=1e-6)`, `network` in R's place of `x`. A-16 gives the same signature (D3-47).
+R: `check_hy_graph(x, divergence_check = FALSE, fraction_tol = 1e-6)`. The D-8 change
+(ROADMAP §4, M3) removed `loop_check`, so a call that passes it stops with R's "unused
+argument" error. Python (ROADMAP §2, A-9): `check_hy_graph(network, *,
+divergence_check=False, fraction_tol=1e-6)`, `network` in R's place of `x`. A-16 gives
+the same signature (D3-47).
 
 | argument | type | default |
 | --- | --- | --- |
 | `x` / `network` | table (data.frame, tibble, or sf; DataFrame or GeoDataFrame) | required |
 | `divergence_check` | `flag`: R `logical` length one, Python `bool` | `FALSE` / `False` |
 | `fraction_tol` | `float64` scalar, non-negative | `1e-6` |
-| `loop_check` (removed by D-8) | `flag` | `FALSE` |
 
 Roxygen gives the argument prose: `x` "data.frame network compatible with
 hydroloom_names"; `divergence_check` "if TRUE, `divergence` and, where present,
 `divergence_fraction` are checked for internal consistency as described in details";
 `fraction_tol` "numeric tolerance used when checking that `divergence_fraction` sums to
-1 across a `fromnode` group". The `loop_check` text ("the entire network is walked from
-top to bottom searching for loops") is deleted with the argument.
+1 across a `fromnode` group".
 
 Returns one of three values. The function never raises on a problem it finds; it
 returns the problem rows (A-10).
@@ -36,16 +34,17 @@ returns the problem rows (A-10).
 1. No problem found: `TRUE` (R `logical` length one; Python `True`). The expectation is
    the S-7 scalar layer, one row, `value = TRUE`.
 2. A divergence coding problem (only with `divergence_check`): the problem rows of the
-   network in hydroloom names, in input row order, with two columns appended (D-14):
+   network in hydroloom names, in input row order, with one column appended (D-14). The
+   divergence result carries no `row` column: `id` identifies the flowline (I-12,
+   D3-160).
 
    | column | type | meaning |
    | --- | --- | --- |
-   | `row` | count, R `integer`, Python `int32` | 1-based position of the row in the input |
    | `divergence_issue` | text | the failed checks, joined by `"; "` in check order |
 
-3. A cycle (always checked after D-8): the rows on a cycle, in input row order, with
-   two columns appended (D-14). After the D3-54 change the cycle result carries no
-   `row` column: `id` identifies the flowline (I-12).
+3. A cycle (always checked, D-8): the rows on a cycle, in input row order, with two
+   columns appended (D-14). The cycle result carries no `row` column either: `id`
+   identifies the flowline (I-12, D3-54).
 
    | column | type | meaning |
    | --- | --- | --- |
@@ -55,15 +54,9 @@ returns the problem rows (A-10).
    Geometry is kept when the input has it (A-8). The returned table is the R class `hy()`
    gives the subset (`hy_topo` or `hy_flownetwork`), not the input's source names.
 
-Today's cycle result (the reciprocal-pair join) differs: a tibble with `toid` first,
-then `id` and the other hydroloom columns, `row`, and `toid_check` (the downstream
-flowline's `toid`), ordered by `toid`; any column other than `id` and `toid` appears
-twice with `.x` and `.y` suffixes. `loop_check = TRUE` today returns the rows of the
-`hy` object whose `id` the walk reported, without `row`.
-
 No named kernel is involved (K-6). The strongly connected components walk lives in
-`_kernels/walk.py` (SPEC module table) and in an R base Tarjan kernel; its shape is the
-author's.
+`_kernels/walk.py` (SPEC module table) and in R in the internal base R Tarjan function
+`scc_labels()` (`R/check_hy_graph.R`); its shape is the author's.
 
 ## Preconditions
 
@@ -75,9 +68,8 @@ row is an edge of the graph. Missing `toid` becomes the reserved outlet value on
 
 A node-topology table (`fromnode`/`tonode`, no `toid`, A-2 `hy_node`) is not converted
 in either language (D3-45, superseding D3-58). The function stops with `needs_topo`
-("check_hy_graph requires toid." followed by the guidance to build `toid` with
-`add_toids()` in R), raised
-as `hydroloom_representation_error` in R and `RepresentationError` in Python (D3-87,
+(in R, the second of the key's `r_text` entries), raised as
+`hydroloom_representation_error` in R and `RepresentationError` in Python (D3-87,
 D3-90). The `via` entry above is guidance, not a conversion the function applies. The
 one call that gives the function a `toid` is `add_toids(return_dendritic = FALSE)`,
 which keeps every connection at a divergence (and warns that the argument is
@@ -108,8 +100,9 @@ returns upstream. `reciprocal` marks a cycle a user repairs at one flowline: two
 flowlines each giving the other as `toid` means one of the two is coded against the
 flow, and the label does not say which (D3-75).
 
-After D-8 the result is `TRUE` exactly when the network has no cycle (and, with
-`divergence_check`, no divergence coding problem). Otherwise it lists every row whose
+The result is `TRUE` exactly when the network has no cycle (and, with
+`divergence_check`, no divergence coding problem; a repeated (`id`, `toid`) pair also
+keeps it from `TRUE`, Postconditions). Otherwise it lists every row whose
 `id` and `toid` lie in the same cycle. For a table with unique `id` every flowline in a
 cycle contributes its one row. For a flownetwork, a flowline in a cycle may also have a
 row leading out of the cycle (to a divergence's other path); that row is not returned,
@@ -147,15 +140,6 @@ With a `divergence_fraction` column, three more:
 
 Any number of `divergence == 2` features at one node is valid.
 
-Today, without `loop_check`, the cycle test is the reciprocal-pair join: a row is
-returned when the `toid` of its downstream flowline equals its own `id`. That finds every
-two-flowline cycle and every self-loop, and misses longer cycles (the `three_cycle`
-fixture returns `TRUE`). `loop_check = TRUE` runs a walk from the headwaters that warns
-"stuck in a loop at" and "found a loop at" with an identifier and returns the rows of
-the reported identifiers; it builds its index with `make_index_ids()`, which itself runs
-the pairwise test and stops on a reciprocal pair or a self-loop before the walk starts,
-and on the `loop2` fixture it reports nine rows, three of them on no cycle.
-
 ## Algorithm
 
 1. R: if the input does not inherit `hy` or `hy_flownetwork`, call `hy()`. Python:
@@ -163,12 +147,13 @@ and on the `loop2` fixture it reports nine rows, three of them on no cycle.
 2. If `divergence_check`, stop with `divergence_check_missing_columns` when `fromnode` or
    `divergence` is absent; otherwise evaluate checks 1 to 7 of Definition per row, joining
    labels with `"; "` in check order. If any row has a label, return those rows with
-   `row` and `divergence_issue`, in input order. The cycle check does not run.
+   `divergence_issue`, in input order. The cycle check does not run.
 3. Map identifiers to dense positions; keep the edges whose `toid` is an `id` (I-4).
    Build a CSR index in the `to` direction (K-2); this is below the kernel boundary
    (K-1, K-5): positions in, a component label per position out.
-4. Compute strongly connected components (R: Tarjan in base R, iterative; Python:
-   `scipy.sparse.csgraph.connected_components(connection="strong")`, D-8).
+4. Compute strongly connected components (R: Tarjan in base R, iterative,
+   `scc_labels()`; Python: `scipy.sparse.csgraph.connected_components(connection="strong")`,
+   D-8).
 5. Mark a row when its edge is a self-loop (`toid == id`), or when `id` and `toid` share a
    component of more than one position.
 6. If no row is marked, return `TRUE`.
@@ -179,32 +164,24 @@ and on the `loop2` fixture it reports nine rows, three of them on no cycle.
 
 Tie rules: the component numbering in step 7 is the only order the function chooses, and
 it depends on identifiers only, so the cycle result is unchanged by row order except for
-the order of its rows, which follows the input (D-7). There is no sentinel: a terminal has an empty neighbor range (K-4). Row order of
-the result is input order (D-14).
-
-Today (until D-8) steps 3 to 7 are replaced by: a left join of each row's `toid` onto
-`id`, carrying the downstream row's `toid` as `toid_check`, keeping rows with `id ==
-toid_check`, ordered by `toid` (data.table `merge`). `loop_check` adds the walk before
-the join.
+the order of its rows, which follows the input (D-7). There is no sentinel: a terminal
+has an empty neighbor range (K-4). Row order of the result is input order (D-14).
 
 `sort_network()` and `make_index_ids()` call `check_hy_graph(x)` with the defaults on
 both routes, `hy_topo` and `hy_flownetwork`, and stop with `network_cycle` unless it
-returns `TRUE` (D-8, D3-41). After D-8 that stop covers every cycle; in 1.3.0 a longer
-cycle passed and `sort_network()` dropped its rows with the warning "some features
-missed in sort". Their descriptions carry that stop. Today only the `hy_topo` methods
-call it; the flownetwork call lands with the D3-41 change (ROADMAP §4, D-8 row), after
-which a cycle in a flownetwork, as in `loop2` and `flownetwork_cycle`, stops instead of
-sorting with that warning. The `loop` fixture holds no cycle, so its result is
-unchanged.
+returns `TRUE` (D-8, D3-41); their descriptions carry that stop. A cycle in a
+flownetwork, as in `loop2` and `flownetwork_cycle`, stops there. The `loop` fixture
+holds braided reaches that rejoin downstream and no cycle (D3-150), so
+`check_hy_graph_loop` returns `TRUE` and the `loop` cases of those functions return.
 
 ## Postconditions
 
-After D-8, for every input that does not stop:
+For every input that does not stop:
 
 - The result is `TRUE` or a table; it is `TRUE` exactly when no row is on a cycle,
   no (`id`, `toid`) pair is repeated, and, with `divergence_check`, no row has a
   divergence issue. The repeated-pair clause holds in Python from its first release and
-  in R from M6 (D3-57, D3-166); until then R returns `TRUE` on a repeated pair on no
+  in R from M6 (D3-57, D3-166); until M6, R returns `TRUE` on a repeated pair on no
   cycle.
 - A repeated (`id`, `toid`) pair does not raise here, unlike every other function,
   which raises at ingest (S-6, D3-57): Python returns every row of each repeated pair,
@@ -227,8 +204,8 @@ After D-8, for every input that does not stop:
   (`id`, `toid`, `component`, `reciprocal`) unchanged (D-7).
 - Adding rows that lie on no cycle does not change `component` or `reciprocal` of the
   rows returned.
-- The divergence result never carries `component` or `reciprocal`; the cycle result
-  never carries `divergence_issue` or `row`.
+- Neither result carries `row` (D3-54, D3-160). The divergence result never carries
+  `component` or `reciprocal`; the cycle result never carries `divergence_issue`.
 - With `divergence_check`, raising `fraction_tol` never adds a row with the label
   `"divergence_fraction does not sum to 1 at a node"`.
 - The input is not modified (A-8).
@@ -237,8 +214,7 @@ After D-8, for every input that does not stop:
 
 O(n + m) time and space: one pass to map identifiers, one CSR build (a sort on n rows,
 O(n log n) in practice), one Tarjan pass. The divergence check is one grouped pass,
-O(n). Today's pairwise join is O(n log n); the `loop_check` walk it replaces is
-O(n · m) in the worst case, from a depth-first search at each node.
+O(n).
 
 ## Edge cases
 
@@ -248,11 +224,12 @@ O(n · m) in the worst case, from a depth-first search at each node.
 - Duplicated row (the same `id`/`toid` twice, a flownetwork): SPEC S-6 makes a repeated
   pair an error, raised at ingest by every other function (D3-57). `check_hy_graph` is
   the one function that does not raise on it: Python lists both copies in its result
-  from its first release, and R does so in M6 (D3-166). R today returns `TRUE` when the
-  edge is on no cycle and both copies, as cycle rows, when it is; the case on
-  `duplicated_edge` keeps R's `TRUE` capture until the Python-only case is added when
-  Python generates (M5).
-- Node-topology input: stops with `needs_topo` in both languages (D3-45); with
+  from its first release, and R does so in M6 (D3-166). Until M6, R returns `TRUE` when
+  the edge is on no cycle and both copies, as cycle rows, when it is; the case
+  `check_hy_graph_duplicated_edge` holds R's `TRUE` until the Python-only case is added
+  when Python generates (M5).
+- Node-topology input: stops with `needs_topo` in both languages (D3-45), cases
+  `check_hy_graph_new_hope_node` and `check_hy_graph_network_node`; with
   `divergence_check`, only after the divergence check passes.
 - A divergence whose minor branch is absent (an extract that keeps one branch, or a
   diverted path leaving the table): with `divergence_check`, the remaining branch's
@@ -277,25 +254,37 @@ O(n · m) in the worst case, from a depth-first search at each node.
 | a node-topology table (`fromnode`/`tonode`, no `toid`), both languages (D3-45) | the network has no `toid`, each flowline's downstream flowline | all | `add_toids(return_dendritic = FALSE)` | `needs_topo` |
 | no recognized `toid` and no `fromnode`/`tonode` (source columns not in the vocabulary, as `ID`/`toNexID` in `sort_test`) | the network has neither `toid` nor the `fromnode`/`tonode` identifiers to build it from | all | add a `toid` column giving each flowline's downstream flowline; where the column exists under a source name, register it as `toid` (`hydroloom_names()` in R, `register_names()` in Python) | `needs_topo` |
 
+Both keys are errors (`kind: error`): `needs_topo` raises `RepresentationError` in Python
+and `hydroloom_representation_error` in R; `divergence_check_missing_columns` raises
+`HydroloomError` in Python and a plain R error. The `divergence_check_missing_columns`
+entry covers both of its rows above in one `condition`, and its `fix` gives
+`add_divergence()`. Three `remedies.json` fields still read otherwise than this
+description and wait for the M6 review (check_hy_graph H-03, D3-153): the `needs_topo`
+`condition` says the functions convert a table with `fromnode`/`tonode` and that
+`add_toids()` fixes the node-table case, its `message_python` says the network lacks
+`fromnode`/`tonode` too, and `divergence_required.raised_by` lists `check_hy_graph`,
+which `check_hy_graph` does not raise itself (it comes from the `add_toids()` call that
+gives the table its `toid`).
+
 A cycle or a divergence issue is a returned value, never a condition (A-10). The
 `divergence_issue` labels are data values compared exactly, not `remedies.json` text.
-Today's `loop_check` warnings ("stuck in a loop at", "found a loop at") and the message
-"found loop at" are removed with the argument and get no key.
+The `loop_check` warnings and message of 1.3.0 went with the argument and have no key.
 
 ## References
 
 - `R/check_hy_graph.R`: `check_hy_graph()`, `check_divergence_internal()`,
-  `add_divergence_issue()`, `check_hy_graph_internal()`, `loop_search_dfs()`.
-- `R/sort_network.R` (`sort_network.hy_topo`) and `R/make_index_ids.R`
-  (`make_index_ids.hy_topo`): the callers that stop unless the result is `TRUE`.
+  `add_divergence_issue()`, `check_cycles_internal()`, `scc_labels()`.
+- `R/sort_network.R` (`sort_network.hy_topo`, `sort_network.hy_flownetwork`) and
+  `R/make_index_ids.R` (`make_index_ids.hy_topo`, `make_index_ids.hy_flownetwork`): the
+  callers that stop unless the result is `TRUE`.
 - `tests/testthat/test_check_hy_graph.R`.
 - Tarjan, R. (1972), Depth-first search and linear graph algorithms, SIAM Journal on
   Computing 1(2), 146-160.
 - NHDPlus Version 2 User Guide (McKay and others, 2012), `Divergence` attribute coding.
 - USGS hydrofabric theme, Network section, and SPEC S-2: `divergence_fraction`, the
   fraction of flow to each branch, summing to one over `fromnode` (checks 5 to 7).
-- SPEC D-1, D-7, D-8, D-14, I-4, I-5, I-6, I-11, A-2, A-3, A-8, A-9, A-10, K-1, K-2,
-  K-4, K-5, K-6, S-7; DESIGN "SCC always in `check_hy_graph`".
+- SPEC D-1, D-7, D-8, D-14, I-4, I-5, I-6, I-11, I-12, A-2, A-3, A-8, A-9, A-10, K-1,
+  K-2, K-4, K-5, K-6, S-7; DESIGN "SCC always in `check_hy_graph`".
 
 ## Worked example
 
@@ -312,7 +301,7 @@ Fixture `fixtures/three_cycle.gpkg`, aspatial, six rows:
 
 Flowlines 2, 3, and 4 form a cycle of three; 1 drains into it, and 5 to 6 is a separate
 tree. In 1.3.0 `check_hy_graph(x)` returned `TRUE`: no flowline's downstream neighbor
-points straight back. After D-8 and D3-54 it returns three rows:
+points straight back. It returns three rows:
 
 | id | toid | component | reciprocal |
 | --- | --- | --- | --- |
@@ -357,3 +346,16 @@ which drains into the pair, is not returned.
   and R in M6; Postconditions and Edge cases restated, the `duplicated_edge` case keeps
   R's `TRUE`. H-02: the node-table fix is `add_toids(return_dendritic = FALSE)` in
   Preconditions and Remedies. H-05: the `reciprocal` sentence in Definition.
+- 2026-10-28, suite 0.1.0: M3 close-out run 2. D3-160 (ROADMAP §4, D-8 row; R change
+  in this run): the divergence result drops `row` as the cycle result did (D3-54), so
+  Signature item 2, Algorithm step 2, and Postconditions say neither result carries it.
+  D3-159, D3-172: text dating behavior ("today", "after D-8") restated in present tense;
+  the flownetwork call of D3-41 is stated as landed. The 1.3.0 behavior the earlier text
+  carried is recorded here only: the cycle test was a reciprocal-pair join returning
+  `toid_check` ordered by `toid`, which found two-flowline cycles and self-loops and
+  missed longer cycles (`three_cycle` returned `TRUE`), and `loop_check = TRUE` ran a
+  headwater walk that warned and, on `loop2`, reported three rows on no cycle. D3-146:
+  Remedies states the key kinds and classes and lists the `remedies.json` fields left
+  for M6 (H-03, D3-153). The quoted `needs_topo` R text in Preconditions is replaced by
+  the key (A-10). References give `check_cycles_internal()`, `scc_labels()`, and the
+  flownetwork callers.
