@@ -1,5 +1,6 @@
 test_that("index to waterbodies", {
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
 
   source(system.file("extdata/sample_data.R", package = "hydrogeofetch"))
 
@@ -53,7 +54,8 @@ test_that("index to waterbodies", {
 
 sr <- units::set_units(0.1, "degrees")
 
-if (requireNamespace("hydrogeofetch", quietly = TRUE)) {
+if (requireNamespace("hydrogeofetch", quietly = TRUE) &&
+    (interactive() || identical(Sys.getenv("NOT_CRAN"), "true"))) {
   source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 
   sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
@@ -62,6 +64,7 @@ if (requireNamespace("hydrogeofetch", quietly = TRUE)) {
 test_that("point indexing to nearest existing node works as expected", {
 
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
   if (!requireNamespace("lwgeom", quietly = TRUE)) skip("Missing lwgeom")
 
   flines_in <- sample_flines
@@ -126,6 +129,7 @@ test_that("point indexing to nearest existing node works as expected", {
 test_that("point indexing works without measures", {
 
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
 
   flines_in <- sample_flines
 
@@ -147,6 +151,7 @@ test_that("point indexing works without measures", {
 test_that("point indexing to for multiple points works", {
 
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
   if (!requireNamespace("lwgeom", quietly = TRUE)) skip("Missing lwgeom")
   flines_in <- sample_flines
 
@@ -264,6 +269,7 @@ test_that("no duplicates when using precision", {
 test_that("disambiguate", {
 
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
 
   source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 
@@ -394,6 +400,7 @@ test_that("aggregate_ids constrains placement to the named mainstem", {
 
 test_that("aggregate_ids input errors", {
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
 
   flines_in <- sf::st_transform(sample_flines, 4269)
 

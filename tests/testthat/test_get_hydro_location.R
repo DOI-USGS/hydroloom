@@ -1,5 +1,6 @@
 test_that("get location", {
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
 
   source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
 
