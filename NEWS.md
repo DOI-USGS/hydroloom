@@ -83,6 +83,12 @@ hydroloom (development version)
   `main` from the row of each connection; it used to list a flowline
   whose rows differ in `upmain` once per value upstream of each flowline
   it drains to, and could mark the wrong connection as main.
+- `make_index_ids()`, `sort_network()`, `add_topo_sort()`, and
+  `navigate_network_dfs()` now accept a network with no rows. They
+  return an index with no flowlines, zero rows with the input columns
+  (and `terminal_id` or `topo_sort` in their usual types), and an empty
+  list for no starts. They used to stop with "subscript out of bounds"
+  after a warning from `max()`.
 
 hydroloom 1.3.0
 ==========

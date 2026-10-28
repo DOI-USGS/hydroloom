@@ -251,6 +251,10 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
   }
 
   to_l <- lengths(g$toindid)
+
+  # I-11: zero rows give a zero-column matrix and no lengths
+  if (!length(to_l)) return(empty_index_ids(g, return_list))
+
   max_to <- max(to_l)
 
   # Convert list to matrix with NA fill
@@ -292,6 +296,28 @@ format_index_ids_internal <- function(g, return_list = FALSE) {
   if (return_list) {
     return(c(out, list(to_list = g)))
   }
+
+  out
+}
+
+#' Zero-row index ids
+#' @description the format_index_ids_internal result for a graph with no
+#' nodes (SPEC I-11): zero-column matrices, no lengths, and the zero-row list
+#' table as given.
+#' @param g zero-row data.frame with id, indid, toindid and optionally main
+#' and edge_id list columns
+#' @param return_list logical if TRUE, include the list table
+#' @returns list as format_index_ids_internal returns
+#' @noRd
+empty_index_ids <- function(g, return_list) {
+
+  out <- list(to = matrix(integer(), nrow = 0, ncol = 0), lengths = numeric())
+
+  if ("main" %in% names(g)) out$main <- matrix(logical(), nrow = 0, ncol = 0)
+
+  if ("edge_id" %in% names(g)) out$edge_id <- matrix(integer(), nrow = 0, ncol = 0)
+
+  if (return_list) out$to_list <- g
 
   out
 }
@@ -445,7 +471,7 @@ make_to_dt <- function(x) {
 
   } else {
     # we have a dendritic network, so we can just use the id and toid
-    out <- data.table(id = x$id, indid = seq(1, nrow(x)))
+    out <- data.table(id = x$id, indid = seq_len(nrow(x)))
 
     out$toindid <- match(x$toid, x$id, nomatch = 0)
 

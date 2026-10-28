@@ -2336,10 +2336,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # I-11; R stops "subscript out of bounds" after a max() warning today;
-  # Python returns an empty IndexIds
-  # changes_with: D3-46 (R returns typed zero-row output; raises: error
-  # removed, layer with no rows, case shared)
+  # I-11; shared: an index with no nodes and a graph layer with no rows (D3-46;
+  # R 1.3.0 stopped "subscript out of bounds" after a max() warning)
   - id: make_index_ids_empty_network
     function: make_index_ids
     fixture: empty_network.gpkg
@@ -2348,7 +2346,6 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
-    raises: error
 
   # ids 5 and 6 reference each other; stops today and after D-8
   - id: make_index_ids_reciprocal_pair
@@ -2989,10 +2986,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # I-11 conflict; R stops in the index build (subscript out of bounds); no
-  # remedies key; Python returns zero rows
-  # changes_with: D3-46 (raises: error removed; typed zero-row layer;
-  # supported_by and generator [r, python] once Python co-generates)
+  # I-11; shared: zero rows with id and toid typed (D3-46; R 1.3.0 stopped in
+  # the index build, "subscript out of bounds")
   - id: sort_network_empty_network
     function: sort_network
     fixture: empty_network.gpkg
@@ -3001,7 +2996,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: error
 
   # S-6 fixture run through sort_network; weight not read; siblings 1, 2
   # already in byte order
@@ -3788,10 +3782,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-46 (raises: error removed; returns zero rows with
-  # topo_sort integer, shared after regeneration)
-  # I-11 departure; R internal error "subscript out of bounds"; Python returns
-  # zero rows, topo_sort int32
+  # I-11; shared: zero rows with id, toid, and topo_sort typed as in a
+  # non-empty layer (D3-46; R 1.3.0 stopped with "subscript out of bounds")
   - id: add_topo_sort_empty_network
     function: add_topo_sort
     fixture: empty_network.gpkg
@@ -3800,7 +3792,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: error
 
   # changes_with: D-4, i2; outlet 12 with no edges beside outlet 11; toid REAL
   # in the fixture
@@ -4235,9 +4226,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-46 (raises: error removed; typed zero-row traversal
-  # layer, empty list; shared); note: today R stops in make_index_ids
-  # ("subscript out of bounds") after a max() warning; no remedies key
+  # I-11; shared: empty starts on a zero-row network give an empty list, a
+  # traversal layer with no rows (D3-46; R 1.3.0 stopped in make_index_ids)
   - id: navigate_network_dfs_empty_network
     function: navigate_network_dfs
     fixture: empty_network.gpkg
@@ -4246,7 +4236,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: error
 
   # D-8 and cycles
   # note: the cycle stops before the walk (D-8); R 1.3.0 gave [[1,2,3,4]]

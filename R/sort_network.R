@@ -352,9 +352,12 @@ add_topo_sort.hy_flownetwork <- function(x, outlets = NULL) {
 
   ids <- unique(out$id)
 
+  # I-11: zero-row input with outlets missing gives zero rows
+  topo_sort <- numeric()
+  if (nrow(x) || !is.null(outlets)) topo_sort <- seq(from = length(ids), to = 1, by = -1)
+
   dplyr::left_join(out,
-    data.frame(id = ids,
-      topo_sort = seq(from = length(ids), to = 1, by = -1)),
+    data.frame(id = ids, topo_sort = topo_sort),
     by = "id")
 
 }
@@ -367,9 +370,12 @@ add_topo_sort.hy_topo <- function(x, outlets = NULL) {
 
   ids <- unique(out$id)
 
+  # I-11: zero-row input with outlets missing gives zero rows
+  topo_sort <- numeric()
+  if (nrow(x) || !is.null(outlets)) topo_sort <- seq(from = length(ids), to = 1, by = -1)
+
   out <- dplyr::left_join(out,
-    data.frame(id = ids,
-      topo_sort = seq(from = length(ids), to = 1, by = -1)),
+    data.frame(id = ids, topo_sort = topo_sort),
     by = "id")
 
   classify_hy(out)
