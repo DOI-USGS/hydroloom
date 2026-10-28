@@ -19,8 +19,7 @@ conversion (D3-31, see Changes).
 | `x` / `network` | any object; a table in practice | none |
 | `include_conversions` | logical; R only | `FALSE` |
 
-Returns, after the A-4 change, a frame with one row per function in the code table, in
-code-table order:
+Returns a frame with one row per function in the code table, in code-table order (A-4):
 
 | column | type | meaning |
 | --- | --- | --- |
@@ -28,14 +27,13 @@ code-table order:
 | `available` | flag (R `logical`, Python `bool`), never missing | callable on the input |
 | `via` | text, never missing; `""` when empty | the one conversion call that makes the function callable |
 
-Before the change (hydroloom 1.3.0) R returns a named logical vector with the same names
-in the same order; its expectation layer is `name`, `value` (D3-13).
+R returns a `data.frame`; its expectation layer has the three columns above.
 
 Roxygen gives the argument and return prose: "What operations are available for this
-network?"; "Returns a named logical vector indicating which hydroloom functions can
-operate on the input object given its current class and columns."; `x` "object to
-query."; `include_conversions` "If TRUE, also marks functions reachable via a single
-representation conversion." The `@returns` line changes with A-4.
+network?"; "Returns a data.frame indicating which hydroloom functions can operate on the
+input object given its current class and columns."; `x` "object to query.";
+`include_conversions` "If TRUE, also marks functions reachable via a single
+representation conversion." The `@returns` text gives the three columns.
 
 No kernel is involved (K-1, K-11).
 
@@ -57,8 +55,8 @@ there but treats the table as having no representation, so only rows whose patte
 Each row reports whether one hydroloom function can run on the input as it stands, and
 if not, which single representation conversion would let it run. The answer comes from
 a code table, one entry per function, holding that function's `requires` (pattern,
-columns, via; S-8). Neither package reads the manifest at runtime; a testthat test (R)
-and `test_api.py` (Python) assert that each code-table entry whose function is listed in
+columns, via; S-8). Neither package reads the manifest at runtime; a testthat test (R,
+`test-conformance-capabilities.R`) and `test_api.py` (Python) assert that each code-table entry whose function is listed in
 the manifest equals the `requires` front matter of that function's description (A-4,
 D3-33). Functions in the manifest with no code-table entry (`hy`, `hy_reverse`, and the
 other name and class helpers) are not checked.
@@ -69,10 +67,9 @@ test attributes a function reads through an argument (the name and weight of
 data: a network with repeated edges or missing values is reported by its pattern alone.
 A `TRUE` row says the function accepts the input's shape, not that the call succeeds.
 
-The code table after the A-4 change, in row order. Each phase-1 entry is its
-description's `requires` (D3-42); the other entries are hydroloom 1.3.0's predicates
-until their descriptions land. In 1.3.0, `sort_network`, `add_topo_sort`, and
-`check_hy_graph` are `hy_topo` only, so a flownetwork reports them unavailable there:
+The code table, in row order; in R it is `hy_requires` in `R/hy_classes.R`. Each
+phase-1 entry is its description's `requires` (D3-42); the other entries keep hydroloom
+1.3.0's predicates until their descriptions land in M6 (D3-70):
 
 | function | pattern | columns | via |
 | --- | --- | --- | --- |
@@ -101,8 +98,8 @@ until their descriptions land. In 1.3.0, `sort_network`, `add_topo_sort`, and
 | `index_hydro_location_distance` | hy_topo, hy_node | `aggregate_id`, `length_km` | |
 | `get_subpath` | hy_topo, hy_node | `aggregate_id`, `length_km` | |
 
-The last three rows are the aggregate-flowpath group, gated in 1.3.0 by the
-`has_aggregate_flowpath` predicate. `geom` stands for a geometry column: R tests that
+The last three rows are the aggregate-flowpath group, which reads `aggregate_id` and
+`length_km`. `geom` stands for a geometry column: R tests that
 the input is an `sf` object; Python tests for a geometry column (G-14).
 
 For a function `f` and input with representation `r`:
@@ -119,29 +116,32 @@ For a function `f` and input with representation `r`:
 
 ## Algorithm
 
-R, 1.3.0:
+R and Python, for each code-table entry in order:
 
-1. Read class flags `is_topo`, `is_leveled`, `is_node`, `is_fn` by `inherits()`, and
-   column flags for `divergence`, the `sf` class, and `aggregate_id` with `length_km`.
-2. Build the direct vector, one predicate per row of the code table.
-3. If `include_conversions` is `FALSE`, return it.
-4. If `is_node`, set the eleven rows whose via map has a `hy_node` entry to `TRUE`; if
-   `is_topo` and not `is_node`, set the four rows whose via map has a `hy_topo` entry to
-   `TRUE`. Return the vector.
+1. Test the pattern against the input's representation. R reads it by `inherits()` on
+   the class `hy()` stamped (D3-32); Python computes `representation(network)` once, and
+   a table with no `id` column has none (D3-167).
+2. Test each column in `columns`; `geom` is the `sf` class in R and a geometry column in
+   Python. The entry is directly callable when both tests pass.
+3. Take `via` from the via map key the representation satisfies, `""` when no key does,
+   and set it to `""` where the entry is directly callable. Each via map has at most one
+   key.
+4. In R, `available` is the direct result, or the direct result or `via != ""` when
+   `include_conversions` is `TRUE`. In Python it is the direct result.
 
-After the A-4 change, R and Python: compute the representation once; for each code-table
-entry in order, evaluate the three rules of Definition; return the frame. The R code
-table is hand-written in `R/hy_classes.R`; the Python one is the `@requires` registry
-the decorator fills (A-3).
+R returns `data.frame(function, available, via)`. The R code table is hand-written in
+`R/hy_classes.R`; the Python one is the `@requires` registry the decorator fills (A-3).
 
-Row order is the code-table order, never the input's row order, and the output does not
-depend on input rows beyond the `id` uniqueness test inside `representation` (D-7,
-D-14). No tie rule or sentinel applies. No CSR index is built.
+Row order is the code-table order of A-4, never the input's row order, and the output
+does not depend on input rows beyond the `id` uniqueness test inside `representation`
+(D-7). Case `hy_capabilities_new_hope_node_shuffled` holds the D-7 pair of
+`hy_capabilities_new_hope_node` and stores the same frame. No tie rule or sentinel
+applies. No CSR index is built.
 
 ## Postconditions
 
 - The output has one row per code-table entry; `function` is unique and in code-table
-  order (D-14).
+  order (A-4).
 - `available` and `via` are never missing.
 - With `include_conversions = FALSE` in R, and always in Python, `via != ""` implies
   `available` is `FALSE`.
@@ -152,8 +152,7 @@ D-14). No tie rule or sentinel applies. No CSR index is built.
   every `via` is `""`.
 - On a `hy_flownetwork` input, `available` is `TRUE` for `sort_network`,
   `add_topo_sort`, `check_hy_graph`, `navigate_network_dfs`, and `make_index_ids`,
-  `FALSE` for every other row not of pattern `any`, and every `via` is `""`. In 1.3.0
-  only `navigate_network_dfs` and `make_index_ids` are `TRUE` (D3-42).
+  `FALSE` for every other row not of pattern `any`, and every `via` is `""` (D3-42).
 - For each code-table entry whose function is listed in the manifest, the entry equals
   that function's description `requires` (A-4, D3-33; the testthat test and
   `test_api.py`).
@@ -174,12 +173,15 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
 - No connections (all terminals): the representation alone decides; `toid` values are
   not read.
 - Zero rows: after `hy()`, `hy_topo`; the same output as any `hy_topo` without node
-  columns. The output's row count is the code table's, not the input's.
+  columns. The output's row count is the code table's, not the input's. Case
+  `hy_capabilities_empty_network_no_conversions` is the call Python can run;
+  `hy_capabilities_empty_network` passes `include_conversions = TRUE` and is R only.
 - Duplicated row (the 1 → 2 row of `duplicated_edge.gpkg` repeated): R classes the
-  table `hy_flownetwork`; the call returns with the five flownetwork rows available (two
-  in 1.3.0) and every `via` `""`. It does not raise. `available` reflects the
-  flownetwork pattern only; the repeated row is a data error that S-6 makes the
-  consuming functions raise on, which R does not yet do (D3-46, D3-57).
+  table `hy_flownetwork`; the call returns with the five flownetwork rows available and
+  every `via` `""`. It does not raise. `available` reflects the flownetwork pattern only.
+  The repeated (`id`, `toid`) pair is a data error that raises at ingest in `hy()` and
+  `as_hy` under D3-57, in Python from its first release and in R from M6 (D3-46). Until
+  then case `hy_capabilities_duplicated_edge` captures R's return.
 - Divergence (repeated `id` with distinct `toid`, `sort_network_dups.gpkg`,
   `loop2.gpkg`): `hy_flownetwork`, the same output as the duplicated row.
 - Node table without a `divergence` column (`divergence_no_attribute.gpkg`):
@@ -199,10 +201,12 @@ column (D3-167).
 
 - `R/hy_classes.R`: `hy_capabilities()`, `classify_hy()`, `as_hy_node()`, and the
   `hy_topo`, `hy_leveled`, `hy_node`, `hy_flownetwork` documentation pages.
-- `tests/testthat/test_hy_classes.R`: "hy_capabilities returns correct logical vector"
-  and "hy_capabilities reports aggregate flowpath functions on node input".
-- SPEC A-2, A-3, A-4, A-8, A-9, A-16, D-7, D-14, G-14, I-14, S-4, S-7, S-8; ROADMAP §2
-  and §4; milestone decisions D3-01 to D3-03, D3-13, D3-33, D3-42, D3-46, and D3-57.
+- `tests/testthat/test_hy_classes.R`: "hy_capabilities reports aggregate flowpath
+  functions on node input"; `tests/testthat/test-conformance-capabilities.R`:
+  "hy_capabilities code table equals the manifest requires".
+- SPEC A-2, A-3, A-4, A-8, A-9, A-16, D-7, G-14, I-14, S-4, S-7, S-8; ROADMAP §2
+  and §4; milestone decisions D3-01 to D3-03, D3-13, D3-31, D3-32, D3-33, D3-42, D3-46,
+  D3-57, D3-70, and D3-167.
 
 ## Worked example
 
@@ -240,6 +244,13 @@ with `via = "make_node_topology"` on the four node rows. With `include_conversio
   `hy_flownetwork` after A-4 (D3-42); Definition states that `available` tests shape,
   not data or argument-named attributes; edge cases for a divergence and for a node
   table without `divergence`.
+- 2026-10-26, suite 0.1.0: A-4 landed (`c215e3a`). Hydroloom 1.3.0 returned a named
+  logical vector with the same names in the same order (expectation layer `name`,
+  `value`, D3-13), built from class and column flags, and with `include_conversions =
+  TRUE` set the rows with a `hy_node` via entry on a node input and those with a
+  `hy_topo` via entry on a topo input. It reported `sort_network`, `add_topo_sort`, and
+  `check_hy_graph` unavailable on a flownetwork. R now walks the `hy_requires` code
+  table and returns the frame; all layers were regenerated in the frame shape.
 - 2026-10-28, suite 0.1.0: per D3-31 and D3-89, Python `capabilities(network)` takes no
   `include_conversions` argument, as SPEC A-4 and A-16 give it; R keeps the argument.
   The cases that pass `include_conversions = TRUE` stay R only. This closes the A-4 and
@@ -249,3 +260,12 @@ with `via = "make_node_topology"` on the four node rows. With `include_conversio
   raises; a table with no `id` column has no representation (D3-167). The A-9 gap is
   named in the entry above; the `include_conversions = TRUE` statements in the worked
   example and edge cases are marked R only.
+- 2026-10-28, suite 0.1.0: M3 close-out sweep (D3-159, D3-172). Signature, Definition,
+  Algorithm, and Postconditions state the A-4 frame in present tense; the 1.3.0 vector
+  and steps move to the A-4 entry above. Roxygen quotations follow the current
+  `@description`. D-14 is no longer cited, since row order is the code table's (A-4),
+  not the input's (decision 7a, D3-177). Algorithm names the D-7 case
+  `hy_capabilities_new_hope_node_shuffled`; Edge cases name the zero-row cases
+  (H2-04) and the D3-57 ingest raise on a repeated pair. References drop the removed
+  testthat name and add `test-conformance-capabilities.R`. No R change in this run
+  touches the function.
