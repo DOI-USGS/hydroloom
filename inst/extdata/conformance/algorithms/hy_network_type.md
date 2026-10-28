@@ -37,7 +37,9 @@ table, reads only `class(x)`, and never raises.
 
 Python: none on representation; `requires` is `[any]`. The pattern is computed from the
 names and identifiers `as_hy` gives the input, so Python raises what `as_hy` raises on
-the same input (Remedies) and nothing else.
+the same input (Remedies) and nothing else. A table with no `id` column is one of those
+inputs: R's `hy()` warns (`no_id_column`) and the R value is `"hy"`; Python raises
+`RepresentationError` (D3-130).
 
 ## Definition
 
@@ -112,7 +114,7 @@ index is built.
 - The result is unchanged by any permutation of the input rows (D-7).
 - R: `hy_network_type(hy(x))` is never `"not a hydroloom object"` for a table `x`.
 - R: `hy_network_type(hy(x))` equals Python `representation(x)` for every table `x` that
-  `hy()` accepts.
+  `hy()` accepts without the `no_id_column` warning.
 - `"hy_leveled"` only if `id`, `toid`, `topo_sort`, `levelpath`, and
   `levelpath_outlet_id` are present and `id` is unique (R: after `hy()`).
 - `"hy_flownetwork"` if and only if `id` and `toid` are present and `id` repeats (R:
@@ -145,7 +147,9 @@ uniqueness test.
   `divergence_no_attribute` gives `"hy_flownetwork"`, since both downstream rows stay.
 - Repeated `id` with `fromnode` and `tonode` and no `toid`: `"hy"`, since neither the
   flownetwork nor the node branch applies.
-- No `id`, or `id` with neither `toid` nor both node columns: `"hy"`.
+- No `id`: R `"hy"` after `hy()`, which warns (`no_id_column`); Python raises
+  `RepresentationError` (D3-130).
+- `id` with neither `toid` nor both node columns: `"hy"`.
 - Zero rows with `id` and `toid`: `"hy_topo"`.
 - Two of the three level-path columns: `"hy_topo"`.
 - Not a table (`NULL`, a list): R `"not a hydroloom object"`.
@@ -159,10 +163,12 @@ uniqueness test.
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| alias beside its hy name (Python) | two columns would carry one hy name | none; columns named in the message | rename or drop one of the two columns | `name_alias_conflict` |
-| two aliases for one hy name (Python, warning) | the alias later in map order was used | none; columns named in the message | drop the unwanted column, or register the intended mapping with `register_names()` | `name_alias_duplicate` |
-| three or more aliases for one hy name (Python) | no single column can be chosen | none; columns named in the message | drop all but one of the aliasing columns | `name_alias_ambiguous` |
-| identifier column of mixed types (Python, I-3) | one column holds both strings and numbers | rows whose type differs from the first value's | cast the column to one type | `identifier_mixed_type` |
+| alias beside its hy name (Python) | an input column renames to a hy name that another column already has, so two columns would carry one name | none; the columns are named in the message | drop or rename one of the two columns | `name_alias_conflict` |
+| two aliases for one hy name (Python, warning) | two input columns are aliases of one hy name; the one later in the alias list took the name and the other kept its input name | none; the columns are named in the message | drop the column that should not carry the hy name | `name_alias_duplicate` |
+| three or more aliases for one hy name (Python) | three or more input columns are aliases of one hy name, and none can be chosen to carry it | none; the columns are named in the message | drop all but one of the aliasing columns | `name_alias_ambiguous` |
+| no `id` column (Python error, D3-130) | no input column is `id` or one of its aliases, so the catchments or flowlines have no identifier | all | rename the identifier column to `id` | `no_id_column` |
+| identifier column of mixed types (Python, I-3) | one identifier column holds both strings and numbers | the rows whose type differs from the first value's | cast the column to one type before `as_hy()` | `identifier_mixed_type` |
+| non-whole floating-point identifier (Python, post-change, D3-07) | an identifier column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
 
 R raises and warns on nothing. Python's rows are the conditions `as_hy` raises in name
 alignment and identifier typing (`hy.md` Remedies); the keys are `hy`'s, not new ones.
@@ -180,6 +186,9 @@ alignment and identifier typing (`hy.md` Remedies); the keys are `hy`'s, not new
   Class Hierarchy".
 - USGS hydrofabric theme, Network: the primary and secondary upstream/downstream
   connections the four patterns encode.
+- McKay and others (2012), NHDPlus Version 2: User Guide: the PlusFlow table (one row
+  per connection, as in `"hy_flownetwork"`) and the FromNode/ToNode attributes (as in
+  `"hy_node"`).
 
 ## Worked example
 
@@ -210,3 +219,11 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
   divergence, and states that the value does not tell flowlines from catchments; the
   divergence attribute pair and the 3DHP and NHDPlusHR cases are added; the
   `name_alias_ambiguous` row is added (D3-60). Behavior is unchanged.
+- 2026-10-27, suite 0.1.0, M3 close: D3-28's plan edit gives `"hy"` in SPEC A-2 and the
+  A-16 table, which closes the gap the 2026-10-25 line records for that value; the sixth
+  R value stays R-only. D3-07 (ROADMAP §4 identifier-ingest row, I-2): post-change, a
+  non-whole floating-point identifier raises `identifier_not_whole` in `as_hy`, and so in
+  `representation` (Remedies). D3-130: Python raises `RepresentationError` on a table with
+  no `id` column, where R's `hy()` warns and gives `"hy"` (Preconditions, Postconditions,
+  Edge cases, Remedies). D3-146: Remedies texts aligned with `remedies.json`. H-08: the
+  NHDPlusV2 PlusFlow table is cited.
