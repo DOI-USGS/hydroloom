@@ -14,8 +14,7 @@ R today: `check_hy_graph(x, loop_check = FALSE, divergence_check = FALSE, fracti
 1e-6)`. After the D-8 change (ROADMAP §4, M3): `check_hy_graph(x, divergence_check =
 FALSE, fraction_tol = 1e-6)`; `loop_check` is removed, so a call that passes it stops
 with R's "unused argument" error. Python (ROADMAP §2, A-9): `check_hy_graph(network, *,
-divergence_check=False, fraction_tol=1e-6)`, `network` in R's place of `x`. A-16 lists
-no row for this function; the signature follows R.
+divergence_check=False, fraction_tol=1e-6)`, `network` in R's place of `x`. A-16 gives the same signature (D3-47).
 
 | argument | type | default |
 | --- | --- | --- |
@@ -45,11 +44,11 @@ returns the problem rows (A-10).
    | `divergence_issue` | text | the failed checks, joined by `"; "` in check order |
 
 3. A cycle (always checked after D-8): the rows on a cycle, in input row order, with
-   three columns appended (D-14):
+   two columns appended (D-14). After the D3-54 change the cycle result carries no
+   `row` column: `id` identifies the flowline (I-12).
 
    | column | type | meaning |
    | --- | --- | --- |
-   | `row` | count, R `integer`, Python `int32` | 1-based position of the row in the input |
    | `component` | count, R `integer`, Python `int32` | which cycle the row belongs to, numbered from 1 |
    | `reciprocal` | `flag` | `TRUE` when the cycle has exactly two flowlines |
 
@@ -74,23 +73,27 @@ aliases. Repeated `id` is accepted: `hy()` routes it to `hy_flownetwork` (I-6) a
 row is an edge of the graph. Missing `toid` becomes the reserved outlet value on ingest
 (I-5); a terminal is any row whose `toid` is not an `id` (I-4).
 
-A node-topology table (`fromnode`/`tonode`, no `toid`, A-2 `hy_node`): Python converts it
-with `add_toids()` before the check (A-3 `convert`, the `via` entry above), which keeps
-only main paths at divergences (D3-58). Two limits follow on node input: a cycle that
-passes through a minor path is not found, because the minor connection is dropped before
-the check; and a node table without `divergence` raises `divergence_required` from
-`add_toids()`, before any check runs. Converting the table to a flownetwork, which keeps
-every connection, finds such a cycle. R does not convert; it stops with `needs_topo`
+A node-topology table (`fromnode`/`tonode`, no `toid`, A-2 `hy_node`) is not converted
+in either language (D3-45, superseding D3-58). The function stops with `needs_topo`
 ("check_hy_graph requires toid." followed by the guidance to build `toid` with
-`add_toids()`), raised as `hydroloom_representation_error` (D3-87, D3-90). A table with
+`add_toids()` in R), raised
+as `hydroloom_representation_error` in R and `RepresentationError` in Python (D3-87,
+D3-90). The `via` entry above is guidance, the one call that gives the function a
+`toid`, not a conversion the function applies. `add_toids()` keeps only main paths at
+divergences, so a cycle through a minor path is not found on its output; converting the
+table to a flownetwork, which keeps every connection, finds such a cycle. A table with
 neither `toid` nor `fromnode`/`tonode` stops with `needs_topo` in both languages (D3-60).
 Raising on unusable input is read as consistent with A-10, which covers the graph
 problems the check finds (D3-61).
 
 `divergence_check = TRUE` reads `fromnode` and `divergence`, and `divergence_fraction`
 when that column is present. A missing `fromnode` or `divergence` column stops with
-`divergence_check_missing_columns`, naming the absent columns. The check runs before
-cycle detection, so the stop comes first whatever the graph holds.
+`divergence_check_missing_columns`, naming the absent columns. The divergence check runs
+before the `toid` requirement is tested and before cycle detection, in both languages, so
+its stop comes first whatever the graph holds. On a node-topology table with
+`divergence_check = TRUE`, a missing `divergence` stops with
+`divergence_check_missing_columns`, a coding problem returns the divergence result, and
+only a table that passes the divergence check stops with `needs_topo`.
 
 ## Definition
 
@@ -98,9 +101,9 @@ A cycle is a set of flowlines in which water leaving any one of them can, by fol
 `toid`, return to it. In graph terms these are the strongly connected components of the
 `id` to `toid` graph that hold more than one flowline, plus any flowline whose `toid` is
 its own `id` (a self-loop). A dendritic or divergent river network has none: flow never
-returns upstream. A cycle almost always means a `toid` that points the wrong way, and a
-cycle of two flowlines (`reciprocal`) is the common case, one flowline digitized against
-the flow direction.
+returns upstream. The `reciprocal` label marks the cycle with a direct reading: a pair
+of flowlines each giving the other as `toid` is one `toid` pointing the wrong way
+(D3-75).
 
 After D-8 the result is `TRUE` exactly when the network has no cycle (and, with
 `divergence_check`, no divergence coding problem). Otherwise it lists every row whose
@@ -169,11 +172,11 @@ and on the `loop2` fixture it reports nine rows, three of them on no cycle.
 7. Number the components that hold a marked row from 1 by byte order (D-1) of each
    component's least identifier as decimal string (S-7). Set `reciprocal` to whether the
    component holds exactly two distinct identifiers. Return the marked rows, in input
-   order, with `row`, `component`, `reciprocal` appended.
+   order, with `component` and `reciprocal` appended.
 
 Tie rules: the component numbering in step 7 is the only order the function chooses, and
-it depends on identifiers only, so the result is unchanged by row order except for `row`
-(D-7). There is no sentinel: a terminal has an empty neighbor range (K-4). Row order of
+it depends on identifiers only, so the cycle result is unchanged by row order except for
+the order of its rows, which follows the input (D-7). There is no sentinel: a terminal has an empty neighbor range (K-4). Row order of
 the result is input order (D-14).
 
 Today (until D-8) steps 3 to 7 are replaced by: a left join of each row's `toid` onto
@@ -181,12 +184,15 @@ Today (until D-8) steps 3 to 7 are replaced by: a left join of each row's `toid`
 toid_check`, ordered by `toid` (data.table `merge`). `loop_check` adds the walk before
 the join.
 
-`sort_network()` and `make_index_ids()` on `hy_topo` call `check_hy_graph(x)` with the
-defaults and stop unless it returns `TRUE`. After D-8 that stop covers every cycle; today
-a longer cycle passes and `sort_network()` drops its rows with the warning "some
-features missed in sort". Their descriptions carry that stop. `sort_network()` on a
-flownetwork does not call this function, before or after D-8 (D3-41, D3-55): a cycle in
-a flownetwork, as in `loop2`, still sorts with that warning and drops rows.
+`sort_network()` and `make_index_ids()` call `check_hy_graph(x)` with the defaults on
+both routes, `hy_topo` and `hy_flownetwork`, and stop with `network_cycle` unless it
+returns `TRUE` (D-8, D3-41). After D-8 that stop covers every cycle; in 1.3.0 a longer
+cycle passed and `sort_network()` dropped its rows with the warning "some features
+missed in sort". Their descriptions carry that stop. Today only the `hy_topo` methods
+call it; the flownetwork call lands with the D3-41 change (ROADMAP §4, D-8 row), after
+which a cycle in a flownetwork, as in `loop2` and `flownetwork_cycle`, stops instead of
+sorting with that warning. The `loop` fixture holds no cycle, so its result is
+unchanged.
 
 ## Postconditions
 
@@ -197,8 +203,8 @@ After D-8, for every input that does not stop:
 - Every returned row (cycle result) has `toid` equal to some `id`, and following `toid`
   from that `toid` returns to the row's `id`.
 - Every row whose `id` and `toid` lie on a common cycle is returned; no other row is.
-- `row` values are distinct, ascending, in `1..n`, and the returned rows equal the input
-  rows at those positions in their hydroloom columns.
+- Returned rows keep input order, and each equals an input row in its hydroloom
+  columns; no input row is returned twice.
 - `component` takes every value in `1..k` for some `k >= 1`; two rows share a
   `component` exactly when their `id` values lie on a common cycle.
 - Ordering cycles by their least identifier as decimal string, in byte order, gives
@@ -207,12 +213,12 @@ After D-8, for every input that does not stop:
   `id` values; it is constant within a `component`.
 - A self-loop row is returned with `reciprocal = FALSE`, in a `component` of its own
   unless another row of the same `id` lies on a longer cycle.
-- Permuting input rows permutes `row` accordingly and leaves the set of (`id`, `toid`,
-  `component`, `reciprocal`) unchanged (D-7).
+- Permuting input rows permutes the returned rows accordingly and leaves the set of
+  (`id`, `toid`, `component`, `reciprocal`) unchanged (D-7).
 - Adding rows that lie on no cycle does not change `component` or `reciprocal` of the
   rows returned.
 - The divergence result never carries `component` or `reciprocal`; the cycle result
-  never carries `divergence_issue`.
+  never carries `divergence_issue` or `row`.
 - With `divergence_check`, raising `fraction_tol` never adds a row with the label
   `"divergence_fraction does not sum to 1 at a node"`.
 - The input is not modified (A-8).
@@ -233,9 +239,8 @@ O(n · m) in the worst case, from a depth-first search at each node.
   no cycle; both copies are returned when it is. SPEC S-6 says a duplicated edge raises;
   that rule is not applied here in M3 (D3-57, extending D3-46), and the case on
   `duplicated_edge` captures `TRUE`. The duplicate is not reported as a problem row.
-- Node-topology input (Python): converted with `add_toids()`, keeping main paths only
-  (D3-58). A cycle through a minor path is not found, and a table without `divergence`
-  raises `divergence_required`.
+- Node-topology input: stops with `needs_topo` in both languages (D3-45); with
+  `divergence_check`, only after the divergence check passes.
 - A divergence whose minor branch is absent (an extract that keeps one branch, or a
   diverted path leaving the table): with `divergence_check`, the remaining branch's
   `divergence` of 1 or 2 is labeled `"divergence of 1 or 2 where flow does not split"`.
@@ -254,10 +259,10 @@ O(n · m) in the worst case, from a depth-first search at each node.
 
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
-| `divergence_check = TRUE` without `divergence` | the divergence check cannot read the coding | all; the absent columns are named | `add_divergence()` | `divergence_check_missing_columns` |
-| `divergence_check = TRUE` without `fromnode` | the divergence check cannot group features by the node they leave | all; the absent columns are named | `make_node_topology()` | `divergence_check_missing_columns` |
-| R: a node-topology table (`fromnode`/`tonode`, no `toid`) | the network has no `toid` to walk | all | `add_toids()` | `needs_topo` |
-| no recognized `toid` and no `fromnode`/`tonode` (source columns not in the vocabulary, as `ID`/`toNexID` in `sort_test`) | the network has no downstream connections to walk | all | `hydroloom_names()` mapping the source downstream column to `toid` | `needs_topo` |
+| `divergence_check = TRUE` without `divergence` | the divergence check reads which path is main (`divergence`), and the column is absent | all; the absent columns are listed | `add_divergence()`, given the coastal and inland outlets, for `divergence` | `divergence_check_missing_columns` |
+| `divergence_check = TRUE` without `fromnode` | the divergence check groups flowlines by the point where they begin (`fromnode`), which the flowlines leaving a divergence share, and the column is absent | all; the absent columns are listed | `make_node_topology()`, which builds `fromnode` from `toid` | `divergence_check_missing_columns` |
+| a node-topology table (`fromnode`/`tonode`, no `toid`), both languages (D3-45) | the network has no `toid`, each flowline's downstream flowline | all | `add_toids()` | `needs_topo` |
+| no recognized `toid` and no `fromnode`/`tonode` (source columns not in the vocabulary, as `ID`/`toNexID` in `sort_test`) | the network has neither `toid` nor the `fromnode`/`tonode` identifiers to build it from | all | add a `toid` column giving each flowline's downstream flowline; where the column exists under a source name, register it as `toid` (`hydroloom_names()` in R, `register_names()` in Python) | `needs_topo` |
 
 A cycle or a divergence issue is a returned value, never a condition (A-10). The
 `divergence_issue` labels are data values compared exactly, not `remedies.json` text.
@@ -293,14 +298,14 @@ Fixture `fixtures/three_cycle.gpkg`, aspatial, six rows:
 | 6 | 0 |
 
 Flowlines 2, 3, and 4 form a cycle of three; 1 drains into it, and 5 to 6 is a separate
-tree. Today `check_hy_graph(x)` returns `TRUE`: no flowline's downstream neighbor points
-straight back. After D-8 it returns three rows:
+tree. In 1.3.0 `check_hy_graph(x)` returned `TRUE`: no flowline's downstream neighbor
+points straight back. After D-8 and D3-54 it returns three rows:
 
-| id | toid | row | component | reciprocal |
-| --- | --- | --- | --- | --- |
-| 2 | 3 | 2 | 1 | FALSE |
-| 3 | 4 | 3 | 1 | FALSE |
-| 4 | 2 | 4 | 1 | FALSE |
+| id | toid | component | reciprocal |
+| --- | --- | --- | --- |
+| 2 | 3 | 1 | FALSE |
+| 3 | 4 | 1 | FALSE |
+| 4 | 2 | 1 | FALSE |
 
 On `fixtures/reciprocal_pair.gpkg` (5 to 6 and 6 to 5 beside a tree of 1 to 4 and 7 to
 5) the result is rows 5 and 6, `component = 1`, `reciprocal = TRUE`, and flowline 7,
@@ -325,3 +330,12 @@ which drains into the pair, is not returned.
   `toid` as the D-8 text ("check_hy_graph requires toid"), raised as
   `hydroloom_representation_error`, in place of the dplyr error (D3-88). No behavior
   change.
+- 2026-10-28, suite 0.1.0: M3 close. D3-54 (ROADMAP §4, D-8 row): the cycle result
+  drops `row`; Signature, Algorithm step 7, Postconditions, and the worked example
+  restated. D3-41 (ROADMAP §4, D-8 row): `sort_network()` and `make_index_ids()` call the
+  check on the flownetwork route too, so `loop2` and `flownetwork_cycle` stop with
+  `network_cycle` there. D3-45 supersedes D3-58: no conversion of a node table in
+  either language, `needs_topo` in both, and the divergence check runs before the `toid`
+  requirement so node-table cases share. D3-75: the "almost always" sentence replaced by
+  what `reciprocal` marks. D3-47: A-16 now carries this signature. D3-146: Remedies
+  conditions and fixes aligned with `remedies.json`.
