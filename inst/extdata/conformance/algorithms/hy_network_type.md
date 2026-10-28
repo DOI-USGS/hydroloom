@@ -167,10 +167,11 @@ uniqueness test.
 | two aliases for one hy name (Python, warning) | two input columns are aliases of one hy name; the one later in the alias list took the name and the other kept its input name | none; the columns are named in the message | drop the column that should not carry the hy name | `name_alias_duplicate` |
 | three or more aliases for one hy name (Python) | three or more input columns are aliases of one hy name, and none can be chosen to carry it | none; the columns are named in the message | drop all but one of the aliasing columns | `name_alias_ambiguous` |
 | no `id` column (Python error, D3-130) | no input column is `id` or one of its aliases, so the catchments or flowlines have no identifier | all | rename the identifier column to `id` | `no_id_column` |
-| identifier column of mixed types (Python, I-3) | one identifier column holds both strings and numbers | the rows whose type differs from the first value's | cast the column to one type before `as_hy()` | `identifier_mixed_type` |
-| non-whole floating-point identifier (Python, post-change, D3-07) | an identifier column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
+| identifier column of mixed types (Python, I-3) | one identifier column holds both strings and numbers | the rows whose type differs from the first value's | cast the column to one type before the call | `identifier_mixed_type` |
+| non-whole floating-point identifier (R `hy()` and Python, post-change, D3-07) | an identifier column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
 
-R raises and warns on nothing. Python's rows are the conditions `as_hy` raises in name
+R's `hy_network_type` raises and warns on nothing; in R the `no_id_column` warning and,
+post-change, the `identifier_not_whole` raise come from `hy()` in `prepare`. Python's rows are the conditions `as_hy` raises in name
 alignment and identifier typing (`hy.md` Remedies); the keys are `hy`'s, not new ones.
 
 ## References
@@ -227,3 +228,7 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
   no `id` column, where R's `hy()` warns and gives `"hy"` (Preconditions, Postconditions,
   Edge cases, Remedies). D3-146: Remedies texts aligned with `remedies.json`. H-08: the
   NHDPlusV2 PlusFlow table is cited.
+- 2026-10-28, suite 0.1.0, M3 close unit 2: H-01, H-02 applied. Remedies says the R
+  warning and raise come from `hy()` in `prepare`, not from `hy_network_type`, and the
+  `identifier_not_whole` row covers R `hy()` too; the `identifier_mixed_type` fix reads
+  "before the call". Behavior is unchanged.
