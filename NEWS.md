@@ -97,6 +97,15 @@ hydroloom (development version)
   and `add_topo_sort()` now stop, naming the values, when `outlets`
   holds a value that is not an `id` in the network; they used to ignore
   such values, or stop with an internal error when no value was an `id`.
+- `hy_reverse()` now restores the original column names on what `hy()`
+  returns for a network with repeated `id` values, such as a divergence
+  written as one row per downstream flowline. It
+  used to stop with "must be an hy object". `is.hy()` returns `TRUE` for
+  that `hy()` output, where it returned `FALSE`.
+- `hydroloom_names()` now lowercases the names it registers, so an alias
+  given with capital letters, such as `FlowlineID`, renames the column in
+  `hy()` and `align_names()`. It used to be stored as given and never
+  matched.
 
 hydroloom 1.3.0
 ==========

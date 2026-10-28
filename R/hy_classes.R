@@ -247,7 +247,8 @@ NULL
 #'
 #' Unlike the other class pages on this index, `hy_flownetwork` does
 #' **not** inherit from `hy` — `id` is not guaranteed to be a primary
-#' key, and a `hy_flownetwork` does not pass [is.hy()]. The user-facing
+#' key, and a `hy_flownetwork` passes [is.hy()] only when it carries
+#' `orig_names`. The user-facing
 #' producer [to_flownetwork()] drops the `orig_names` round-trip
 #' metadata that `hy` carries; a `hy_flownetwork` produced by [hy()] or
 #' `classify_hy()` from a non-dendritic data.frame may still have

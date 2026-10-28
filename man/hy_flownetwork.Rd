@@ -14,7 +14,8 @@ preserves divergences directly.
 
 Unlike the other class pages on this index, \code{hy_flownetwork} does
 \strong{not} inherit from \code{hy} — \code{id} is not guaranteed to be a primary
-key, and a \code{hy_flownetwork} does not pass \code{\link[=is.hy]{is.hy()}}. The user-facing
+key, and a \code{hy_flownetwork} passes \code{\link[=is.hy]{is.hy()}} only when it carries
+\code{orig_names}. The user-facing
 producer \code{\link[=to_flownetwork]{to_flownetwork()}} drops the \code{orig_names} round-trip
 metadata that \code{hy} carries; a \code{hy_flownetwork} produced by \code{\link[=hy]{hy()}} or
 \code{classify_hy()} from a non-dendritic data.frame may still have

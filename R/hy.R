@@ -180,7 +180,9 @@ ingest_id <- function(v) {
 #'
 is.hy <- function(x, silent = FALSE) {
 
-  if (!inherits(x, "hy")) {
+  # hy_flownetwork does not inherit hy, but hy() output routed there carries
+  # orig_names and hy_reverse() restores its names (D3-64, D3-16).
+  if (!inherits(x, c("hy", "hy_flownetwork"))) {
     if (!silent)
       message("no hy class attribute")
     return(FALSE)

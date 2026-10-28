@@ -507,11 +507,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # not_hy_object; changes_with: a10 (gains hydroloom_representation_error);
-  # S-6 boundary; repeated id -> hy() gives hy_flownetwork, not hy
-  # changes_with: d3-16 (raises not_hy_object -> returns the rows with names
-  # restored; drop raises and raises_key; rename id to hy_reverse_flownetwork)
-  - id: hy_reverse_flownetwork_raises
+  # S-6 boundary; repeated id -> hy() gives hy_flownetwork carrying
+  # orig_names; hy_reverse() restores the names and drops the class (D3-16)
+  - id: hy_reverse_flownetwork
     function: hy_reverse
     fixture: duplicated_edge.gpkg
     prepare: {function: hy}
@@ -520,14 +518,10 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: error
-    raises_key: not_hy_object
 
-  # not_hy_object; changes_with: a10; ID 1 -> 2 and 1 -> 3: hy() gives
-  # hy_flownetwork, orig_names present
-  # changes_with: d3-16 (raises not_hy_object -> returns the rows with names
-  # restored; drop raises and raises_key; rename id to hy_reverse_divergence)
-  - id: hy_reverse_divergence_raises
+  # ID 1 -> 2 and 1 -> 3: hy() gives hy_flownetwork carrying orig_names;
+  # hy_reverse() restores ID and toID (D3-16)
+  - id: hy_reverse_divergence
     function: hy_reverse
     fixture: hy_reverse_divergence.gpkg
     prepare: {function: hy}
@@ -536,8 +530,6 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    raises: error
-    raises_key: not_hy_object
 
   # not_hy_object; changes_with: a10; raw fixture, no hy()
   - id: hy_reverse_not_hy_raises
@@ -625,9 +617,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared: false; divergent network in id/toid form (repeated id, character
-  # ids); R FALSE as read (no class); Python True (hydroloom names, string
-  # ids; no flownetwork test after D3-64)
+  # shared: true; divergent network in id/toid form (repeated id, character
+  # ids); R FALSE as read (no class); Python False by the identifier-type
+  # condition, fromnode/tonode stored REAL (D3-161)
   - id: is_hy_loop
     function: is.hy
     fixture: loop.gpkg
@@ -637,18 +629,17 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D3-64 (value FALSE flips to TRUE: is.hy() accepts an
-  # hy_flownetwork carrying orig_names)
-  # R-only: hy() routes the divergent network to hy_flownetwork (D3-11 prepare)
-  # - id: is_hy_loop_after_hy
-  #   function: is.hy
-  #   fixture: loop.gpkg
-  #   prepare: {function: hy}
-  #   args: {}
-  #   compare: exact
-  #   order: exact
-  #   supported_by: [r]
-  #   generator: [r]
+  # R-only: hy() routes the divergent network to hy_flownetwork carrying
+  # orig_names, which is.hy() accepts (D3-64, D3-11 prepare)
+  - id: is_hy_loop_after_hy
+    function: is.hy
+    fixture: loop.gpkg
+    prepare: {function: hy}
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
 
   # shared: false; I-11 zero-row table in hydroloom names; R FALSE as read
   # (TRUE after hy()); Python may return True

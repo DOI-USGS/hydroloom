@@ -200,6 +200,21 @@ test_that("existing hy() behavior preserved", {
   expect_equal(x, hy_reverse(hy(x)))
 })
 
+test_that("hy_reverse restores names on hy() output routed to hy_flownetwork (D3-16, D3-64)", {
+  x <- dplyr::tibble(ID = c(1L, 1L, 2L, 3L), toID = c(2L, 3L, 0L, 0L),
+    extra = c("a", "b", "c", "d"))
+
+  h <- hy(x)
+
+  expect_s3_class(h, "hy_flownetwork")
+  expect_true(is.hy(h))
+
+  rev <- hy_reverse(h)
+
+  expect_false(any(hy_classes %in% class(rev)))
+  expect_equal(rev, x)
+})
+
 # ---- Phase 2: producer function class tests ----
 
 test_that("producers stamp correct output class", {

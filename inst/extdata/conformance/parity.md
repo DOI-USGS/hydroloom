@@ -11,7 +11,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | --- | --- | --- | --- |
 | `hy` | `as_hy` | r | 32 |
 | `hy_reverse` | `hy_reverse` | r | 10 |
-| `is.hy` | `is_hy` | r | 13 |
+| `is.hy` | `is_hy` | r | 14 |
 | `align_names` | `align_names` | r | 24 |
 | `hydroloom_name_definitions` | `name_definitions` | r | 1 |
 | `hydroloom_names` | `register_names` | r | 2 |

@@ -132,6 +132,10 @@ hydroloom_names <- function(x = NULL, clear = FALSE) {
     return(hl)
   }
 
+  # align_names() lowercases column names before lookup, so aliases are
+  # stored lowercase (D3-65)
+  names(x) <- tolower(names(x))
+
   hl <- c(hl, x)
 
   assign("hydroloom_name_map", hl, envir = hydroloom_env)

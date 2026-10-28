@@ -30,3 +30,17 @@ test_that("hydroloom_names", {
   expect_equal(hln, hln_reset)
   expect_equal(hydroloom:::hydroloom_env$hydroloom_name_map, hln_reset)
 })
+
+test_that("hydroloom_names lowercases a registered alias (D3-65)", {
+  hln <- hydroloom_names()
+  on.exit(hydroloom_names(hln, clear = TRUE))
+
+  out <- hydroloom_names(c(FlowlineID = "id"))
+
+  expect_equal(out[[length(out)]], "id")
+  expect_equal(names(out)[length(out)], "flowlineid")
+
+  x <- data.frame(FlowlineID = c(1, 2), toid = c(2, 0))
+
+  expect_equal(names(hy(x))[1], "id")
+})
