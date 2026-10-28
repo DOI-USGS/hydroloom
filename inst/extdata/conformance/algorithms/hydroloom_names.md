@@ -18,8 +18,7 @@ Arguments, from R (A-9):
 - `clear`: `flag`, default `FALSE`.
 
 Return: a named `text` vector, the alias registry after the call, element names the
-aliases and values the hydroloom names, in registry order; `NULL` when the registry is
-empty. It carries no `hydroloom_names` print class (that class belongs to
+aliases and values the hydroloom names, in registry order. It carries no `hydroloom_names` print class (that class belongs to
 `hydroloom_name_definitions`). As an expectation layer (S-7) the vector is a `frame` of
 two `text` columns, `name` (the alias) and `value` (the hydroloom name), one row per
 entry, in registry order.
@@ -40,18 +39,21 @@ holds one pair for every alias of every vocabulary column term in `hy_vocab.json
 (concept entries excluded), in the file's term order and, within a term, its alias order.
 Those aliases are the NHDPlusV2 attribute names in their 10-character dbf form
 (`comid`, `tocomid`, `levelpathi`, `arbolatesu`), NHDPlusHR `nhdplusid`, NHD
-`permanent_identifier` and `reachcode`, 3DHP `id3dhp`, and Mainstems `mainstemid`, with a
+`permanent_identifier` and `reachcode`, 3DHP `id3dhp` and `hydrosequence`, and Mainstems `mainstemid`, with a
 few hydrofabric names (`reconciled_id`, `aggregated_id`) and identity pairs (`toid`,
 `fromnode`); a table whose columns use other names needs a call to `hydroloom_names()`
-before `hy()` will recognize them. A call with no `x` and `clear = FALSE` returns the registry unchanged. A call with `x`
-returns, and stores, the prior registry followed by `x` with its names lowercased; with
-`clear = TRUE` the prior registry is first replaced by an empty one.
+before `hy()` will recognize them. A call with no `x` and `clear = FALSE` returns the
+registry unchanged. A call with `x` returns, and stores, the prior registry followed by
+`x` with its names lowercased. With `clear = TRUE` the prior registry is first replaced
+by the registry seeded at load, the vocabulary aliases alone, so registered mappings are
+dropped and the vocabulary aliases stay.
 
 ## Algorithm
 
 1. Read the registry from the package environment.
 2. If `x` is given and has no names, stop (`unnamed_name_mapping`).
-3. If `clear`, store an empty registry.
+3. If `clear`, rebuild the vocabulary alias map (`vocab_alias_map()`, as at load) and
+   store it as the registry.
 4. If `x` is `NULL`, return the registry as it now stands.
 5. Otherwise lowercase the names of `x` (D3-65), append `x` to the registry with `c()`,
    store the result, and return it.
@@ -63,15 +65,16 @@ No sentinel and no CSR index; nothing lies below the kernel boundary (K-1).
 
 ## Postconditions
 
-- The return is `NULL` or a character vector whose `names` attribute is not `NULL`.
+- The return is a character vector whose `names` attribute is not `NULL`.
 - After the call, the stored registry equals the return value.
 - With `x = NULL` and `clear = FALSE`, the registry before and after the call are equal.
 - With `x` given and `clear = FALSE`, the return is the prior registry followed by `x`
   with its names lowercased: length is prior length plus `length(x)`, and the leading
   elements equal the prior registry element for element.
-- With `x` given and `clear = TRUE`, the return equals `x` coerced to character with its
-  names lowercased.
-- With `x = NULL` and `clear = TRUE`, the return is `NULL`.
+- With `x` given and `clear = TRUE`, the return is the registry at load followed by `x`
+  coerced to character with its names lowercased; any mapping registered before the call
+  is absent unless `x` repeats it.
+- With `x = NULL` and `clear = TRUE`, the return equals the registry at load.
 - In the registry at load, no alias repeats, every alias is lowercase, and every value is
   a vocabulary column term.
 - An unnamed `x` stops, and the registry after the stop equals the registry before it.
@@ -91,7 +94,9 @@ with `name_alias_ambiguous` for three or more (`align_names.md` steps 2 and 5, D
 Because names are lowercased on registration (D3-65), an alias that lowercases to a
 seeded alias repeats it: registering `COMID = "id"` as printed in the NHDPlusV2 User
 Guide adds a second `comid` entry, and every NHDPlusV2 table then warns with
-`name_alias_duplicate`.
+`name_alias_duplicate`. Passing a saved full registry back with `clear = TRUE` repeats
+every vocabulary alias the same way, since the reset already holds them; the call that
+restores the load-time registry is `hydroloom_names(clear = TRUE)` with no `x`.
 Several seeded aliases of one term can also meet in one table: an NHDPlusHR flowline
 table carries both `nhdplusid` and `permanent_identifier`, both aliases of `id`;
 `align_names()` resolves that by its `permanent_identifier` rule (`align_names.md`
@@ -103,10 +108,9 @@ column. An alias with uppercase letters is registered in lowercase (`FlowlineID`
 looking it up. A value that is not a hydroloom name is registered; `align_names()` renames
 the column and then restores its original name, so it has no effect. A non-character `x`
 is coerced to character by `c()`.
-`clear = TRUE` with no `x` empties the registry, including the vocabulary aliases, so
-`hy()` renames nothing. Python differs here (D3-20): `register_names(replace=True)`
-replaces registered mappings and keeps the vocabulary aliases, so `hy()` still renames
-the seeded columns. The registry, cleared or extended, returns to the vocabulary seed
+`clear = TRUE` with no `x` drops every registered mapping and keeps the vocabulary
+aliases, so `hy()` still renames the seeded columns. Python's
+`register_names(replace=True)` does the same (D3-20). The registry, cleared or extended, returns to the vocabulary seed
 the next time the package is loaded, which includes every R restart.
 
 ## Remedies
@@ -128,18 +132,20 @@ the next time the package is loaded, which includes every R restart.
 
 ## Worked example
 
-No fixture table is read. Starting from a cleared registry:
+No fixture table is read. With `v` the registry at load (53 entries):
 
 ```r
-hydroloom_names(clear = TRUE)            # NULL
-hydroloom_names(c(flowline_id = "id"))   # c(flowline_id = "id")
-hydroloom_names(c(next_id = "toid"))     # c(flowline_id = "id", next_id = "toid")
+hydroloom_names(clear = TRUE)            # v
+hydroloom_names(c(flowline_id = "id"))   # c(v, flowline_id = "id")
+hydroloom_names(c(Next_ID = "toid"))     # c(v, flowline_id = "id", next_id = "toid")
+hydroloom_names(clear = TRUE)            # v
 ```
 
-A table with columns `flowline_id`, `next_id`, `other` then aligns to `id`, `toid`,
-`other`. The conformance case reads the registry at load instead, so its expectation is
-the vocabulary's alias table as two columns, `name` and `value`, 52 rows as of
-`hy_vocab.json` at M1; the first row is `id3dhp`, `id`.
+After the third call, a table with columns `flowline_id`, `Next_ID`, `other` aligns to
+`id`, `toid`, `other`; after the fourth it keeps those names. The conformance case reads the registry at
+load, so its expectation is the vocabulary's alias table as two columns, `name` and
+`value`, 53 rows as of `hy_vocab.json` after the 3DHP `hydrosequence` alias of
+`topo_sort` (add_topo_sort H-04); the first row is `id3dhp`, `id`.
 
 ## Changes
 
@@ -154,7 +160,7 @@ the vocabulary's alias table as two columns, `name` and `value`, 52 rows as of
 - 2026-10-27, suite 0.1.0: M3 close. D3-65: `hydroloom_names()` lowercases each alias on
   registration, with a NEWS line, so an alias given with uppercase letters matches instead
   of being a silent no-op; Definition, Algorithm step 5, Postconditions, and Edge cases
-  state the post-change behavior. ROADMAP §4 has no row for this change (a row is
+  state the behavior. ROADMAP §4 has no row for this change (a row is
   proposed). D3-146: the Remedies row's `which rows` matches `remedies.json`. D3-20: Python's
   `register_names(mapping, *, replace=False)` stays a gap against R's signature;
   `replace=True` replaces registered mappings only and never the vocabulary's aliases,
@@ -165,3 +171,13 @@ the vocabulary's alias table as two columns, `name` and `value`, 52 rows as of
   lowercases to a seeded alias repeats it and warns `name_alias_duplicate`. H-02: Edge
   cases state that R `clear = TRUE` empties the vocabulary aliases and Python
   `replace=True` keeps them.
+- 2026-10-28, suite 0.1.0: M3 close run 2. H-03 (with D3-20): R `clear = TRUE` resets
+  the registry to the vocabulary aliases seeded at load, followed by `x`, in place of
+  emptying it; an R change with a NEWS line and the ROADMAP §4 S-2 row, which also carries
+  the D3-65 lowercasing. Signature drops the `NULL` return, since the registry always
+  holds the vocabulary aliases; Definition, Algorithm step 3, the `clear = TRUE`
+  Postconditions, and the worked example follow. H-02 restated: Edge cases say R
+  `clear = TRUE` and Python `replace=True` agree, and that passing a saved registry back
+  with `clear = TRUE` repeats the vocabulary aliases. H-04: the vocabulary gains 3DHP
+  `hydrosequence` as a `topo_sort` alias, so the load-time registry and the
+  `hydroloom_names_default` layer have 53 entries; Definition lists the alias.
