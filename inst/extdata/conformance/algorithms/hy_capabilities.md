@@ -47,7 +47,10 @@ representation check and no conversion is applied to the input.
 In R the representation is read from the class `hy()` stamped (`hy_topo`, `hy_leveled`,
 `hy_node`, `hy_flownetwork`); a table that has not been through `hy()` has none, whatever
 its column names. In Python the representation is `representation(network)` computed
-from the columns (A-2), since no class rides on a frame (I-14).
+from the columns (A-2), since no class rides on a frame (I-14). `representation` raises
+`no_id_column` on a table with no `id` column (D3-162); `capabilities` does not raise
+there but treats the table as having no representation, so only rows whose pattern is
+`any` can be available and every `via` is `""` (D3-167).
 
 ## Definition
 
@@ -181,15 +184,16 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
   `loop2.gpkg`): `hy_flownetwork`, the same output as the duplicated row.
 - Node table without a `divergence` column (`divergence_no_attribute.gpkg`):
   `add_divergence` is available and `add_return_divergence` is not, by its `columns`
-  gate; with `include_conversions = TRUE` it stays unavailable, since its via map has no
-  `hy_node` entry.
+  gate; with `include_conversions = TRUE` (R only) it stays unavailable, since its via
+  map has no `hy_node` entry.
 - Not passed through `hy()` (R): no representation; only `make_attribute_topology` and
   `index_points_to_lines` can be `TRUE`, and only on an `sf` input.
 - Missing weight, zero-length line, empty name: not read.
 
 ## Remedies
 
-none
+none. Python `capabilities` does not raise `no_id_column` on a table with no `id`
+column (D3-167).
 
 ## References
 
@@ -217,8 +221,9 @@ With `include_conversions = FALSE`, fifteen rows are available: `make_node_topol
 `add_pfafstetter`, `add_streamlevel`, `navigate_network_dfs`, `make_index_ids`,
 `get_confluences`. The other nine are not. Of those nine, `add_toids`, `add_divergence`,
 `add_return_divergence`, and `subset_network` have `via = "make_node_topology"`; the
-geometry and aggregate-flowpath rows have `via = ""`. With `include_conversions = TRUE`
-those four become available too, nineteen in all.
+geometry and aggregate-flowpath rows have `via = ""`. Python reports the same fifteen,
+with `via = "make_node_topology"` on the four node rows. With `include_conversions = TRUE`
+(R only) those four become available too, nineteen in all.
 
 ## Changes
 
@@ -237,5 +242,10 @@ those four become available too, nineteen in all.
   table without `divergence`.
 - 2026-10-28, suite 0.1.0: per D3-31 and D3-89, Python `capabilities(network)` takes no
   `include_conversions` argument, as SPEC A-4 and A-16 give it; R keeps the argument.
-  The cases that pass `include_conversions = TRUE` stay R only. This closes the A-9 gap
-  the first entry recorded.
+  The cases that pass `include_conversions = TRUE` stay R only. This closes the A-4 and
+  A-16 gap the first entry recorded; the argument now differs between the languages,
+  which A-9 does not exempt (D3-31).
+- 2026-10-28, suite 0.1.0: M3 close unit 2, H2-01 to H2-03. Python `capabilities` never
+  raises; a table with no `id` column has no representation (D3-167). The A-9 gap is
+  named in the entry above; the `include_conversions = TRUE` statements in the worked
+  example and edge cases are marked R only.
