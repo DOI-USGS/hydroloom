@@ -9,7 +9,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 
 | function | Python | supported_by | cases |
 | --- | --- | --- | --- |
-| `hy` | `as_hy` | r | 33 |
+| `hy` | `as_hy` | r | 35 |
 | `hy_reverse` | `hy_reverse` | r | 11 |
 | `is.hy` | `is_hy` | r | 14 |
 | `align_names` | `align_names` | r | 24 |

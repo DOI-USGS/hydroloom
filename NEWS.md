@@ -27,6 +27,10 @@ hydroloom (development version)
   NHDPlus `TerminalFl` and `StartFlag` come back `TRUE`/`FALSE`, also from
   functions called on a `data.frame`. A flag column holding any other value
   is left as it arrives.
+- `hy()` now stops, naming the column and rows, when an identifier column
+  holds `Inf` or `-Inf`; it used to leave the column `double`. A flag
+  column holding a value other than 0, 1, or missing is still left as it
+  arrives, and `hy()` now warns, naming the column and the rows by `id`.
 - `sort_network()` and `add_topo_sort()` now return one order for a
   network whatever the order of its input rows. Flowlines that flow to
   the same flowline, and separate outlet networks, are placed in

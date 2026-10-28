@@ -399,6 +399,23 @@ fixture(data.frame(
   "REAL identifier with a fractional part (COMID 3.5, row 3): raises identifier_not_whole",
   c("I-1", "I-2"))
 
+fixture(data.frame(
+  COMID = c(1, 2, Inf),
+  ToCOMID = c(2, 3, NA)),
+  "hy_identifier_not_finite",
+  "synthetic",
+  "REAL identifier that is infinite (COMID Inf, row 3): raises identifier_not_finite",
+  c("I-1", "I-2"))
+
+fixture(data.frame(
+  COMID = c(10L, 20L, 30L),
+  ToCOMID = c(20L, 30L, NA),
+  TerminalFl = c(0L, 0L, 2L)),
+  "hy_flag_value_not_binary",
+  "synthetic",
+  "flag column with a value other than 0, 1, or missing (TerminalFl 2 on COMID 30, row 3): warns flag_value_not_binary naming COMID 30",
+  c("S-2"))
+
 fixture(data.frame(id = 1:2, toid = c("2", NA)),
   "hy_id_integer_toid_character",
   "synthetic",

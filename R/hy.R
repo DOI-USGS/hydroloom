@@ -43,7 +43,7 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
 
   x <- ingest_ids(x, in_names)
 
-  x <- ingest_flags(x)
+  x <- ingest_flags(x, in_names)
 
   keep_names <- orig_names
 
@@ -131,7 +131,8 @@ hy <- function(x, clean = FALSE, add_topo = FALSE) {
 # integer64, or whole-valued double becomes integer when every value fits in
 # 32 bits, else its exact decimal string. id/toid and fromnode/tonode are
 # typed as pairs: if either is character, both are (D3-06). A double column
-# with a fractional value stops (identifier_not_whole, D3-07); character,
+# with a fractional value stops (identifier_not_whole, D3-07), as does one
+# with an infinite value (identifier_not_finite, I2-3); character,
 # factor, and logical columns are left as they arrive. in_names are the input
 # column names, position for position with names(x), for the error message.
 #' @noRd
@@ -152,6 +153,16 @@ ingest_ids <- function(x, in_names) {
           ". An identifier is a whole number or text; correct those values, ",
           "or cast the column to text, and call again.", call. = FALSE)
       }
+
+      inf <- which(is.infinite(v))
+
+      if (length(inf)) {
+        stop("Column ", in_names[match(n, names(x))],
+          " holds an infinite number (Inf or -Inf) on these rows: ",
+          paste(inf, collapse = ", "),
+          ". An identifier is a whole number or text, and an infinite value ",
+          "is neither; correct those values and call again.", call. = FALSE)
+      }
     }
 
     x[[n]] <- ingest_id(v)
@@ -167,18 +178,33 @@ ingest_ids <- function(x, in_names) {
 }
 
 # Flag ingest (S-2, M1 M-18). Each flag column that is integer or double with
-# every non-missing value 0 or 1 becomes logical; any other column is left as
-# it arrives (D3-152).
+# every non-missing value 0 or 1 becomes logical; one holding any other value
+# is left as it arrives and warns, naming the rows by id
+# (flag_value_not_binary, D3-152). Other column types are left as they arrive.
+# in_names are the input column names, position for position with names(x).
 #' @noRd
-ingest_flags <- function(x) {
+ingest_flags <- function(x, in_names) {
 
   for (n in intersect(vocab_flag_names(), names(x))) {
     v <- x[[n]]
 
-    if ((is.integer(v) || is.double(v)) && !inherits(v, "integer64") &&
-      all(is.na(v) | v %in% c(0, 1))) {
-      x[[n]] <- v == 1
+    if (!(is.integer(v) || is.double(v)) || inherits(v, "integer64")) next
+
+    bad <- which(!is.na(v) & !v %in% c(0, 1))
+
+    if (length(bad)) {
+      rows <- if ("id" %in% names(x)) x$id[bad] else bad
+
+      warning("Flag column ", in_names[match(n, names(x))],
+        " holds values other than 0, 1, or missing on these rows: ",
+        paste(rows, collapse = ", "),
+        ". The column is left as it arrives, not read as true and false. ",
+        "Recode those values to 0 or 1 and call again.", call. = FALSE)
+
+      next
     }
+
+    x[[n]] <- v == 1
   }
 
   x

@@ -168,6 +168,32 @@ cases:
     raises: error
     raises_key: identifier_not_whole
 
+  # I2-3: COMID Inf on row 3 raises identifier_not_finite naming COMID and row 3
+  - id: hy_identifier_not_finite
+    function: hy
+    fixture: hy_identifier_not_finite.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: identifier_not_finite
+
+  # D3-152: TerminalFl 2 on COMID 30 warns flag_value_not_binary naming COMID 30;
+  # tolerated coding (rule 5): the case is for the warning, and the layer the
+  # harness stores for a warning case is not a supported output
+  - id: hy_flag_value_not_binary
+    function: hy
+    fixture: hy_flag_value_not_binary.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: warning
+    raises_key: flag_value_not_binary
+
   # changes_with: i2; current R: vctrs cast error in the toid fill
   # (outlet_fill_type_mismatch); post-change both character, fill "", returns
   - id: hy_id_integer_toid_character

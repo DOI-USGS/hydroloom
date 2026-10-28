@@ -858,6 +858,19 @@ fixtures:
   rules:
   - I-6
   bytes: 73728
+- file: hy_flag_value_not_binary.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - COMID
+  - ToCOMID
+  - TerminalFl
+  exercises: 'flag column with a value other than 0, 1, or missing (TerminalFl 2 on
+    COMID 30, row 3): warns flag_value_not_binary naming COMID 30'
+  rules:
+  - S-2
+  bytes: 73728
 - file: hy_flownetwork_downmain_conflict.gpkg
   source: synthetic
   rows: 4
@@ -894,6 +907,18 @@ fixtures:
   rules:
   - I-2
   - I-5
+  bytes: 73728
+- file: hy_identifier_not_finite.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - COMID
+  - ToCOMID
+  exercises: 'REAL identifier that is infinite (COMID Inf, row 3): raises identifier_not_finite'
+  rules:
+  - I-1
+  - I-2
   bytes: 73728
 - file: hy_identifier_not_whole.gpkg
   source: synthetic
