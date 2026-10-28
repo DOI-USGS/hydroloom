@@ -31,3 +31,5 @@ revdep
 .claude
 CLAUDE.md
 ^dev$
+^AGENTS\.md$
+^\.kiro$

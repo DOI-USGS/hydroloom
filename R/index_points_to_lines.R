@@ -114,11 +114,19 @@ rename_indexed <- function(x, matched) {
 #'
 #' `search radius` is still used with this option but `max_matches` is overridden.
 #'
-#' @returns data.frame with up to five columns, point_id, id, aggregate_id,
-#' aggregate_id_measure, and offset. point_id is the row or list element in the
-#' point input. If an aggregate_id (e.g. mainstem or reachcode) is not included in x.
+#' @param aggregate_ids vector of aggregate_ids corresponding to the aggregate_id
+#' field of `x` of the same length and order as `points`. If included, index
+#' searching for each point is constrained to the flowlines that carry its
+#' aggregate_id, so a point on a tributary is placed on the tributary and not
+#' the receiving river. Exclusive with `ids`.
+#'
+#' @returns data.frame with up to six columns, point_id, id, id_measure,
+#' aggregate_id, aggregate_id_measure, and offset. point_id is the row or list
+#' element in the point input. id_measure is the interpolative measure along the
+#' matched flowline (0 at the outlet, 100 at the inlet) and is always returned.
+#' If an aggregate_id (e.g. mainstem or reachcode) is not included in x,
 #' it will not be included in the output. If from and to measures are not included
-#' for each id in x, measures will not be included in the output.
+#' for each id in x, aggregate measures will not be included in the output.
 #'
 #' @details
 #'
@@ -145,41 +153,47 @@ rename_indexed <- function(x, matched) {
 #' flowline in order to have aggregate id measures (reachcode or mainstem
 #' measures) in the output.
 #'
+#' @section Measures:
+#' `id_measure` is an interpolative measure along a single flowline: a percent
+#' of the line from its outlet, 0 at the outlet (downstream end) and 100 at the
+#' inlet (upstream, head end).
+#'
 #' @name index_points_to_lines
 #' @export
 #' @examples
 #' \donttest{
 #' if (require(hydrogeofetch)) {
-#'   source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
+#'   try(source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch")))
 #'
-#'   if (!any(lengths(sf::st_geometry(sample_flines)) > 1))
-#'     sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
+#'   if (exists("sample_flines")) {
+#'     if (!any(lengths(sf::st_geometry(sample_flines)) > 1))
+#'       sample_flines <- sf::st_cast(sample_flines, "LINESTRING", warn = FALSE)
 #'
-#'   point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
+#'     point <- sf::st_sfc(sf::st_point(c(-76.87479, 39.48233)),
+#'       crs = 4326)
+#'
+#'     index_points_to_lines(sample_flines, point)
+#'
+#'     point <- sf::st_transform(point, 5070)
+#'
+#'     index_points_to_lines(sample_flines, point,
+#'       search_radius = units::set_units(200, "m"))
+#'
+#'     index_points_to_lines(sample_flines, point, precision = 30)
+#'
+#'     points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
+#'       sf::st_point(c(-76.91711, 39.40884)),
+#'       sf::st_point(c(-76.88081, 39.36354))),
 #'     crs = 4326)
 #'
-#'   index_points_to_lines(sample_flines, point)
+#'     index_points_to_lines(sample_flines, points,
+#'       search_radius = units::set_units(0.2, "degrees"),
+#'       max_matches = 10)
 #'
-#'   point <- sf::st_transform(point, 5070)
-#'
-#'   index_points_to_lines(sample_flines, point,
-#'     search_radius = units::set_units(200, "m"))
-#'
-#'   index_points_to_lines(sample_flines, point, precision = 30)
-#'
-#'   points <- sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
-#'     sf::st_point(c(-76.91711, 39.40884)),
-#'     sf::st_point(c(-76.88081, 39.36354))),
-#'   crs = 4326)
-#'
-#'   index_points_to_lines(sample_flines, points,
-#'     search_radius = units::set_units(0.2, "degrees"),
-#'     max_matches = 10)
-#'
-#'   index_points_to_lines(sample_flines, points,
-#'     search_radius = units::set_units(0.2, "degrees"),
-#'     ids = c(11689926, 11690110, 11688990))
-#'
+#'     index_points_to_lines(sample_flines, points,
+#'       search_radius = units::set_units(0.2, "degrees"),
+#'       ids = c(11689926, 11690110, 11688990))
+#'   }
 #' }
 #' }
 #'
@@ -187,7 +201,8 @@ index_points_to_lines <- function(x, points,
                                   search_radius = NULL,
                                   precision = NA,
                                   max_matches = 1,
-                                  ids = NULL) {
+                                  ids = NULL,
+                                  aggregate_ids = NULL) {
 
   UseMethod("index_points_to_lines")
 
@@ -199,7 +214,8 @@ index_points_to_lines.data.frame <- function(x, points,
                                              search_radius = NULL,
                                              precision = NA,
                                              max_matches = 1,
-                                             ids = NULL) {
+                                             ids = NULL,
+                                             aggregate_ids = NULL) {
 
   x <- hy(x)
 
@@ -207,7 +223,8 @@ index_points_to_lines.data.frame <- function(x, points,
     search_radius = search_radius,
     precision = precision,
     max_matches = max_matches,
-    ids = ids)
+    ids = ids,
+    aggregate_ids = aggregate_ids)
 
   rename_indexed(x, matched)
 
@@ -219,9 +236,50 @@ index_points_to_lines.hy <- function(x, points,
                                      search_radius = NULL,
                                      precision = NA,
                                      max_matches = 1,
-                                     ids = NULL) {
+                                     ids = NULL,
+                                     aggregate_ids = NULL) {
 
   check_names(x, c(id), "index_points_to_lines")
+
+  if (!is.null(aggregate_ids)) {
+    if (!is.null(ids)) stop("aggregate_ids and ids are exclusive")
+
+    if (!aggregate_id %in% names(x))
+      stop("aggregate_ids provided but x has no aggregate_id")
+
+    if (length(aggregate_ids) != length(st_geometry(points)))
+      stop("aggregate_ids input must be 1:1 with points")
+
+    if (anyNA(aggregate_ids)) stop("aggregate_ids must not contain NA")
+
+    point_ids <- seq_along(st_geometry(points))
+
+    present <- unique(aggregate_ids)
+
+    # split x once by aggregate_id, restricted to the values present in
+    # aggregate_ids, rather than filtering all of x once per value
+    groups <- split(x[x$aggregate_id %in% present, ],
+      x$aggregate_id[x$aggregate_id %in% present])
+
+    matched <- lapply(present, function(a) {
+      in_group <- aggregate_ids == a
+
+      group_matched <- index_points_to_lines(
+        groups[[as.character(a)]],
+        st_geometry(points)[in_group],
+        search_radius = search_radius,
+        precision = precision,
+        max_matches = max_matches)
+
+      group_matched$point_id <- point_ids[in_group][group_matched$point_id]
+
+      group_matched
+    })
+
+    matched <- bind_rows(matched)
+
+    return(matched[order(matched$point_id), , drop = FALSE])
+  }
 
   in_crs <- st_crs(points)
 
@@ -360,28 +418,30 @@ index_points_to_lines.hy <- function(x, points,
 
   matched <- select(matched, point_id, node = "nn.idx", offset = "nn.dists", id)
 
-  select_vec <- c("index")
-  select_vec2 <- c(point_id, id, offset)
+  x <- x |>
+    group_by(.data$L1) |>
+    add_len() |>
+    ungroup()
+
+  select_vec <- c("index", id_measure)
+  select_vec2 <- c(point_id, id, id_measure, offset)
 
   if (all(c(aggregate_id_from_measure, aggregate_id) %in% names(fline_atts))) {
     x <- x |>
-      group_by(.data$L1) |>
-      add_len() |>
       mutate(aggregate_id_measure = round(
         .data$aggregate_id_from_measure +
           (.data$aggregate_id_to_measure - .data$aggregate_id_from_measure) *
             (.data$id_measure / 100),
         digits = 4)) |>
-      ungroup() |>
       distinct()
 
-    select_vec <- c("index", aggregate_id, aggregate_id_measure)
-    select_vec2 <- c(point_id, id, aggregate_id, aggregate_id_measure, offset)
+    select_vec <- c("index", id_measure, aggregate_id, aggregate_id_measure)
+    select_vec2 <- c(point_id, id, id_measure, aggregate_id, aggregate_id_measure, offset)
 
   } else if (aggregate_id %in% names(x)) {
 
-    select_vec <- c("index", aggregate_id)
-    select_vec2 <- c(point_id, id, aggregate_id, offset)
+    select_vec <- c("index", id_measure, aggregate_id)
+    select_vec2 <- c(point_id, id, id_measure, aggregate_id, offset)
 
   }
 
@@ -411,21 +471,23 @@ index_points_to_lines.hy <- function(x, points,
 #' Distance is in units of provided projection.
 #' @export
 #' @examples
-#'
+#' \donttest{
 #' if (require(hydrogeofetch)) {
 #'
-#'   source(system.file("extdata/sample_data.R", package = "hydrogeofetch"))
+#'   try(source(system.file("extdata/sample_data.R", package = "hydrogeofetch")))
 #'
-#'   waterbodies <- sf::st_transform(
-#'     sf::read_sf(sample_data, "NHDWaterbody"), 5070)
+#'   if (exists("sample_data")) {
+#'     waterbodies <- sf::st_transform(
+#'       sf::read_sf(sample_data, "NHDWaterbody"), 5070)
 #'
-#'   points <- sf::st_transform(
-#'     sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
-#'       crs = 4326), 5070)
+#'     points <- sf::st_transform(
+#'       sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
+#'         crs = 4326), 5070)
 #'
-#'   index_points_to_waterbodies(waterbodies, points,
-#'     search_radius = units::set_units(500, "m"))
-#'
+#'     index_points_to_waterbodies(waterbodies, points,
+#'       search_radius = units::set_units(500, "m"))
+#'   }
+#' }
 #' }
 #'
 index_points_to_waterbodies <- function(waterbodies, points, flines = NULL,

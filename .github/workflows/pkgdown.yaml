@@ -32,7 +32,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, local::.
+          # github hydrogeofetch until a CRAN release carries the new_hope_3dhp.R recipe
+          extra-packages: any::pkgdown, local::., github::DOI-USGS/hydrogeofetch
           needs: website
 
       - name: Build site

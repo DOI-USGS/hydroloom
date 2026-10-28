@@ -125,6 +125,24 @@ test_that("hy_capabilities returns correct logical vector", {
   expect_true(caps_nc[["add_levelpaths"]])
 })
 
+test_that("hy_capabilities reports aggregate flowpath functions on node input", {
+
+  base <- data.frame(id = c(1, 2), fromnode = c(10, 11), tonode = c(11, 12),
+    aggregate_id = c("A", "A"), length_km = c(1, 1))
+
+  hn <- hy(base)
+  expect_s3_class(hn, "hy_node")
+
+  caps <- hy_capabilities(hn)
+  expect_true(caps[["add_hydro_location_distance"]])
+  expect_true(caps[["index_hydro_location_distance"]])
+  expect_true(caps[["get_subpath"]])
+
+  # no aggregate_id, no aggregate flowpath
+  caps <- hy_capabilities(hy(base[, c("id", "fromnode", "tonode")]))
+  expect_false(caps[["get_subpath"]])
+})
+
 test_that("print methods produce expected output", {
   x <- data.frame(id = 1:3, toid = c(2L, 3L, 0L))
   h <- hy(x)

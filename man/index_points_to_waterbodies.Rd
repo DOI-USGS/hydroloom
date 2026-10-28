@@ -36,21 +36,23 @@ given an sf point geometry column, return waterbody id, and
 id of dominant artificial path
 }
 \examples{
-
+\donttest{
 if (require(hydrogeofetch)) {
 
-  source(system.file("extdata/sample_data.R", package = "hydrogeofetch"))
+  try(source(system.file("extdata/sample_data.R", package = "hydrogeofetch")))
 
-  waterbodies <- sf::st_transform(
-    sf::read_sf(sample_data, "NHDWaterbody"), 5070)
+  if (exists("sample_data")) {
+    waterbodies <- sf::st_transform(
+      sf::read_sf(sample_data, "NHDWaterbody"), 5070)
 
-  points <- sf::st_transform(
-    sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
-      crs = 4326), 5070)
+    points <- sf::st_transform(
+      sf::st_sfc(sf::st_point(c(-89.356086, 43.079943)),
+        crs = 4326), 5070)
 
-  index_points_to_waterbodies(waterbodies, points,
-    search_radius = units::set_units(500, "m"))
-
+    index_points_to_waterbodies(waterbodies, points,
+      search_radius = units::set_units(500, "m"))
+  }
+}
 }
 
 }
