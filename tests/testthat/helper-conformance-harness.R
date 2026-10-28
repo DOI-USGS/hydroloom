@@ -513,6 +513,10 @@ run_conformance_case <- function(case, fn_entry, dir = conformance_dir(),
 
   layer <- to_layer(result, fn_entry$returns, args)
 
+  # Attributes only unless the case checks geometry pass-through (S-5, G-14,
+  # D3-79): the fixture holds the geometry.
+  if (!isTRUE(case$geometry) && inherits(layer, "sf")) layer <- sf::st_drop_geometry(layer)
+
   id_problems <- if (fn != "align_names") id_type_problems(result) else character()
 
   expected <- if (is.null(case$expected)) paste0(fn, ".gpkg") else case$expected

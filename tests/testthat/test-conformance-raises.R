@@ -74,7 +74,8 @@ test_that("the manifest schema accepts raises and raises_key", {
 
   valid <- function(case) {
     m <- list(suite_version = "0.1.0",
-      functions = list(add_toids = list(returns = "frame")),
+      functions = list(add_toids = list(requires = "algorithms/add_toids.md#requires",
+        returns = "frame")),
       cases = list(case))
 
     jsonvalidate::json_validate(yaml_to_json(m), schema, engine = "ajv")

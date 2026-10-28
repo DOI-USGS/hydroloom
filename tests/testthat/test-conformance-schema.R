@@ -40,9 +40,10 @@ test_that("the manifest schema accepts prepare and an absent fixture", {
 
   schema <- file.path(conformance_dir(), "manifest.schema.json")
 
-  valid <- function(case) {
+  valid <- function(case, fn_entry = list(requires = "algorithms/hy_reverse.md#requires",
+    returns = "frame")) {
     m <- list(suite_version = "0.1.0",
-      functions = list(hy_reverse = list(returns = "frame")),
+      functions = list(hy_reverse = fn_entry),
       cases = list(case))
 
     jsonvalidate::json_validate(yaml_to_json(m), schema, engine = "ajv")
@@ -51,6 +52,8 @@ test_that("the manifest schema accepts prepare and an absent fixture", {
   prep <- list(`function` = "hy", args = list(add_topo = TRUE))
 
   expect_true(valid(plain_case("no_fixture", "hy_reverse")))
+  # D2-02: every function entry carries its requires pointer
+  expect_false(valid(plain_case("no_fixture", "hy_reverse"), list(returns = "frame")))
   expect_true(valid(plain_case("prepared", "hy_reverse", "nodes.gpkg", prepare = prep)))
   expect_true(valid(plain_case("prepared_no_args", "hy_reverse", "nodes.gpkg",
     prepare = list(`function` = "hy"))))

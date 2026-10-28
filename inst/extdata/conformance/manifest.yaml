@@ -71,6 +71,8 @@ cases:
 
   # changes_with: i2 (fromnode/tonode double -> integer)
   # changes_with: M-18 (start_flag, terminal_flag integer 1/0 -> logical)
+  # geometry: the one layer that keeps geometry, checking G-14 pass-through
+  # (S-5, D3-79); every other layer stores attributes only
   - id: hy_new_hope_default
     function: hy
     fixture: new_hope.gpkg
@@ -79,6 +81,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    geometry: true
 
   # python_omitted; changes_with: i2
   # changes_with: M-18 (start_flag, terminal_flag integer 1/0 -> logical)
@@ -3184,7 +3187,7 @@ cases:
   - id: sort_network_two_networks_outlets
     function: sort_network
     fixture: sort_two_networks.gpkg
-    args: {split: true, outlets: [8, 3]}
+    args: {split: true, outlets: ["8", "3"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3194,7 +3197,7 @@ cases:
   - id: sort_network_two_networks_nested_outlets
     function: sort_network
     fixture: sort_two_networks.gpkg
-    args: {outlets: [3, 2]}
+    args: {outlets: ["3", "2"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3203,7 +3206,7 @@ cases:
   - id: sort_network_two_networks_nested_outlets_split
     function: sort_network
     fixture: sort_two_networks.gpkg
-    args: {split: true, outlets: [3, 2]}
+    args: {split: true, outlets: ["3", "2"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3217,7 +3220,7 @@ cases:
   - id: sort_network_two_networks_unknown_outlet
     function: sort_network
     fixture: sort_two_networks.gpkg
-    args: {outlets: [99]}
+    args: {outlets: ["99"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3227,7 +3230,7 @@ cases:
   - id: sort_network_network_outlets_split
     function: sort_network
     fixture: network.gpkg
-    args: {split: true, outlets: [11690186, 11689280]}
+    args: {split: true, outlets: ["11690186", "11689280"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3236,7 +3239,7 @@ cases:
   - id: sort_network_network_nested_outlets_split
     function: sort_network
     fixture: network.gpkg
-    args: {split: true, outlets: [11690196, 11689718]}
+    args: {split: true, outlets: ["11690196", "11689718"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3495,7 +3498,7 @@ cases:
   - id: sort_network_two_networks_outlets_listed
     function: sort_network
     fixture: sort_two_networks.gpkg
-    args: {split: true, outlets: [3, 8]}
+    args: {split: true, outlets: ["3", "8"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3507,7 +3510,7 @@ cases:
     function: sort_network
     fixture: network.gpkg
     prepare: {function: add_toids, args: {return_dendritic: true}}
-    args: {split: true, outlets: [11690186, 11689280]}
+    args: {split: true, outlets: ["11690186", "11689280"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3528,7 +3531,7 @@ cases:
   - id: sort_network_coastal_hydroseq_outlet
     function: sort_network
     fixture: coastal_hydroseq_order.gpkg
-    args: {split: true, outlets: [2544457]}
+    args: {split: true, outlets: ["2544457"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3706,7 +3709,7 @@ cases:
   - id: add_topo_sort_outlets
     function: add_topo_sort
     fixture: add_topo_sort_worked_example.gpkg
-    args: {outlets: [3]}
+    args: {outlets: ["3"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3717,7 +3720,7 @@ cases:
   - id: add_topo_sort_outlets_nested
     function: add_topo_sort
     fixture: add_topo_sort_worked_example.gpkg
-    args: {outlets: [2, 3, 3]}
+    args: {outlets: ["2", "3", "3"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3728,7 +3731,7 @@ cases:
   - id: add_topo_sort_outlets_absent
     function: add_topo_sort
     fixture: add_topo_sort_worked_example.gpkg
-    args: {outlets: [99]}
+    args: {outlets: ["99"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -3741,7 +3744,7 @@ cases:
   # - id: add_topo_sort_outlets_partly_absent
   #   function: add_topo_sort
   #   fixture: add_topo_sort_worked_example.gpkg
-  #   args: {outlets: [3, 99]}
+  #   args: {outlets: ["3", "99"]}
   #   compare: exact
   #   order: exact
   #   supported_by: [r]
@@ -3918,7 +3921,7 @@ cases:
     function: add_topo_sort
     fixture: return_divergence.gpkg
     prepare: {function: add_toids, args: {return_dendritic: false}}
-    args: {outlets: [3]}
+    args: {outlets: ["3"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4087,7 +4090,7 @@ cases:
   - id: navigate_network_dfs_tie_down
     function: navigate_network_dfs
     fixture: dfs_tie.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4098,7 +4101,7 @@ cases:
   - id: navigate_network_dfs_tie_up
     function: navigate_network_dfs
     fixture: dfs_tie.gpkg
-    args: {starts: [4], direction: up}
+    args: {starts: ["4"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4109,7 +4112,7 @@ cases:
   - id: navigate_network_dfs_tie_permuted_down
     function: navigate_network_dfs
     fixture: dfs_tie_permuted.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4119,7 +4122,7 @@ cases:
   - id: navigate_network_dfs_tie_permuted_up
     function: navigate_network_dfs
     fixture: dfs_tie_permuted.gpkg
-    args: {starts: [4], direction: up}
+    args: {starts: ["4"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4131,7 +4134,7 @@ cases:
   - id: navigate_network_dfs_two_outlets_down
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
-    args: {starts: [2]}
+    args: {starts: ["2"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4142,7 +4145,7 @@ cases:
   - id: navigate_network_dfs_two_outlets_visited_start
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
-    args: {starts: [2, 5]}
+    args: {starts: ["2", "5"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4152,7 +4155,7 @@ cases:
   - id: navigate_network_dfs_two_outlets_reset
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
-    args: {starts: [2, 5], reset: true}
+    args: {starts: ["2", "5"], reset: true}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4163,7 +4166,7 @@ cases:
   - id: navigate_network_dfs_two_outlets_start_order
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
-    args: {starts: [5, 2]}
+    args: {starts: ["5", "2"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4173,7 +4176,7 @@ cases:
   - id: navigate_network_dfs_two_outlets_duplicate_starts
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
-    args: {starts: [2, 2, 5]}
+    args: {starts: ["2", "2", "5"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4183,7 +4186,7 @@ cases:
   - id: navigate_network_dfs_two_outlets_up
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
-    args: {starts: [9, 10], direction: up}
+    args: {starts: ["9", "10"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4215,7 +4218,7 @@ cases:
   - id: navigate_network_dfs_single_flowline
     function: navigate_network_dfs
     fixture: single_flowline.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4224,7 +4227,7 @@ cases:
   - id: navigate_network_dfs_single_flowline_up
     function: navigate_network_dfs
     fixture: single_flowline.gpkg
-    args: {starts: [1], direction: up}
+    args: {starts: ["1"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4234,7 +4237,7 @@ cases:
   - id: navigate_network_dfs_all_terminals
     function: navigate_network_dfs
     fixture: all_terminals.gpkg
-    args: {starts: [30, 4, 100, 2, 7]}
+    args: {starts: ["30", "4", "100", "2", "7"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4243,7 +4246,7 @@ cases:
   - id: navigate_network_dfs_all_terminals_up
     function: navigate_network_dfs
     fixture: all_terminals.gpkg
-    args: {starts: [30, 4, 100, 2, 7], direction: up}
+    args: {starts: ["30", "4", "100", "2", "7"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4254,7 +4257,7 @@ cases:
   - id: navigate_network_dfs_duplicated_edge
     function: navigate_network_dfs
     fixture: duplicated_edge.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4278,7 +4281,7 @@ cases:
   - id: navigate_network_dfs_three_cycle
     function: navigate_network_dfs
     fixture: three_cycle.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4290,7 +4293,7 @@ cases:
   - id: navigate_network_dfs_three_cycle_up
     function: navigate_network_dfs
     fixture: three_cycle.gpkg
-    args: {starts: [6], direction: up}
+    args: {starts: ["6"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4301,7 +4304,7 @@ cases:
   - id: navigate_network_dfs_reciprocal_pair
     function: navigate_network_dfs
     fixture: reciprocal_pair.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4312,7 +4315,7 @@ cases:
   - id: navigate_network_dfs_self_loop
     function: navigate_network_dfs
     fixture: self_loop.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4324,7 +4327,7 @@ cases:
   - id: navigate_network_dfs_isolated_flowline
     function: navigate_network_dfs
     fixture: isolated_flowline.gpkg
-    args: {starts: [12]}
+    args: {starts: ["12"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4334,7 +4337,7 @@ cases:
   - id: navigate_network_dfs_isolated_flowline_up
     function: navigate_network_dfs
     fixture: isolated_flowline.gpkg
-    args: {starts: [11], direction: up}
+    args: {starts: ["11"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4346,7 +4349,7 @@ cases:
   - id: navigate_network_dfs_new_hope_down
     function: navigate_network_dfs
     fixture: new_hope.gpkg
-    args: {starts: [8893402]}
+    args: {starts: ["8893402"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4356,7 +4359,7 @@ cases:
   - id: navigate_network_dfs_new_hope_up
     function: navigate_network_dfs
     fixture: new_hope.gpkg
-    args: {starts: [8897784], direction: up}
+    args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4366,7 +4369,7 @@ cases:
   - id: navigate_network_dfs_new_hope_upmain
     function: navigate_network_dfs
     fixture: new_hope.gpkg
-    args: {starts: [8897784], direction: upmain}
+    args: {starts: ["8897784"], direction: upmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4376,7 +4379,7 @@ cases:
   - id: navigate_network_dfs_new_hope_downmain
     function: navigate_network_dfs
     fixture: new_hope.gpkg
-    args: {starts: [8891126], direction: downmain}
+    args: {starts: ["8891126"], direction: downmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4386,7 +4389,7 @@ cases:
   - id: navigate_network_dfs_new_hope_starts
     function: navigate_network_dfs
     fixture: new_hope.gpkg
-    args: {starts: [8893402, 8891152]}
+    args: {starts: ["8893402", "8891152"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4396,7 +4399,7 @@ cases:
   - id: navigate_network_dfs_new_hope_starts_reset
     function: navigate_network_dfs
     fixture: new_hope.gpkg
-    args: {starts: [8893402, 8891152], reset: true}
+    args: {starts: ["8893402", "8891152"], reset: true}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4407,7 +4410,7 @@ cases:
     function: navigate_network_dfs
     fixture: new_hope.gpkg
     prepare: {function: add_toids}
-    args: {starts: [8893402]}
+    args: {starts: ["8893402"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4417,7 +4420,7 @@ cases:
   - id: navigate_network_dfs_new_hope_flownetwork_upmain
     function: navigate_network_dfs
     fixture: new_hope_flownetwork.gpkg
-    args: {starts: [8897784], direction: upmain}
+    args: {starts: ["8897784"], direction: upmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4427,7 +4430,7 @@ cases:
   - id: navigate_network_dfs_new_hope_flownetwork_downmain
     function: navigate_network_dfs
     fixture: new_hope_flownetwork.gpkg
-    args: {starts: [8891126], direction: downmain}
+    args: {starts: ["8891126"], direction: downmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4438,7 +4441,7 @@ cases:
     function: navigate_network_dfs
     fixture: new_hope_flownetwork.gpkg
     prepare: {function: make_index_ids, args: {mode: to}}
-    args: {starts: [8891126], direction: downmain}
+    args: {starts: ["8891126"], direction: downmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4449,7 +4452,7 @@ cases:
     function: navigate_network_dfs
     fixture: new_hope_flownetwork.gpkg
     prepare: {function: make_index_ids, args: {mode: from}}
-    args: {starts: [8897784], direction: upmain}
+    args: {starts: ["8897784"], direction: upmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4492,7 +4495,7 @@ cases:
   - id: navigate_network_dfs_network_downmain
     function: navigate_network_dfs
     fixture: network.gpkg
-    args: {starts: [11689204], direction: downmain}
+    args: {starts: ["11689204"], direction: downmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4502,7 +4505,7 @@ cases:
   - id: navigate_network_dfs_network_up
     function: navigate_network_dfs
     fixture: network.gpkg
-    args: {starts: [11690088], direction: up}
+    args: {starts: ["11690088"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4513,7 +4516,7 @@ cases:
   - id: navigate_network_dfs_divergence_attribute_down
     function: navigate_network_dfs
     fixture: divergence_attribute.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4524,7 +4527,7 @@ cases:
   - id: navigate_network_dfs_return_divergence_down
     function: navigate_network_dfs
     fixture: return_divergence.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4535,7 +4538,7 @@ cases:
   - id: navigate_network_dfs_return_divergence_up
     function: navigate_network_dfs
     fixture: return_divergence.gpkg
-    args: {starts: [10], direction: up}
+    args: {starts: ["10"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4572,7 +4575,7 @@ cases:
   - id: navigate_network_dfs_divergence_leaves_down
     function: navigate_network_dfs
     fixture: sort_divergence_leaves.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4583,7 +4586,7 @@ cases:
   - id: navigate_network_dfs_divergence_leaves_permuted_down
     function: navigate_network_dfs
     fixture: sort_divergence_leaves_permuted.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4594,7 +4597,7 @@ cases:
   - id: navigate_network_dfs_divergence_leaves_up
     function: navigate_network_dfs
     fixture: sort_divergence_leaves.gpkg
-    args: {starts: [3], direction: up}
+    args: {starts: ["3"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4606,7 +4609,7 @@ cases:
   - id: navigate_network_dfs_coastal_down
     function: navigate_network_dfs
     fixture: coastal.gpkg
-    args: {starts: [2545561]}
+    args: {starts: ["2545561"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4616,7 +4619,7 @@ cases:
   - id: navigate_network_dfs_sort_test_hy_names_down
     function: navigate_network_dfs
     fixture: sort_test_hy_names.gpkg
-    args: {starts: [34]}
+    args: {starts: ["34"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4647,7 +4650,7 @@ cases:
   - id: navigate_network_dfs_nhdplushr_downmain
     function: navigate_network_dfs
     fixture: nhdplushr.gpkg
-    args: {starts: [15000500004891], direction: downmain}
+    args: {starts: ["15000500004891"], direction: downmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4659,7 +4662,7 @@ cases:
   - id: navigate_network_dfs_rejoin_down
     function: navigate_network_dfs
     fixture: dfs_rejoin.gpkg
-    args: {starts: [2]}
+    args: {starts: ["2"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4670,7 +4673,7 @@ cases:
   - id: navigate_network_dfs_rejoin_up
     function: navigate_network_dfs
     fixture: dfs_rejoin.gpkg
-    args: {starts: [9], direction: up}
+    args: {starts: ["9"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4680,7 +4683,7 @@ cases:
   - id: navigate_network_dfs_new_hope_down_8891152
     function: navigate_network_dfs
     fixture: new_hope.gpkg
-    args: {starts: [8891152]}
+    args: {starts: ["8891152"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4691,7 +4694,7 @@ cases:
     function: navigate_network_dfs
     fixture: new_hope.gpkg
     prepare: {function: add_toids}
-    args: {starts: [8897784], direction: up}
+    args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4701,7 +4704,7 @@ cases:
   - id: navigate_network_dfs_new_hope_not_dendritic_down
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
-    args: {starts: [8893402]}
+    args: {starts: ["8893402"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4712,7 +4715,7 @@ cases:
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
     prepare: {function: make_index_ids, args: {mode: to}}
-    args: {starts: [8893402]}
+    args: {starts: ["8893402"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4722,7 +4725,7 @@ cases:
   - id: navigate_network_dfs_new_hope_not_dendritic_up
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
-    args: {starts: [8897784], direction: up}
+    args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4733,7 +4736,7 @@ cases:
     function: navigate_network_dfs
     fixture: new_hope_toids_not_dendritic.gpkg
     prepare: {function: make_index_ids, args: {mode: from}}
-    args: {starts: [8897784], direction: up}
+    args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4743,7 +4746,7 @@ cases:
   - id: navigate_network_dfs_start_not_in_network
     function: navigate_network_dfs
     fixture: dfs_tie.gpkg
-    args: {starts: [99]}
+    args: {starts: ["99"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4766,7 +4769,7 @@ cases:
   - id: navigate_network_dfs_no_topology
     function: navigate_network_dfs
     fixture: empty_name.gpkg
-    args: {starts: [1]}
+    args: {starts: ["1"]}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4777,7 +4780,7 @@ cases:
   - id: navigate_network_dfs_upmain_without_main
     function: navigate_network_dfs
     fixture: dfs_two_outlets.gpkg
-    args: {starts: [9], direction: upmain}
+    args: {starts: ["9"], direction: upmain}
     compare: exact
     order: exact
     supported_by: [r]
@@ -4789,7 +4792,7 @@ cases:
   - id: navigate_network_dfs_divergence_attribute_downmain
     function: navigate_network_dfs
     fixture: divergence_attribute.gpkg
-    args: {starts: [1], direction: downmain}
+    args: {starts: ["1"], direction: downmain}
     compare: exact
     order: exact
     supported_by: [r]

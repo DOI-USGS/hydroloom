@@ -10,22 +10,15 @@ skip_if_no_conformance <- function() {
     "conformance directory absent (installed package; SPEC S-10)")
 }
 
-# Read YAML so that every sequence stays a JSON array (even of length one),
-# every empty mapping stays a JSON object, and an integer beyond the 32-bit
-# range is read as a double rather than NA (an NHDPlus HR identifier).
+# Read YAML so that every sequence stays a JSON array (even of length one) and
+# every empty mapping stays a JSON object. Identifier arguments are quoted
+# strings in the manifest (I-1, D3-83), so no integer needs special reading.
 read_conformance_yaml <- function(path) {
 
   yaml::read_yaml(path, handlers = list(
     seq = function(x) as.list(x),
-    map = function(x) if (length(x) == 0) stats::setNames(list(), character()) else x,
-    int = yaml_int
+    map = function(x) if (length(x) == 0) stats::setNames(list(), character()) else x
   ))
-}
-
-yaml_int <- function(x) {
-
-  v <- suppressWarnings(as.integer(x))
-  if (is.na(v)) as.numeric(x) else v
 }
 
 yaml_to_json <- function(x) {

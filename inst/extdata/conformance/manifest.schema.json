@@ -43,7 +43,7 @@
     },
     "function": {
       "type": "object",
-      "required": ["returns"],
+      "required": ["requires", "returns"],
       "additionalProperties": false,
       "properties": {
         "requires": {
@@ -138,6 +138,10 @@
           "description": "The remedies.json key of the condition (A-10). Accepted now; checked once remedies.json exists.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9_.]*$"
+        },
+        "geometry": {
+          "description": "Keep the geometry column in the expectation layer to check pass-through (G-14). Absent or false: the layer stores attributes only and the fixture holds the geometry (S-5).",
+          "type": "boolean"
         }
       },
       "dependencies": {
