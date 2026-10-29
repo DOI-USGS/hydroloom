@@ -69,6 +69,12 @@ test attributes a function reads through an argument (the name and weight of
 `add_levelpaths`, the variable of `accumulate_downstream`), and it does not test the
 data: a network with repeated edges or missing values is reported by its pattern alone.
 A `TRUE` row says the function accepts the input's shape, not that the call succeeds.
+A `FALSE` row does not say the call fails: a `hy_topo` that keeps `fromnode`/`tonode`
+reports `add_divergence`, `add_return_divergence`, and `subset_network` unavailable
+though they run through the node downcast (D3-32), and the 1.3.0 entries for
+`add_levelpaths`, `add_streamorder`, and `accumulate_downstream` report a flownetwork
+unavailable though R runs them; those entries are corrected as their descriptions land
+in M6 (D3-70).
 
 The code table, in row order; in R it is `hy_requires` in `R/hy_classes.R`. Each
 phase-1 entry is its description's `requires` (D3-42); the other entries keep hydroloom
@@ -156,9 +162,6 @@ applies. No CSR index is built.
 - On a `hy_flownetwork` input, `available` is `TRUE` for `sort_network`,
   `add_topo_sort`, `check_hy_graph`, `navigate_network_dfs`, and `make_index_ids`,
   `FALSE` for every other row not of pattern `any`, and every `via` is `""` (D3-42).
-- For each code-table entry whose function is listed in the manifest, the entry equals
-  that function's description `requires` (A-4, D3-33; the testthat test and
-  `test_api.py`).
 - The output is unchanged by any permutation of the input rows (D-7).
 - The input is not modified (A-8).
 
@@ -208,9 +211,9 @@ column (D3-167), nor `id_toid_pair_repeated` on a repeated (`id`, `toid`) pair (
 - `tests/testthat/test_hy_classes.R`: "hy_capabilities reports aggregate flowpath
   functions on node input"; `tests/testthat/test-conformance-capabilities.R`:
   "hy_capabilities code table equals the manifest requires".
-- SPEC A-2, A-3, A-4, A-8, A-9, A-16, D-7, G-14, I-14, S-4, S-7, S-8; ROADMAP §2
-  and §4; milestone decisions D3-01 to D3-03, D3-13, D3-31, D3-32, D3-33, D3-42, D3-46,
-  D3-57, D3-70, and D3-167.
+- SPEC A-2, A-3, A-4, A-8, A-9, A-16, D-7, G-14, I-14, K-1, K-11, S-4, S-7, S-8;
+  ROADMAP §2 and §4; milestone decisions D3-01 to D3-03, D3-13, D3-14, D3-31, D3-32,
+  D3-33, D3-42, D3-46, D3-57, D3-70, D3-89, D3-162, D3-167, D3-177, and D3-196.
 
 ## Worked example
 
@@ -239,8 +242,9 @@ with `via = "make_node_topology"` on the four node rows. With `include_conversio
   named logical vector) and stating the ROADMAP §4 change A-4: `hy_capabilities()`
   returns the (`function`, `available`, `via`) frame from a hand-written code table,
   with a testthat test asserting each entry for a manifest function equals that
-  function's `requires`. Cases capturing the vector carry `changes_with: A-4`; the A-4
-  step regenerates their layers in the frame shape. Gap with SPEC A-4 and A-16, which
+  function's `requires`. Each case's manifest comment names `changes_with: A-4`; the
+  annotation itself is stripped under D3-14, and the A-4 step regenerates the layers in
+  the frame shape. Gap with SPEC A-4 and A-16, which
   give `hy_capabilities(x)` and `capabilities(network)`: R has `include_conversions =
   FALSE`, which A-9 keeps on both sides.
 - 2026-10-26, suite 0.1.0: review round. The code table takes the phase-1 entries from
@@ -276,3 +280,4 @@ with `via = "make_node_topology"` on the four node rows. With `include_conversio
 - 2026-10-29, suite 0.1.0, M3 close run 3, D3-196: on a raw table with a repeated
   (`id`, `toid`) pair, Python `capabilities` returns the `hy_flownetwork` answer and does
   not raise (Preconditions, Edge cases, Remedies).
+- 2026-10-29 (M3 close run 3, reader round D3-201): H-02, H-05, H-06, H-07.
