@@ -28,8 +28,8 @@ hydroloom_names"; `divergence_check` "if TRUE, `divergence` and, where present,
 `fraction_tol` "numeric tolerance used when checking that `divergence_fraction` sums to
 1 across a `fromnode` group".
 
-Returns one of three values. The function never raises on a problem it finds; it
-returns the problem rows (A-10).
+Returns one of four values, listed in check order. The function never raises on a
+problem it finds; it returns the problem rows (A-10).
 
 1. No problem found: `TRUE` (R `logical` length one; Python `True`). The expectation is
    the S-7 scalar layer, one row, `value = TRUE`.
@@ -42,7 +42,12 @@ returns the problem rows (A-10).
    | --- | --- | --- |
    | `divergence_issue` | text | the failed checks, joined by `"; "` in check order |
 
-3. A cycle (always checked, D-8): the rows on a cycle, in input row order, with two
+3. A repeated (`id`, `toid`) pair (always checked, D3-166, D3-209): a table with the
+   columns `id` and `toid` only, one row per distinct pair held by more than one input
+   row, in order of each pair's first row in the input. It carries no geometry. Python
+   returns it from its first release and R in M6 (D3-166).
+
+4. A cycle (always checked, D-8): the rows on a cycle, in input row order, with two
    columns appended (D-14). The cycle result carries no `row` column either: `id`
    identifies the flowline (I-12, D3-54).
 
@@ -51,14 +56,10 @@ returns the problem rows (A-10).
    | `component` | count, R `integer`, Python `int32` | which cycle the row belongs to, numbered from 1 |
    | `reciprocal` | `flag` | `TRUE` when the cycle has exactly two flowlines |
 
-For both tables: geometry is kept when the input has it (A-8), and columns are in
-hydroloom names, not the input's source names. Both tables are the R class `hy()` gives
-the subset: `hy_topo` or `hy_flownetwork`, or `hy_node` for a divergence result on a
-node-topology table (D3-213).
-
-Python also lists the rows of a repeated (`id`, `toid`) pair (D3-166). The shape of those
-rows in the Python result is open (D3-209): which of the tables above holds them, and what
-`component` and `reciprocal` hold for a pair on no cycle, are not yet given.
+For the divergence and cycle tables: geometry is kept when the input has it (A-8), and
+columns are in hydroloom names, not the input's source names. Both tables are the R
+class `hy()` gives the subset: `hy_topo` or `hy_flownetwork`, or `hy_node` for a
+divergence result on a node-topology table (D3-213).
 
 No named kernel is involved (K-6). The strongly connected components walk lives in
 `_kernels/walk.py` (SPEC module table) and in R in the internal base R Tarjan function
@@ -108,7 +109,7 @@ flow, and the label does not say which (D3-75).
 
 The result is `TRUE` exactly when the network has no cycle (and, with
 `divergence_check`, no divergence coding problem; a repeated (`id`, `toid`) pair also
-keeps it from `TRUE`, Postconditions). Otherwise it lists every row whose
+keeps it from `TRUE`, Postconditions). The cycle result lists every row whose
 `id` and `toid` lie in the same cycle. For a table with unique `id` every flowline in a
 cycle contributes its one row. For a flownetwork, a flowline in a cycle may also have a
 row leading out of the cycle (to a divergence's other path); that row is not returned,
@@ -152,30 +153,34 @@ Any number of `divergence == 2` features at one node is valid.
 
 1. R: if the input does not inherit `hy` or `hy_flownetwork`, call `hy()`. Python:
    `as_hy` without the repeated-pair raise (`id_toid_pair_repeated`); `check_hy_graph`
-   lists those rows (D3-166). The `toid` requirement (`needs_topo`) is tested after step
-   2, as Preconditions state.
+   lists those pairs in step 3 (D3-166). The `toid` requirement (`needs_topo`) is tested
+   after step 2, as Preconditions state.
 2. If `divergence_check`, stop with `divergence_check_missing_columns` when `fromnode` or
    `divergence` is absent; otherwise evaluate checks 1 to 7 of Definition per row, joining
    labels with `"; "` in check order. If any row has a label, return those rows with
-   `divergence_issue`, in input order. The cycle check does not run.
-3. Map identifiers to dense positions; keep the edges whose `toid` is an `id` (I-4).
+   `divergence_issue`, in input order. The repeated-pair and cycle checks do not run.
+3. Python (R in M6, D3-166): find the (`id`, `toid`) pairs held by more than one row. If
+   any, return them as a table of `id` and `toid`, one row per distinct pair, in order of
+   each pair's first row in the input (D3-209). The cycle check does not run.
+4. Map identifiers to dense positions; keep the edges whose `toid` is an `id` (I-4).
    Build a CSR index in the `to` direction (K-2); this is below the kernel boundary
    (K-1, K-5): positions in, a component label per position out.
-4. Compute strongly connected components (R: Tarjan in base R, iterative,
+5. Compute strongly connected components (R: Tarjan in base R, iterative,
    `scc_labels()`; Python: `scipy.sparse.csgraph.connected_components(connection="strong")`,
    D-8).
-5. Mark a row when its edge is a self-loop (`toid == id`), or when `id` and `toid` share a
+6. Mark a row when its edge is a self-loop (`toid == id`), or when `id` and `toid` share a
    component of more than one position.
-6. If no row is marked, return `TRUE`.
-7. Number the components that hold a marked row from 1 by byte order (D-1) of each
+7. If no row is marked, return `TRUE`.
+8. Number the components that hold a marked row from 1 by byte order (D-1) of each
    component's least identifier as decimal string (S-7). Set `reciprocal` to whether the
    component holds exactly two distinct identifiers. Return the marked rows, in input
    order, with `component` and `reciprocal` appended.
 
-Tie rules: the component numbering in step 7 is the only order the function chooses, and
+Tie rules: the component numbering in step 8 is the only order the function chooses, and
 it depends on identifiers only, so the cycle result is unchanged by row order except for
-the order of its rows, which follows the input (D-7). There is no sentinel: a terminal
-has an empty neighbor range (K-4). Row order of the result is input order (D-14).
+the order of its rows, which follows the input (D-7). The repeated-pair table follows
+each pair's first row in the input. There is no sentinel: a terminal has an empty
+neighbor range (K-4). Row order of the result is input order (D-14).
 
 `sort_network()` and `make_index_ids()` call `check_hy_graph(x)` with the defaults on
 both routes, `hy_topo` and `hy_flownetwork`, and stop with `network_cycle` unless it
@@ -194,18 +199,21 @@ For every input that does not stop:
   in R from M6 (D3-57, D3-166); until M6, R returns `TRUE` on a repeated pair on no
   cycle.
 - A repeated (`id`, `toid`) pair does not raise here, unlike every other function,
-  which raises at ingest (S-6, D3-57): Python returns every row of each repeated pair,
-  in input order, as problem rows (A-10); R does so in M6 (D3-166).
+  which raises at ingest (S-6, D3-57): Python returns the repeated-pair table, one row
+  of `id` and `toid` per distinct repeated pair (A-10, D3-209); R does so in M6
+  (D3-166).
+- With `divergence_check`, a network with a divergence problem returns the divergence
+  result only; its repeated pairs and cycles are not listed (D3-75).
+- A network with a repeated pair returns the repeated-pair table only; its cycles are
+  not listed (D3-209).
 - Every returned row (cycle result) has `toid` equal to some `id`, and following `toid`
   from that `toid` returns to the row's `id`.
 - In the cycle result, every row whose `id` and `toid` lie on a common cycle is
-  returned; no other row is, apart from the rows of a repeated pair.
-- With `divergence_check`, a network with a divergence problem returns the divergence
-  result only; its cycles are not listed (D3-75).
-- Returned rows keep input order, and each equals an input row in its hydroloom
-  columns; no input row is returned twice.
-- Over the rows on a cycle, `component` takes every value in `1..k` for some `k >= 1`;
-  two such rows share a `component` exactly when their `id` values lie on a common cycle.
+  returned; no other row is.
+- Returned rows of the divergence and cycle results keep input order, and each equals
+  an input row in its hydroloom columns; no input row is returned twice.
+- In the cycle result, `component` takes every value in `1..k` for some `k >= 1`; two
+  rows share a `component` exactly when their `id` values lie on a common cycle.
 - Ordering cycles by their least identifier as decimal string, in byte order, gives
   `component` 1, 2, ..., k.
 - `reciprocal` is `TRUE` exactly when the rows of that `component` hold two distinct
@@ -216,8 +224,9 @@ For every input that does not stop:
   (`id`, `toid`, `component`, `reciprocal`) unchanged (D-7).
 - Adding rows that lie on no cycle does not change `component` or `reciprocal` of the
   rows returned.
-- Neither result carries `row` (D3-54, D3-160). The divergence result never carries
-  `component` or `reciprocal`; the cycle result never carries `divergence_issue`.
+- No result table carries `row` (D3-54, D3-160). The divergence result never carries
+  `component` or `reciprocal`; the cycle result never carries `divergence_issue`; the
+  repeated-pair table carries `id` and `toid` only.
 - With `divergence_check`, raising `fraction_tol` never adds a row with the label
   `"divergence_fraction does not sum to 1 at a node"`.
 - The input is not modified (A-8).
@@ -235,8 +244,8 @@ O(n).
 - No connections (all terminals): `TRUE`.
 - Duplicated row (the same `id`/`toid` twice, a flownetwork): SPEC S-6 makes a repeated
   pair an error, raised at ingest by every other function (D3-57). `check_hy_graph` is
-  the one function that does not raise on it: Python lists both copies in its result
-  from its first release, and R does so in M6 (D3-166). Until M6, R returns `TRUE` when
+  the one function that does not raise on it: Python returns the pair as one row of the
+  repeated-pair table from its first release, and R does so in M6 (D3-166, D3-209). Until M6, R returns `TRUE` when
   the edge is on no cycle and both copies, as cycle rows, when it is; the case
   `check_hy_graph_duplicated_edge` holds R's `TRUE` until the Python-only case is added
   when Python generates (M5).
@@ -382,3 +391,8 @@ which drains into the pair, is not returned.
   a flownetwork with correct coding passes; case
   `check_hy_graph_divergence_attribute_flownetwork_divergence_check`. Both result tables
   are the class `hy()` gives the subset. Definition and Signature restated.
+- 2026-10-30 (M3 close run 4): D3-209: a repeated (`id`, `toid`) pair returns its own
+  table, `id` and `toid`, one row per distinct pair, checked after the divergence check
+  and before the cycle check; Python from its first release, R in M6 (D3-166). Signature
+  gives four return values in check order, Algorithm gains step 3, and Postconditions
+  and Edge cases restated; the `component` Postcondition is stated for the cycle result.
