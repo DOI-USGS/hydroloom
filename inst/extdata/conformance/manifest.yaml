@@ -1631,11 +1631,13 @@ cases:
     generator: [r]
 
   # is_dendritic --------------------------------------------------------------
-  # Annotations from the proposed cases (D3-14): shared: true on every case =
-  # the Python definition gives the same value (add python to supported_by
-  # when is_dendritic is ported). Values are those probed against current R.
-  # No case raises or carries changes_with. prepare: hy (D3-11) where the
-  # fixture is in source names; is_dendritic reads hydroloom names only.
+  # Annotations from the proposed cases (D3-14): every case is shared except
+  # is_dendritic_new_hope_source_names (D3-197) and the duplicated-edge cases
+  # (D3-57, H-01) = the Python definition gives the same value (add python to
+  # supported_by when is_dendritic is ported). Values are those probed against
+  # current R. No case raises or carries changes_with. prepare: hy (D3-11) where
+  # the fixture is in source names; R reads hydroloom names only, Python aligns
+  # names first.
 
   # Definition rule 1: divergence == 2.
   # NHDPlusV2 with Divergence 2 after hy(); expect FALSE
@@ -1805,7 +1807,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # duplicated edge, read as a repeat; no raise (D3-57); expect FALSE
+  # python_omitted: R-only for the result (D3-57, D3-197); duplicated edge,
+  # read as a repeat, no raise in R; Python raises at alignment; expect FALSE
   - id: is_dendritic_duplicated_edge
     function: is_dendritic
     fixture: duplicated_edge.gpkg
@@ -1814,7 +1817,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # duplicated edge, validate_data false; expect TRUE
+  # python_omitted: R-only for the result (D3-57, D3-197); duplicated edge,
+  # validate_data false; Python raises at alignment; expect TRUE
   - id: is_dendritic_duplicated_edge_no_validate
     function: is_dendritic
     fixture: duplicated_edge.gpkg

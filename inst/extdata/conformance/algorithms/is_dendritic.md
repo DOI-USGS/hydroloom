@@ -19,7 +19,7 @@ validate_data=True)` (SPEC A-16; A-9 keeps the R argument).
 
 Returns one value of vocabulary type `flag`: R `logical` of length one, never `NA`;
 Python `bool`. The expectation is the S-7 scalar layer: one row, one column named
-`value`, compared `exact`. No case raises or warns, so every case stores a layer.
+`value`, compared `exact`. In R no case raises or warns, so every case stores a layer.
 
 Roxygen gives the argument and return prose: "Checks whether the network contains any
 divergences"; `x` "data.frame or hy object to test"; `validate_data` "If `FALSE`, only
@@ -31,7 +31,9 @@ No kernel is involved (K-1, K-11).
 ## Preconditions
 
 None. The function accepts any table, including a zero-row table and one in source
-names, and raises nothing; `requires` is `[any]`. No representation check and no
+names; `requires` is `[any]`. R raises nothing. Python aligns names and types `id` as
+`as_hy` does and raises what `as_hy` raises (D3-29), including the S-6 repeated (`id`,
+`toid`) pair (D3-57). No representation check and no
 conversion is applied. It reads three columns when present, by their hydroloom names:
 `divergence`, `toid`, and `id`. R does no alias lookup, so in R a table in source names
 (`Divergence`, `tocomid`) is read as if those columns were absent; call `hy()` first.
@@ -55,7 +57,10 @@ The result is `FALSE` when either holds, and `TRUE` otherwise:
 
 The answer is about what the table records, not about the river. A node-topology table
 (`fromnode`/`tonode`, unique `id`, A-2 `hy_node`) whose divergences are encoded only by a
-shared `fromnode` and that has no `divergence` column is `TRUE`. In R a table in source names is `TRUE` whatever it holds, because none of the
+shared `fromnode` and that has no `divergence` column is `TRUE`. The converse also
+holds: an NHDPlusV2 table after `hy()` is `hy_topo`, with unique `id` and a `toid` graph
+that is a tree, and it is `FALSE` because its minor-path flowlines keep `divergence` 2
+(case `is_dendritic_new_hope`). In R a table in source names is `TRUE` whatever it holds, because none of the
 three names is present; Python aligns the names first and gives the answer for the
 aligned table (D3-197). The `dendritic` attribute that R's `hy()` sets is not read.
 
@@ -66,9 +71,6 @@ aligned table (D3-197). The `dendritic` attribute that R's `hy()` sets is not re
    one, return `FALSE`. Missing `id` values count as equal to each other (R
    `duplicated()`, pandas `duplicated()`). When `id` is absent the test finds no repeat.
 3. Return `TRUE`.
-
-The divergence test is numeric equality with 2: R compares with `==`, so a character
-`"2"` also matches. Values other than 0, 1, 2 (such as 3) do not make the result `FALSE`.
 
 No tie rule or sentinel applies. The result does not depend on row order (D-7); case
 `is_dendritic_new_hope_shuffled` holds the same value as `is_dendritic_new_hope` on the
@@ -106,11 +108,11 @@ repeat test, O(1) otherwise.
   data error, not a divergence, but the repeat test cannot tell the two apart, so the
   result is the same as for a divergence: `FALSE` with `validate_data` true
   (`is_dendritic_duplicated_edge`), `TRUE` with it false
-  (`is_dendritic_duplicated_edge_no_validate`). `is_dendritic` reads no connections and
-  does not raise. S-6 places the raise on a repeated (`id`, `toid`) pair in the ingest
-  step, `hy()` (Python `as_hy`), and `is_dendritic` does not call it; the R raise, with
-  `is_dendritic` no longer reading such a repeat as a divergence, is the ROADMAP §4 row
-  for M6 (D3-57).
+  (`is_dendritic_duplicated_edge_no_validate`). These values are R's. S-6 places the raise
+  on a repeated (`id`, `toid`) pair in the ingest step, `hy()` (Python `as_hy`). Python
+  raises at alignment from its first release (D3-57); R returns the values above until
+  the M6 row lands. The R raise, with `is_dendritic` no longer reading such a repeat as a
+  divergence, is the ROADMAP §4 row for M6 (D3-57).
 - Divergence shown only by a shared `fromnode` in a node table with no `divergence`
   column (`divergence_no_attribute.gpkg`, case `is_dendritic_divergence_no_attribute`):
   `TRUE`, as the Definition says. Detecting it from the repeated `fromnode` lands with
@@ -125,6 +127,9 @@ repeat test, O(1) otherwise.
 - Repeated `id` without `toid` (node topology): `TRUE`; the repeat test needs `toid`.
 - Missing `divergence` value: ignored. Missing `id` values: two or more count as a
   repeat.
+- `divergence` stored as text, or coded outside 0, 1, 2: R compares with `==` against 2,
+  so text `"2"` reads as minor and 3 is ignored. This is captured R behavior, not
+  contract; no case.
 - Zero-row table: `TRUE`.
 - Missing weight, zero-length line, empty name: not read; `TRUE` on the S-6 fixtures.
 
@@ -132,8 +137,9 @@ repeat test, O(1) otherwise.
 
 none
 
-The function raises and warns on nothing of its own. The base R error on
-`validate_data = NA` is outside A-10.
+The function raises and warns on nothing of its own. In Python the keys `as_hy` raises
+at alignment are inherited from `as_hy`. The base R error on `validate_data = NA` is
+outside A-10.
 
 ## References
 
@@ -190,3 +196,4 @@ expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FA
   Postconditions). Case
   `is_dendritic_new_hope_source_names`, which passes source names, is R-only. Open for
   M6 with D3-34: whether R `is_dendritic` aligns names too; no R change now.
+- 2026-10-29 (M3 close run 3, reader round D3-201): H-01, H-03, H-04.
