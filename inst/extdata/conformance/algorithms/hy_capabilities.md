@@ -189,8 +189,15 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
   `as_hy` under D3-57, in Python from its first release and in R from M6 (D3-46);
   Python `capabilities` returns the same flownetwork answer and does not raise (D3-196).
   Case `hy_capabilities_duplicated_edge` captures R's return.
-- Divergence (repeated `id` with distinct `toid`, `sort_network_dups.gpkg`,
-  `loop2.gpkg`): `hy_flownetwork`, the same output as the duplicated row.
+- Divergence (repeated `id` with distinct `toid`, `loop2.gpkg`): `hy_flownetwork`, the
+  same output as the duplicated row.
+- Real NextGen table (`sort_network_dups_distinct.gpkg`, which is
+  `sort_network_dups.gpkg` with its three repeated (`id`, `toid`) pairs removed): every
+  `id` is unique, so `hy()` stamps `hy_topo`. Twelve rows are available, and `add_toids`,
+  `add_divergence`, `add_return_divergence`, and `subset_network` have
+  `via = "make_node_topology"`; with `include_conversions = TRUE` (R only) sixteen are
+  available. Cases `hy_capabilities_sort_network_dups` and
+  `hy_capabilities_sort_network_dups_conversions` (D3-57, D3-210).
 - Node table without a `divergence` column (`divergence_no_attribute.gpkg`):
   `add_divergence` is available and `add_return_divergence` is not, by its `columns`
   gate; with `include_conversions = TRUE` (R only) it stays unavailable, since its via
@@ -213,7 +220,7 @@ column (D3-167), nor `id_toid_pair_repeated` on a repeated (`id`, `toid`) pair (
   "hy_capabilities code table equals the manifest requires".
 - SPEC A-2, A-3, A-4, A-8, A-9, A-16, D-7, G-14, I-14, K-1, K-11, S-4, S-7, S-8;
   ROADMAP §2 and §4; milestone decisions D3-01 to D3-03, D3-13, D3-14, D3-31, D3-32,
-  D3-33, D3-42, D3-46, D3-57, D3-70, D3-89, D3-162, D3-167, D3-177, and D3-196.
+  D3-33, D3-42, D3-46, D3-57, D3-70, D3-89, D3-162, D3-167, D3-177, D3-196, and D3-210.
 
 ## Worked example
 
@@ -281,3 +288,7 @@ with `via = "make_node_topology"` on the four node rows. With `include_conversio
   (`id`, `toid`) pair, Python `capabilities` returns the `hy_flownetwork` answer and does
   not raise (Preconditions, Edge cases, Remedies).
 - 2026-10-29 (M3 close run 3, reader round D3-201): H-02, H-05, H-06, H-07.
+- 2026-10-30, suite 0.1.0, M3 close run 4, D3-215: the two `sort_network_dups` cases
+  read `sort_network_dups_distinct.gpkg`, which has unique `id` and is `hy_topo`; the
+  Divergence edge case keeps `loop2.gpkg` only, and a new edge case states the
+  `hy_topo` answer on the distinct NextGen table.
