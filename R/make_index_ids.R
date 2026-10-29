@@ -134,6 +134,8 @@ make_index_ids.hy_flownetwork <- function(x, mode = "to", long_form = NULL) {
   if (!is.null(long_form))
     warning("long_form is deprecated and will be removed in a future release.")
 
+  x <- sf::st_drop_geometry(x)
+
   if (!is.null(long_form) && long_form) return(make_to_dt(x))
 
   make_index_ids_impl(x, mode)

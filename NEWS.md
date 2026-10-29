@@ -6,6 +6,11 @@ hydroloom (development version)
   `inst/extdata/hy_vocab.json` rather than defined in R code.
   `hydroloom_names()`, `hydroloom_name_definitions`, and `align_names()`
   are served from that file. jsonlite is now in Imports.
+- `make_index_ids()` on an `sf` flownetwork (repeated `id`) now drops
+  geometry before collapsing repeated rows, as it already did on a
+  dendritic network. Repeated rows of one flowline with the same `toid`
+  but different geometry now give one neighbor where they used to give
+  one per row.
 - The `outletID` alias for `levelpath_outlet_id` is now `outletid`. Input
   names are lowercased before matching, so the camelCase entry never
   matched.

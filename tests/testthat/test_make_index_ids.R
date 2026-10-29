@@ -203,3 +203,22 @@ test_that("make fromid", {
   # upstream list in identifier byte order (D-5)
   expect_equal(y$from$froms[, which(y$to$to_list$id == 8893420)], c(534, 25, NA))
 })
+
+test_that("sf flownetwork repeated rows collapse regardless of geometry (D3-208)", {
+
+  geom <- sf::st_sfc(lapply(1:5, function(i) {
+    sf::st_linestring(matrix(c(i, 0, i, 1), 2, byrow = TRUE))
+  }))
+
+  x <- sf::st_sf(id = c(1L, 1L, 1L, 2L, 3L), toid = c(2L, 2L, 3L, 0L, 0L),
+    geometry = geom)
+
+  x <- hy(x)
+
+  expect_s3_class(x, "hy_flownetwork")
+
+  i <- make_index_ids(x)
+
+  expect_equal(i$to_list$toindid[[1]], c(2, 3))
+
+})
