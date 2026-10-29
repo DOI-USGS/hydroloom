@@ -1081,6 +1081,15 @@ fixture(data.frame(
   "a divergence at 5 with one branch inside the table (3) and one leaving it (9), 5 sorting after the outlet 3: the block of 5 lands below 3",
   c("I-4", "I-6", "D-1", "D-4"))
 
+# 9 diverges to 2 and 3; 2 flows to the outlet 1, 3 to the outlet 4 (D3-216).
+fixture(data.frame(
+  id = c(9L, 9L, 2L, 3L, 1L, 4L),
+  toid = c(2L, 3L, 1L, 4L, 0L, 0L)),
+  "sort_outlets_divergence_branch",
+  "synthetic (sort_network reader round H-01 probe, D3-216)",
+  "outlets naming a diverging flowline (9) and the outlet below only one of its branches (1): the block of 9 lands below 2",
+  c("I-4", "I-6", "D-4"))
+
 fixture(data.frame(
   id = 1:4,
   toid = c(2L, 3L, 4L, 0L)),

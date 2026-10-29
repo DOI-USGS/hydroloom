@@ -455,8 +455,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: i2 (NHDPlusID double beyond 32 bits -> character; nodes
-  # double -> integer); R message "defaulting to comid rather than
+  # changes_with: i2 (NHDPlusID, FromNode, ToNode double beyond 32 bits ->
+  # character); R message "defaulting to comid rather than
   # permanent_identifier"; Permanent_Identifier keeps its input name; no toid,
   # R class hy_node, dendritic FALSE
   # M-18: StartFlag, TerminalFl arrive double 1/0 and are logical
@@ -1559,23 +1559,25 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: A-4; real non-dendritic network (repeated id, distinct toid);
-  # hy_flownetwork; navigate_network_dfs, make_index_ids, sort_network,
-  # add_topo_sort, and check_hy_graph available (A-4 added the last three, D3-42)
+  # changes_with: A-4; the nextgen table on its distinct (id, toid) rows
+  # (D3-210, D3-215): every repeated id in the source table is one of its 3
+  # repeated pairs, which Python raises on at ingest (D3-57), so the distinct
+  # rows have unique id; hy_topo, dendritic; via make_node_topology for
+  # add_toids, add_divergence, add_return_divergence, subset_network
   - id: hy_capabilities_sort_network_dups
     function: hy_capabilities
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     prepare: {function: hy, args: {}}
     compare: exact
     order: exact
     supported_by: [r]
     generator: [r]
 
-  # changes_with: A-4; no via entry for hy_flownetwork; same values as the
-  # direct call
+  # changes_with: A-4; distinct (id, toid) rows (D3-210, D3-215); the four
+  # via functions become available after make_node_topology
   - id: hy_capabilities_sort_network_dups_conversions
     function: hy_capabilities
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     prepare: {function: hy, args: {}}
     args: {include_conversions: true}
     compare: exact
@@ -1731,19 +1733,23 @@ cases:
     generator: [r]
 
   # Definition rule 2: repeated id with toid, gated by validate_data.
-  # nextgen string ids, repeated id with toid; expect FALSE
+  # nextgen string ids on the distinct (id, toid) rows (D3-57, D3-210): every
+  # repeated id in the source table is one of its 3 repeated pairs, which
+  # Python raises on at alignment, so the distinct rows have unique id and
+  # rule 2 does not fire; expect TRUE
   - id: is_dendritic_sort_network_dups
     function: is_dendritic
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     compare: exact
     order: exact
     supported_by: [r]
     generator: [r]
 
-  # repeat test skipped, no divergence column; expect TRUE
+  # repeat test skipped, no divergence column; distinct (id, toid) rows
+  # (D3-210); expect TRUE, as on the source table
   - id: is_dendritic_sort_network_dups_no_validate
     function: is_dendritic
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     args: {validate_data: false}
     compare: exact
     order: exact
@@ -2452,10 +2458,11 @@ cases:
     raises: error
     raises_key: network_cycle
 
-  # wb-/nex- string ids, repeated id; 79 + 79 rows, byte order (D-5)
+  # wb-/nex- string ids, distinct (id, toid) rows (D3-210), unique id;
+  # 79 + 79 rows, byte order (D-5), as on the source table
   - id: make_index_ids_sort_network_dups
     function: make_index_ids
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     args: {mode: both}
     compare: exact
     order: ignore
@@ -2758,10 +2765,11 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. Nextgen ids, repeated id; TRUE.
+  # shared. Nextgen ids, distinct (id, toid) rows, unique id (D3-210; on the
+  # source table Python lists the 3 repeated pairs, D3-166); TRUE.
   - id: check_hy_graph_sort_network_dups
     function: check_hy_graph
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     compare: exact
     order: exact
     supported_by: [r]
@@ -3386,6 +3394,18 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # D3-216: 9 diverges to 2 (to the outlet 1) and 3 (to the outlet 4);
+  # outlets naming 9 and 1 give 2, 1, 9, 9: "9" sorts after "1", so 9's walk
+  # comes first and its block lands below 2; 3 and 4 are left out (Edge cases)
+  - id: sort_network_outlets_divergence_branch
+    function: sort_network
+    fixture: sort_outlets_divergence_branch.gpkg
+    args: {outlets: ["9", "1"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # node route; 1, 2, 3, 6, 7, 4, 8, 9, 5, 10, as in R 1.3.0 (input order
   # equals byte order)
   - id: sort_network_return_divergence
@@ -3603,8 +3623,10 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; nextgen wb-/nex- ids, repeated (id, toid) rows differing
-  # in divide_id/poi_id keep input order
+  # changes_with: D-4; R-only for the result (D3-57, D3-210): nextgen wb-/nex-
+  # ids, repeated (id, toid) rows differing in divide_id/poi_id keep input
+  # order; Python raises id_toid_pair_repeated at ingest; the shared form is
+  # sort_network_sort_network_dups_distinct
   - id: sort_network_sort_network_dups
     function: sort_network
     fixture: sort_network_dups.gpkg
@@ -3614,10 +3636,10 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; one terminal
+  # changes_with: D-4; one terminal; distinct (id, toid) rows (D3-210)
   - id: sort_network_sort_network_dups_split
     function: sort_network
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     args: {split: true}
     compare: exact
     order: exact
@@ -3998,6 +4020,42 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # add_topo_sort H-02, D3-211: "5" drains to "3" and sorts after it, so its
+  # walk comes first; 3's walk visits 5 again and the later visit is kept;
+  # equals add_topo_sort_outlets
+  - id: add_topo_sort_outlets_upstream_start
+    function: add_topo_sort
+    fixture: add_topo_sort_worked_example.gpkg
+    args: {outlets: ["3", "5"]}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # add_topo_sort H-01, D3-211: 2 diverges to 3 (the outlet) and 9 (outside
+  # the table), so 2 is a start; 1, 4, 2, 2, 3 with topo_sort 4, 3, 2, 2, 1
+  - id: add_topo_sort_divergence_leaves
+    function: add_topo_sort
+    fixture: sort_divergence_leaves.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # add_topo_sort H-01, D3-211: sort_divergence_leaves with 2 relabelled 5;
+  # "5" sorts after the outlet "3", so 3, 1, 4, 5, 5 with topo_sort 4, 3, 2,
+  # 1, 1: 5 gets a smaller topo_sort than 3, the stated exception to
+  # Postcondition 4 (Edge cases)
+  - id: add_topo_sort_divergence_relabelled
+    function: add_topo_sort
+    fixture: sort_divergence_leaves_relabelled.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # D3-51: an outlet that is not an id raises outlet_not_in_network in both
   # languages; R 1.3.0 stopped with internal error "wrong sign in 'by' argument"
   - id: add_topo_sort_outlets_absent
@@ -4296,11 +4354,11 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: D-4; flownetwork route, wb-/nex- strings, 83 rows, 80
-  # topo_sort values
+  # changes_with: D-4; wb-/nex- strings, distinct (id, toid) rows (D3-210),
+  # unique id, so the hy_topo route; 80 rows, 80 topo_sort values
   - id: add_topo_sort_sort_network_dups
     function: add_topo_sort
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     args: {}
     compare: exact
     order: exact
@@ -4866,20 +4924,21 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # note: repeated id; one path, 18 ids
+  # note: distinct (id, toid) rows (D3-210); one path, 18 ids
   - id: navigate_network_dfs_sort_network_dups_down
     function: navigate_network_dfs
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     args: {starts: ["wb-269951"]}
     compare: exact
     order: exact
     supported_by: [r]
     generator: [r]
 
-  # note: break at each headwater; 31 paths, 80 ids
+  # note: break at each headwater; distinct (id, toid) rows (D3-210); 31
+  # paths, 80 ids
   - id: navigate_network_dfs_sort_network_dups_up
     function: navigate_network_dfs
-    fixture: sort_network_dups.gpkg
+    fixture: sort_network_dups_distinct.gpkg
     args: {starts: ["nex-269810"], direction: up}
     compare: exact
     order: exact

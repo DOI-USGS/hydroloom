@@ -2185,6 +2185,20 @@ fixtures:
   rules:
   - D-8
   bytes: 73728
+- file: sort_outlets_divergence_branch.gpkg
+  source: synthetic (sort_network reader round H-01 probe, D3-216)
+  rows: 6
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'outlets naming a diverging flowline (9) and the outlet below only one
+    of its branches (1): the block of 9 lands below 2'
+  rules:
+  - I-4
+  - I-6
+  - D-4
+  bytes: 73728
 - file: sort_siblings.gpkg
   source: synthetic; the worked example in algorithms/sort_network.md
   rows: 5
