@@ -11,6 +11,12 @@ hydroloom (development version)
   dendritic network. Repeated rows of one flowline with the same `toid`
   but different geometry now give one neighbor where they used to give
   one per row.
+- `check_hy_graph(divergence_check = TRUE)` now counts each flowline
+  once at its `fromnode`, so a flownetwork (repeated `id`, as from
+  `add_toids(return_dendritic = FALSE)`) with correct divergence coding
+  returns `TRUE` where its diverging flowlines used to be flagged. The
+  divergence result is now classed by `hy()` on the returned rows, as the
+  cycle result is.
 - The `outletID` alias for `levelpath_outlet_id` is now `outletid`. Input
   names are lowercased before matching, so the camelCase entry never
   matched.

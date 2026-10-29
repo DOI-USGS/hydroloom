@@ -52,9 +52,9 @@ returns the problem rows (A-10).
    | `reciprocal` | `flag` | `TRUE` when the cycle has exactly two flowlines |
 
 For both tables: geometry is kept when the input has it (A-8), and columns are in
-hydroloom names, not the input's source names. The cycle table is the R class `hy()` gives
-the subset (`hy_topo` or `hy_flownetwork`); the divergence table keeps the class of the
-input after ingest.
+hydroloom names, not the input's source names. Both tables are the R class `hy()` gives
+the subset: `hy_topo` or `hy_flownetwork`, or `hy_node` for a divergence result on a
+node-topology table (D3-213).
 
 Python also lists the rows of a repeated (`id`, `toid`) pair (D3-166). The shape of those
 rows in the Python result is open (D3-209): which of the tables above holds them, and what
@@ -123,8 +123,9 @@ exactly two distinct flowlines and `FALSE` otherwise; a self-loop is a cycle of 
 The divergence check enforces the attribute contract `accumulate_downstream()` relies on
 (roxygen details, reused): 0 marks a feature not downstream of a divergence, 1 the
 primary path downstream of a divergence, 2 a diverted path (NHDPlus coding). Features are
-grouped by shared `fromnode`, counting rows, so on a flownetwork each row of a flowline
-counts as one outgoing feature; a feature with a missing `fromnode` belongs to no group.
+grouped by shared `fromnode`, and each `id` counts once in its group, so on a flownetwork
+the rows a flowline has for its several downstream connections are one outgoing feature
+(D3-213); a feature with a missing `fromnode` belongs to no group.
 The checks, each a label in `divergence_issue`, in this order:
 
 1. `divergence` is populated and in `{0, 1, 2}`: `"divergence not in {0, 1, 2}"`.
@@ -140,8 +141,8 @@ With a `divergence_fraction` column, three more:
 
 5. `divergence_fraction` is populated and in `[0, 1]`, compared exactly, without
    `fraction_tol`: `"divergence_fraction not in [0, 1]"`.
-6. `divergence_fraction` sums to 1 within `fraction_tol` across each `fromnode` group:
-   `"divergence_fraction does not sum to 1 at a node"`.
+6. `divergence_fraction` sums to 1 within `fraction_tol` across each `fromnode` group,
+   each `id` counted once: `"divergence_fraction does not sum to 1 at a node"`.
 7. No `divergence == 2` feature takes the entire flow (`divergence_fraction >= 1`,
    compared exactly, without `fraction_tol`): `"divergence == 2 takes all flow"`.
 
@@ -376,3 +377,8 @@ which drains into the pair, is not returned.
   `check_divergence_internal()`), H-05, H-06 (exact comparison, from
   `check_divergence_internal()`), H-07, H-08 (the divergence table keeps the input's
   class, as R does).
+- 2026-10-29 (M3 close run 4): D3-213 (R change in this run): the divergence check counts
+  each `id` once per `fromnode`, in the counts of checks 2 to 4 and the sum of check 6, so
+  a flownetwork with correct coding passes; case
+  `check_hy_graph_divergence_attribute_flownetwork_divergence_check`. Both result tables
+  are the class `hy()` gives the subset. Definition and Signature restated.

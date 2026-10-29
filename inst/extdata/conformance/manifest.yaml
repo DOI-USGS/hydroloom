@@ -2929,6 +2929,20 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # shared. Flownetwork: add_toids(return_dendritic = FALSE) keeps one row per
+  # downstream connection, so a flowline above a divergence has two rows at
+  # its fromnode. Each id counts once per fromnode (D3-213); TRUE.
+  - id: check_hy_graph_divergence_attribute_flownetwork_divergence_check
+    function: check_hy_graph
+    fixture: divergence_attribute.gpkg
+    prepare: {function: add_toids, args: {return_dendritic: false}}
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # shared. ids 2, 3, divergence_issue "node without exactly one divergence
   # == 1"; unchanged by D-8.
   - id: check_hy_graph_divergence_miscoded

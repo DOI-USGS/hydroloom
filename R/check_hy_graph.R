@@ -255,7 +255,8 @@ add_divergence_issue <- function(issue, hit, msg) {
 
 # Check divergence coding against the attribute contract documented in
 # accumulate_downstream(). Returns NULL when clean, otherwise the problem
-# rows of x with `divergence_issue` appended (D3-160).
+# rows of x with `divergence_issue` appended (D3-160), reclassified as the
+# cycle rows are (D3-213).
 check_divergence_internal <- function(x, fraction_tol = 1e-6) {
 
   missing_atts <- setdiff(required_atts_check_divergence, names(x))
@@ -265,7 +266,8 @@ check_divergence_internal <- function(x, fraction_tol = 1e-6) {
       paste(missing_atts, collapse = ", "), call. = FALSE)
   }
 
-  d <- data.table(fromnode = x[[fromnode]],
+  d <- data.table(id = x[[id]],
+    fromnode = x[[fromnode]],
     divergence = x[[divergence]])
 
   # Features with no fromnode are not at a node, so the group checks below
@@ -273,8 +275,10 @@ check_divergence_internal <- function(x, fraction_tol = 1e-6) {
   # NA group and report a network-sized bogus divergence.
   at_node <- !is.na(d$fromnode)
 
-  d[at_node, n_out := .N, by = fromnode]
-  d[at_node, n_main := sum(divergence == 1, na.rm = TRUE), by = fromnode]
+  # Count each flowline once per node: on a flownetwork a flowline above a
+  # divergence has one row per downstream connection (D3-213).
+  d[at_node, n_out := length(unique(id)), by = fromnode]
+  d[at_node, n_main := length(unique(id[divergence %in% 1])), by = fromnode]
 
   issue <- rep("", nrow(d))
 
@@ -300,7 +304,8 @@ check_divergence_internal <- function(x, fraction_tol = 1e-6) {
 
     d$divergence_fraction <- x[[divergence_fraction]]
 
-    d[at_node, frac_sum := sum(divergence_fraction), by = fromnode]
+    d[at_node, frac_sum := sum(divergence_fraction[!duplicated(id)]),
+      by = fromnode]
 
     issue <- add_divergence_issue(issue,
       is.na(d$divergence_fraction) | d$divergence_fraction < 0 |
@@ -325,7 +330,7 @@ check_divergence_internal <- function(x, fraction_tol = 1e-6) {
 
   out$divergence_issue <- issue[hit]
 
-  out
+  classify_hy(out)
 
 }
 
