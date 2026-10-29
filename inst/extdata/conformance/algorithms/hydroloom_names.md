@@ -27,9 +27,10 @@ Argument and return prose come from roxygen (A-13). No kernel is involved (K-6).
 
 ## Preconditions
 
-None on a network; the function takes none (`requires.pattern: [none]`). `x`, when given,
-must carry names; an `x` with no names at all stops with `unnamed_name_mapping` and the
-registry is left as it was. A partly named `x` passes the check.
+The function reads no network (`requires.pattern: [none]`). In R, an `x` with no names at
+all stops with `unnamed_name_mapping`, and the registry is left as it was. Python's
+`register_names()` takes a mapping, which always carries keys, so the key is R-only. A
+partly named `x` passes the check.
 
 ## Definition
 
@@ -37,12 +38,13 @@ The alias registry is a session-scoped list of (alias, hydroloom name) pairs tha
 `align_names()`, and through it `hy()`, uses to rename input columns. At package load it
 holds one pair for every alias of every vocabulary column term in `hy_vocab.json`
 (concept entries excluded), in the file's term order and, within a term, its alias order.
-Those aliases are the NHDPlusV2 attribute names in their 10-character dbf form
-(`comid`, `tocomid`, `levelpathi`, `arbolatesu`), NHDPlusHR `nhdplusid`, NHD
-`permanent_identifier` and `reachcode`, 3DHP `id3dhp`, `hydrosequence`, `dnhydrosequence`, and `uphydrosequence`, and Mainstems `mainstemid`, with a
-few hydrofabric names (`reconciled_id`, `aggregated_id`) and identity pairs (`toid`,
-`fromnode`); a table whose columns use other names needs a call to `hydroloom_names()`
-before `hy()` will recognize them. A call with no `x` and `clear = FALSE` returns the
+Most of those aliases are NHDPlusV2 attribute names in their 10-character dbf form
+(`comid`, `tocomid`, `levelpathi`, `arbolatesu`). The rest come from NHDPlusHR
+(`nhdplusid`), NHD (`permanent_identifier`, `reachcode`, `ftype`, `fcode`), 3DHP
+(`id3dhp`, `hydrosequence`, `dnhydrosequence`, `uphydrosequence`), Mainstems
+(`mainstemid`), and hydrofabric products (`reconciled_id`, `aggregated_id`), and a few are
+identity pairs (`toid`, `fromnode`, `tonode`, `divergence`). A table whose columns use
+other names needs a call to `hydroloom_names()` before `hy()` will recognize them. A call with no `x` and `clear = FALSE` returns the
 registry unchanged. A call with `x` returns, and stores, the prior registry followed by
 `x` with its names lowercased. With `clear = TRUE` the prior registry is first replaced
 by the registry seeded at load, the vocabulary aliases alone, so registered mappings are
@@ -69,7 +71,7 @@ No sentinel and no CSR index; nothing lies below the kernel boundary (K-1).
 - After the call, the stored registry equals the return value.
 - With `x = NULL` and `clear = FALSE`, the registry before and after the call are equal.
 - With `x` given and `clear = FALSE`, the return is the prior registry followed by `x`
-  with its names lowercased: length is prior length plus `length(x)`, and the leading
+  coerced to character with its names lowercased: length is prior length plus `length(x)`, and the leading
   elements equal the prior registry element for element.
 - With `x` given and `clear = TRUE`, the return is the registry at load followed by `x`
   coerced to character with its names lowercased; any mapping registered before the call
@@ -101,8 +103,8 @@ every table carrying a seeded alias then warns with `name_alias_duplicate` (H03-
 Several seeded aliases of one term can also meet in one table: an NHDPlusHR flowline
 table carries both `nhdplusid` and `permanent_identifier`, both aliases of `id`;
 `align_names()` resolves that by its `permanent_identifier` rule (`align_names.md`
-step 4, D3-24), so `nhdplusid` becomes `id` and `permanent_identifier` keeps its name, with the
-message "defaulting to comid rather than permanent_identifier".
+step 4, D3-24), so `nhdplusid` becomes `id` and `permanent_identifier` keeps its name; R also emits an informational message that has no `remedies.json` key
+(as with D3-19).
 An empty name in a partly named `x` is registered as `""` and never matches a
 column. An alias with uppercase letters is registered in lowercase (`FlowlineID` as
 `flowlineid`), so it matches the column, which `align_names()` also lowercases before
@@ -190,3 +192,4 @@ load, so its expectation is the vocabulary's alias table as two columns, `name` 
   `hydroloom_names(clear = TRUE)` with no `x` as the restore, and that passing a saved
   registry back with `clear = TRUE` repeats the vocabulary aliases, beside the H-01
   duplicated-alias sentence.
+- 2026-10-29 (M3 close run 3, reader round D3-201): H-01, H-03, H-04, H-05.
