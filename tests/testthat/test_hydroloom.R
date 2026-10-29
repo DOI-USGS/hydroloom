@@ -75,6 +75,38 @@ test_that("hy ingest: infinite identifier stops, non-binary flag warns", {
   expect_identical(y$start_flag, c(TRUE, FALSE, NA))
 })
 
+test_that("flag_value_not_binary warns once per user call (I23-2)", {
+
+  x <- sf::st_drop_geometry(
+    sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom")))
+
+  x$TerminalFl[1] <- 2
+
+  n_flag_warnings <- function(expr) {
+    n <- 0
+
+    withCallingHandlers(expr, warning = function(w) {
+      if (grepl("^Flag column TerminalFl", conditionMessage(w))) n <<- n + 1
+      invokeRestart("muffleWarning")
+    }, message = function(m) invokeRestart("muffleMessage"))
+
+    n
+  }
+
+  nodes <- x[, c("COMID", "FromNode", "ToNode", "Divergence", "TerminalFl")]
+
+  expect_equal(n_flag_warnings(hy(x)), 1)
+  expect_equal(n_flag_warnings(hy(nodes, add_topo = TRUE)), 1)
+  expect_equal(n_flag_warnings(net <- add_toids(x)), 1)
+  expect_equal(n_flag_warnings(add_topo_sort(nodes)), 1)
+  expect_equal(n_flag_warnings(sort_network(net)), 1)
+  expect_equal(n_flag_warnings(
+    lp <- add_levelpaths(net, "GNIS_ID", "ArbolateSu")), 1)
+  expect_equal(n_flag_warnings(to_flownetwork(lp)), 1)
+  expect_equal(n_flag_warnings(add_streamorder(nodes)), 1)
+  expect_equal(n_flag_warnings(navigate_network_dfs(net, net$COMID[1], "up")), 1)
+})
+
 test_that("test print", {
 
   p <- capture_output(print(hydroloom_name_definitions))
