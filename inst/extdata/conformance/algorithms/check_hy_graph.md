@@ -51,8 +51,14 @@ returns the problem rows (A-10).
    | `component` | count, R `integer`, Python `int32` | which cycle the row belongs to, numbered from 1 |
    | `reciprocal` | `flag` | `TRUE` when the cycle has exactly two flowlines |
 
-   Geometry is kept when the input has it (A-8). The returned table is the R class `hy()`
-   gives the subset (`hy_topo` or `hy_flownetwork`), not the input's source names.
+For both tables: geometry is kept when the input has it (A-8), and columns are in
+hydroloom names, not the input's source names. The cycle table is the R class `hy()` gives
+the subset (`hy_topo` or `hy_flownetwork`); the divergence table keeps the class of the
+input after ingest.
+
+Python also lists the rows of a repeated (`id`, `toid`) pair (D3-166). The shape of those
+rows in the Python result is open (D3-209): which of the tables above holds them, and what
+`component` and `reciprocal` hold for a pair on no cycle, are not yet given.
 
 No named kernel is involved (K-6). The strongly connected components walk lives in
 `_kernels/walk.py` (SPEC module table) and in R in the internal base R Tarjan function
@@ -117,7 +123,8 @@ exactly two distinct flowlines and `FALSE` otherwise; a self-loop is a cycle of 
 The divergence check enforces the attribute contract `accumulate_downstream()` relies on
 (roxygen details, reused): 0 marks a feature not downstream of a divergence, 1 the
 primary path downstream of a divergence, 2 a diverted path (NHDPlus coding). Features are
-grouped by shared `fromnode`; a feature with a missing `fromnode` belongs to no group.
+grouped by shared `fromnode`, counting rows, so on a flownetwork each row of a flowline
+counts as one outgoing feature; a feature with a missing `fromnode` belongs to no group.
 The checks, each a label in `divergence_issue`, in this order:
 
 1. `divergence` is populated and in `{0, 1, 2}`: `"divergence not in {0, 1, 2}"`.
@@ -131,19 +138,21 @@ The checks, each a label in `divergence_issue`, in this order:
 
 With a `divergence_fraction` column, three more:
 
-5. `divergence_fraction` is populated and in `[0, 1]`: `"divergence_fraction not in [0,
-   1]"`.
+5. `divergence_fraction` is populated and in `[0, 1]`, compared exactly, without
+   `fraction_tol`: `"divergence_fraction not in [0, 1]"`.
 6. `divergence_fraction` sums to 1 within `fraction_tol` across each `fromnode` group:
    `"divergence_fraction does not sum to 1 at a node"`.
-7. No `divergence == 2` feature takes the entire flow: `"divergence == 2 takes all
-   flow"`.
+7. No `divergence == 2` feature takes the entire flow (`divergence_fraction >= 1`,
+   compared exactly, without `fraction_tol`): `"divergence == 2 takes all flow"`.
 
 Any number of `divergence == 2` features at one node is valid.
 
 ## Algorithm
 
 1. R: if the input does not inherit `hy` or `hy_flownetwork`, call `hy()`. Python:
-   `as_hy`, then the representation route (A-3).
+   `as_hy` without the repeated-pair raise (`id_toid_pair_repeated`); `check_hy_graph`
+   lists those rows (D3-166). The `toid` requirement (`needs_topo`) is tested after step
+   2, as Preconditions state.
 2. If `divergence_check`, stop with `divergence_check_missing_columns` when `fromnode` or
    `divergence` is absent; otherwise evaluate checks 1 to 7 of Definition per row, joining
    labels with `"; "` in check order. If any row has a label, return those rows with
@@ -188,12 +197,14 @@ For every input that does not stop:
   in input order, as problem rows (A-10); R does so in M6 (D3-166).
 - Every returned row (cycle result) has `toid` equal to some `id`, and following `toid`
   from that `toid` returns to the row's `id`.
-- Every row whose `id` and `toid` lie on a common cycle is returned; no other row is,
-  apart from the rows of a repeated pair.
+- In the cycle result, every row whose `id` and `toid` lie on a common cycle is
+  returned; no other row is, apart from the rows of a repeated pair.
+- With `divergence_check`, a network with a divergence problem returns the divergence
+  result only; its cycles are not listed (D3-75).
 - Returned rows keep input order, and each equals an input row in its hydroloom
   columns; no input row is returned twice.
-- `component` takes every value in `1..k` for some `k >= 1`; two rows share a
-  `component` exactly when their `id` values lie on a common cycle.
+- Over the rows on a cycle, `component` takes every value in `1..k` for some `k >= 1`;
+  two such rows share a `component` exactly when their `id` values lie on a common cycle.
 - Ordering cycles by their least identifier as decimal string, in byte order, gives
   `component` 1, 2, ..., k.
 - `reciprocal` is `TRUE` exactly when the rows of that `component` hold two distinct
@@ -250,7 +261,7 @@ O(n).
 | condition | what is wrong | which rows | the one call that fixes it | `remedies.json` key |
 | --- | --- | --- | --- | --- |
 | `divergence_check = TRUE` without `divergence` | the divergence check reads which path is main (`divergence`), and the column is absent | all; the absent columns are listed | `add_divergence()`, given the coastal and inland outlets, for `divergence` | `divergence_check_missing_columns` |
-| `divergence_check = TRUE` without `fromnode` | the divergence check groups flowlines by the point where they begin (`fromnode`), which the flowlines leaving a divergence share, and the column is absent | all; the absent columns are listed | `make_node_topology()`, which builds `fromnode` from `toid` | `divergence_check_missing_columns` |
+| `divergence_check = TRUE` without `fromnode` | the divergence check groups flowlines by the point where they begin (`fromnode`), which the flowlines leaving a divergence share, and the column is absent | all; the absent columns are listed | `make_node_topology()` with the divergences given (`add_div`), which builds `fromnode` from `toid` so the flowlines leaving a divergence share it | `divergence_check_missing_columns` |
 | a node-topology table (`fromnode`/`tonode`, no `toid`), both languages (D3-45) | the network has no `toid`, each flowline's downstream flowline | all | `add_toids(return_dendritic = FALSE)` | `needs_topo` |
 | no recognized `toid` and no `fromnode`/`tonode` (source columns not in the vocabulary, as `ID`/`toNexID` in `sort_test`) | the network has neither `toid` nor the `fromnode`/`tonode` identifiers to build it from | all | add a `toid` column giving each flowline's downstream flowline; where the column exists under a source name, register it as `toid` (`hydroloom_names()` in R, `register_names()` in Python) | `needs_topo` |
 
@@ -300,8 +311,7 @@ Fixture `fixtures/three_cycle.gpkg`, aspatial, six rows:
 | 6 | 0 |
 
 Flowlines 2, 3, and 4 form a cycle of three; 1 drains into it, and 5 to 6 is a separate
-tree. In 1.3.0 `check_hy_graph(x)` returned `TRUE`: no flowline's downstream neighbor
-points straight back. It returns three rows:
+tree. It returns three rows:
 
 | id | toid | component | reciprocal |
 | --- | --- | --- | --- |
@@ -359,3 +369,10 @@ which drains into the pair, is not returned.
   for M6 (H-03, D3-153). The quoted `needs_topo` R text in Preconditions is replaced by
   the key (A-10). References give `check_cycles_internal()`, `scc_labels()`, and the
   flownetwork callers.
+- 2026-10-29 (M3 close run 3, reader round D3-201): H-01 in part (Algorithm step 1 for
+  Python reads `as_hy` without the repeated-pair raise; Signature says the shape of
+  repeated-pair rows is open, D3-209; the `component` Postcondition is qualified to rows
+  on a cycle), H-02, H-03 (description part), H-04 (rows counted, from
+  `check_divergence_internal()`), H-05, H-06 (exact comparison, from
+  `check_divergence_internal()`), H-07, H-08 (the divergence table keeps the input's
+  class, as R does).
