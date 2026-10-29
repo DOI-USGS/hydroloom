@@ -57,8 +57,8 @@ required_atts_check_divergence <- c("id", "fromnode", "divergence")
 #' @param fraction_tol numeric tolerance used when checking that
 #' `divergence_fraction` sums to 1 across a `fromnode` group.
 #' @returns if no problems are found, returns TRUE. If problems are found,
-#' problem rows. Rows returned by the divergence check carry a row number
-#' (`row`) and a `divergence_issue` column naming the failed checks. Rows
+#' problem rows. Rows returned by the divergence check carry a
+#' `divergence_issue` column naming the failed checks. Rows
 #' returned by the cycle check are every row whose `id` and `toid` lie on a
 #' common cycle, in input order, with `component` (which cycle, numbered from
 #' 1 in byte order of each cycle's least identifier compared as text) and

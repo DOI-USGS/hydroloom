@@ -18,8 +18,8 @@ described in details.}
 }
 \value{
 if no problems are found, returns TRUE. If problems are found,
-problem rows. Rows returned by the divergence check carry a row number
-(\code{row}) and a \code{divergence_issue} column naming the failed checks. Rows
+problem rows. Rows returned by the divergence check carry a
+\code{divergence_issue} column naming the failed checks. Rows
 returned by the cycle check are every row whose \code{id} and \code{toid} lie on a
 common cycle, in input order, with \code{component} (which cycle, numbered from
 1 in byte order of each cycle's least identifier compared as text) and

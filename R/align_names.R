@@ -109,8 +109,8 @@ hydroloom_name_definitions
 #' @param x named character vector of additional names to add to the
 #' hydroloom environment. If not specified, no names will be added and
 #' the current value stored in the hydroloom environment will be returned.
-#' @param clear logical if TRUE, all names will be removed and replaced with
-#' x.
+#' @param clear logical if TRUE, the names revert to those set when the
+#' package loads (the vocabulary aliases), and x, if given, is added to them.
 #' @returns named character vector containing hydroloom names with registered attribute name mappings in `names`.
 #' @export
 #' @examples

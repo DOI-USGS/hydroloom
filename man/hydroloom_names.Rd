@@ -11,8 +11,8 @@ hydroloom_names(x = NULL, clear = FALSE)
 hydroloom environment. If not specified, no names will be added and
 the current value stored in the hydroloom environment will be returned.}
 
-\item{clear}{logical if TRUE, all names will be removed and replaced with
-x.}
+\item{clear}{logical if TRUE, the names revert to those set when the
+package loads (the vocabulary aliases), and x, if given, is added to them.}
 }
 \value{
 named character vector containing hydroloom names with registered attribute name mappings in \code{names}.
