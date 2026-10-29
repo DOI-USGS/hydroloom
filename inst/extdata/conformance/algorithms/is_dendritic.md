@@ -68,8 +68,9 @@ aligned table (D3-197). The `dendritic` attribute that R's `hy()` sets is not re
 
 1. If `divergence` is a column and any non-missing value equals 2, return `FALSE`.
 2. If `validate_data`, `toid` is a column, and any `id` value is a repeat of an earlier
-   one, return `FALSE`. Missing `id` values count as equal to each other (R
-   `duplicated()`, pandas `duplicated()`). When `id` is absent the test finds no repeat.
+   one, return `FALSE`. When `id` is absent the test finds no repeat. How missing `id`
+   values compare here, and that step 1 ignores a missing `divergence`, are captured
+   behavior stated in Edge cases, not tie rules (reader round H-05).
 3. Return `TRUE`.
 
 No tie rule or sentinel applies. The result does not depend on row order (D-7); case
@@ -131,7 +132,8 @@ repeat test, O(1) otherwise.
   `divergence` 2 test.
 - Repeated `id` without `toid` (node topology): `TRUE`; the repeat test needs `toid`.
 - Missing `divergence` value: ignored. Missing `id` values: two or more count as a
-  repeat.
+  repeat (R `duplicated()`; pandas `duplicated()` matches). Both are captured, not
+  contract, with no case (REVIEW_10282026 rule 4 as amended: tolerated, not advertised).
 - `divergence` stored as text, or coded outside 0, 1, 2: R compares with `==` against 2,
   so text `"2"` reads as minor and 3 is ignored. This is captured R behavior, not
   contract; no case.
