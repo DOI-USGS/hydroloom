@@ -79,7 +79,7 @@ Sentinel (K-4): the stack and the dense upstream view use −1 in Python; R's bo
 - Idempotent, `sort_network(sort_network(x))` equals `sort_network(x)`; permutation-invariant without re-sorting, a row-permuted input gives the same output in the same order, except that rows equal in `id` and `toid` but different elsewhere keep their relative input order (D-4, D-7).
 - `hy_topo` or `hy_flownetwork` input: no output exists for a network with a cycle; the call stops (D-8, D3-41).
 - No output exists when an `outlets` value is not an `id`; the call stops (D3-51, D3-154).
-- Zero-row input gives zero-row output with every input column and, with `split = TRUE`, `terminal_id`, each typed (I-11, D3-46).
+- Zero-row input gives zero-row output with every input column and, with `split = TRUE`, `terminal_id`, each typed (I-11, D3-46; cases `sort_network_empty_network` and `sort_network_empty_network_split`).
 - With `split = TRUE`, `terminal_id` is constant over each block and equals the `id` of a start; with `outlets = NULL` it is an outlet's `id`.
 - `terminal_id` has the type of `id` and no missing value.
 

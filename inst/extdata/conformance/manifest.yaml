@@ -470,6 +470,17 @@ cases:
     generator: [r]
     columns: [id, start_flag, terminal_flag]
 
+  # I-2 pair rule (D3-06): fromnode and tonode beyond 32 bits both become
+  # character; the one case comparing that branch of the node pair (hy H-06)
+  - id: hy_large_nodes
+    function: hy
+    fixture: hy_large_nodes.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # probed: id3dhp -> id, character; two outlet toid "" already present; R class hy_topo
   - id: hy_new_hope_3dhp
     function: hy
@@ -2054,7 +2065,7 @@ cases:
     fixture: add_toids_worked_example_shuffled.gpkg
     args: {}
     compare: exact
-    order: ignore
+    order: exact
     supported_by: [r]
     generator: [r]
 
@@ -2065,7 +2076,7 @@ cases:
     fixture: add_toids_worked_example_shuffled.gpkg
     args: {return_dendritic: false}
     compare: exact
-    order: ignore
+    order: exact
     supported_by: [r]
     generator: [r]
 
@@ -2180,6 +2191,17 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # D3-56 under return_dendritic = FALSE, the route internal callers use:
+  # id 2 stays the target of ids 1 and 3; (1,2),(2,0),(3,2) (add_toids H-04)
+  - id: add_toids_missing_tonode_target_not_dendritic
+    function: add_toids
+    fixture: add_toids_missing_tonode_target.gpkg
+    args: {return_dendritic: false}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # outlet value "" for character id
   - id: add_toids_character_id
     function: add_toids
@@ -2275,6 +2297,19 @@ cases:
   - id: add_toids_no_nodes
     function: add_toids
     fixture: empty_name.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    raises: error
+    raises_key: needs_node
+
+  # repeated id without toid (plain hy, not the node pattern): needs_node
+  # (Edge cases, add_toids H-03)
+  - id: add_toids_repeated_id_no_toid
+    function: add_toids
+    fixture: hy_network_type_node_repeated_id.gpkg
     args: {}
     compare: exact
     order: exact
@@ -2951,6 +2986,30 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # shared. A divergence problem beside a cycle: with divergence_check the
+  # divergence rows (ids 1 and 4 at node 10) come back alone, the 2 <-> 3
+  # cycle not listed (D3-75, check_hy_graph H-03)
+  - id: check_hy_graph_divergence_and_cycle_divergence_check
+    function: check_hy_graph
+    fixture: check_divergence_and_cycle.gpkg
+    args:
+      divergence_check: true
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # shared. The same fixture without the divergence check: the cycle rows
+  # 2 and 3, component 1, reciprocal TRUE
+  - id: check_hy_graph_divergence_and_cycle
+    function: check_hy_graph
+    fixture: check_divergence_and_cycle.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
   # shared. ids 2, 3, divergence_issue "node without exactly one divergence
   # == 1"; unchanged by D-8.
   - id: check_hy_graph_divergence_miscoded
@@ -3242,6 +3301,17 @@ cases:
     function: sort_network
     fixture: empty_network.gpkg
     args: {}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+
+  # I-11 with split = TRUE: zero rows with terminal_id present and typed
+  # (sort_network H-04)
+  - id: sort_network_empty_network_split
+    function: sort_network
+    fixture: empty_network.gpkg
+    args: {split: true}
     compare: exact
     order: exact
     supported_by: [r]

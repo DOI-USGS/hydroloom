@@ -504,6 +504,18 @@ fixture(data.frame(comid = 1, fromnode = 2, tonode = 3),
   "synthetic; tests/testthat/test_hy_classes.R \"existing hy() behavior preserved\"",
   "one REAL comid row with fromnode and tonode: renamed to id and hy after hy()")
 
+# Node identifiers beyond 32 bits: the pair rule (D3-06) makes both
+# character. hy_nhdplushr keeps neither node column (D3-185), so this is the
+# one case that compares the character branch of the pair.
+fixture(data.frame(
+  id = 1:3,
+  fromnode = c(8589934593, 8589934594, 8589934595),
+  tonode = c(8589934594, 8589934595, 8589934596)),
+  "hy_large_nodes",
+  "synthetic",
+  "fromnode and tonode whole doubles beyond 32 bits: both become character under the I-2 pair rule (D3-06)",
+  "I-2")
+
 # Function fixtures: hy_reverse (algorithms/hy_reverse.md) -------------------
 
 fixture(data.frame(ID = 1:3, toID = c(2L, 3L, NA), extra = c("a", "b", "c")),
@@ -989,6 +1001,19 @@ lp2$toid[lp2$id == "{B3F20B3F-9141-4009-8935-4930DE818192}"] <- "{B9A43856-3A49-
 fixture(dplyr::distinct(lp2), "loop2_repaired",
   "tests/testthat/data/loop2.rds with the test_check_hy_graph.R \"big_check\" toid edits (outlets set to \"\", five toids redirected), then distinct rows",
   "braced GUID flownetwork with its cycles broken",
+  "D-8")
+
+# A divergence coding problem beside a cycle: node 10 sends 1 and 4 out, both
+# coded 0, and 2 and 3 name each other. With divergence_check the divergence
+# rows come back alone and the cycle is not listed (D3-75).
+fixture(data.frame(
+  id = 1:5,
+  toid = c(2L, 3L, 2L, 5L, 0L),
+  fromnode = c(10L, 11L, 12L, 10L, 13L),
+  divergence = c(0L, 0L, 0L, 0L, 0L)),
+  "check_divergence_and_cycle",
+  "synthetic",
+  "a divergence coding problem (node 10: ids 1 and 4 both coded 0) beside a cycle (2 <-> 3): with divergence_check the divergence rows alone are returned; without it the cycle rows",
   "D-8")
 
 # Function fixtures: sort_network (algorithms/sort_network.md) ---------------

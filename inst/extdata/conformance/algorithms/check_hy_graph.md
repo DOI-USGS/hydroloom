@@ -262,6 +262,13 @@ O(n).
 - Missing `divergence` with `divergence_check`: the row is labeled `"divergence not in
   {0, 1, 2}"`. Missing `fromnode`: the row is in no node group, and only checks 1, 5, and
   7 apply to it.
+- A divergence problem beside a cycle, with `divergence_check`: the divergence rows alone
+  are returned (D3-75); fixture `check_divergence_and_cycle`, cases
+  `check_hy_graph_divergence_and_cycle_divergence_check` and, without the check,
+  `check_hy_graph_divergence_and_cycle`.
+- A flowline whose rows at its node disagree in `divergence` or `divergence_fraction`
+  (a flownetwork coded inconsistently): not detected, and the result on such input is
+  not contract (D3-213). A candidate check for later.
 - Missing weight, zero-length line, empty name: not read.
 - Identifiers that are character (`loop2`, braced GUIDs) or outside 32 bits: compared as
   text; numbering by byte order of the strings.

@@ -456,6 +456,21 @@ fixtures:
   exercises: 'hy_node without aggregate_id: aggregate flowpath functions unavailable'
   rules: []
   bytes: 73728
+- file: check_divergence_and_cycle.gpkg
+  source: synthetic
+  rows: 5
+  geometry: none
+  columns:
+  - id
+  - toid
+  - fromnode
+  - divergence
+  exercises: 'a divergence coding problem (node 10: ids 1 and 4 both coded 0) beside
+    a cycle (2 <-> 3): with divergence_check the divergence rows alone are returned;
+    without it the cycle rows'
+  rules:
+  - D-8
+  bytes: 73728
 - file: check_reciprocal_chains.gpkg
   source: synthetic (test_check_hy_graph.R "base check_hy_graph")
   rows: 8
@@ -999,6 +1014,19 @@ fixtures:
   - I-1
   - I-2
   bytes: 73728
+- file: hy_large_nodes.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - id
+  - fromnode
+  - tonode
+  exercises: 'fromnode and tonode whole doubles beyond 32 bits: both become character
+    under the I-2 pair rule (D3-06)'
+  rules:
+  - I-2
+  bytes: 73728
 - file: hy_leveled.gpkg
   source: synthetic
   rows: 3
@@ -1265,9 +1293,9 @@ fixtures:
   - tonode
   - gnis_id
   - feature_type
-  exercises: non-dendritic network with repeated id at divergences whose branches rejoin
-    downstream (braided reaches) and character identifiers; holds no directed cycle, so the
-    strongly connected components check returns TRUE
+  exercises: non-dendritic network with repeated id at divergences whose branches
+    rejoin downstream (braided reaches) and character identifiers; holds no directed
+    cycle, so the strongly connected components check returns TRUE
   rules:
   - I-6
   - D-8
