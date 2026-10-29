@@ -94,9 +94,10 @@ with `name_alias_ambiguous` for three or more (`align_names.md` steps 2 and 5, D
 Because names are lowercased on registration (D3-65), an alias that lowercases to a
 seeded alias repeats it: registering `COMID = "id"` as printed in the NHDPlusV2 User
 Guide adds a second `comid` entry, and every NHDPlusV2 table then warns with
-`name_alias_duplicate`. Passing a saved full registry back with `clear = TRUE` repeats
-every vocabulary alias the same way, since the reset already holds them; the call that
-restores the load-time registry is `hydroloom_names(clear = TRUE)` with no `x`.
+`name_alias_duplicate`. The restore is `hydroloom_names(clear = TRUE)` with no `x`, which
+returns the registry to the one set at package load. Passing a saved registry back with
+`clear = TRUE` repeats every vocabulary alias, since the reset already holds them, and
+every table carrying a seeded alias then warns with `name_alias_duplicate` (H03-2).
 Several seeded aliases of one term can also meet in one table: an NHDPlusHR flowline
 table carries both `nhdplusid` and `permanent_identifier`, both aliases of `id`;
 `align_names()` resolves that by its `permanent_identifier` rule (`align_names.md`
@@ -132,7 +133,7 @@ the next time the package is loaded, which includes every R restart.
 
 ## Worked example
 
-No fixture table is read. With `v` the registry at load (53 entries):
+No fixture table is read. With `v` the registry at load (55 entries):
 
 ```r
 hydroloom_names(clear = TRUE)            # v
@@ -185,3 +186,7 @@ load, so its expectation is the vocabulary's alias table as two columns, `name` 
   `dnhydrosequence` and `uphydrosequence` as `dn_topo_sort` and `up_topo_sort` aliases,
   each after its NHDPlus alias, so the load-time registry and the
   `hydroloom_names_default` layer have 55 entries; Definition lists the aliases.
+- 2026-10-29, suite 0.1.0, M3 close run 3, H03-2: Edge cases state
+  `hydroloom_names(clear = TRUE)` with no `x` as the restore, and that passing a saved
+  registry back with `clear = TRUE` repeats the vocabulary aliases, beside the H-01
+  duplicated-alias sentence.

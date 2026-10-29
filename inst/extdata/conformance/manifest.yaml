@@ -121,6 +121,20 @@ cases:
     raises: warning
     raises_key: nonunique_id_with_toid
 
+  # python_omitted; changes_with: i2; D3-192: the same call as
+  # hy_new_hope_add_topo_no_divergence with its nonunique_id_with_toid warning
+  # suppressed (no raises field); compares the 832 rows, each flowline's
+  # copies together in its input position (hy.md Postconditions)
+  - id: hy_new_hope_add_topo_no_divergence_rows
+    function: hy
+    fixture: new_hope_no_divergence.gpkg
+    args: {add_topo: true}
+    compare: exact
+    order: exact
+    supported_by: [r]
+    generator: [r]
+    columns: [id, toid]
+
   # changes_with: i2 (whole-valued double ids -> integer; NA toid -> 0L)
   - id: hy_worked_example
     function: hy
@@ -521,14 +535,14 @@ cases:
     generator: [r]
 
   # D-7 pair of hy_reverse_renamed: rows reordered 3, 1, 2; rows come back
-  # in the new input order (D-14)
+  # in the new input order (D-14), compared in order (D3-198)
   - id: hy_reverse_renamed_shuffled
     function: hy_reverse
     fixture: hy_reverse_renamed_shuffled.gpkg
     prepare: {function: hy}
     args: {}
     compare: exact
-    order: ignore
+    order: exact
     supported_by: [r]
     generator: [r]
 
@@ -1655,8 +1669,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # no alias lookup; Divergence/FromNode are not hydroloom names; expect TRUE
-  # (Definition, captured as is)
+  # python_omitted: R-only (D3-197); R does no alias lookup, so
+  # Divergence/FromNode are not hydroloom names and the result is TRUE; Python
+  # aligns names first, so the case stays [r] when Python generates
   - id: is_dendritic_new_hope_source_names
     function: is_dendritic
     fixture: new_hope.gpkg

@@ -48,7 +48,10 @@ its column names. In Python the representation is `representation(network)` comp
 from the columns (A-2), since no class rides on a frame (I-14). `representation` raises
 `no_id_column` on a table with no `id` column (D3-162); `capabilities` does not raise
 there but treats the table as having no representation, so only rows whose pattern is
-`any` can be available and every `via` is `""` (D3-167).
+`any` can be available and every `via` is `""` (D3-167). On a raw table holding a
+repeated (`id`, `toid`) pair, which `as_hy` raises on (`id_toid_pair_repeated`, D3-57),
+`capabilities` does not raise either: the repeated `id` makes the table a flownetwork,
+and it returns the `hy_flownetwork` answer (D3-196).
 
 ## Definition
 
@@ -180,8 +183,9 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
   table `hy_flownetwork`; the call returns with the five flownetwork rows available and
   every `via` `""`. It does not raise. `available` reflects the flownetwork pattern only.
   The repeated (`id`, `toid`) pair is a data error that raises at ingest in `hy()` and
-  `as_hy` under D3-57, in Python from its first release and in R from M6 (D3-46). Until
-  then case `hy_capabilities_duplicated_edge` captures R's return.
+  `as_hy` under D3-57, in Python from its first release and in R from M6 (D3-46);
+  Python `capabilities` returns the same flownetwork answer and does not raise (D3-196).
+  Case `hy_capabilities_duplicated_edge` captures R's return.
 - Divergence (repeated `id` with distinct `toid`, `sort_network_dups.gpkg`,
   `loop2.gpkg`): `hy_flownetwork`, the same output as the duplicated row.
 - Node table without a `divergence` column (`divergence_no_attribute.gpkg`):
@@ -195,7 +199,7 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
 ## Remedies
 
 none. Python `capabilities` does not raise `no_id_column` on a table with no `id`
-column (D3-167).
+column (D3-167), nor `id_toid_pair_repeated` on a repeated (`id`, `toid`) pair (D3-196).
 
 ## References
 
@@ -269,3 +273,6 @@ with `via = "make_node_topology"` on the four node rows. With `include_conversio
   (H2-04) and the D3-57 ingest raise on a repeated pair. References drop the removed
   testthat name and add `test-conformance-capabilities.R`. No R change in this run
   touches the function.
+- 2026-10-29, suite 0.1.0, M3 close run 3, D3-196: on a raw table with a repeated
+  (`id`, `toid`) pair, Python `capabilities` returns the `hy_flownetwork` answer and does
+  not raise (Preconditions, Edge cases, Remedies).

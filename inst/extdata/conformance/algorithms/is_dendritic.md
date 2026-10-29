@@ -32,10 +32,11 @@ No kernel is involved (K-1, K-11).
 
 None. The function accepts any table, including a zero-row table and one in source
 names, and raises nothing; `requires` is `[any]`. No representation check and no
-conversion is applied. It reads three columns when present, by their hydroloom names
-only: `divergence`, `toid`, and `id`. No alias lookup is done, so a table in source names
-(`Divergence`, `tocomid`) is read as if those columns were absent; call `hy()` (Python
-`as_hy`) first.
+conversion is applied. It reads three columns when present, by their hydroloom names:
+`divergence`, `toid`, and `id`. R does no alias lookup, so in R a table in source names
+(`Divergence`, `tocomid`) is read as if those columns were absent; call `hy()` first.
+Python aligns names first, as `representation` does (D3-29, D3-34), so a table in source
+names is read under the hydroloom names `as_hy` would give its columns (D3-197).
 
 `validate_data` must be a single `TRUE` or `FALSE`. R stops with the base error
 "missing value where TRUE/FALSE needed" on `NA`, and only when the divergence test has
@@ -54,9 +55,9 @@ The result is `FALSE` when either holds, and `TRUE` otherwise:
 
 The answer is about what the table records, not about the river. A node-topology table
 (`fromnode`/`tonode`, unique `id`, A-2 `hy_node`) whose divergences are encoded only by a
-shared `fromnode` and that has no `divergence` column is `TRUE`. A table in source names
-is `TRUE` whatever it holds, because none of the three names is present. The `dendritic`
-attribute that R's `hy()` sets is not read.
+shared `fromnode` and that has no `divergence` column is `TRUE`. In R a table in source names is `TRUE` whatever it holds, because none of the
+three names is present; Python aligns the names first and gives the answer for the
+aligned table (D3-197). The `dendritic` attribute that R's `hy()` sets is not read.
 
 ## Algorithm
 
@@ -86,7 +87,8 @@ permuted rows of `new_hope_shuffled.gpkg`. No CSR index is built.
 - With `validate_data` true, a table with `toid` is `FALSE` whenever its representation
   is `hy_flownetwork` (A-2).
 - The result is unchanged by adding, removing, or changing any column other than
-  `divergence`, `toid`, and `id`.
+  `divergence`, `toid`, and `id`; in Python, any column other than those that name
+  alignment maps to them.
 - The input is not modified (A-8).
 
 ## Complexity
@@ -183,3 +185,8 @@ expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FA
   Edge cases give the ROADMAP §4 M6 row for the duplicated edge (D3-57), the deferred
   node-table detection (D3-34), and the unconfirmed 3DHP coding (D3-69). No binding
   change.
+- 2026-10-29, suite 0.1.0, M3 close run 3, D3-197: Python `is_dendritic` aligns names
+  first (D3-34, D3-29); R does no alias lookup (Preconditions, Definition,
+  Postconditions). Case
+  `is_dendritic_new_hope_source_names`, which passes source names, is R-only. Open for
+  M6 with D3-34: whether R `is_dendritic` aligns names too; no R change now.

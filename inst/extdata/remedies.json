@@ -687,6 +687,20 @@
       ],
       "python_class": "HydroloomWarning"
     },
+    "id_toid_pair_repeated": {
+      "kind": "error",
+      "message": "These flowlines are given the same downstream flowline (toid) on more than one row: {rows}. Each connection between two flowlines is one row, and a repeated one is an error whether or not the rows differ in other columns. Drop the repeated rows, keeping the one that is correct, and call again.",
+      "placeholders": {
+        "rows": "the ids of the flowlines whose (id, toid) pair repeats"
+      },
+      "condition": "Two or more rows repeat an (id, toid) pair, giving one flowline the same downstream flowline more than once. A flowline above a divergence has one row per downstream flowline, each with a different toid; a repeated pair is not that, and where the rows differ in other columns no one of them can be read as the connection (S-6, D3-57). check_hy_graph() lists such rows rather than raising (D3-166).",
+      "rows": "the rows that repeat an (id, toid) pair, by id",
+      "fix": "Drop the repeated rows, keeping the one that is correct, before as_hy().",
+      "raised_by": ["hy"],
+      "languages": ["python"],
+      "r_text": [],
+      "python_class": "HydroloomError"
+    },
     "unnamed_name_mapping": {
       "kind": "error",
       "message": "input must be named",
