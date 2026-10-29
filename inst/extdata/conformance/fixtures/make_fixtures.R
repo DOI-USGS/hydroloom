@@ -303,7 +303,7 @@ fixture(data.frame(
   toid = c(2L, 2L, 0L)),
   "duplicated_edge",
   "synthetic",
-  "S-6 duplicated edge in a flownetwork (the 1 -> 2 row repeated): raises",
+  "S-6 duplicated edge in a flownetwork (the 1 -> 2 row repeated): raises at ingest (Python now, R in M6, D3-57); check_hy_graph lists the rows (D3-166)",
   c("S-6", "I-6"))
 
 fixture(data.frame(
@@ -490,7 +490,7 @@ fixture(data.frame(id = 1:2, toid = c(2L, NA), fromnode = 1:2, tonode = 2:3),
 fixture(data.frame(id = c(3L, 1L, 2L), fromnode = c(9L, 1L, 2L), tonode = c(NA, 2L, 3L)),
   "hy_add_topo_isolated_first",
   "synthetic",
-  "node topology whose first row has a missing tonode: add_topo moves it to the end",
+  "node topology whose first row has a missing tonode: add_topo keeps it first (D3-56)",
   "D-14")
 
 fixture(data.frame(comid = c(1, 2), tocomid = c(2, NA), fromnode = c(1, 2), tonode = c(2, 3)),
@@ -529,7 +529,7 @@ fixture(data.frame(ID = 1:3, toID = c(2L, 3L, NA), extra = c("a", "b", "c"))[c(3
   "hy_reverse_renamed_shuffled",
   "hy_reverse_renamed with rows reordered 3, 1, 2",
   "the same table in another row order: names restored, rows in the new input order",
-  c("D-3", "D-7", "D-14"))
+  c("D-7", "D-14"))
 
 fixture(data.frame(ID = integer(), toID = integer(), extra = character()),
   "hy_reverse_zero_rows",
@@ -689,8 +689,8 @@ fixture(atw, "add_toids_worked_example",
 
 fixture(atw[c(1, 3, 2, 4, 5, 6), ], "add_toids_downstream_swapped",
   "add_toids_worked_example with input rows 2 and 3 swapped",
-  "downstream connections at a divergence follow input row order, not identifier order",
-  "D-7")
+  "downstream connections at a divergence follow input row order, not identifier order (the step 7 tie rule)",
+  "D-14")
 
 # A fixed permutation that moves every row, no seed (D-15); ids 3 and 2 swap
 # their relative order, so the divergence tie order changes too.
@@ -703,7 +703,8 @@ atw5 <- atw[1:5, ]
 
 fixture(within(atw5, divergence[2] <- NA_integer_), "add_toids_missing_divergence",
   "first five rows of add_toids_worked_example with id 2 divergence missing",
-  "a missing divergence below a divergence: in R 1.3.0 the flowline receives no upstream connection")
+  "a missing divergence below a divergence: raises divergence_missing with return_dendritic = TRUE (D3-56)",
+  "I-9")
 
 fixture(within(atw, divergence[4] <- NA_integer_), "add_toids_missing_divergence_off_split",
   "add_toids_worked_example with id 4 divergence missing",
@@ -712,11 +713,13 @@ fixture(within(atw, divergence[4] <- NA_integer_), "add_toids_missing_divergence
 
 fixture(within(atw5, divergence[3] <- 1L), "add_toids_divergence_without_minor",
   "first five rows of add_toids_worked_example with id 3 divergence 1",
-  "both downstream flowlines coded main (1): the upstream flowline repeats under return_dendritic = TRUE")
+  "both downstream flowlines coded main (1): a broken divergence coding, raises divergence_coding_invalid (D3-72)",
+  "I-6")
 
 fixture(within(atw5, divergence[2] <- 2L), "add_toids_divergence_without_main",
   "first five rows of add_toids_worked_example with id 2 divergence 2",
-  "both downstream flowlines coded minor (2): the upstream flowline becomes an outlet")
+  "both downstream flowlines coded minor (2): a broken divergence coding, raises divergence_coding_invalid (D3-72)",
+  "I-6")
 
 fixture(within(atw5, divergence[2] <- 0L), "add_toids_divergence_zero_main",
   "first five rows of add_toids_worked_example with id 2 divergence 0",
@@ -735,8 +738,8 @@ fixture(data.frame(
   divergence = 0L),
   "add_toids_missing_tonode_first",
   "synthetic",
-  "a missing tonode on the first row (moves last, D-14 departure) and an unmatched tonode (id 3)",
-  "D-14")
+  "a missing tonode on the first row (keeps its position, D-14) and an unmatched tonode (id 3)",
+  c("D-14", "I-5"))
 
 fixture(data.frame(
   id = 1:3,
@@ -745,7 +748,8 @@ fixture(data.frame(
   divergence = 0L),
   "add_toids_missing_tonode_target",
   "synthetic",
-  "a flowline (id 2) with a missing tonode whose fromnode two flowlines reach: in R 1.3.0 never a target")
+  "a flowline (id 2) with a missing tonode whose fromnode two flowlines reach: a terminal that stays their target (D3-56)",
+  "I-5")
 
 fixture(transform(atw, id = as.character(id)), "add_toids_character_id",
   "add_toids_worked_example with id TEXT",
@@ -792,12 +796,12 @@ miw <- data.frame(
 
 fixture(miw, "make_index_ids_worked_example",
   "synthetic; the worked example in algorithms/make_index_ids.md",
-  "a three-way confluence whose upstream list follows row order today and identifier byte order after D-5",
+  "a three-way confluence whose upstream list is in identifier byte order (100, 30, 4)",
   c("D-5", "D-7", "D-1"))
 
 fixture(miw[c(4, 3, 5, 1, 2), ], "make_index_ids_worked_example_permuted",
   "make_index_ids_worked_example with rows reordered 4, 3, 5, 1, 2",
-  "the same network in another row order: the upstream list at 10 follows the new row order",
+  "the same network in another row order: the same graph layer (D-7)",
   c("D-1", "D-3", "D-5", "D-7"))
 
 fixture(data.frame(
@@ -813,7 +817,7 @@ fixture(data.frame(
   toid = c(2L, 3L, 1L, 0L)),
   "make_index_ids_flownetwork_cycle",
   "synthetic",
-  "a flownetwork holding a two-flowline cycle (1 <-> 2): the flownetwork route runs no cycle check",
+  "a flownetwork holding a two-flowline cycle (1 <-> 2): the flownetwork route stops with network_cycle",
   c("I-6", "D-8"))
 
 fixture(data.frame(
@@ -841,13 +845,14 @@ fixture(data.frame(
 fixture(data.frame(id = 1:2, toid = c("2", "")),
   "make_index_ids_type_mismatch",
   "synthetic",
-  "INTEGER id with TEXT toid and the character outlet value: the outlet check warns and the join fails",
+  "INTEGER id with TEXT toid and the character outlet value: hy() types the pair together, so the edge returns with no warning",
   "I-2")
 
 # Function fixtures: check_hy_graph (algorithms/check_hy_graph.md) -----------
 
-# Three cycles whose least identifiers are 9, 10, and 20: byte order numbers
-# them 10, 20, 9; numeric order 9, 10, 20; input order meets 9 first.
+# Three cycles, {9, 12}, {10, 11}, {20, 21, 22}. Each cycle's least identifier
+# as text is "12", "10", "20" ("12" < "9" in byte order), so byte order numbers
+# them 10, 12, 20 where numeric least would give 9, 10, 20; input order meets 9 first.
 tcb <- data.frame(
   id = c(9L, 1L, 22L, 12L, 11L, 20L, 2L, 10L, 21L),
   toid = c(12L, 9L, 20L, 9L, 10L, 21L, 0L, 11L, 22L))
@@ -855,7 +860,7 @@ tcb <- data.frame(
 fixture(tcb,
   "two_cycles_byte_order",
   "synthetic",
-  "three cycles whose numbering by least identifier differs between byte order (\"10\" < \"20\" < \"9\") and numeric order; input order matches neither",
+  "three cycles numbered by byte-least identifier (\"10\" < \"12\" < \"20\"), which differs from numbering by numeric least (9, 10, 20); input order matches neither",
   c("D-8", "D-1", "S-6"))
 
 # A fixed permutation, no seed (D-15). The rows off any cycle (1 -> 9 and
@@ -905,7 +910,7 @@ fixture(data.frame(
   toid = c(2L, 3L, 4L, 9L, 7L, 8L, 9L, 4L)),
   "check_reciprocal_chains",
   "synthetic (test_check_hy_graph.R \"base check_hy_graph\")",
-  "two chains joined by a reciprocal pair (4 -> 9, 9 -> 4); rows 4 and 8 reported",
+  "two chains joined by a reciprocal pair (4 -> 9, 9 -> 4); ids 4 and 9 reported",
   "D-8")
 
 dvv <- within(dvc, divergence <- c(0L, 1L, 2L, 0L))
@@ -1188,12 +1193,12 @@ atw <- data.frame(
 
 fixture(atw, "add_topo_sort_worked_example",
   "synthetic; the worked example in algorithms/add_topo_sort.md",
-  "siblings and two outlets whose row order differs from identifier byte order: input order today, byte order after D-4",
+  "siblings and two outlets whose row order differs from identifier byte order: both in identifier byte order (D-4)",
   c("D-4", "D-1"))
 
 fixture(atw[rev(seq_len(nrow(atw))), ], "add_topo_sort_worked_example_reversed",
   "add_topo_sort_worked_example with rows in reverse order",
-  "the same network in another row order: topo_sort follows row order today, not after D-4",
+  "the same network in another row order: the same output as the worked example (D-7)",
   c("D-1", "D-3", "D-4", "D-7", "D-14"))
 
 fixture(data.frame(
@@ -1248,12 +1253,12 @@ dft <- data.frame(
 
 fixture(dft, "dfs_tie",
   "synthetic; the worked example in algorithms/navigate_network_dfs.md",
-  "a divergence at 1 (to 10 and 9) rejoining at the outlet 4: visit order and path split follow row order today",
+  "a divergence at 1 (to 10 and 9) rejoining at the outlet 4: siblings in identifier byte order, 10 before 9 (D-6)",
   c("D-5", "D-6", "D-7", "D-1"))
 
 fixture(dft[c(2, 1, 4, 3, 5), ], "dfs_tie_permuted",
   "dfs_tie with the rows of 1 swapped and the rows of 10 and 9 swapped",
-  "the same network in another row order: the walk follows the new row order",
+  "the same network in another row order: the walk and path split are unchanged (D-7)",
   c("D-1", "D-3", "D-5", "D-6", "D-7"))
 
 fixture(data.frame(
@@ -1314,7 +1319,7 @@ fixture(data.frame(
   toid = c(2L, 9L, 3L, 0L, 2L)),
   "sort_divergence_leaves_permuted",
   "sort_divergence_leaves with the two rows of 2 swapped",
-  "the connection leaving the table (2 -> 9) before the one inside it (2 -> 3): the depth-first path split follows row order",
+  "the connection leaving the table (2 -> 9) before the one inside it (2 -> 3): the walk and path split are unchanged (D-7)",
   c("I-4", "D-7"))
 
 # Outlet conventions (tests/testthat/test_outlet_conventions.R) --------------

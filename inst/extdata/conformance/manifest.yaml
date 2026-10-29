@@ -498,7 +498,7 @@ cases:
   # sf_column name are not visible in a layer; the testthat interface test
   # keeps those assertions.
 
-  # changes_with: i2 (COMID et al. arrive double; integer after I-2, text-equal)
+  # COMID et al. arrive double and return integer (I-2); compared as text
   # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
   - id: hy_reverse_new_hope
     function: hy_reverse
@@ -510,7 +510,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: i2; toid stays hydroloom-named; add_toids moved FromNode
+  # toid stays hydroloom-named; add_toids moved FromNode (I-2 landed)
   # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
   - id: hy_reverse_new_hope_add_topo
     function: hy_reverse
@@ -522,7 +522,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: i2; non-vocabulary columns and geometry stay dropped
+  # non-vocabulary columns and geometry stay dropped (I-2 landed)
   # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
   - id: hy_reverse_new_hope_clean
     function: hy_reverse
@@ -1347,7 +1347,7 @@ cases:
   # (D3-11). The return is a (function, available, via) frame (A-4). Every
   # case carries changes_with: A-4 (D3-14), the change that regenerated its
   # layer from the named logical vector R 1.3.0 returned. order: exact pins code-table
-  # order (D-14). Cases without prepare stay R only: R reads a class, Python
+  # order (A-4). Cases without prepare stay R only: R reads a class, Python
   # reads columns. Cases passing include_conversions stay R only: Python
   # capabilities(network) takes no such argument (D3-31). No case raises.
 
@@ -1921,8 +1921,8 @@ cases:
   # toid_already_present. Every return_dendritic = FALSE case warns
   # (return_dendritic_deprecated) and still compares its layer.
 
-  # changes_with: i2; data.frame route, source names back, 746 rows, toid
-  # second, FromNode moved last; one three-way divergence (node 250031617:
+  # data.frame route, source names back, 746 rows; the layer keeps COMID and
+  # toid (D3-185); one three-way divergence (node 250031617:
   # 8893644 main, 8893634 and 8893636 minor)
   - id: add_toids_new_hope
     function: add_toids
@@ -2515,8 +2515,9 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # M3 H-08; minor path rejoins the main path: 6 leaves 1 at a divergence
-  # and returns at 4; to 1 -> 2, 6; from 4 <- 3, 7; 11 + 11 rows
+  # M3 H-08; minor paths rejoin the main path: 6 leaves 1 and splits into 7
+  # and 8; 7 rejoins at 4, 8 through 9 at 5; to 1 -> 2, 6; 6 -> 7, 8;
+  # from 4 <- 3, 7; 5 <- 4, 9; 11 + 11 rows
   - id: make_index_ids_return_divergence
     function: make_index_ids
     fixture: return_divergence.gpkg
@@ -2856,8 +2857,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # shared. S-6 duplicated edge (flownetwork); TRUE, does not raise (D3-57,
-  # S-6 raise not applied in M3).
+  # R-only until M6 (D3-166): R returns TRUE; Python lists both rows as the
+  # repeated-pair table (M5 case, D3-209).
   - id: check_hy_graph_duplicated_edge
     function: check_hy_graph
     fixture: duplicated_edge.gpkg
