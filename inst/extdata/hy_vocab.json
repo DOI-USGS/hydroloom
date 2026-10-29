@@ -233,6 +233,10 @@
         {
           "name": "uphydroseq",
           "source": "nhdplus"
+        },
+        {
+          "name": "uphydrosequence",
+          "source": "3dhp"
         }
       ],
       "tier": "derived",
@@ -246,6 +250,10 @@
         {
           "name": "dnhydroseq",
           "source": "nhdplus"
+        },
+        {
+          "name": "dnhydrosequence",
+          "source": "3dhp"
         }
       ],
       "tier": "derived",

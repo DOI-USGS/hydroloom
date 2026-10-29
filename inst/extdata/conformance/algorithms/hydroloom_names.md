@@ -39,7 +39,7 @@ holds one pair for every alias of every vocabulary column term in `hy_vocab.json
 (concept entries excluded), in the file's term order and, within a term, its alias order.
 Those aliases are the NHDPlusV2 attribute names in their 10-character dbf form
 (`comid`, `tocomid`, `levelpathi`, `arbolatesu`), NHDPlusHR `nhdplusid`, NHD
-`permanent_identifier` and `reachcode`, 3DHP `id3dhp` and `hydrosequence`, and Mainstems `mainstemid`, with a
+`permanent_identifier` and `reachcode`, 3DHP `id3dhp`, `hydrosequence`, `dnhydrosequence`, and `uphydrosequence`, and Mainstems `mainstemid`, with a
 few hydrofabric names (`reconciled_id`, `aggregated_id`) and identity pairs (`toid`,
 `fromnode`); a table whose columns use other names needs a call to `hydroloom_names()`
 before `hy()` will recognize them. A call with no `x` and `clear = FALSE` returns the
@@ -144,8 +144,8 @@ hydroloom_names(clear = TRUE)            # v
 After the third call, a table with columns `flowline_id`, `Next_ID`, `other` aligns to
 `id`, `toid`, `other`; after the fourth it keeps those names. The conformance case reads the registry at
 load, so its expectation is the vocabulary's alias table as two columns, `name` and
-`value`, 53 rows as of `hy_vocab.json` after the 3DHP `hydrosequence` alias of
-`topo_sort` (add_topo_sort H-04); the first row is `id3dhp`, `id`.
+`value`, 55 rows as of `hy_vocab.json` after the 3DHP `dnhydrosequence` and
+`uphydrosequence` aliases of `dn_topo_sort` and `up_topo_sort` (D3-184); the first row is `id3dhp`, `id`.
 
 ## Changes
 
@@ -181,3 +181,7 @@ load, so its expectation is the vocabulary's alias table as two columns, `name` 
   with `clear = TRUE` repeats the vocabulary aliases. H-04: the vocabulary gains 3DHP
   `hydrosequence` as a `topo_sort` alias, so the load-time registry and the
   `hydroloom_names_default` layer have 53 entries; Definition lists the alias.
+- 2026-10-29, suite 0.1.0: M3 close run 3. D3-184: the vocabulary gains 3DHP
+  `dnhydrosequence` and `uphydrosequence` as `dn_topo_sort` and `up_topo_sort` aliases,
+  each after its NHDPlus alias, so the load-time registry and the
+  `hydroloom_names_default` layer have 55 entries; Definition lists the aliases.

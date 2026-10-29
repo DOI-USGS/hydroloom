@@ -14,6 +14,10 @@ hydroloom (development version)
   `topo_sort`, and `add_topo_sort()` replaces it with the computed
   `topo_sort` (under the name `hydrosequence` on a `data.frame`) where it
   used to pass through beside a new `topo_sort` column.
+- The 3DHP `dnhydrosequence` and `uphydrosequence` columns are now
+  aliases of `dn_topo_sort` and `up_topo_sort`, as NHDPlus `DnHydroseq`
+  and `UpHydroseq` are. `hy()` and `align_names()` rename them;
+  `add_topo_sort()` passes them through unchanged.
 - `hy()` now fixes the type of identifier columns (`id`, `toid`,
   `fromnode`, `tonode`, `levelpath`, and the other identifier names) on
   ingest. A whole-valued `double` or `integer64` column becomes `integer`
