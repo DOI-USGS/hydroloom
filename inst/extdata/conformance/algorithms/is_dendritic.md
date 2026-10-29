@@ -112,7 +112,12 @@ repeat test, O(1) otherwise.
   on a repeated (`id`, `toid`) pair in the ingest step, `hy()` (Python `as_hy`). Python
   raises at alignment from its first release (D3-57); R returns the values above until
   the M6 row lands. The R raise, with `is_dendritic` no longer reading such a repeat as a
-  divergence, is the ROADMAP §4 row for M6 (D3-57).
+  divergence, is the ROADMAP §4 row for M6 (D3-57). The NextGen table
+  `sort_network_dups.gpkg` repeats three (`id`, `toid`) pairs and no other `id`, so under
+  D3-57 the fixture is the defect: the shared cases `is_dendritic_sort_network_dups` and
+  `is_dendritic_sort_network_dups_no_validate` read its distinct rows,
+  `sort_network_dups_distinct.gpkg`, whose `id` is unique, and both are `TRUE` (D3-210).
+  The Python raise case on `sort_network_dups.gpkg` is added when Python generates (M5).
 - Divergence shown only by a shared `fromnode` in a node table with no `divergence`
   column (`divergence_no_attribute.gpkg`, case `is_dendritic_divergence_no_attribute`):
   `TRUE`, as the Definition says. Detecting it from the repeated `fromnode` lands with
@@ -197,3 +202,8 @@ expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FA
   `is_dendritic_new_hope_source_names`, which passes source names, is R-only. Open for
   M6 with D3-34: whether R `is_dendritic` aligns names too; no R change now.
 - 2026-10-29 (M3 close run 3, reader round D3-201): H-01, H-03, H-04.
+- 2026-10-30, suite 0.1.0, M3 close run 4, D3-210: Python `is_dendritic` raises what
+  `as_hy` raises, as before. Cases `is_dendritic_sort_network_dups` and
+  `is_dendritic_sort_network_dups_no_validate` read `sort_network_dups_distinct.gpkg` and
+  are shared; the first moves from `FALSE` to `TRUE`. The Python raise case on
+  `sort_network_dups.gpkg` lands at M5 (duplicated-edge Edge case). No binding change.

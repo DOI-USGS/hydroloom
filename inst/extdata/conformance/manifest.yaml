@@ -1637,9 +1637,10 @@ cases:
   # is_dendritic_new_hope_source_names (D3-197) and the duplicated-edge cases
   # (D3-57, H-01) = the Python definition gives the same value (add python to
   # supported_by when is_dendritic is ported). Values are those probed against
-  # current R. No case raises or carries changes_with. prepare: hy (D3-11) where
-  # the fixture is in source names; R reads hydroloom names only, Python aligns
-  # names first.
+  # current R. No case raises or carries changes_with; the Python raise case on
+  # sort_network_dups.gpkg is added when Python generates (M5, D3-210). prepare:
+  # hy (D3-11) where the fixture is in source names; R reads hydroloom names
+  # only, Python aligns names first.
 
   # Definition rule 1: divergence == 2.
   # NHDPlusV2 with Divergence 2 after hy(); expect FALSE
@@ -1733,10 +1734,9 @@ cases:
     generator: [r]
 
   # Definition rule 2: repeated id with toid, gated by validate_data.
-  # nextgen string ids on the distinct (id, toid) rows (D3-57, D3-210): every
-  # repeated id in the source table is one of its 3 repeated pairs, which
-  # Python raises on at alignment, so the distinct rows have unique id and
-  # rule 2 does not fire; expect TRUE
+  # shared; nextgen string ids on the distinct (id, toid) rows (D3-57, D3-210):
+  # the source table repeats 3 (id, toid) pairs and no other id, so the
+  # distinct rows have unique id and rule 2 does not fire; expect TRUE
   - id: is_dendritic_sort_network_dups
     function: is_dendritic
     fixture: sort_network_dups_distinct.gpkg
@@ -1745,8 +1745,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # repeat test skipped, no divergence column; distinct (id, toid) rows
-  # (D3-210); expect TRUE, as on the source table
+  # shared; repeat test skipped, no divergence column; distinct (id, toid)
+  # rows (D3-210); expect TRUE
   - id: is_dendritic_sort_network_dups_no_validate
     function: is_dendritic
     fixture: sort_network_dups_distinct.gpkg
