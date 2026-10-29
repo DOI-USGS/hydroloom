@@ -17,8 +17,9 @@ One repository, one root, both packages interleaved. The R package stays where i
 | `inst/extdata/remedies.json` | shared | the authored message catalog (S-1, A-10); force-included in the wheel |
 | `inst/extdata/docstrings.json` | shared, derived | generated from `man/` by the `dev/` script (A-13); committed, CI-diffed, force-included |
 | `inst/extdata/conformance/` | shared | `fixtures/`, `expected/`, `manifest.yaml`, `algorithms/` (S-1); Rbuildignored |
-| `dev/plan/` | shared | SPEC, ROADMAP, VERIFICATION, DESIGN; Rbuildignored under `^dev$` |
-| `dev/milestones/M<n>.md` | shared | the review record, one file per milestone, created with its branch; the disposition column holds the maintainer's decisions, written by an agent only with the maintainer's specific permission; Rbuildignored under `^dev$` |
+| `dev/plan/` | shared | SPEC, ROADMAP, VERIFICATION, DESIGN, RULES (the maintainer's principles for what the others leave open); Rbuildignored under `^dev$` |
+| `dev/milestones/M<n>.md` | shared | the review record, one file per milestone, created with its branch; the disposition column holds the maintainer's decisions, written by an agent only where a disposition, a §4 row, or a `RULES.md` principle fills the cell (AGENTS rule 8); Rbuildignored under `^dev$` |
+| `dev/milestones/REVIEW_<date>.md` | shared | one per run, written by the orchestrator: the cases no disposition or principle decided, each with a proposed `RULES.md` line, the maintainer-authored edits needed, the citations needed (`.kiro/context/review-template.md`); the maintainer's `Disposition:` lines are the source of each principle added to `RULES.md` |
 | `dev/` scripts | R | the `docstrings.json` generator; Rbuildignored |
 | `src/hydroloom/`, `src/hydroloom/CLAUDE.md` | Python | the package, standard src layout (K-9); the agent notes for the package tree |
 | `tests/python/`, `tests/python/CLAUDE.md` | Python | pytest and the conformance harness; the agent notes for the test tree |

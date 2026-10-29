@@ -1,0 +1,75 @@
+# hydroloom Python port — RULES
+
+The maintainer's standing rules: the opinions behind the dispositions in `dev/milestones/`, written down once so an orchestrator applies them without asking. SPEC holds the rules of the package; this file holds the principles for deciding what SPEC and a description leave open, and for how the work is recorded. An agent that finds a principle here that decides its case applies it and cites the id. An agent that finds none takes the reversible call and proposes a line for this file in the run's `REVIEW_<date>.md`; the maintainer's answer there is how the file grows.
+
+Each principle is stated as its spirit, then the cases already decided under it, so a new case is judged by the spirit and the decided cases show how far it reaches. Every line is the maintainer's. The first draft (2026-10-29) was assembled by an agent from the disposition text in `REVIEW_10272026.md`, `REVIEW_10282026.md`, `REVIEW_10292026.md`, and the status columns of `M1.md` to `M3.md`; the sources under each principle name the dispositions it was read from. Behavior principles are `B-<n>`; process principles are `P-<n>`.
+
+## Behavior
+
+### B-1. A function returns a correct answer or stops
+
+A function never returns a plausible wrong answer. It raises only when it cannot form its documented output; when the problem can be part of the output, it returns the output. So a function that checks a network lists every problem it finds, a function that transforms a network raises on a problem it cannot resolve, and a function that reports what is possible answers rather than raises. A coding detail never silently cuts the network or turns a flowline into a terminal, because a cut network is a wrong answer the user cannot see.
+
+Decided under it: `check_hy_graph` lists repeated (`id`, `toid`) pairs as their own table while every transforming function raises on them at ingest; `capabilities` answers on a table with no `id` while `representation` raises; a repeated pair is an error whether the rows are identical or differ elsewhere, and a fixture that carries one is the defect; a missing `tonode` makes a terminal that stays a target; a broken divergence coding raises.
+
+From: REVIEW_10282026 rule 3 (D3-162, D3-166, D3-167), rule 4 (D3-158); D3-56, D3-57, D3-72, D3-74, D3-196, D3-209, D3-210, D3-215, D3-218.
+
+### B-2. The user is told what they can act on, once
+
+A problem is named by what the user can find: the row's `id`, never its position, unless the `id` value is itself the problem. A value the function does not read passes through untouched. A coding the function reads is accepted when it has one physical reading and refused when it has none or several. Where a coding is tolerated, the function warns, names the rows, and warns once per user call; the tolerance lives in Edge cases, is tested by asserting the warning rather than the output, and is never advertised as supported, since some users will want to treat it as an error.
+
+Decided under it: no result carries a `row` column; a flag value other than 0, 1, or missing passes through with a warning; a 0 at a split is read as the main path with a warning; a lone downstream flowline coded 2 is connected to with a warning; a Postcondition that bound a tolerated coding was narrowed to the supported case; internal re-ingest does not repeat a warning.
+
+From: REVIEW_10282026 rule 3b (D3-160, D3-173), rule 4 (D3-152, D3-174, I2-3); REVIEW_10292026 1d (D3-182, D3-186, D3-193), 2d (D3-206); D3-54.
+
+### B-3. The contract is what was intended, not what R happened to do
+
+An R behavior no user could have relied on is an accident: it is fixed in R with a NEWS entry and never captured as a case, and the Python port matches the intent. A behavior a user could have relied on changes only as a named step: a ROADMAP §4 row, the R change with NEWS, regenerated expectations. Changes of that kind are acceptable in a minor release and kept few, and none lands without a disposition or a §4 row that names it.
+
+Decided under it, as accidents: an internal error on zero rows; a `.x`/`.y` suffix; a mislabelled main path and a wrong edge count; a silent no-op on an uppercase alias; an evaluation-depth error; a network cut above a missing `tonode`; neighbor and sibling order following input row order; geometry reaching a `distinct()`. As named changes: upstream walks splitting at every terminal.
+
+From: SPEC D-16; REVIEW_10282026 rule 1 (D3-156); D3-38, D3-40, D3-43, D3-46, D3-51, D3-56, D3-65, D3-208; memory `feedback_fix_r_dont_capture_accidents`.
+
+### B-4. One meaning, one name, one type
+
+A quantity has one vocabulary term; a source field that carries that quantity is an alias of the term, added when the description that reads it lands, with a `values` map where the source codes differ. A function that recomputes a term replaces the column. A type is the meaning, not the source's coding: a flag is boolean and 1/0 is converted on ingest, and the harness compares the stored type. Every function aligns names before it reads them, Python through `as_hy` and R the same way (to confirm; REVIEW_10292026 1h). Where hydroloom has to choose a convention, it takes NHDPlus's: 0 for no neighbor in a sort-reference column, accumulation routed down the main channel unless a fraction apportions it, Strahler order with the divergence clause, measures 0 downstream and 100 upstream. One word per concept: "terminal" for a `toid` outside the table and "outlet" for the feature and the argument; a split is a divergence with a main and a minor channel; `navigate_network_dfs` directions are graph walks, not NLDI modes.
+
+Decided under it: 3DHP `hydrosequence`, `dnhydrosequence`, `uphydrosequence` as aliases; eight more 3DHP fields to alias as their descriptions land; `add_topo_sort` replacing the input column; the flag conversion and the stored-type comparison; the no-neighbor value 0; the divergence-fraction fill of 1.
+
+From: M1 H-04, H-07, H-09, H-10, H-12, H-14, M-07, M-09, M-18, M-28; hy H-12; REVIEW_10282026 decision 8; REVIEW_10292026 2b (D3-184), 1h (D3-197); D3-29, D3-69, D3-73, D3-76, D3-171, D3-188, D3-205, D3-210.
+
+### B-5. Python is a new package
+
+Python carries no compatibility debt. An R argument with nothing to do in Python is not in the Python signature. Where R warns for a release because it has users, Python raises from its first release. Python has one identifier type, string. The R package keeps its users' behavior and changes only under B-3.
+
+Decided under it: `silent`, `include_conversions`, `long_form`, and `split` dropped; `no_id_column`, geographic input, and a repeated pair raise in Python while R warns or waits for its §4 row.
+
+From: D3-17, D3-31, D3-47, D3-130, D3-147; DESIGN §7.
+
+## Process
+
+### P-1. A decision is made once
+
+A disposition, a §4 row, a SPEC anchor, or a principle here settles its question. An agent that finds one applies it and cites it where the work lands, in the commit message, the Log entry, or the description's Changes line; it writes no Decisions row and asks nothing. A disposition is an instruction and wins over a description, the manifest, and existing R; a dispositioned row is not reopened. Where two dispositions disagree, the later wins and the earlier is noted as superseded. Where a description and SPEC disagree on something no code depends on, SPEC wins. Only a case none of these decides reaches the maintainer, as one item in the review file with the call taken and a proposed line for this file.
+
+From: REVIEW_10282026 rule 1; REVIEW_10292026 1f; the M3-close kickoffs; D3-161.
+
+### P-2. A change leaves nothing false behind
+
+Whatever a change makes wrong is corrected in the same commit: roxygen, a description sentence, a manifest comment, a fixture-index entry, a plan document, a Log cell. Wording that was already stale before the run is one sweep at the end of the run, not an edit per unit. Log cells are filled by the agent by mapping: an applied finding `accept`, a reported row `accept`, a cell settled by a row `see D3-nn`, by a principle its id, a `verify` row `record`; `—` stays only where the review file carries the item.
+
+Decided under it: the roxygen run 2 made false was fixed rather than queued; SPEC S-7 and S-4 were edited in the run whose harness change made them wrong; the twenty fixture-index entries and six manifest comments went in one housekeeping commit.
+
+From: REVIEW_10282026 rule 2 (D3-146, D3-159, D3-172), §9; REVIEW_10292026 1a (D3-181, D3-183), 1b (D3-188, D3-195), §4; D3-47; run 5.
+
+### P-3. The suite tests what the description promises and nothing else
+
+A bound value has a case that compares it; a bound order is `order: exact`; a Postcondition no case compares is given a case or moved to Edge cases. Every D rule a description cites has a fixture tagged with it, and a gap is closed in the milestone. The other direction holds too: an expectation layer stores only what the function writes, attributes only, the columns the function writes on real-network layers, geometry only where a case checks pass-through, every file under 1 MiB, and write mode deletes layers no case owns, so a regeneration never adds binary to history for columns nobody compares.
+
+From: REVIEW_10282026 rule 5 (D3-171), decision 7 (D3-177, D3-163 option B); REVIEW_10292026 1c (D3-192, D3-198), 1e (D3-185, D3-189), 1f (D3-187); D3-79, D3-164; navigate_network_dfs H-08.
+
+### P-4. The maintainer's attention goes to the words only he can write, when they matter
+
+Prose a user reads is the maintainer's: `plain` and `definition` fields, roxygen beyond correctness, `remedies.json` messages, README, articles, Summary sections, and a citation only he can supply. An agent lists the sentence and the proposed fix once, in the review file, and does not edit it. Message text is reviewed in the milestone where R starts reading the catalog, not before; agents draft the keys a new raise needs for that read, and nothing types error text at a raise site. A finding with no anchor is recorded in the Log as `record` and goes nowhere else. A reader round is run when a description's binding sections change, because those are the implementer's contract; one round, one fix round that applies blockers and description-edit `should` findings, the rest under P-2.
+
+From: AGENTS rules 4 and 9; REVIEW_10272026 part 8 (D3-66, D3-68); REVIEW_10282026 decision 6 (D3-153, D3-178, D3-179); REVIEW_10292026 2a (D3-201), 4f, 4k; D3-180, D3-207; run 5.

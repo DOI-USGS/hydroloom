@@ -19,7 +19,9 @@ Severity:
 - `blocker` — violates a cited anchor; must change before merge.
 - `should` — anchored; the fix is reviewer judgment; the implementer may argue in the
   response column.
-- `verify` — no anchor; routed to the maintainer; never counts toward REVISE.
+- `verify` — no anchor; recorded in the Log as `record` and goes nowhere else unless a
+  disposition or a `dev/plan/RULES.md` principle picks it up (RULES P-4); never counts
+  toward REVISE.
 
 Anchor forms: `SPEC <rule>`, `description §<section>`, `checklist <item>`,
 `pattern <package/module>`, `source <document, section>`, `prose <heading>`.

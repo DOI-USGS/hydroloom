@@ -1,6 +1,6 @@
 # hydroloom Python port — ROADMAP
 
-Milestones in the order chosen so that each is useful if the next never happens. Each brief is what a person or agent starting that milestone reads, together with the SPEC anchors it names. Rules are in SPEC.md, reasoning in DESIGN.md, harness and gates in VERIFICATION.md.
+Milestones in the order chosen so that each is useful if the next never happens. Each brief is what a person or agent starting that milestone reads, together with the SPEC anchors it names. Rules are in SPEC.md, reasoning in DESIGN.md, harness and gates in VERIFICATION.md, the maintainer's principles for what those leave open in RULES.md.
 
 ## Unit of work
 
@@ -10,7 +10,7 @@ Inside every milestone that touches a function, the unit of work and of review i
 2. The R-generated expectations (S-7); where the function carries an intended change (§4), the R edit, its new cases, and a NEWS entry in the same step (D-16). No R kernel extraction (K-10).
 3. The Python function against the same cases and the same signature (A-16), written in a Python-side session that never opens `R/`, from the description and the SPEC anchors it cites alone, so the Python reads as Python rather than as a transliteration. Exemplar and named-kernel (K-6) changes are flagged in the Log for a second human review when a co-maintainer joins (§3).
 
-One function is one logged review round and one commit set, committed directly to the `python-port` branch; there are no milestone branches and no per-milestone pull requests. `python-port` reaches `main` by a merge commit when the maintainer chooses. Each milestone's record is `dev/milestones/M<n>.md`, created when the milestone starts: Summary (written at close), Plan (one line per run), Log (one entry per run with the reviewed diff's base and head SHAs, the findings table, the implementer's responses, and a disposition column holding the maintainer's decisions, which an agent writes only with the maintainer's specific permission). The two sides are independent after M3: phase-2 descriptions can be written while phase 1 is ported.
+One function is one logged review round and one commit set, committed directly to the `python-port` branch; there are no milestone branches and no per-milestone pull requests. `python-port` reaches `main` by a merge commit when the maintainer chooses. Each milestone's record is `dev/milestones/M<n>.md`, created when the milestone starts: Summary (written at close), Plan (one line per run), Log (one entry per run with the reviewed diff's base and head SHAs, the findings table, the implementer's responses, and a disposition column holding the maintainer's decisions, filled by an agent only where a disposition, a §4 row, or a `RULES.md` principle fills it, AGENTS rule 8). A run ends with `dev/milestones/REVIEW_<date>.md`, the one file the maintainer reads: the cases nothing decided, each with a proposed `RULES.md` line (`.kiro/context/orchestrator.md`, `review-template.md`). The two sides are independent after M3: phase-2 descriptions can be written while phase 1 is ported.
 
 ## 1. Milestones
 

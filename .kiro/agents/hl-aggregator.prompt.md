@@ -40,11 +40,16 @@ is not a record. The entry, under the `## Log` heading, after the last existing 
 
     | id | severity | anchor | claim | response | disposition |
     |----|----------|--------|-------|----------|-------------|
-    | <every row of findings.md, all three bins, response carried over from the implementer's fix round or `—`> | … | … | … | … | — |
+    | <every row of findings.md, all three bins, response carried over from the implementer's fix round or `—`> | … | … | … | … | <by mapping> |
 
     Second review: <exemplar | named kernel — flagged, no co-maintainer yet | not required>
 
-The disposition column holds `—` on every row. You never fill it; it is the maintainer's.
+The disposition column is filled by mapping and nothing else (AGENTS rule 8, RULES P-2):
+a finding whose response is "applied" gets `accept`; a `reported` row gets `accept`; a
+finding the prompt ties to a Decisions row gets `see D<n>-nn`; a finding the prompt ties
+to a RULES.md principle gets that id (`B-2`, `P-3`); a `verify` row gets `record`. A row
+the prompt ties to nothing gets `—`, and your final message lists those rows so the
+orchestrator carries them to the review file. You never write a decision of your own.
 Every row of `findings.md` lands in the table, `verify` rows included. Do not edit the
 Summary or Plan sections, do not reorder earlier entries, do not touch any other file
 under `dev/`.
