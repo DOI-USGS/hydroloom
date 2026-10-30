@@ -8,7 +8,7 @@ Columns: Item (what, with the fixed point it waits for); Source (the disposition
 
 | Item | Source | Rule | §4 | Owner |
 | --- | --- | --- | --- | --- |
-| none | | | | |
+| Write `dev/milestones/kickoffs/M4-run-1.md` from `.kiro/context/kickoff-template.md`: the M4 units in order, base SHA, effort, no BACKLOG rows, no description reads. First run under the three bins, P-5, and `dev/done_check.R`; its `REVIEW_<date>.md` length is the test of the 2026-10-30 process changes (`dev/three_bins_plan.md`, `dev/orchestrator_rules_2_plan.md`, gitignored). | 2026-10-30 process read | P-5 | no | David |
 
 ## M5
 
