@@ -1,167 +1,51 @@
 hydroloom (development version)
 ==========
 
-- The attribute vocabulary (hydroloom names, their definitions, and the
-  input column names that rename to them) is now read from
-  `inst/extdata/hy_vocab.json` rather than defined in R code.
-  `hydroloom_names()`, `hydroloom_name_definitions`, and `align_names()`
-  are served from that file. jsonlite is now in Imports.
-- `make_index_ids()` on an `sf` flownetwork (repeated `id`) now drops
-  geometry before collapsing repeated rows, as it already did on a
-  dendritic network. Repeated rows of one flowline with the same `toid`
-  but different geometry now give one neighbor where they used to give
-  one per row.
-- `check_hy_graph(divergence_check = TRUE)` now counts each flowline
-  once at its `fromnode`, so a flownetwork (repeated `id`, as from
-  `add_toids(return_dendritic = FALSE)`) with correct divergence coding
-  returns `TRUE` where its diverging flowlines used to be flagged. The
-  divergence result is now classed by `hy()` on the returned rows, as the
-  cycle result is.
-- The `outletID` alias for `levelpath_outlet_id` is now `outletid`. Input
-  names are lowercased before matching, so the camelCase entry never
-  matched.
-- The 3DHP `hydrosequence` column is now an alias of `topo_sort`, as
-  NHDPlus `Hydroseq` is. `hy()` and `align_names()` rename it to
-  `topo_sort`, and `add_topo_sort()` replaces it with the computed
-  `topo_sort` (under the name `hydrosequence` on a `data.frame`) where it
-  used to pass through beside a new `topo_sort` column.
-- The 3DHP `dnhydrosequence` and `uphydrosequence` columns are now
-  aliases of `dn_topo_sort` and `up_topo_sort`, as NHDPlus `DnHydroseq`
-  and `UpHydroseq` are. `hy()` and `align_names()` rename them;
-  `add_topo_sort()` passes them through unchanged.
-- `hy()` now fixes the type of identifier columns (`id`, `toid`,
-  `fromnode`, `tonode`, `levelpath`, and the other identifier names) on
-  ingest. A whole-valued `double` or `integer64` column becomes `integer`
-  when every value fits in 32 bits and `character` (the exact decimal
-  string) otherwise, so NHDPlusV2 `COMID` read from a file comes back
-  `integer` and NHDPlus HR `NHDPlusID` comes back `character`. `id` and
-  `toid` share one type, as do `fromnode` and `tonode`; an integer `id`
-  beside a character `toid` no longer errors. The outlet `toid` is `0L`
-  for integer identifiers, and `add_toids()` returns `toid` in the type of
-  `id`. Functions called on a `data.frame` return these types under the
-  input column names.
-- `hy()` now stops, naming the column and rows, when an identifier column
-  arrives as `double` and a value has a fractional part; it used to leave
-  the column `double`. Flag columns (`terminal_flag`, `start_flag`,
-  `upmain`, `downmain`) coded 1/0 now become `logical` on ingest, so
-  NHDPlus `TerminalFl` and `StartFlag` come back `TRUE`/`FALSE`, also from
-  functions called on a `data.frame`. A flag column holding any other value
-  is left as it arrives.
-- `hy()` now stops, naming the column and rows, when an identifier column
-  holds `Inf` or `-Inf`; it used to leave the column `double`. A flag
-  column holding a value other than 0, 1, or missing is still left as it
-  arrives, and `hy()` now warns, naming the column and the rows by `id`.
-- `sort_network()` and `add_topo_sort()` now return one order for a
-  network whatever the order of its input rows. Flowlines that flow to
-  the same flowline, and separate outlet networks, are placed in
-  ascending order of their identifiers compared as text (so `100` comes
-  before `2`); rows that share an `id` are ordered by `toid` the same
-  way. Previously the order followed the input rows. Row order and
-  `topo_sort` values change on most networks with a confluence or more
-  than one outlet, and so do values built from `topo_sort`: `levelpath`
-  from `add_levelpaths()`, and `add_pfafstetter()` codes where two
-  tributaries enter the same flowline.
-- `check_hy_graph()` now finds every cycle in a network, not only two
-  flowlines that point at each other: a cycle of three or more flowlines
-  is now reported. It returns the rows on a cycle in input order with
-  `component` (which cycle, numbered from 1) and `reciprocal` (`TRUE`
-  for a cycle of two flowlines), in place of the `toid_check` column
-  ordered by `toid`; `id` identifies the rows. The `loop_check` argument
-  is removed. `sort_network()`, `add_topo_sort()`, `make_index_ids()`,
-  `navigate_network_dfs()`, and other functions that build their index
-  with `make_index_ids()` now stop on any cycle, with unique or repeated
-  `id`; the error says the flowlines drain back into themselves and
-  points to `check_hy_graph()`. With unique `id` a longer cycle used to
-  warn and drop rows; with repeated `id` (an `hy_flownetwork`) they used
-  to warn that features were missed and return only the rows that drain
-  to an outlet. The "no outlets detected" and "some features missed in
-  sort" warnings are gone: only a cycle caused them, and a cycle now
-  stops first.
-- Rows returned by `check_hy_graph(divergence_check = TRUE)` no longer
-  carry a `row` column; `id` identifies them, as it does for the rows on
-  a cycle.
-- `hy_capabilities()` now returns a data.frame with one row per function
-  and columns `function`, `available`, and `via`, in place of a named
-  logical vector. `via` names the one conversion (`add_toids` or
-  `make_node_topology`) that makes an unavailable function callable, and
-  is `""` otherwise. `sort_network()`, `add_topo_sort()`, and
-  `check_hy_graph()` are now reported available on an `hy_flownetwork`,
-  which they accept. Code that indexed the vector by name, such as
-  `hy_capabilities(x)["sort_network"]`, should read the `available`
-  column instead.
+Changes that do not alter output:
+
+- The attribute vocabulary is read from `inst/extdata/hy_vocab.json`
+  instead of R code; jsonlite moves to Imports.
 - Errors raised when a network is not the representation a function needs
-  now have the condition class `hydroloom_representation_error`, so code
-  can catch them with `tryCatch(hydroloom_representation_error = ...)`.
-  These are the errors that name the required class (for example
-  "sort_network() requires hy_topo"), `add_toids()` on a network that
-  already has `toid`, `hy_reverse()` on an object that is not an hy
-  object, and `check_hy_graph()` on a network without `toid`. The message
-  text is unchanged.
-- `make_index_ids()` now lists each flowline's downstream and upstream
-  neighbors in ascending order of their identifiers compared as text, and
-  `navigate_network_dfs()` goes first to the neighbor that comes first in
-  that order, so both return one result for a network whatever the order
-  of its input rows. Previously the order followed the input rows, and
-  the walk took the last listed neighbor first. `navigate_network_dfs()`
-  now also ends a path at every headwater when walking upstream, as it
-  already did at every outlet walking downstream, so each path is a run
-  of flowlines that drain one to the next. A `toid` outside the network
-  beside one inside it no longer splits a downstream path. Path contents
-  and order change on most networks with a divergence or a confluence.
-  `make_index_ids(mode = "from")` on a network with `upmain` now takes
-  `main` from the row of each connection; it used to list a flowline
-  whose rows differ in `upmain` once per value upstream of each flowline
-  it drains to, and could mark the wrong connection as main.
+  carry the condition class `hydroloom_representation_error`.
+- `hydroloom_names()` lowercases aliases on registration, so capitalized
+  aliases now match. The `outletID` alias is `outletid`. `clear = TRUE`
+  resets to the package aliases rather than removing all of them.
+- 3DHP `hydrosequence`, `dnhydrosequence`, and `uphydrosequence` are
+  aliases of `topo_sort`, `dn_topo_sort`, and `up_topo_sort`.
+- `hy_reverse()` and `is.hy()` work on `hy()` output with repeated `id`.
 - `make_index_ids()`, `sort_network()`, `add_topo_sort()`, and
-  `navigate_network_dfs()` now accept a network with no rows. They
-  return an index with no flowlines, zero rows with the input columns
-  (and `terminal_id` or `topo_sort` in their usual types), and an empty
-  list for no starts. They used to stop with "subscript out of bounds"
-  after a warning from `max()`.
-- `add_topo_sort()` now writes `topo_sort` as an integer and replaces a
-  `topo_sort` column already in the input, such as NHDPlus `Hydroseq`,
-  which it used to keep beside the computed one as `topo_sort.x` and
-  `topo_sort.y`. `DnHydroseq`, `UpHydroseq`, and `DnMinorHyd` pass through
-  unchanged and no longer point at values in the table. `sort_network()`
-  and `add_topo_sort()` now stop, naming the values, when `outlets`
-  holds a value that is not an `id` in the network; they used to ignore
-  such values, or stop with an internal error when no value was an `id`.
-- `hy_reverse()` now restores the original column names on what `hy()`
-  returns for a network with repeated `id` values, such as a divergence
-  written as one row per downstream flowline. It
-  used to stop with "must be an hy object". `is.hy()` returns `TRUE` for
-  that `hy()` output, where it returned `FALSE`.
-- `hydroloom_names()` now lowercases the names it registers, so an alias
-  given with capital letters, such as `FlowlineID`, renames the column in
-  `hy()` and `align_names()`. It used to be stored as given and never
-  matched.
-- `add_toids()` now stops, naming the flowlines, when `divergence` is
-  missing on some rows, and when a flowline splits into two or more
-  downstream flowlines with no main path (every one coded 2) or more than
-  one (two or more not coded 2). It used to treat a missing `divergence`
-  as a minor path, make the flowline above a split with no main path an
-  outlet, and return a flowline above a split with two main paths twice.
-  A flowline with a missing `tonode` now keeps its input row position and
-  still receives `toid` from the flowlines that drain to it; it used to
-  move to the end and leave those flowlines as outlets. `add_toids()` on a
-  network that already has `toid` with repeated `id` now stops as it does
-  for one with unique `id`, where it used to fail with an evaluation depth
-  error. Functions that build `toid` with `add_toids()`, among them
-  `sort_network()`, `add_topo_sort()`, `hy()`, and `to_flownetwork()`,
-  change the same way.
-- `add_toids()` now connects a flowline coded `divergence` 2 that is the
-  only flowline leaving the end of the flowline above it, as left where a
-  clipped network drops the main path, and warns naming those flowlines by
-  `id`; it used to leave the flowline above as an outlet, cutting the
-  network in two. Where a flowline splits and the one downstream flowline
-  not coded 2 is coded 0 rather than 1, `add_toids()` still reads it as the
-  main path and now warns naming it by `id`. Functions that build `toid`
-  with `add_toids()` change the same way.
-- `hydroloom_names(clear = TRUE)` now resets the name registry to the
-  aliases it holds when the package loads (those in the vocabulary file),
-  followed by any names given in the same call. It used to remove every
-  alias, so `hy()` and `align_names()` renamed no column until the
-  aliases were registered again.
+  `navigate_network_dfs()` accept a network with no rows.
+- `hy_capabilities()` returns a data.frame (`function`, `available`,
+  `via`) instead of a named logical vector.
+
+Changes to behavior:
+
+- Row order and neighbor order are deterministic. `sort_network()`,
+  `add_topo_sort()`, `make_index_ids()`, and `navigate_network_dfs()`
+  order ties by identifier compared as text instead of by input row.
+  `topo_sort`, `levelpath`, Pfafstetter codes, and DFS paths change on
+  most networks with a confluence, divergence, or more than one outlet.
+  `navigate_network_dfs()` also ends upstream paths at headwaters.
+- `hy()` coerces identifier columns to `integer` when every value fits,
+  otherwise `character`, and 1/0 flag columns to `logical`. It stops on
+  fractional or infinite identifiers and warns on other flag values.
+  `add_toids()` returns `toid` in the type of `id`; integer outlets are `0L`.
+- `check_hy_graph()` reports cycles of any length with `component` and
+  `reciprocal` columns; `toid_check`, the `row` column, and `loop_check`
+  are gone. Sorting and indexing functions stop on any cycle instead of
+  warning and dropping rows. `divergence_check = TRUE` counts each
+  flowline once, so correctly coded flownetworks pass.
+- `add_topo_sort()` writes an integer `topo_sort` and replaces an existing
+  one (e.g. `Hydroseq`) rather than keeping both. `sort_network()` and
+  `add_topo_sort()` stop when `outlets` names an unknown `id`.
+- `make_index_ids()` drops geometry on an `sf` flownetwork before
+  collapsing repeated rows; `mode = "from"` reads `upmain` from each
+  connection's own row.
+- `add_toids()` stops when `divergence` is missing or a split has no
+  main path or more than one; connects a lone `divergence = 2` outflow
+  with a warning; warns when the main path is coded 0; keeps a flowline
+  with missing `tonode` in place and still connects to it. Functions that
+  build `toid` through `add_toids()` change the same way.
 
 hydroloom 1.3.0
 ==========
