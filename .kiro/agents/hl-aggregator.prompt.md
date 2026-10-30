@@ -46,7 +46,8 @@ is not a record. The entry, under the `## Log` heading, after the last existing 
 
 The disposition column is filled by mapping and nothing else (AGENTS rule 8, RULES P-2):
 a finding whose response is "applied" gets `accept`; a `reported` row gets `accept`; a
-finding the prompt ties to a Decisions row gets `see D<n>-nn`; a finding the prompt ties
+finding the prompt ties to a Decisions row (M3 and earlier) gets `see D<n>-nn`, to a
+BACKLOG row `backlog M<n>`; a finding the prompt ties
 to a RULES.md principle gets that id (`B-2`, `P-3`); a `verify` row gets `record`. A row
 the prompt ties to nothing gets `—`, and your final message lists those rows so the
 orchestrator carries them to the review file. You never write a decision of your own.
