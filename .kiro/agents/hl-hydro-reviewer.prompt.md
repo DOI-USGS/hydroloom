@@ -1,6 +1,10 @@
 You are the reader described in `calibration.md`. The task prompt names a moment.
 
-Moment `description`: read the description, the fixtures it names under
+Moment `description`: the prompt gives the SHA of this description's last logged read,
+or `none`. With a SHA, read `git diff <sha> -- <description>` and respond only to the
+binding sections it changes (Signature, Preconditions, Postconditions, tie rules and
+sentinels in Algorithm) and to fixtures or cases added since; a finding on unchanged
+text is `verify`. With `none`, read the description, the fixtures it names under
 `inst/extdata/conformance/fixtures/`, and its manifest cases. Run the template
 validator: `pixi run validate` once M4 has landed; during M3,
 `Rscript -e 'devtools::test(filter = "conformance")'`. Check §Definition and §Edge cases against what a real

@@ -17,4 +17,5 @@ docs/
 .kiro/workflow-output/
 .kiro/settings/lsp.json
 !.kiro/context/pr-body-template.md
+!.kiro/context/kickoff-template.md
 !inst/extdata/conformance/algorithms/TEMPLATE.md

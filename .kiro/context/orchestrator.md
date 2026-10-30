@@ -33,9 +33,12 @@ name, goes to exactly one of three bins:
    item to the review file (below) with the call taken and how to reverse it.
 
 The maintainer's files stay his (RULES P-4): `plain` and `definition`, roxygen beyond
-correctness, `remedies.json` message text, README, articles, Summary sections. A needed
-edit there is a BACKLOG row under "Any time", or a review item when a unit cannot land
-without it.
+correctness, `remedies.json` message text, README, articles. A needed edit there is a
+BACKLOG row under "Any time", or a review item when a unit cannot land without it.
+
+A description that has had its reader round and fix round is frozen (RULES P-4): it
+changes only from an implementer finding or a conformance failure. A reader finding on a
+frozen description is `record`, not a fix round.
 
 There is no Decisions table in `M<n>.md` from M4 on; a bin 2 row or a bin 3 item is its
 replacement.
@@ -48,11 +51,26 @@ Record and skip, stopping only if nothing else can proceed: a destructive git op
 a change to an existing expectation that no disposition, §4 row, or principle explains; a
 user-visible behavior change nothing names (RULES B-3). Never push.
 
+## Running
+
+- A run starts from a kickoff file in the shape of `.kiro/context/kickoff-template.md`,
+  committed under `dev/milestones/kickoffs/` by the maintainer. It names the milestone,
+  the units in dependency order, the base SHA, the effort level, the BACKLOG rows pulled
+  in, and for each description the SHA of its last logged read.
+- The unit list is the kickoff's (RULES P-5). A run ends on its last unit or at a block,
+  never by adding a unit; what a run finds goes to a bin.
+- A reader round reads a diff (RULES P-4): the binding sections changed since the
+  description's last-read SHA, the whole file only on a first read. A description with no
+  binding diff is not sent to a reader.
+- No phase-2 description is written before the M5 exemplar slice has landed (RULES P-5).
+
 ## Recording
 
 - Plan edits only through a `plan:` commit, in the run that needs them (RULES P-2).
 - Every commit carries `--trailer "Assisted-by: <agent> (<model-id>)"`.
-- Log entries are appended by `hl-aggregator` in mode `record`. The disposition column is
+- Log entries are appended by `hl-aggregator` in mode `record`, run before the unit's
+  last commit so the entry is in the unit's commit set, not a commit after it. A
+  description-review entry records the SHA the reader read. The disposition column is
   filled by mapping (RULES P-2): an applied finding `accept`, a reported row `accept`, a
   cell a Decisions row (M3 and earlier) settles `see D<n>-nn`, a BACKLOG row `backlog M<n>`,
   a cell a principle settles its id (`B-2`, `P-3`), a `verify` row `record`. `—` stays only on a cell the review file carries, and
@@ -66,8 +84,8 @@ user-visible behavior change nothing names (RULES B-3). Never push.
 
 A milestone's done-check is `Rscript dev/done_check.R M<n>` at the end of a run, plus the
 Done-when items it cannot check (a reader round dispositioned, `R CMD check`), each read
-once and reported in one clause. When every item passes, the orchestrator
-writes the milestone's Summary and no review file. When it fails, the orchestrator writes
+once and reported in one clause. When every item passes, the orchestrator writes the
+milestone's `## Summary` marked `DRAFT:` for the maintainer to edit, and no review file. When it fails, the orchestrator writes
 `dev/milestones/REVIEW_<date>.md` in the shape of `.kiro/context/review-template.md`, and
 nothing else for the maintainer to read. There is no separate report. The file holds: one
 status paragraph with the Done-when items not met and the count of BACKLOG rows the run

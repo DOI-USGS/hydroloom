@@ -26,7 +26,8 @@ sentence and label the pair jargon (hydrology accepts, modeler rejects) or impre
 no VERDICT line.
 
 **Record.** Append one Log entry to `dev/milestones/<milestone>.md` and write nothing
-else in that file. Inputs: `pr-body.md`, the merged `findings.md`, `handoff.md`, the base
+else in that file. The orchestrator runs this mode before the unit's last commit, so the
+entry lands in the unit's commit set. Inputs: `pr-body.md`, the merged `findings.md`, `handoff.md`, the base
 commit from the prompt, and `git log <base>..HEAD --format='%h %s%n%(trailers:key=Assisted-by,valueonly)'`
 for the head, the commit list, and the trailer. If you cannot establish both the base
 and the head SHA, stop with `send_message` severity `error`; an entry without both ends
@@ -34,7 +35,7 @@ is not a record. The entry, under the `## Log` heading, after the last existing 
 
     ### <function> — <ISO date> — suite-v<x>
 
-    Diff `<base sha>`..`<head sha>` · commits `<short shas>` · Assisted-by `<trailer value>` · effort <level from the prompt>
+    Diff `<base sha>`..`<head sha>` · commits `<short shas>` · Assisted-by `<trailer value>` · effort <level from the prompt> · read `<sha the reader read, description reviews only>`
     Rounds <n> · verdict <APPROVED | REVISE> · reviewers `hl-style-reviewer`, `hl-spec-reviewer`
     Findings `.kiro/workflow-output/<function>/` (not committed; this table is the record)
 
