@@ -14,7 +14,7 @@ One function is one logged review round and one commit set, committed directly t
 
 ## 1. Milestones
 
-Two gates hold inside every milestone from M3 on. The per-function gate, checked before any Python is written: the description passes the template validator; every case is in the manifest with `fixture`, `expected`, `compare`, `order`, `supported_by`, and `generator`; `expected/<function>.gpkg` has a layer per case; the last R conformance run on the function is green. The kernel gate, for a function whose description names a kernel (K-6): the description's Postconditions and Algorithm are drafted and the signature is stated before the implementer starts, since the signature binds.
+A milestone closes when `Rscript dev/done_check.R M<n>` exits 0 (the conformance and vocabulary tests, no empty Log cell, no BACKLOG row under the milestone) and the Done-when items it cannot check are read once. Two gates hold inside every milestone from M3 on. The per-function gate, checked before any Python is written: the description passes the template validator; every case is in the manifest with `fixture`, `expected`, `compare`, `order`, `supported_by`, and `generator`; `expected/<function>.gpkg` has a layer per case; the last R conformance run on the function is green. The kernel gate, for a function whose description names a kernel (K-6): the description's Postconditions and Algorithm are drafted and the signature is stated before the implementer starts, since the signature binds.
 
 ### M1. Vocabulary out of the R package
 

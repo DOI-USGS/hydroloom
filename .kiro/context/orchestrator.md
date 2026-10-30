@@ -64,7 +64,9 @@ user-visible behavior change nothing names (RULES B-3). Never push.
 
 ## Reporting
 
-A milestone's done-check is run at the end of a run. When it passes, the orchestrator
+A milestone's done-check is `Rscript dev/done_check.R M<n>` at the end of a run, plus the
+Done-when items it cannot check (a reader round dispositioned, `R CMD check`), each read
+once and reported in one clause. When every item passes, the orchestrator
 writes the milestone's Summary and no review file. When it fails, the orchestrator writes
 `dev/milestones/REVIEW_<date>.md` in the shape of `.kiro/context/review-template.md`, and
 nothing else for the maintainer to read. There is no separate report. The file holds: one

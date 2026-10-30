@@ -11,6 +11,7 @@ revdep/
 dev/*
 !dev/plan/
 !dev/milestones/
+!dev/done_check.R
 vignettes/*.html
 docs/
 .kiro/workflow-output/
