@@ -59,7 +59,7 @@ Two gates hold inside every milestone from M3 on. The per-function gate, checked
 - Load: SPEC K (all), I (all), D-1, D-3 to D-8, D-13 to D-16, A (all), S-6, S-7; the phase-1 descriptions.
 - Do not touch: phase-2 functions; the accessor (A-7, later); anything geometric; public `hy_reverse(source=)` beyond the private helper until the naming block.
 - Record: `dev/milestones/M5.md`; items flagged for a later second review: the exemplar slice, `navigate_network_dfs`.
-- Blockers: M3 and M4 complete.
+- Blockers: M3 and M4 complete; BACKLOG M5 read.
 
 ### M6. Port in dependency order
 
@@ -68,7 +68,7 @@ Two gates hold inside every milestone from M3 on. The per-function gate, checked
 - Load: per function, the SPEC anchors its description cites; for phase 3, G (all).
 - Do not touch: a function whose upstream in the dependency order is not yet at parity.
 - Record: `dev/milestones/M6<letter>.md`, one per function group; items flagged for a later second review: every named kernel (`add_levelpaths`, `add_pfafstetter`, `get_bridge_flowlines`, `navigate_hydro_network`, `index_points_to_lines`' `project_point_to_line`, `disambiguate_indexes`' Levenshtein).
-- Blockers: which NHDPlus product supplies HU04 0204 for the scale fixture (§3); the WBD benchmark result for the dissolve implementation.
+- Blockers: the WBD benchmark result for the dissolve implementation (BACKLOG M6); the scale fixture is NHDPlus HR HU04 0204 (closed 2026-10-25).
 
 ### M7. Documentation with two tabs
 
@@ -123,18 +123,7 @@ The linear-referencing family (`get_hydro_location`, `rescale_measures`, `add_me
 
 ## 3. Open items
 
-| Item | Blocks | Owner |
-| --- | --- | --- |
-| ~~Scale fixture is HU04 0204, the Delaware (decided 2026-09-26; 3DHP has no coastal coverage). Open: which product supplies it.~~ Closed 2026-10-25: NHDPlus HR, distributed by HU4, the denser network, identifiers outside 32-bit range. Python identifiers are strings regardless (I-2); R carries these as `character`. | — | — |
-| ~~PyPI name claim: `hydroloom` unclaimed on 2026-10-14 (not re-queried since). Account with 2FA; TestPyPI account; the 0.0.1 stub uploads on a user-scoped token, then a project-scoped token replaces it and the user-scoped one is revoked; `py-v*` as a protected tag pattern; the co-maintainer as Owner at the first real release~~ Deferred 2026-10-25: release setup is David's, done when the first release (M5, `py-v0.1.0`) is ready, outside the agent-based process. The steps stay in VERIFICATION §7 for that day. | M5 release | David |
-| ~~Token variables and the throwaway runner job on code.usgs.gov: egress to `upload.pypi.org` and `test.pypi.org`, `condaforge/miniforge3` through the proxy, the DOI certificate as a file-type variable~~ Deferred 2026-10-25 with the row above: checked when the first release is prepared, not before M4. | M5 release | David |
-| ~~Which mirror is authoritative for `main`~~ Closed 2026-10-14: development on GitHub, official builds on code.usgs.gov, by current practice and the README | — | — |
-| ~~Co-maintainer from the gdptools side, named from the first commit~~ Deferred 2026-10-25: a person is identified but not formally involved. Exemplar and named-kernel items are flagged in the Log so the review can happen when they join; nothing blocks on it. | — | David |
-| WBD dissolve benchmark, run before the dissolve implementation is chosen | M6 `dissolve_polygons` | M6 |
-| ~~`FutureWarning` for one minor release (A-11) against a 0.x contract that allows breaking minors: before 1.0 the warning is a courtesy, not a promise; decide whether to say so in the README~~ Closed 2026-10-25: say so. The README's provisional disclaimer (DESIGN §9) states that a pre-1.0 minor release may change or remove an interface without a warning cycle; lands with the M5 README. | — | — |
-| ~~Whether the aggregate-flowpath group (1.3.0, phase 3) is inside the 1.0 line; DESIGN §9 says parity through phase 2~~ Closed 2026-10-25: inside. 1.0 is parity with hydroloom 1.3.0, phases 1 to 3. | — | — |
-| ~~`.gitignore` ignores `dev` and `.kiro` wholesale in the 1.3.0 checkout; `dev/plan/`, `dev/milestones/`, and `.kiro/` minus `workflow-output/` have to be un-ignored before anything the plan commits there exists~~ Closed 2026-10-25: negations in place, with one more for `.kiro/context/pr-body-template.md`, which the `*temp*` pattern otherwise swallows. | — | — |
-| ~~The existing root `AGENTS.md` (R style, S3 hierarchy, decomposition concepts) merges with the port rules in `kiro-config.md` §2; the decomposition definitions describe the `decomposition` branch, not `main`~~ Closed 2026-10-25: port rules appended as the last section of `AGENTS.md`; the decomposition concept section removed, since that branch never merged. | — | — |
+Work found during a run that lands outside the run is in `dev/plan/BACKLOG.md`, one row per item under the milestone it blocks; each milestone starts with the maintainer reading its section there. The rows this section held before 2026-10-30 are closed or moved; git history has them.
 
 ## 4. Intended changes to the R package
 
