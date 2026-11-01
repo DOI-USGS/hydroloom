@@ -43,13 +43,13 @@ A milestone closes when `Rscript dev/done_check.R M<n>` exits 0 (the conformance
 - Record: `dev/milestones/M3.md`; one Log entry per description review and per intended change.
 - Blockers: `sort_network` calls `check_hy_graph` first (D-8), so the SCC change to `check_hy_graph` lands here although the function is phase 2. The `.kiro/` files (hydrology reviewer and `review-description` at least) are in the tree.
 
-### M3-5. Fixture architecture document
+### M3-2. Fixture architecture document
 
 - Deliverable: `dev/FIXTURE_ARCHITECTURE.md`, a standalone document for a reader who has not read SPEC, DESIGN, or the descriptions: Python developers who will write or review a ported function, and readers interested in how agent sessions were used to port an existing R package. It explains the two-language arrangement through the conformance fixtures: what a fixture is, how a case becomes an R-generated expectation, what the boundary and tie fixtures force on a kernel below the K-1 boundary, which description sections bind the Python, and how the description-side and Python-side sessions are kept apart and reviewed. Terms and sentences come from hydroloom's README and overview vignette, framing from DESIGN §1, §4, §7 and SPEC K, S, D; diagrams in Mermaid; every count read from the suite at the commit described; entry points by reader at the top. Documentation only; on `python-port`.
-- Done when: one review round by two independent readers, the hydrology reader (`hl-hydro-reviewer`, moment `docs`) and a Python reader (`hl-style-reviewer`, reading the document as a Python developer new to the project), merged by `hl-aggregator`, with one fix round and a Log entry; every count and path in the document matches the repository at the head commit; no `—` disposition cell in the Log, checked by hand since `dev/done_check.R` takes `M<n>` names only and M3-5 changes no file its conformance item reads; the maintainer has read the document.
+- Done when: one review round by two independent readers, the hydrology reader (`hl-hydro-reviewer`, moment `docs`) and a Python reader (`hl-style-reviewer`, reading the document as a Python developer new to the project), merged by `hl-aggregator`, with one fix round and a Log entry; every count and path in the document matches the repository at the head commit; no `—` disposition cell in the Log, checked by hand since `dev/done_check.R` takes `M<n>` names only and M3-2 changes no file its conformance item reads; the maintainer has read the document.
 - Load: DESIGN §1, §4, §7, §9; SPEC K-1 to K-6, K-9, S-1, S-4 to S-8, I-1, I-2, I-4, D-1, D-4 to D-8, D-13, D-14; VERIFICATION §2, §4; `fixtures/index.yaml`; the worked examples in `algorithms/sort_network.md`, `make_index_ids.md`, `navigate_network_dfs.md`; `.kiro/agents/` and `.kiro/workflows/` for the session arrangement.
 - Do not touch: SPEC, DESIGN, VERIFICATION (the document cites them and adds no rule); anything under `inst/extdata/`; `R/`; README and articles (RULES P-4).
-- Record: `dev/milestones/M3-5.md`, light form (one Log entry for the review round).
+- Record: `dev/milestones/M3-2.md`, light form (one Log entry for the review round).
 - Blockers: none. Independent of M4.
 
 ### M4. Python skeleton
