@@ -8,7 +8,6 @@ Columns: Item (what, with the fixed point it waits for); Source (the disposition
 
 | Item | Source | Rule | §4 | Owner |
 | --- | --- | --- | --- | --- |
-| Write `dev/milestones/kickoffs/M4-run-1.md` from `.kiro/context/kickoff-template.md`: the M4 units in order, base SHA, effort, no BACKLOG rows, no description reads. First run under the three bins, P-5, and `dev/done_check.R`; its `REVIEW_<date>.md` length is the test of the 2026-10-30 process changes (`dev/three_bins_plan.md`, `dev/orchestrator_rules_2_plan.md`, gitignored). | 2026-10-30 process read | P-5 | no | David |
 | Narrow the `hl-implementer.json` shell allowlist before the first `port-function` run, so the Python-side session cannot reach `R/` or write under `inst/extdata/` through the shell: `git diff*` prints R source given an R path, and `pixi run *` runs any command. `dev/FIXTURE_ARCHITECTURE.md` § Two sessions and a record states the gap; edit it when the allowlist changes. | M3-2 P-04 | DESIGN §1 (authorship split) | no | David |
 
 ## M5
