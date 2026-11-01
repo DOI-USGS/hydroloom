@@ -12,6 +12,7 @@ dev/*
 !dev/plan/
 !dev/milestones/
 !dev/done_check.R
+!dev/FIXTURE_ARCHITECTURE.md
 vignettes/*.html
 docs/
 .kiro/workflow-output/
