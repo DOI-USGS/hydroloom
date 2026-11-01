@@ -9,6 +9,7 @@ Columns: Item (what, with the fixed point it waits for); Source (the disposition
 | Item | Source | Rule | §4 | Owner |
 | --- | --- | --- | --- | --- |
 | Write `dev/milestones/kickoffs/M4-run-1.md` from `.kiro/context/kickoff-template.md`: the M4 units in order, base SHA, effort, no BACKLOG rows, no description reads. First run under the three bins, P-5, and `dev/done_check.R`; its `REVIEW_<date>.md` length is the test of the 2026-10-30 process changes (`dev/three_bins_plan.md`, `dev/orchestrator_rules_2_plan.md`, gitignored). | 2026-10-30 process read | P-5 | no | David |
+| Narrow the `hl-implementer.json` shell allowlist before the first `port-function` run, so the Python-side session cannot reach `R/` or write under `inst/extdata/` through the shell: `git diff*` prints R source given an R path, and `pixi run *` runs any command. `dev/FIXTURE_ARCHITECTURE.md` § Two sessions and a record states the gap; edit it when the allowlist changes. | M3-5 P-04 | DESIGN §1 (authorship split) | no | David |
 
 ## M5
 
@@ -44,3 +45,5 @@ Columns: Item (what, with the fixed point it waits for); Source (the disposition
 | Roxygen beyond correctness for `hy_network_type`, `navigate_network_dfs`, `is_dendritic`, `is.hy`. | D3-68 | P-4 | no | David |
 | References citations the readers could not source: the 3DHP field names and outlet convention; NHDPlusHR's `Divergence` coding beside NHDPlusV2's; Kahn 1962 beside `Hydroseq` in add_topo_sort; 3DHP and Mainstems sources in hydroloom_names. | hy H-08, add_toids H-09, sort_network H-09, hydroloom_names H-02, add_topo_sort H-08 (2026-10-29) | P-4 | no | David |
 | Co-maintainer from the gdptools side: identified, not formally involved. Exemplar and named-kernel Log items wait for that second review. | ROADMAP §3 | — | no | David |
+| DESIGN §7 "Tolerances anchored on meter-scale source precision" says hydrographic coordinates are good to about a meter, which does not hold as positional accuracy for NHDPlusV2 (1:100k) or NHDPlus HR (1:24k); the reason `dev/FIXTURE_ARCHITECTURE.md` gives is that both implementations compute from the same coordinates (D-13). | M3-5 H-24 | P-2 | no | David |
+| SPEC I-4 calls the row a terminal ("A terminal is a row whose `toid` is not present in `id`") where RULES B-4 gives "terminal" to the `toid` outside the table and "outlet" to the feature; one wording for both files. | M3-5 H-03 | B-4 | no | David |
