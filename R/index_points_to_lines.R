@@ -112,7 +112,7 @@ rename_indexed <- function(x, matched) {
 #' as and order as `points`. If included, index searching will be constrained to one
 #' and only one flowline per point.
 #'
-#' `search radius` is still used with this option but `max_matches` is overridden.
+#' `search_radius` is still used with this option but `max_matches` is overridden.
 #'
 #' @param aggregate_ids vector of aggregate_ids corresponding to the aggregate_id
 #' field of `x` of the same length and order as `points`. If included, index

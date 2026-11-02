@@ -22,7 +22,7 @@ make_index_ids(x, mode = "to", long_form = NULL)
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 
 \item{mode}{character indicating the mode of the graph. Choose from "to",
-"from", or "both". Default is "to". Se Details for more information.}
+"from", or "both". Default is "to". See Details for more information.}
 
 \item{long_form}{logical DEPRECATED}
 }

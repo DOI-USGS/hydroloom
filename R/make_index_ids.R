@@ -24,7 +24,7 @@
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param long_form logical DEPRECATED
 #' @param mode character indicating the mode of the graph. Choose from "to",
-#' "from", or "both". Default is "to". Se Details for more information.
+#' "from", or "both". Default is "to". See Details for more information.
 #' @details
 #'
 #' Required attributes: `id`, `toid`

@@ -1331,7 +1331,7 @@
       "search_radius": "units distance for the nearest neighbor search to extend in analysis projection. If missing or NULL, and points are in a lon lat projection, a default of 0.01 degree is used, otherwise 200 m is used. Conversion to the linear unit used by the provided crs of points is attempted. See RANN nn2 documentation for more details.",
       "precision": "numeric the resolution of measure precision in the output in meters.",
       "max_matches": "numeric the maximum number of matches to return if multiple are found in search_radius",
-      "ids": "vector of ids corresponding to flowline ids from `x` of the same length as and order as `points`. If included, index searching will be constrained to one and only one flowline per point.\n\n`search radius` is still used with this option but `max_matches` is overridden.",
+      "ids": "vector of ids corresponding to flowline ids from `x` of the same length as and order as `points`. If included, index searching will be constrained to one and only one flowline per point.\n\n`search_radius` is still used with this option but `max_matches` is overridden.",
       "aggregate_ids": "vector of aggregate_ids corresponding to the aggregate_id field of `x` of the same length and order as `points`. If included, index searching for each point is constrained to the flowlines that carry its aggregate_id, so a point on a tributary is placed on the tributary and not the receiving river. Exclusive with `ids`."
     },
     "description": "given an sf point geometry column, return id, aggregate_id (e.g. reachcode), and aggregate id measure for each point.",
@@ -1349,7 +1349,7 @@
       "search_radius": "units distance for the nearest neighbor search to extend in analysis projection. If missing or NULL, and points are in a lon lat projection, a default of 0.01 degree is used, otherwise 200 m is used. Conversion to the linear unit used by the provided crs of points is attempted. See RANN nn2 documentation for more details.",
       "precision": "numeric the resolution of measure precision in the output in meters.",
       "max_matches": "numeric the maximum number of matches to return if multiple are found in search_radius",
-      "ids": "vector of ids corresponding to flowline ids from `x` of the same length as and order as `points`. If included, index searching will be constrained to one and only one flowline per point.\n\n`search radius` is still used with this option but `max_matches` is overridden.",
+      "ids": "vector of ids corresponding to flowline ids from `x` of the same length as and order as `points`. If included, index searching will be constrained to one and only one flowline per point.\n\n`search_radius` is still used with this option but `max_matches` is overridden.",
       "aggregate_ids": "vector of aggregate_ids corresponding to the aggregate_id field of `x` of the same length and order as `points`. If included, index searching for each point is constrained to the flowlines that carry its aggregate_id, so a point on a tributary is placed on the tributary and not the receiving river. Exclusive with `ids`."
     },
     "description": "given an sf point geometry column, return id, aggregate_id (e.g. reachcode), and aggregate id measure for each point.",
@@ -1367,7 +1367,7 @@
       "search_radius": "units distance for the nearest neighbor search to extend in analysis projection. If missing or NULL, and points are in a lon lat projection, a default of 0.01 degree is used, otherwise 200 m is used. Conversion to the linear unit used by the provided crs of points is attempted. See RANN nn2 documentation for more details.",
       "precision": "numeric the resolution of measure precision in the output in meters.",
       "max_matches": "numeric the maximum number of matches to return if multiple are found in search_radius",
-      "ids": "vector of ids corresponding to flowline ids from `x` of the same length as and order as `points`. If included, index searching will be constrained to one and only one flowline per point.\n\n`search radius` is still used with this option but `max_matches` is overridden.",
+      "ids": "vector of ids corresponding to flowline ids from `x` of the same length as and order as `points`. If included, index searching will be constrained to one and only one flowline per point.\n\n`search_radius` is still used with this option but `max_matches` is overridden.",
       "aggregate_ids": "vector of aggregate_ids corresponding to the aggregate_id field of `x` of the same length and order as `points`. If included, index searching for each point is constrained to the flowlines that carry its aggregate_id, so a point on a tributary is placed on the tributary and not the receiving river. Exclusive with `ids`."
     },
     "description": "given an sf point geometry column, return id, aggregate_id (e.g. reachcode), and aggregate id measure for each point.",
@@ -1461,7 +1461,7 @@
   "make_index_ids": {
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names.",
-      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". Se Details for more information.",
+      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
     "description": "makes index ids for the provided hy object. These can be used for graph traversal algorithms such that the row number and id are equal.",
@@ -1473,7 +1473,7 @@
   "make_index_ids.data.frame": {
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names.",
-      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". Se Details for more information.",
+      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
     "description": "makes index ids for the provided hy object. These can be used for graph traversal algorithms such that the row number and id are equal.",
@@ -1485,7 +1485,7 @@
   "make_index_ids.hy": {
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names.",
-      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". Se Details for more information.",
+      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
     "description": "makes index ids for the provided hy object. These can be used for graph traversal algorithms such that the row number and id are equal.",
@@ -1497,7 +1497,7 @@
   "make_index_ids.hy_flownetwork": {
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names.",
-      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". Se Details for more information.",
+      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
     "description": "makes index ids for the provided hy object. These can be used for graph traversal algorithms such that the row number and id are equal.",
@@ -1509,7 +1509,7 @@
   "make_index_ids.hy_topo": {
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names.",
-      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". Se Details for more information.",
+      "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
     "description": "makes index ids for the provided hy object. These can be used for graph traversal algorithms such that the row number and id are equal.",

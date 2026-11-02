@@ -57,7 +57,7 @@ found in search_radius}
 as and order as \code{points}. If included, index searching will be constrained to one
 and only one flowline per point.
 
-\verb{search radius} is still used with this option but \code{max_matches} is overridden.}
+\code{search_radius} is still used with this option but \code{max_matches} is overridden.}
 
 \item{aggregate_ids}{vector of aggregate_ids corresponding to the aggregate_id
 field of \code{x} of the same length and order as \code{points}. If included, index
