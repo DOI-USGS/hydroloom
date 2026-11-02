@@ -79,7 +79,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     geometry: true
     columns: [id, start_flag, terminal_flag]
@@ -160,7 +160,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: i2 (double beyond 32-bit -> character, id and toid together)
@@ -170,7 +170,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D3-07: COMID 3.5 on row 3 raises identifier_not_whole naming COMID and row 3
@@ -180,7 +180,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: identifier_not_whole
@@ -192,7 +192,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: identifier_not_finite
@@ -206,7 +206,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: warning
     raises_key: flag_value_not_binary
@@ -231,7 +231,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: hy_mixed_case_names
@@ -240,7 +240,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: hy_permanent_identifier_tie
@@ -249,7 +249,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # name_alias_duplicate; the case asserts the warning and stores no layer
@@ -261,7 +261,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: warning
     raises_key: name_alias_duplicate
@@ -273,7 +273,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: name_alias_conflict
@@ -285,7 +285,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # flownetwork_multiple_downmain
@@ -295,7 +295,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: flownetwork_multiple_downmain
@@ -307,7 +307,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: flownetwork_multiple_upmain
@@ -318,7 +318,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # python_omitted; toid outranks nodes; add_topo leaves existing toid
@@ -372,7 +372,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id, start_flag, terminal_flag]
 
@@ -382,7 +382,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: hy_all_terminals
@@ -391,7 +391,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # probed: zero rows, id and toid integer, R class hy_topo
@@ -401,7 +401,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # python_omitted: R-only (D3-46, D3-57); R returns both rows as
@@ -422,7 +422,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # probed: sf, geometry unchanged and renamed geom in R; R class hy_topo
@@ -432,7 +432,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # probed: "" name stays ""; no toid, R class plain hy
@@ -442,7 +442,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # probed: 548 rows, 32 missing tocomid filled with 0 (I-5); R class hy_topo
@@ -466,7 +466,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id, start_flag, terminal_flag]
 
@@ -478,7 +478,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # probed: id3dhp -> id, character; two outlet toid "" already present; R class hy_topo
@@ -488,7 +488,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id, toid]
 
@@ -1130,7 +1130,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true. D-7 pair of hy_network_type_new_hope: rows permuted; hy_node
@@ -1140,7 +1140,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: false; expect hy_topo; add_topo builds toid
@@ -1172,7 +1172,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy; tie rule: repeated id without toid matches
@@ -1183,7 +1183,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy_flownetwork; repeated id with toid and node
@@ -1194,7 +1194,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy; toNexID is not an alias, so id without toid
@@ -1204,7 +1204,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: false; expect hy_flownetwork; without a divergence column add_topo
@@ -1236,7 +1236,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy_node; identifiers beyond 32 bits (I-2)
@@ -1246,7 +1246,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 boundaries; requires is [any], so every one runs.
@@ -1257,7 +1257,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy_topo; five flowlines, no edges
@@ -1267,7 +1267,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy_flownetwork; the pattern, not a raise
@@ -1287,7 +1287,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy_topo; sf input; geometry not read
@@ -1297,7 +1297,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy; id without toid or nodes
@@ -1307,7 +1307,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy_topo; I-11 zero rows, id vacuously unique
@@ -1317,7 +1317,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: false; expect "not a hydroloom object"; one column, no hy class
@@ -2348,7 +2348,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D-7: rows permuted; equal to make_index_ids_worked_example
@@ -2358,7 +2358,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # flownetwork; D-5 tie in "to" at id 1: 100, 30, 4 (identifier byte order)
@@ -2368,7 +2368,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: the flownetwork route runs check_hy_graph (D3-41); 1 <-> 2 stops
@@ -2378,7 +2378,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -2468,7 +2468,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # flownetwork, character ids, braided, no cycle; 1423 + 1423 rows, byte order
@@ -2478,7 +2478,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: braced GUID ids, flownetwork; two three-flowline cycles stop (D3-41)
@@ -2488,7 +2488,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -2501,7 +2501,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # id 12 has no rows in either mode; confluence lists 3 <- 1,2; 6 <- 3,5;
@@ -2512,7 +2512,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # M4 SP-03; flownetwork; 2 has toid 3 in the table and toid 9 outside it:
@@ -2525,7 +2525,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # M3 H-08; minor paths rejoin the main path: 6 leaves 1 and splits into 7
@@ -2550,7 +2550,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 n = 1; no rows; Python indptr [0, 0]
@@ -2560,7 +2560,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 all terminals; no rows
@@ -2570,7 +2570,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 duplicated edge; R collapses it (to (1,0,2), from (2,0,1)); S-6
@@ -2615,7 +2615,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # ids 5 and 6 reference each other; stops (D-8)
@@ -2625,7 +2625,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -2637,7 +2637,7 @@ cases:
     args: {mode: from}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -2649,7 +2649,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -2660,7 +2660,7 @@ cases:
     args: {mode: borked}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: index_mode_invalid
@@ -2671,7 +2671,7 @@ cases:
     args: {mode: borked}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: index_mode_invalid
@@ -2683,7 +2683,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_topo
@@ -2695,7 +2695,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_topo
@@ -2709,7 +2709,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # Not added: long_form (deprecated, R only, not a graph; stays a testthat
