@@ -93,12 +93,18 @@ def test_class_hierarchy():
 
 
 def test_catalog_python_classes_exist():
-    """Every python_class the catalog names is a built-in or an errors class."""
+    """Every python_class is a built-in or errors class that matches its kind."""
     for key, entry in CATALOG.items():
         name = entry.get("python_class")
         if name is None:
             continue
-        assert hasattr(errors, name) or hasattr(builtins, name), key
+        cls = getattr(errors, name, None) or getattr(builtins, name)
+        assert isinstance(cls, type), key
+        if entry["kind"] == "warning":
+            assert issubclass(cls, Warning), key
+        else:
+            assert issubclass(cls, Exception), key
+            assert not issubclass(cls, Warning), key
 
 
 def test_not_in_all():

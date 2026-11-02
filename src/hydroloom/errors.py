@@ -25,7 +25,10 @@ class CRSError(HydroloomError):
 
 
 class HydroloomWarning(UserWarning):
-    """Warning class for every warning hydroloom issues (A-11)."""
+    """Warning class for every warning hydroloom issues except deprecations.
+
+    Deprecations are ``FutureWarning`` (A-11).
+    """
 
 
 @functools.cache
