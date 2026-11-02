@@ -47,7 +47,7 @@ exclude = ["src/hydroloom/data", "src/hydroloom/CLAUDE.md"]
 # src/ also holds the no-op src/Makefile and src/install.libs.R that let R
 # install the package; only the Python package goes in the sdist.
 [tool.hatch.build.targets.sdist]
-exclude = ["src/hydroloom/data", "src/hydroloom/CLAUDE.md"]
+exclude = ["src/hydroloom/data", "src/hydroloom/CLAUDE.md", "tests/python/CLAUDE.md"]
 only-include = [
   "src/hydroloom/",
   "hatch_build.py",

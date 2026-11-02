@@ -90,7 +90,7 @@
       "agent": "hl-aggregator",
       "modelId": "claude-sonnet-5.5",
       "effortLevel": "low",
-      "prompt": "Mode: record. Function {{function}}. Milestone {{milestone}}. Base commit {{base}}. Implementer effort {{effort}}. Append one Log entry to dev/milestones/{{milestone}}.md from {{artifacts.prbody}}, {{artifacts.findings}}, {{artifacts.handoff}}, and git log {{base}}..HEAD. Every disposition is a dash. Write nothing else in that file. Finish with send_message severity error if you cannot establish both the base and the head SHA."
+      "prompt": "Mode: record. Function {{function}}. Milestone {{milestone}}. Base commit {{base}}. Implementer effort {{effort}}. Append one Log entry to dev/milestones/{{milestone}}.md from {{artifacts.prbody}}, {{artifacts.findings}}, {{artifacts.handoff}}, and git log {{base}}..HEAD. Fill the disposition column by mapping as hl-aggregator's Record mode states; a row nothing ties stays a dash and is listed in your final message. Write nothing else in that file. Finish with send_message severity error if you cannot establish both the base and the head SHA."
     }
   ]
 }

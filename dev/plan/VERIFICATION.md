@@ -105,7 +105,7 @@ Platforms: `linux-64`, `osx-64`, `osx-arm64`, `win-64`; conda-forge the only cha
 
 ### 1.6 Dependencies
 
-Runtime, nothing else; pyproj arrives transitively. A floor moves only when a required dependency drops the version, never on the calendar. No upper bounds; §3's `py-upstream` job catches breakage instead.
+Runtime, nothing else; pyproj arrives transitively under pip, and the pixi workspace declares it because conda-forge `geopandas-base` does not pull it in. A floor moves only when a required dependency drops the version, never on the calendar. No upper bounds; §3's `py-upstream` job catches breakage instead.
 
 ```
 python    >= 3.10
@@ -141,7 +141,7 @@ rasterio
 
 Code written to the floor: copy-on-write-clean pandas; no 3.11-only syntax (`Self`, exception groups; `match` is fine). R side: every Import in `DESCRIPTION` carries the oldest version the code runs on, found by testing in the `r-floors` environment; `dplyr (>= 1.1.0)` and `sf (>= 1.0-0)` are the two that change behavior (SPEC D-1, G-4).
 
-Development and test dependencies, declared as pixi features and as a `dev` group so `pip install -e .[dev]` works without pixi, each arriving with the milestone that first needs it (ROADMAP):
+Development and test dependencies, declared only in the pixi `dev` feature (`pyproject.toml` has no `[project.optional-dependencies]` table), each arriving with the milestone that first needs it (ROADMAP):
 
 ```
 hypothesis       property tests on kernels and fixtures (§4)

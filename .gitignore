@@ -6,6 +6,7 @@
 cran-comments.md
 CRAN-SUBMISSION
 *temp*
+!.github/PULL_REQUEST_TEMPLATE.md
 .vscode/
 revdep/
 dev/*
