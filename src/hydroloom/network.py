@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd  # type: ignore[import-untyped]
 
 from hydroloom._docstrings import doc
-from hydroloom._hy import Representation, _as_hy, _route, requires
+from hydroloom._hy import Representation, _as_hy, _route, _true, requires
 from hydroloom._kernels import walk
 from hydroloom.errors import HydroloomError, msg
-from hydroloom.index_ids import IndexIds, from_edges
+from hydroloom.index_ids import IndexIds, _from_edges
 
 _MODES = ("to", "from", "both")
 
@@ -18,9 +18,9 @@ def _main(df: pd.DataFrame, column: str, keep: np.ndarray) -> np.ndarray | None:
     if column not in df.columns:
         return None
 
-    flags = np.asarray(df[column].fillna(False), dtype=bool)
+    flags: np.ndarray = _true(df[column])[keep]
 
-    return np.asarray(flags[keep], dtype=bool)
+    return flags
 
 
 def _make_index_ids_impl(
@@ -43,7 +43,7 @@ def _make_index_ids_impl(
     source = codes[keep].astype(np.int64)
     target = target[keep].astype(np.int64)
 
-    to = from_edges(uniques, source, target, "to", _main(net, "downmain", keep))
+    to = _from_edges(uniques, source, target, "to", _main(net, "downmain", keep))
     if walk.has_cycle(to.indptr, to.indices):
         raise HydroloomError(msg("network_cycle"))
     if mode == "to":
@@ -51,7 +51,7 @@ def _make_index_ids_impl(
 
     # "from" edges are the "to" edges reversed; main is the upmain of the row
     # that defines the edge (D3-43).
-    up = from_edges(uniques, target, source, "from", _main(net, "upmain", keep))
+    up = _from_edges(uniques, target, source, "from", _main(net, "upmain", keep))
     if mode == "from":
         return up
 
@@ -80,7 +80,6 @@ def make_index_ids(
         Representation.TOPO: _make_index_ids_impl,
         Representation.FLOWNETWORK: _make_index_ids_impl,
     }
-
     result: IndexIds | tuple[IndexIds, IndexIds]
     result = _route(df, make_index_ids, native, mode=mode)
 

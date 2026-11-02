@@ -205,7 +205,19 @@ def _identifier_values(values: pd.Series, column: Any) -> list[str | None]:
     A string passes unchanged. A column mixing strings and numbers raises
     ``TypeError`` (I-3); a float with a fractional part or an infinite float
     raises, naming the input column and the 1-based rows (D3-07, I2-3).
+    Integer and float columns convert without a per-value loop.
     """
+    dtype = values.dtype
+    types = pd.api.types
+    if types.is_integer_dtype(dtype):
+        missing = values.isna().to_numpy()
+        text = np.full(len(values), None, dtype=object)
+        text[~missing] = values[~missing].astype(str).to_numpy()
+        out_text: list[str | None] = text.tolist()
+        return out_text
+    if types.is_float_dtype(dtype):
+        return _float_identifiers(values, column)
+
     items = values.tolist()
     out: list[str | None] = []
     text_rows, number_rows, fraction_rows, infinite_rows = [], [], [], []
@@ -239,6 +251,37 @@ def _identifier_values(values: pd.Series, column: Any) -> list[str | None]:
         raise HydroloomError(
             msg("identifier_not_finite", column=column, rows=_join(infinite_rows))
         )
+
+    return out
+
+
+def _float_identifiers(values: pd.Series, column: Any) -> list[str | None]:
+    # Vectorized I-2 ingest of a float column; NaN is missing.
+    number = values.to_numpy(dtype=np.float64, na_value=np.nan)
+    missing = np.isnan(number)
+    infinite = np.isinf(number)
+    finite = ~missing & ~infinite
+    fraction = np.zeros(len(number), dtype=bool)
+    fraction[finite] = np.mod(number[finite], 1) != 0
+    if fraction.any():
+        rows = np.flatnonzero(fraction) + 1
+        raise HydroloomError(
+            msg("identifier_not_whole", column=column, rows=_join(rows.tolist()))
+        )
+    if infinite.any():
+        rows = np.flatnonzero(infinite) + 1
+        raise HydroloomError(
+            msg("identifier_not_finite", column=column, rows=_join(rows.tolist()))
+        )
+
+    whole = number[~missing]
+    text = np.full(len(number), None, dtype=object)
+    if np.all(np.abs(whole) < 2.0**63):
+        text[~missing] = whole.astype(np.int64).astype(str).tolist()
+    else:
+        # Beyond int64, Python int gives the exact decimal string.
+        text[~missing] = [str(int(v)) for v in whole]
+    out: list[str | None] = text.tolist()
 
     return out
 
@@ -377,27 +420,37 @@ def _classify(df: pd.DataFrame) -> Representation:
 class _Requirement:
     needs: tuple[Representation, ...]
     convert: Mapping[Representation, Callable[..., Any]]
+    # Columns the function needs beyond its pattern's (A-4 `requires.columns`).
+    columns: tuple[str, ...]
+    # The remedies key `_route` raises; None when the function takes any table.
+    key: str | None
 
 
 # Public function name -> what it needs; filled by `requires` (A-3).
 _REGISTRY: dict[str, _Requirement] = {}
 
-# The remedies key raised when the first need is not met.
+# The remedies key raised when the first need is not met. A first need with no
+# entry here fails at registration, on import, not on a user's call.
 _NEEDS_KEY = {Representation.TOPO: "needs_topo", Representation.NODE: "needs_node"}
 
 
 def requires(
     *needs: Representation,
     convert: Mapping[Representation, Callable[..., Any]] | None = None,
+    columns: Sequence[str] = (),
 ) -> Callable[[F], F]:
     """Register the patterns a public function needs (A-3).
 
     No ``needs`` means the function takes any table. ``convert`` maps a
     pattern to the call that turns it into one the function needs.
+    ``columns`` lists the columns needed beyond the pattern's (A-4). A first
+    need with no guidance key in `_NEEDS_KEY` raises ``KeyError`` here.
     """
+    key = _NEEDS_KEY[needs[0]] if needs else None
+    entry = _Requirement(tuple(needs), dict(convert or {}), tuple(columns), key)
 
     def register(fn: F) -> F:
-        _REGISTRY[fn.__name__] = _Requirement(tuple(needs), dict(convert or {}))
+        _REGISTRY[fn.__name__] = entry
 
         return fn
 
@@ -424,9 +477,8 @@ def _route(
     label = current
     if label is Representation.LEVELED and label not in native:
         label = Representation.TOPO
-    if label not in entry.needs or label not in native:
-        key = _NEEDS_KEY[entry.needs[0]]
-        text = msg(key, function=fn.__name__, current=current.value)
+    if entry.key is not None and (label not in entry.needs or label not in native):
+        text = msg(entry.key, function=fn.__name__, current=current.value)
         raise RepresentationError(text)
 
     return native[label](df, **kw)

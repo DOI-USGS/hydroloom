@@ -19,7 +19,7 @@ from hydroloom._kernels import csr
 __all__ = ["IndexIds"]
 
 
-def byte_rank(uniques: Any) -> NDArray[np.int64]:
+def _byte_rank(uniques: Any) -> NDArray[np.int64]:
     """Return the rank of each identifier in byte order (D-1, D-5).
 
     Python compares ``str`` by code point, which is UTF-8 byte order.
@@ -86,7 +86,7 @@ class IndexIds:
         [0, 0, 1]
         """
         indptr, indices, order = csr.transpose(
-            self.indptr, self.indices, byte_rank(self.uniques)
+            self.indptr, self.indices, _byte_rank(self.uniques)
         )
         mode = "from" if self.mode == "to" else "to"
         main = None if self.main is None else self.main[order]
@@ -124,7 +124,7 @@ class IndexIds:
         return csr_array((data, self.indices, self.indptr), shape=(n, n))
 
 
-def from_edges(
+def _from_edges(
     uniques: Any,
     source: NDArray[np.int64],
     target: NDArray[np.int64],
@@ -137,7 +137,7 @@ def from_edges(
     aligned with the edges as given.
     """
     indptr, indices, order = csr.from_edges(
-        source, target, len(uniques), byte_rank(uniques)
+        source, target, len(uniques), _byte_rank(uniques)
     )
     flags = None if main is None else np.asarray(main, dtype=bool)[order]
 

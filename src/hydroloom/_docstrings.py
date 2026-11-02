@@ -15,6 +15,7 @@ function's own hand-written ``__doc__``, the only part of that ``__doc__`` kept.
 
 from __future__ import annotations
 
+import copy
 import functools
 import inspect
 import json
@@ -140,7 +141,64 @@ _COMPILED = tuple((re.compile(pattern), repl) for pattern, repl in SUBSTITUTIONS
 # applied to that field before SUBSTITUTIONS. tests/python/test_docstrings.py
 # checks that every pair fires.
 PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
+    # R's hy() stamps an S3 class and has add_topo; as_hy does neither (A-1,
+    # A-5). Text from the Signature and Definition sections of hy.md.
+    "hy": {
+        "title": (
+            (
+                r"\ACreate a hy Fabric S3 Object\Z",
+                "Align a table with hydroloom names and types",
+            ),
+        ),
+        "description": (
+            (
+                r"(?s)\Aconverts a compatible dataset into a fabric s3 class\..*\Z",
+                "Gives every column the vocabulary recognizes its hy name, "
+                "makes each identifier column text, makes each 0/1 flag "
+                'column boolean, fills a missing `toid` with the outlet value "", '
+                "and resets the row index. Other columns keep their input names "
+                "and values, and a GeoDataFrame keeps its geometry column, last. "
+                "The result carries no class; `representation()` gives the "
+                "pattern it follows.",
+            ),
+        ),
+        "value": (
+            (
+                r"\Ahy object with attributes compatible with the hydroloom "
+                r"package\.\Z",
+                "the input table with hy names and typed identifiers, a "
+                "GeoDataFrame when the input is one.",
+            ),
+        ),
+    },
+    # Python computes a pattern name from the columns; it keeps no class and
+    # never returns "not a hydroloom object" (A-2, hy_network_type.md).
+    "hy_network_type": {
+        "description": (
+            (
+                r"\AReturns the most specific hydroloom class\. The class names "
+                r"map to",
+                "Returns the representation pattern the table follows, from the "
+                "names and identifiers `as_hy` gives it. The pattern names map to",
+            ),
+        ),
+        "value": (
+            (
+                r"(?s)\Acharacter\. Most specific hydroloom class name.*\Z",
+                'one of "hy_leveled", "hy_topo", "hy_node", "hy_flownetwork", or "hy".',
+            ),
+        ),
+        "arguments.x": ((r"\Aobject to query\.\Z", "table to query."),),
+    },
     "make_index_ids": {
+        # R's ids are 1-based row numbers; IndexIds holds 0-based positions.
+        "description": (
+            (
+                r"such that the row number and id are equal\.",
+                "such that each flowline has a position from 0 to n − 1 and "
+                "`uniques` gives the `id` at each position.",
+            ),
+        ),
         # R's "both" is a named list; Python returns a (to, from) tuple.
         "details": (
             (
@@ -184,7 +242,7 @@ def per_function(alias: str, entry: dict[str, Any]) -> tuple[dict[str, Any], lis
 
     Returns the entry and the number of fires of each pair, in table order.
     """
-    entry = json.loads(json.dumps(entry))
+    entry = copy.deepcopy(entry)
     counts = []
     for key, pairs in PER_FUNCTION.get(alias, {}).items():
         group, _, name = key.partition(".")
