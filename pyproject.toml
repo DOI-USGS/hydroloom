@@ -33,12 +33,12 @@ packages = ["src/hydroloom"]
 # a regular wheel takes the same files from force-include below.
 exclude = ["src/hydroloom/data", "src/hydroloom/CLAUDE.md"]
 
-# docstrings.json is added here when unit 3 generates it; a missing
-# force-include source fails the build.
+# A missing force-include source fails the build.
 [tool.hatch.build.targets.wheel.force-include]
 "inst/extdata/hy_vocab.json" = "hydroloom/data/hy_vocab.json"
 "inst/extdata/abbreviations.json" = "hydroloom/data/abbreviations.json"
 "inst/extdata/remedies.json" = "hydroloom/data/remedies.json"
+"inst/extdata/docstrings.json" = "hydroloom/data/docstrings.json"
 
 # Editable installs import from src/hydroloom/, so hatch_build.py copies the
 # force-include targets under hydroloom/data/ into src/hydroloom/data/.
@@ -185,6 +185,16 @@ r-base = "4.4.*"
 [tool.pixi.feature.r.tasks.validate]
 # dev/validate.R explains why the tests run in a callr child.
 cmd = "Rscript dev/validate.R"
+default-environment = "r"
+
+[tool.pixi.feature.r.tasks.docstrings]
+# Regenerates inst/extdata/docstrings.json from man/*.Rd (SPEC A-13).
+cmd = "Rscript dev/docstrings.R"
+default-environment = "r"
+
+[tool.pixi.feature.r.tasks.docstrings-check]
+# The docstrings-diff CI job: regenerates to a temp file, fails on a diff.
+cmd = "Rscript dev/docstrings.R --check"
 default-environment = "r"
 
 [tool.pixi.feature.r.tasks.r-check]
