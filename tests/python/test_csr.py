@@ -24,15 +24,23 @@ KEY = MANIFEST["functions"]["make_index_ids"].get("key")
 
 
 @st.composite
-def graphs(draw, max_n=10):
-    """Return ``(n, source, target, rank)`` with ``rank`` a permutation of n."""
+def graphs(draw, max_n=10, injective=True):
+    """Return ``(n, source, target, rank)``.
+
+    ``rank`` is a permutation of n when ``injective``; otherwise any int64 key
+    per node, ties and values outside ``[0, n)`` included.
+    """
     n = draw(st.integers(0, max_n))
     if n == 0:
         edges = []
     else:
         node = st.integers(0, n - 1)
         edges = draw(st.lists(st.tuples(node, node), max_size=3 * n))
-    rank = np.array(draw(st.permutations(range(n))), dtype=np.int64)
+    if injective:
+        keys = draw(st.permutations(range(n)))
+    else:
+        keys = draw(st.lists(st.integers(-(2**31), 2**31), min_size=n, max_size=n))
+    rank = np.array(keys, dtype=np.int64)
     source = np.array([e[0] for e in edges], dtype=np.int64)
     target = np.array([e[1] for e in edges], dtype=np.int64)
 
@@ -49,12 +57,17 @@ def _pairs(source, target):
 
 PROPERTY = settings(max_examples=200, derandomize=True)
 
+# Properties that hold for any int64 key draw from both; edge-permutation
+# invariance and the transpose identities need an injective key, because edges
+# whose neighbors tie on rank keep input order (D-3).
+ANY_RANK = st.one_of(graphs(), graphs(injective=False))
+
 
 # Properties from the Postconditions ---------------------------------------
 
 
 @PROPERTY
-@given(graphs())
+@given(ANY_RANK)
 def test_indptr_shape(graph):
     """``indptr`` is n + 1 long, starts at 0, never decreases, and ends at m."""
     n, source, target, rank = graph
@@ -70,7 +83,7 @@ def test_indptr_shape(graph):
 
 
 @PROPERTY
-@given(graphs())
+@given(ANY_RANK)
 def test_edge_multiset_kept(graph):
     """The CSR holds each input edge once, duplicates included."""
     n, source, target, rank = graph
@@ -80,7 +93,7 @@ def test_edge_multiset_kept(graph):
 
 
 @PROPERTY
-@given(graphs())
+@given(ANY_RANK)
 def test_neighbors_in_rank_order(graph):
     """Each neighbor list is in rank order (D-5)."""
     n, source, target, rank = graph
@@ -92,7 +105,7 @@ def test_neighbors_in_rank_order(graph):
 
 
 @PROPERTY
-@given(graphs())
+@given(ANY_RANK)
 def test_node_without_edges_is_empty(graph):
     """A node with no out-edge has an empty range; no sentinel appears (K-4)."""
     n, source, target, rank = graph
@@ -103,7 +116,7 @@ def test_node_without_edges_is_empty(graph):
 
 
 @PROPERTY
-@given(graphs())
+@given(ANY_RANK)
 def test_payload_follows_edge(graph):
     """``payload[order]`` lines up each input edge's payload with its CSR slot."""
     n, source, target, rank = graph
@@ -163,7 +176,7 @@ def test_transpose_twice_is_identity(graph):
 
 
 @PROPERTY
-@given(graphs())
+@given(ANY_RANK)
 def test_ell_round_trip(graph):
     """The ELL view, padded with -1, converts back to the same CSR (K-2, K-4)."""
     n, source, target, rank = graph
@@ -202,10 +215,22 @@ def test_one_node():
     assert csr.ell(indptr, indices)[0].shape == (1, 0)
 
 
+def test_rank_outside_node_range():
+    """A rank key outside ``[0, n)`` still groups by owning node (K-2)."""
+    indptr, indices, _ = csr.from_edges(
+        np.array([0, 1]), np.array([1, 0]), 2, np.array([0, 5])
+    )
+
+    assert indptr.tolist() == [0, 1, 2]
+    assert indices.tolist() == [1, 0]
+
+
 def test_worked_example_by_hand():
     """The description's worked example: from 10 lists 100, 30, 4 (D-5)."""
     ids = ["30", "4", "100", "10", "7"]
-    rank = np.argsort(np.argsort(np.array(ids, dtype=object), kind="stable"))
+    rank = np.argsort(
+        np.argsort(np.array(ids, dtype=object), kind="stable"), kind="stable"
+    )
     source = np.array([0, 1, 2, 3], dtype=np.int64)
     target = np.array([3, 3, 3, 4], dtype=np.int64)
 
