@@ -142,6 +142,7 @@ mypy = "*"
 python-build = "*"
 pyyaml = "*"
 numpydoc = "*"
+pre-commit = "*"
 
 [tool.pixi.feature.py310.dependencies]
 python = "3.10.*"

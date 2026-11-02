@@ -1,0 +1,65 @@
+# VERIFICATION 3 `py-test`: pytest with conformance, ruff, mypy, import-linter,
+# on py310 and py313 across Linux, macOS, and Windows. The job always starts
+# and its first step decides whether to do the work, so the check reports on
+# every push and pull request (VERIFICATION 3, path filtering).
+on:
+  push:
+    branches: [main, python-port]
+  pull_request:
+
+name: py-test
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  py-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        environment: [py310, py313]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          base: ${{ github.ref_name }}
+          filters: |
+            python:
+              - 'src/hydroloom/**'
+              - 'tests/python/**'
+              - 'hatch_build.py'
+              - 'pyproject.toml'
+              - 'pixi.lock'
+              - 'inst/extdata/*.json'
+              - 'inst/extdata/conformance/**'
+              - '.github/workflows/py-test.yaml'
+
+      - name: No Python paths changed
+        if: steps.filter.outputs.python != 'true'
+        run: echo "No Python or shared paths changed; nothing to test."
+
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+        if: steps.filter.outputs.python == 'true'
+        with:
+          pixi-version: v0.81.0
+          environments: ${{ matrix.environment }}
+          locked: true
+
+      - name: Test
+        if: steps.filter.outputs.python == 'true'
+        run: pixi run -e ${{ matrix.environment }} test
+
+      - name: Lint (ruff, import-linter, mypy)
+        if: steps.filter.outputs.python == 'true'
+        run: pixi run -e ${{ matrix.environment }} lint

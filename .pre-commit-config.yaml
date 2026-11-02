@@ -1,0 +1,56 @@
+# One config for both languages (VERIFICATION 1.1, 3). Run through pixi:
+#   pixi run pre-commit run --all-files
+#
+# Not here: the R precommit hooks for styler and lintr (VERIFICATION 3, 6 run
+# them in CI only); styler would restyle R/ and lintr reports findings in
+# existing R code. The description template headings (S-8) are checked by
+# `pixi run validate`, not by a hook.
+repos:
+  # Each shared artifact against its JSON Schema (S-2, S-8, VERIFICATION 2).
+  # The instance is passed in args, so an edit to either file runs the check.
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.39.0
+    hooks:
+      - id: check-jsonschema
+        name: hy_vocab.json against hy_vocab.schema.json
+        files: ^inst/extdata/hy_vocab(\.schema)?\.json$
+        pass_filenames: false
+        args: [--schemafile, inst/extdata/hy_vocab.schema.json, inst/extdata/hy_vocab.json]
+      - id: check-jsonschema
+        name: abbreviations.json against abbreviations.schema.json
+        files: ^inst/extdata/abbreviations(\.schema)?\.json$
+        pass_filenames: false
+        args: [--schemafile, inst/extdata/abbreviations.schema.json, inst/extdata/abbreviations.json]
+      - id: check-jsonschema
+        name: remedies.json against remedies.schema.json
+        files: ^inst/extdata/remedies(\.schema)?\.json$
+        pass_filenames: false
+        args: [--schemafile, inst/extdata/remedies.schema.json, inst/extdata/remedies.json]
+      - id: check-jsonschema
+        name: manifest.yaml against manifest.schema.json
+        files: ^inst/extdata/conformance/manifest(\.schema\.json|\.yaml)$
+        pass_filenames: false
+        args: [--schemafile, inst/extdata/conformance/manifest.schema.json, inst/extdata/conformance/manifest.yaml]
+
+  # Same version as the ruff in pixi.lock; reads [tool.ruff] in pyproject.toml.
+  # Python files only, as `pixi run lint`: the hooks' default types also take
+  # markdown, and ruff-format would reformat the code blocks in dev/plan/.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+        types_or: [python, pyi]
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Scoped to the Python package, the authored shared artifacts, and CI
+  # configuration. R/, man/, tests/testthat/, vignettes/, and the derived
+  # docstrings.json hold existing misspellings that are fixed in roxygen.
+  # gage, gages: USGS spelling. froms: the plural of from in make_index_ids.
+  # unqiue: the R-side spelling the A-13 substitution table matches.
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+        args: [--ignore-words-list, "gage,gages,froms,unqiue"]
+        files: ^(src/hydroloom/|tests/python/|\.github/|inst/extdata/conformance/algorithms/|inst/extdata/conformance/manifest\.yaml$|inst/extdata/(hy_vocab|abbreviations|remedies)\.json$|\.pre-commit-config\.yaml$|pyproject\.toml$)

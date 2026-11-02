@@ -1,0 +1,62 @@
+# VERIFICATION 3 `docstrings-diff`: regenerates inst/extdata/docstrings.json
+# from man/ with dev/docstrings.R in the pixi `r` environment and fails on a
+# diff (SPEC A-13). man/ is first regenerated from roxygen, since A-13 makes
+# roxygen the authored source and man/ generated from it: a roxygen edit
+# without devtools::document() would otherwise pass with stale JSON. The job
+# always starts and its first step decides whether to do the work
+# (VERIFICATION 3, path filtering).
+on:
+  pull_request:
+
+name: docstrings-diff
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docstrings-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            docstrings:
+              - 'R/**'
+              - 'man/**'
+              - 'inst/extdata/docstrings.json'
+              - 'dev/docstrings.R'
+              - 'DESCRIPTION'
+              - 'pixi.lock'
+              - '.github/workflows/docstrings-diff.yaml'
+
+      - name: No documentation paths changed
+        if: steps.filter.outputs.docstrings != 'true'
+        run: echo "No R, man, or docstrings paths changed; nothing to diff."
+
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+        if: steps.filter.outputs.docstrings == 'true'
+        with:
+          pixi-version: v0.81.0
+          environments: r
+          locked: true
+
+      - name: man/ matches roxygen
+        if: steps.filter.outputs.docstrings == 'true'
+        run: |
+          pixi run -e r Rscript -e "devtools::document()"
+          git diff --exit-code -- man/ NAMESPACE
+          test -z "$(git status --porcelain -- man/ NAMESPACE)"
+
+      - name: docstrings.json matches man/
+        if: steps.filter.outputs.docstrings == 'true'
+        run: pixi run docstrings-check
