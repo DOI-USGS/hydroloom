@@ -22,18 +22,26 @@ def test_all_matches_manifest():
 
 def _requires(function):
     path = CONFORMANCE_DIR / "algorithms" / f"{function}.md"
-    front = path.read_text(encoding="utf-8").split("---")[1]
+    front = path.read_text(encoding="utf-8").split("---\n", maxsplit=2)[1]
 
     return yaml.safe_load(front)["requires"]
 
 
 @pytest.mark.parametrize("name", sorted(hydroloom.__all__))
 def test_registry_matches_requires(name):
-    """Each public function's registered needs equal its ``requires`` (A-4)."""
-    pattern = _requires(R_NAMES.get(name, name))["pattern"]
-    needs = {need.value for need in _REGISTRY[name].needs}
+    """Each public function's registered needs equal its ``requires`` (A-4).
+
+    ``pattern`` and ``columns`` are compared. ``via`` is not: it names the
+    conversion `capabilities()` reports, which has no registry field until
+    that function lands, and `make_index_ids` registers no ``convert``.
+    """
+    requires = _requires(R_NAMES.get(name, name))
+    pattern = requires["pattern"]
+    entry = _REGISTRY[name]
+    needs = {need.value for need in entry.needs}
 
     assert needs == (set() if pattern == ["any"] else set(pattern))
+    assert list(entry.columns) == list(requires["columns"])
 
 
 @pytest.mark.parametrize("name", sorted(hydroloom.__all__))

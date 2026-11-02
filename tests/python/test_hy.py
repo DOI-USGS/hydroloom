@@ -6,6 +6,7 @@ semantics the manifest compares are not repeated here (S-7).
 
 from __future__ import annotations
 
+import re
 import warnings
 
 import geopandas as gpd
@@ -16,11 +17,20 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from shapely.geometry import LineString
 
+from hydroloom import _hy as hy_module
 from hydroloom import as_hy, representation
 from hydroloom._hy import Representation, _as_hy, _hy_reverse, _route, requires
-from hydroloom.errors import HydroloomError, HydroloomWarning, RepresentationError
+from hydroloom.errors import (
+    HydroloomError,
+    HydroloomWarning,
+    RepresentationError,
+    msg,
+)
 
 PROPERTY = settings(derandomize=True, max_examples=60, deadline=None)
+
+# The registry the package filled at import, before any fixture swaps it.
+_PUBLIC_REGISTRY = hy_module._REGISTRY
 
 
 @st.composite
@@ -135,6 +145,42 @@ def test_mixed_identifier_raises_type_error():
         as_hy(pd.DataFrame({"id": pd.Series(["a", 2], dtype=object)}))
 
 
+@pytest.mark.parametrize(
+    ("values", "expected"),
+    [
+        (pd.Series([1, None, 3], dtype="Int64"), ["1", None, "3"]),
+        (pd.Series([2**64 - 1], dtype="uint64"), [str(2**64 - 1)]),
+        (pd.Series([1.0, np.nan], dtype="float32"), ["1", None]),
+        (pd.Series([1e19, 5.0]), ["10000000000000000000", "5"]),
+        (pd.Series([True, False]), ["1", "0"]),
+        (pd.Series(["a", None], dtype=object), ["a", None]),
+    ],
+    ids=["Int64", "uint64", "float32", "float-beyond-int64", "bool", "object"],
+)
+def test_identifier_ingest_by_dtype(values, expected):
+    """Each identifier dtype becomes its exact decimal string, missing None (I-2)."""
+    out = as_hy(pd.DataFrame({"id": values}))
+    got = out["id"].tolist()
+
+    assert [None if pd.isna(v) else v for v in got] == expected
+    assert all(type(v) is str for v in got if not pd.isna(v))
+
+
+@pytest.mark.parametrize(
+    ("values", "key"),
+    [
+        ([1.0, 2.5, np.nan, 3.5], "identifier_not_whole"),
+        ([1.0, np.inf, 2.0, -np.inf], "identifier_not_finite"),
+    ],
+)
+def test_float_identifier_raises_with_rows(values, key):
+    """A fractional or infinite float raises with the column and 1-based rows."""
+    text = msg(key, column="COMID", rows="2, 4")
+
+    with pytest.raises(HydroloomError, match=re.escape(text)):
+        as_hy(pd.DataFrame({"COMID": values}))
+
+
 def test_repeated_pair_raises():
     """A repeated (id, toid) pair raises at ingest (S-6, D3-57)."""
     with pytest.raises(HydroloomError, match="1"):
@@ -246,12 +292,33 @@ def _body(df, **kw):
     return "topo", kw
 
 
-@requires(Representation.TOPO)
-def _routed(network):
-    return _route(network, _routed, {Representation.TOPO: _body}, flag=1)
+@pytest.fixture
+def registry(monkeypatch):
+    """Swap in a copy of the registry, so test registrations leave it alone."""
+    copy = dict(hy_module._REGISTRY)
+    monkeypatch.setattr(hy_module, "_REGISTRY", copy)
+
+    return copy
 
 
-def test_route_leveled_takes_the_topo_body():
+@pytest.fixture
+def routed(registry):
+    """Register a TOPO-only function into the copied registry."""
+
+    @requires(Representation.TOPO)
+    def _routed(network):
+        return _route(network, _routed, {Representation.TOPO: _body}, flag=1)
+
+    return _routed
+
+
+def test_test_registrations_stay_out_of_the_registry(routed):
+    """The fixture registers into a copy (A-4 capabilities reads the registry)."""
+    assert "_routed" in hy_module._REGISTRY
+    assert "_routed" not in _PUBLIC_REGISTRY
+
+
+def test_route_leveled_takes_the_topo_body(routed):
     """LEVELED satisfies TOPO by subsumption (A-3)."""
     df = as_hy(
         pd.DataFrame(
@@ -265,18 +332,18 @@ def test_route_leveled_takes_the_topo_body():
         )
     )
 
-    assert _routed(df) == ("topo", {"flag": 1})
+    assert routed(df) == ("topo", {"flag": 1})
 
 
-def test_route_raises_with_the_function_and_pattern():
+def test_route_raises_with_the_function_and_pattern(routed):
     """A pattern with no body raises the guidance text (A-3, A-10)."""
     df = as_hy(pd.DataFrame({"id": [1]}))
 
     with pytest.raises(RepresentationError, match=r"_routed\(\).*representation hy\)"):
-        _routed(df)
+        routed(df)
 
 
-def test_route_converts_first():
+def test_route_converts_first(registry):
     """A registered conversion runs before the body is chosen (A-3)."""
 
     def to_topo(df):
@@ -287,3 +354,19 @@ def test_route_converts_first():
         return _route(network, converted, {Representation.TOPO: _body})
 
     assert converted(as_hy(pd.DataFrame({"id": [1]})))[0] == "topo"
+
+
+def test_route_with_no_needs_takes_any_table(registry):
+    """``requires()`` with no needs routes every pattern to its body (A-3)."""
+
+    @requires()
+    def anything(network):
+        return _route(network, anything, {Representation.HY: _body})
+
+    assert anything(as_hy(pd.DataFrame({"id": [1]})))[0] == "topo"
+
+
+def test_first_need_without_guidance_fails_at_registration(registry):
+    """A first need with no remedies key raises when registered, not when called."""
+    with pytest.raises(KeyError):
+        requires(Representation.FLOWNETWORK)

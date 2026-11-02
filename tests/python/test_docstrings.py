@@ -315,3 +315,19 @@ def test_python_only_arguments_are_documented():
 
     assert [p.name for p in params] == ["network", "id_col", "toid_col"]
     assert params[1].desc[0].startswith("The input column to take as `id`")
+
+
+@pytest.mark.parametrize(
+    ("name", "r_phrases"),
+    [
+        ("as_hy", ["S3", "s3 class", "subclass", "add_topo", "hy object"]),
+        ("representation", ["not a hydroloom object", "hydroloom class", "`x`"]),
+        ("make_index_ids", ["row number"]),
+    ],
+)
+def test_public_docstrings_drop_r_classes(name, r_phrases):
+    """The per-function pass removes R class and argument text (A-13, A-1, A-5)."""
+    text = getattr(hydroloom, name).__doc__
+
+    for phrase in r_phrases:
+        assert phrase not in text
