@@ -75,6 +75,8 @@ def make_index_ids(
     >>> from hydroloom import make_index_ids
     >>> net = pd.DataFrame({"id": [30, 4, 100, 10, 7], "toid": [10, 10, 10, 7, 0]})
     >>> up = make_index_ids(net, mode="from")
+    >>> up.uniques.tolist()
+    ['30', '4', '100', '10', '7']
     >>> node = up.uniques.get_loc("10")
     >>> up.uniques[up.indices[up.indptr[node] : up.indptr[node + 1]]].tolist()
     ['100', '30', '4']

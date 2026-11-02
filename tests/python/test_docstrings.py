@@ -306,7 +306,7 @@ def test_make_index_ids_returns_describe_index_ids():
     assert "IndexIds" in returns and "`(to, from)`" in returns
     assert "long_form" not in text
     assert "to_list" not in text and "adjacency matrix" not in text
-    assert '"to" first and "from" second' in text
+    assert '"both", the result is a tuple `(to, from)`' in text
 
 
 def test_python_only_arguments_are_documented():

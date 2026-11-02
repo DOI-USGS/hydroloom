@@ -153,21 +153,32 @@ PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
         "description": (
             (
                 r"(?s)\Aconverts a compatible dataset into a fabric s3 class\..*\Z",
-                "Gives every column the vocabulary recognizes its hy name, "
-                "makes each identifier column text, makes each 0/1 flag "
-                'column boolean, fills a missing `toid` with the outlet value "", '
-                "and resets the row index. Other columns keep their input names "
-                "and values, and a GeoDataFrame keeps its geometry column, last. "
-                "The result carries no class; `representation()` gives the "
-                "pattern it follows.",
+                "Renames each column hydroloom knows by another name to its "
+                "standard hydroloom name, as `COMID` becomes `id` and `ToCOMID` "
+                "becomes `toid`. The vocabulary, the list of standard names and "
+                "the source names known for each, ships as "
+                "`hydroloom/data/hy_vocab.json`. When two columns could take one "
+                "name, the column whose source name comes later in the "
+                "vocabulary takes it, with a warning, and the other keeps its "
+                "input name. A `permanent_identifier` column keeps its name "
+                "whenever another column could take the same name. Other columns "
+                "keep their input names and values.\n\n"
+                "Each identifier column becomes text (str), and each flag column "
+                'coded 0/1 becomes boolean. A missing `toid` becomes "", the '
+                "value that marks an outlet (a flowline that flows to nothing "
+                "else in the table). The row index is reset, and a GeoDataFrame "
+                "keeps its geometry column, moved to the last position. The "
+                "result is a plain DataFrame (or GeoDataFrame); call "
+                "`representation()` to find which network layout it follows, "
+                "such as an id/toid list or a fromnode/tonode list.",
             ),
         ),
         "value": (
             (
                 r"\Ahy object with attributes compatible with the hydroloom "
                 r"package\.\Z",
-                "the input table with hy names and typed identifiers, a "
-                "GeoDataFrame when the input is one.",
+                "the input table with hydroloom names and identifier columns "
+                "as text (str), a GeoDataFrame when the input is one.",
             ),
         ),
     },
@@ -178,8 +189,8 @@ PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
             (
                 r"\AReturns the most specific hydroloom class\. The class names "
                 r"map to",
-                "Returns the representation pattern the table follows, from the "
-                "names and identifiers `as_hy` gives it. The pattern names map to",
+                "Calls `as_hy` on the table, then returns its representation "
+                "pattern, the layout its columns follow. The pattern names map to",
             ),
         ),
         "value": (
@@ -188,15 +199,24 @@ PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
                 'one of "hy_leveled", "hy_topo", "hy_node", "hy_flownetwork", or "hy".',
             ),
         ),
-        "arguments.x": ((r"\Aobject to query\.\Z", "table to query."),),
+        # The same `network` text as as_hy and make_index_ids, through the
+        # shared substitution.
+        "arguments.x": (
+            (
+                r"\Aobject to query\.\Z",
+                "data.frame network compatible with hydroloom_names.",
+            ),
+        ),
     },
     "make_index_ids": {
         # R's ids are 1-based row numbers; IndexIds holds 0-based positions.
         "description": (
             (
                 r"such that the row number and id are equal\.",
-                "such that each flowline has a position from 0 to n − 1 and "
-                "`uniques` gives the `id` at each position.",
+                "such that each flowline has a position from 0 to n - 1, where n "
+                "is the number of distinct `id` values. The result's `uniques` "
+                "field gives the `id` at each position, as text, as `as_hy` "
+                "makes it.",
             ),
         ),
         # R's "both" is a named list; Python returns a (to, from) tuple.
@@ -204,8 +224,7 @@ PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
             (
                 r'If "both", the list will contain both a "from" and a "to" '
                 r"element containing each version of the graph\.",
-                'If "both", the result is the pair of both versions of the '
-                'graph, "to" first and "from" second.',
+                'If "both", the result is a tuple `(to, from)`.',
             ),
         ),
         # R's named list and the long_form note describe the R return.
@@ -215,11 +234,15 @@ PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
                 '`IndexIds` for mode "to" or "from". Its `indptr` and '
                 "`indices` hold each flowline's neighbors as positions: the "
                 'downstream flowlines for "to", the upstream flowlines for '
-                '"from", each list in byte order of `id`. `uniques` gives the '
-                "`id` at each position, and `main` holds the main-path flag of "
-                'each connection when the network has `downmain` ("to") or '
-                '`upmain` ("from"), otherwise `None`. For mode "both", the '
-                "pair `(to, from)`.",
+                '"from". The neighbors of the flowline at position i are '
+                "`indices[indptr[i]:indptr[i + 1]]`, sorted by `id` as text, "
+                'character by character (so "100" comes before "30"). '
+                "`uniques` gives the `id` at each position, as text. `main` "
+                "marks each connection on the main path, the one that carries "
+                "the same river on through a confluence or divergence. It comes "
+                'from `downmain` ("to") or `upmain` ("from") when the table has '
+                'that column, otherwise it is `None`. For mode "both", the '
+                "tuple `(to, from)`.",
             ),
         ),
     },
@@ -229,10 +252,12 @@ PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
 # Signature section of the function's description. Keyed by alias.
 PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
     "hy": {
-        "id_col": "the input column to take as `id`, ahead of the alias "
-        "lookup; `None` leaves the lookup to decide.",
-        "toid_col": "the input column to take as `toid`, ahead of the alias "
-        "lookup; `None` leaves the lookup to decide.",
+        "id_col": "the input column to take as `id`, in place of any column "
+        "hydroloom would choose by its known source names; `None` lets "
+        "hydroloom choose.",
+        "toid_col": "the input column to take as `toid`, in place of any "
+        "column hydroloom would choose by its known source names; `None` lets "
+        "hydroloom choose.",
     },
 }
 

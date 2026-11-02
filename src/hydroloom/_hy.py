@@ -14,7 +14,7 @@ import functools
 import json
 import math
 import warnings
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Hashable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from importlib.resources import files
@@ -326,7 +326,10 @@ def _true(values: pd.Series) -> np.ndarray:
 
 
 def _as_hy(
-    network: pd.DataFrame, *, id_col: Any = None, toid_col: Any = None
+    network: pd.DataFrame,
+    *,
+    id_col: Hashable | None = None,
+    toid_col: Hashable | None = None,
 ) -> tuple[pd.DataFrame, dict[Any, str]]:
     """Align names and ingest types; return the frame and the rename map.
 
@@ -498,7 +501,10 @@ def _route(
 @requires()
 @doc("hy")
 def as_hy(
-    network: pd.DataFrame, *, id_col: Any = None, toid_col: Any = None
+    network: pd.DataFrame,
+    *,
+    id_col: Hashable | None = None,
+    toid_col: Hashable | None = None,
 ) -> pd.DataFrame:
     """Align a table with hydroloom names and types.
 
@@ -524,7 +530,7 @@ def representation(network: pd.DataFrame) -> str:
     --------
     >>> import pandas as pd
     >>> from hydroloom import representation
-    >>> representation(pd.DataFrame({"id": [1, 2], "toid": [2, 0]}))
+    >>> representation(pd.DataFrame({"id": [1, 2], "toid": [2, None]}))
     'hy_topo'
     """
     df, _ = _as_hy(network)
