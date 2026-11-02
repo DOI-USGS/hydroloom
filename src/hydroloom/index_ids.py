@@ -107,7 +107,9 @@ class IndexIds:
         return csr.ell(self.indptr, self.indices)
 
     def to_scipy(self) -> Any:
-        """Return the graph as a ``scipy.sparse.csr_array`` sharing buffers.
+        """Return the graph as a ``scipy.sparse.csr_array``.
+
+        scipy may copy ``indptr`` and ``indices`` to a narrower index dtype.
 
         Returns
         -------

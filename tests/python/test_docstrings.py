@@ -8,7 +8,15 @@ import pytest
 from numpydoc.docscrape import get_doc_object
 from numpydoc.validate import validate
 
-from hydroloom._docstrings import SUBSTITUTIONS, doc, r_docs, substitute
+import hydroloom
+from hydroloom._docstrings import (
+    PER_FUNCTION,
+    SUBSTITUTIONS,
+    doc,
+    per_function,
+    r_docs,
+    substitute,
+)
 
 # Fires of each substitution pair over every field of every alias in
 # docstrings.json, keyed by pattern. Regenerating docstrings.json can change
@@ -262,3 +270,48 @@ def test_explicit_r_name_wins_over_same_name():
 
     assert params[1].name == "direction"
     assert params[1].desc[0].startswith("If `True`, reset graph for each start")
+
+
+@pytest.mark.parametrize("alias", sorted(PER_FUNCTION))
+def test_per_function_pairs_fire_once(alias):
+    """Each per-function pair matches its R text once (A-13)."""
+    assert per_function(alias, r_docs()[alias])[1] == [
+        1 for pairs in PER_FUNCTION[alias].values() for _ in pairs
+    ]
+
+
+PUBLIC = [getattr(hydroloom, name) for name in sorted(hydroloom.__all__)]
+
+# The hy_network_type title is a question; rewording it is roxygen work, the
+# maintainer's (A-13), outside this docstring pass.
+PUBLIC_ALLOWED = {"representation": {"SS03"}}
+
+
+@pytest.mark.parametrize("func", PUBLIC, ids=lambda f: f.__name__)
+def test_public_docstring_validates(func):
+    """numpydoc.validate accepts each public function's docstring (A-13)."""
+    result = validate(get_doc_object(func))
+    codes = {code for code, _ in result["errors"]}
+    allowed = ALLOWED_CODES | PUBLIC_ALLOWED.get(func.__name__, set())
+
+    assert codes <= allowed, result["errors"]
+
+
+def test_make_index_ids_returns_describe_index_ids():
+    """The Returns text is Python's, with the tuple order for mode both."""
+    doc_object = get_doc_object(hydroloom.make_index_ids)
+    returns = " ".join(" ".join(r.desc) for r in doc_object["Returns"])
+    text = hydroloom.make_index_ids.__doc__
+
+    assert "IndexIds" in returns and "`(to, from)`" in returns
+    assert "long_form" not in text
+    assert "to_list" not in text and "adjacency matrix" not in text
+    assert '"to" first and "from" second' in text
+
+
+def test_python_only_arguments_are_documented():
+    """as_hy's id_col and toid_col take their text from PYTHON_ARGUMENTS."""
+    params = get_doc_object(hydroloom.as_hy)["Parameters"]
+
+    assert [p.name for p in params] == ["network", "id_col", "toid_col"]
+    assert params[1].desc[0].startswith("The input column to take as `id`")

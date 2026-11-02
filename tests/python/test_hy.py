@@ -1,0 +1,289 @@
+"""as_hy, representation, and _route: interface tests and properties.
+
+Properties follow the Postconditions of hy.md and hy_network_type.md; the
+semantics the manifest compares are not repeated here (S-7).
+"""
+
+from __future__ import annotations
+
+import warnings
+
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from shapely.geometry import LineString
+
+from hydroloom import as_hy, representation
+from hydroloom._hy import Representation, _as_hy, _hy_reverse, _route, requires
+from hydroloom.errors import HydroloomError, HydroloomWarning, RepresentationError
+
+PROPERTY = settings(derandomize=True, max_examples=60, deadline=None)
+
+
+@st.composite
+def source_tables(draw):
+    """NHDPlusV2-style tables: COMID, ToCOMID with missing outlets, a name."""
+    n = draw(st.integers(0, 8))
+    ids = draw(st.lists(st.integers(1, 10**12), min_size=n, max_size=n, unique=True))
+    toids = []
+    for i in range(n):
+        later = ids[i + 1 :]
+        toid = draw(st.one_of(st.none(), st.sampled_from(later))) if later else None
+        toids.append(toid)
+    names = draw(st.lists(st.text(max_size=3), min_size=n, max_size=n))
+    toid = pd.Series([np.nan if t is None else float(t) for t in toids], dtype=float)
+
+    return pd.DataFrame(
+        {"COMID": pd.Series(ids, dtype="int64"), "ToCOMID": toid, "Name": names}
+    )
+
+
+# as_hy ---------------------------------------------------------------------
+
+
+@PROPERTY
+@given(source_tables())
+def test_as_hy_postconditions(table):
+    """Row count, names, identifier text, the toid fill, and pass-through."""
+    before = table.copy()
+    out, names = _as_hy(table)
+
+    pd.testing.assert_frame_equal(table, before)
+    assert len(out) == len(table)
+    assert list(out.columns) == ["id", "toid", "Name"]
+    assert out.columns.is_unique
+    assert names == {"COMID": "id", "ToCOMID": "toid"}
+    assert all(isinstance(v, str) for v in out["id"])
+    assert all(isinstance(v, str) for v in out["toid"])
+    assert out["id"].tolist() == [str(v) for v in table["COMID"]]
+    expected_toid = ["" if np.isnan(v) else str(int(v)) for v in table["ToCOMID"]]
+    assert out["toid"].tolist() == expected_toid
+    assert out["Name"].tolist() == table["Name"].tolist()
+
+
+@PROPERTY
+@given(source_tables())
+def test_as_hy_idempotent_and_reversible(table):
+    """A second pass changes nothing; _hy_reverse restores the input names."""
+    out, names = _as_hy(table)
+
+    pd.testing.assert_frame_equal(as_hy(out), out)
+    assert list(_hy_reverse(out, names).columns) == list(table.columns)
+
+
+def test_as_hy_resets_index():
+    """The row index is reset on ingest (I-12)."""
+    table = pd.DataFrame({"id": [1, 2], "toid": [2, 0]}, index=[10, 20])
+
+    assert as_hy(table).index.tolist() == [0, 1]
+
+
+def test_as_hy_geometry_keeps_name_and_goes_last():
+    """A GeoDataFrame returns with its active geometry name, last (G-14)."""
+    lines = [LineString([(0, 0), (1, 1)]), LineString([(1, 1), (2, 2)])]
+    table = gpd.GeoDataFrame(
+        {"shape": lines, "COMID": [1, 2], "ToCOMID": [2, 0]},
+        geometry="shape",
+        crs=5070,
+    )
+
+    out = as_hy(table)
+
+    assert isinstance(out, gpd.GeoDataFrame)
+    assert out.geometry.name == "shape"
+    assert list(out.columns) == ["id", "toid", "shape"]
+    assert out.crs == table.crs
+    assert out.geometry.geom_equals(table.geometry.reset_index(drop=True)).all()
+
+
+def test_id_col_takes_the_name_ahead_of_the_aliases():
+    """id_col names the id column; the other id alias keeps its name, silently."""
+    table = pd.DataFrame({"nhdplusid": [1, 2], "featureid": [5, 6], "toid": [2, 0]})
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = as_hy(table, id_col="nhdplusid")
+
+    assert list(out.columns) == ["id", "featureid", "toid"]
+
+
+def test_toid_col_takes_the_name():
+    """toid_col names the toid column."""
+    out = as_hy(pd.DataFrame({"id": [1, 2], "down": [2, None]}), toid_col="down")
+
+    assert out["toid"].tolist() == ["2", ""]
+
+
+def test_id_col_not_a_column_raises_key_error():
+    """A column name that is not in the table is a KeyError naming it."""
+    with pytest.raises(KeyError, match="nope"):
+        as_hy(pd.DataFrame({"id": [1]}), id_col="nope")
+
+
+def test_no_id_column_raises_representation_error():
+    """Python raises where R warns (D3-130)."""
+    with pytest.raises(RepresentationError):
+        as_hy(pd.DataFrame({"name": ["a"]}))
+
+
+def test_mixed_identifier_raises_type_error():
+    """Strings and numbers in one identifier column raise TypeError (I-3)."""
+    with pytest.raises(TypeError, match="Rows whose type differs"):
+        as_hy(pd.DataFrame({"id": pd.Series(["a", 2], dtype=object)}))
+
+
+def test_repeated_pair_raises():
+    """A repeated (id, toid) pair raises at ingest (S-6, D3-57)."""
+    with pytest.raises(HydroloomError, match="1"):
+        as_hy(pd.DataFrame({"id": [1, 1], "toid": [2, 2]}))
+
+
+@pytest.mark.parametrize(
+    ("columns", "key"),
+    [
+        (["ID", "id"], "same name ignoring case"),
+        (["", "id"], "position 1 has no name"),
+        (["comid", "nhdplusid", "featureid"], "all aliases of the hydroloom name id"),
+    ],
+)
+def test_name_errors_are_key_errors(columns, key):
+    """Name problems are vocabulary problems, KeyError (A-10)."""
+    table = pd.DataFrame([[1] * len(columns)], columns=columns)
+
+    with pytest.raises(KeyError, match=key):
+        as_hy(table)
+
+
+def test_permanent_identifier_beside_id_is_not_a_conflict():
+    """A second pass over aligned names keeps Permanent_Identifier as it is."""
+    table = pd.DataFrame({"id": [1], "Permanent_Identifier": ["a"]})
+
+    assert list(as_hy(table).columns) == ["id", "Permanent_Identifier"]
+
+
+def test_flag_coding():
+    """1/0 flags become bool, nullable boolean with a missing value (M-18)."""
+    table = pd.DataFrame(
+        {"id": [1, 2, 3], "StartFlag": [1, 0, 1], "TerminalFl": [0, np.nan, 1]}
+    )
+
+    out = as_hy(table)
+
+    assert out["start_flag"].dtype == bool
+    assert out["terminal_flag"].dtype == "boolean"
+    assert out["terminal_flag"].isna().tolist() == [False, True, False]
+
+
+def test_flag_not_binary_warns_and_passes_through():
+    """A flag coded other than 0/1 warns and stays as it arrives (D3-152)."""
+    table = pd.DataFrame({"id": [1, 2], "TerminalFl": [0, 2]})
+
+    with pytest.warns(HydroloomWarning, match="Flag column TerminalFl"):
+        out = as_hy(table)
+
+    assert out["terminal_flag"].tolist() == [0, 2]
+
+
+# representation --------------------------------------------------------------
+
+
+@st.composite
+def pattern_tables(draw):
+    """Tables over the columns that decide the pattern, ids possibly repeated."""
+    n = draw(st.integers(0, 6))
+    ids = draw(st.lists(st.integers(1, 4), min_size=n, max_size=n))
+    table = pd.DataFrame({"id": pd.Series(ids, dtype="int64")})
+    if draw(st.booleans()):
+        # Distinct (id, toid) pairs (S-6).
+        table["toid"] = range(100, 100 + n)
+    if draw(st.booleans()):
+        table["fromnode"] = range(n)
+        table["tonode"] = range(1, n + 1)
+    for column in ("topo_sort", "levelpath", "levelpath_outlet_id"):
+        if draw(st.booleans()):
+            table[column] = range(n)
+
+    return table
+
+
+@PROPERTY
+@given(pattern_tables(), st.randoms(use_true_random=False))
+def test_representation_postconditions(table, rng):
+    """One of five names, row-order free, unchanged by as_hy and by values."""
+    value = representation(table)
+    shuffled = table.sample(frac=1, random_state=rng.randint(0, 2**31))
+
+    assert value in {r.value for r in Representation}
+    assert representation(shuffled) == value
+    assert representation(as_hy(table)) == value
+    columns = set(table.columns)
+    assert (value == "hy_flownetwork") == (
+        {"id", "toid"} <= columns and not table["id"].is_unique
+    )
+    if value == "hy_leveled":
+        assert {"toid", "topo_sort", "levelpath", "levelpath_outlet_id"} <= columns
+    if value == "hy_node":
+        assert "toid" not in columns
+    if "fromnode" in columns:
+        renodes = table.assign(fromnode=np.nan, tonode=np.nan)
+        assert representation(renodes) == value
+
+
+def test_representation_returns_plain_str():
+    """The value is a str, not the enum member."""
+    value = representation(pd.DataFrame({"id": [1], "toid": [0]}))
+
+    assert type(value) is str
+
+
+# _route and the registry --------------------------------------------------------
+
+
+def _body(df, **kw):
+    return "topo", kw
+
+
+@requires(Representation.TOPO)
+def _routed(network):
+    return _route(network, _routed, {Representation.TOPO: _body}, flag=1)
+
+
+def test_route_leveled_takes_the_topo_body():
+    """LEVELED satisfies TOPO by subsumption (A-3)."""
+    df = as_hy(
+        pd.DataFrame(
+            {
+                "id": [1],
+                "toid": [0],
+                "topo_sort": [1],
+                "levelpath": [1],
+                "levelpath_outlet_id": [1],
+            }
+        )
+    )
+
+    assert _routed(df) == ("topo", {"flag": 1})
+
+
+def test_route_raises_with_the_function_and_pattern():
+    """A pattern with no body raises the guidance text (A-3, A-10)."""
+    df = as_hy(pd.DataFrame({"id": [1]}))
+
+    with pytest.raises(RepresentationError, match=r"_routed\(\).*representation hy\)"):
+        _routed(df)
+
+
+def test_route_converts_first():
+    """A registered conversion runs before the body is chosen (A-3)."""
+
+    def to_topo(df):
+        return df.assign(toid="")
+
+    @requires(Representation.TOPO, convert={Representation.HY: to_topo})
+    def converted(network):
+        return _route(network, converted, {Representation.TOPO: _body})
+
+    assert converted(as_hy(pd.DataFrame({"id": [1]})))[0] == "topo"
