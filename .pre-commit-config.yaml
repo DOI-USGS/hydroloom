@@ -1,12 +1,12 @@
 # One config for both languages (VERIFICATION 1.1, 3). Run through pixi:
 #   pixi run pre-commit run --all-files
 #
-# Not here: the R precommit hooks for styler and lintr. VERIFICATION 3 lists
-# them, to run in CI only. They are left out because styler restyles whole
-# files and lintr reports findings already in R/, against the AGENTS.md rule
-# "Minimal diffs: don't restyle existing code". Whether to add them, and how
-# to scope them, is the maintainer's call. The description template headings
-# (S-8) are checked by `pixi run validate`, not by a hook.
+# Not here: the R precommit hooks for styler and lintr (RULES P-2: the R
+# package is not restyled by a hook). styler restyles whole files and lintr
+# reports findings already in R/, against the AGENTS.md rule "Minimal diffs:
+# don't restyle existing code"; they stay out until the maintainer restyles
+# the package in its own commit. The description template headings (S-8) are
+# checked by `pixi run validate`, not by a hook.
 repos:
   # Each shared artifact against its JSON Schema (S-2, S-8, VERIFICATION 2).
   # The instance is passed in args, so an edit to either file runs the check.

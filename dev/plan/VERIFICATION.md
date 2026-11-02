@@ -164,7 +164,7 @@ pytest-cov       coverage, reported not gated (§3)
 
 ## 2. Conformance harness
 
-Two kinds of tests, kept apart. Conformance tests check semantics and are driven by the manifest; both harnesses are thin, on the order of a hundred lines, and iterate it. Unit tests check interfaces (argument validation, error classes, dtype handling on ingest) and are language-local. An expectation about a computed value lives in the manifest, never inline (SPEC S-7).
+Two kinds of tests, kept apart. Conformance tests check semantics and are driven by the manifest; both harnesses iterate it, and each is a few hundred lines: the comparison rules (D-13, D-14, S-7, section I) and the layer converters (RULES P-2, 2026-11-02). Unit tests check interfaces (argument validation, error classes, dtype handling on ingest) and are language-local. An expectation about a computed value lives in the manifest, never inline (SPEC S-7).
 
 ```mermaid
 flowchart LR
@@ -233,7 +233,7 @@ All jobs are path-filtered so an R-only change does not run pytest and vice vers
 
 Coverage: covr and pytest-cov, per language, reported and not gated.
 
-Repository configuration: one `.pre-commit-config.yaml` with ruff (lint and format), the R `precommit` hooks for styler and lintr (run in CI only, so a contributor without R can commit), codespell, and the schema validators; Renovate, not Dependabot, because Renovate reads `pixi.lock`, limited to GitHub Actions and a weekly grouped lock refresh; GitHub Actions pinned by commit SHA.
+Repository configuration: one `.pre-commit-config.yaml` with ruff (lint and format), codespell, and the schema validators, and no styler or lintr hook (RULES P-2: the R package is not restyled by a hook); Renovate, not Dependabot, because Renovate reads `pixi.lock`, limited to GitHub Actions and a weekly grouped lock refresh; GitHub Actions pinned by commit SHA.
 
 ## 4. Property, doctest, and interface tests
 
@@ -283,7 +283,7 @@ numba            only in its own pixi feature, never in default
 pixi platforms   linux-64, osx-64, osx-arm64, win-64; conda-forge only
 Renovate         GitHub Actions plus a weekly grouped pixi.lock refresh
 towncrier types  keep-a-changelog: added, changed, deprecated, removed, fixed
-R pre-commit     styler and lintr hooks run in CI only
+R pre-commit     no styler or lintr hook; the R package is not restyled by a hook (RULES P-2)
 logging          none
 ```
 
