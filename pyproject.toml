@@ -141,6 +141,7 @@ ruff = "*"
 mypy = "*"
 python-build = "*"
 pyyaml = "*"
+numpydoc = "*"
 
 [tool.pixi.feature.py310.dependencies]
 python = "3.10.*"
