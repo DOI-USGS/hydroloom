@@ -28,7 +28,7 @@ One repository, one root, both packages interleaved. The R package stays where i
 | `benchmarks/` | Python | asv; `results/` committed |
 | `pyproject.toml`, `pixi.lock` | Python | package metadata and the pixi workspace (1.5) |
 | `CHANGELOG.md`, `changelog.d/` | Python | changelog and towncrier fragments (1.7) |
-| `README.md`, `LICENSE.md`, `CITATION.cff` | shared | one of each, referenced from both manifests |
+| `README.md`, `LICENSE`, `CITATION.cff` | shared | one of each, referenced from both manifests |
 | `.pre-commit-config.yaml` | shared | one config for both languages |
 | `.github/workflows/` | shared | development CI on the GitHub mirror (§3) |
 | `.gitlab-ci.yml` | shared | release jobs on code.usgs.gov (§7) |
@@ -56,6 +56,7 @@ When a Rust core lands, `^src$` narrows to `^src/hydroloom$` and nothing else mo
 ^\.pytest_cache$
 ^\.hypothesis$
 ^dist$
+^hatch_build\.py$
 ```
 
 ### 1.3 hatchling
@@ -68,7 +69,7 @@ tests/python/
 inst/extdata/
 pyproject.toml
 README.md
-LICENSE.md
+LICENSE
 CHANGELOG.md
 CITATION.cff
 ```
@@ -276,7 +277,7 @@ Tooling defaults, each cheap to reverse:
 
 ```
 quartodoc        Python API reference; `dynamic: true` so import-time docstrings are read; one Quarto toolchain beside pkgdown; costs intersphinx links
-ruff             rule families PD NPY B UP I D with the numpydoc convention; PD901 on; PD010/PD013 on until one fires on real code; D417 exempted for decorated functions
+ruff             rule families PD NPY B UP I D with the numpydoc convention; PD901 was removed from ruff (absent in 0.17.3) and so is not selected; PD010/PD013 on until one fires on real code; D417 exempted for decorated functions
 mypy             strict on _kernels and index_ids.py only; no pandas-stubs
 numba            only in its own pixi feature, never in default
 pixi platforms   linux-64, osx-64, osx-arm64, win-64; conda-forge only
