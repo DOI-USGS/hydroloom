@@ -43,9 +43,9 @@
       {
         "capability": "shell",
         "match": [
-          "pixi run lint",
-          "pixi run test",
-          "pixi run install",
+          "pixi run lint*",
+          "pixi run test*",
+          "pixi run install*",
           "pixi reinstall hydroloom",
           "git status",
           "git status --short",
@@ -75,9 +75,9 @@
           "*"
         ],
         "exclude": [
-          "pixi run lint",
-          "pixi run test",
-          "pixi run install",
+          "pixi run lint*",
+          "pixi run test*",
+          "pixi run install*",
           "pixi reinstall hydroloom",
           "git status",
           "git status --short",
@@ -107,9 +107,9 @@
           "pixi *"
         ],
         "exclude": [
-          "pixi run lint",
-          "pixi run test",
-          "pixi run install",
+          "pixi run lint*",
+          "pixi run test*",
+          "pixi run install*",
           "pixi reinstall hydroloom"
         ],
         "effect": "deny"

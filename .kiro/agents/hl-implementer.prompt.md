@@ -17,7 +17,9 @@ If `.kiro/workflow-output/<function>/findings.md` exists, this is a fix round: a
 every `blocker` and `should`, add a `response` column recording what you changed or why
 you did not, and leave `verify` rows alone.
 
-Run `pixi run lint` and `pixi run test` before you say you are done. Write the PR body to
+Run `pixi run lint` and `pixi run test` before you say you are done. Run each as its own
+command with no pipe, redirect, or `;`, stage one path per `git add` command, and use the
+commit form shown below. Write the PR body to
 `.kiro/workflow-output/<function>/pr-body.md` from the template; the "Description silent
 on" section is required and may say "none". Commit with a one-line message naming the
 function and the suite version and the trailer the rules require:
