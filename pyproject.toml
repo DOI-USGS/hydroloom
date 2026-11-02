@@ -1,0 +1,224 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hydroloom"
+# Static placeholder; hatch-vcs reads the py-v* tag from M5 (VERIFICATION 1.7, ROADMAP M5).
+version = "0.0.0"
+description = "Utilities to weave hydrologic fabrics."
+readme = "README.md"
+license = "CC0-1.0"
+license-files = ["LICENSE"]
+authors = [{ name = "David Blodgett", email = "dblodgett@usgs.gov" }]
+requires-python = ">=3.10"
+dependencies = [
+  "pandas>=2.2.2",
+  "numpy",
+  "scipy",
+  "shapely>=2.0",
+  "geopandas>=1.0",
+  "pyogrio",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "hypothesis",
+  "import-linter",
+  "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/DOI-USGS/hydroloom"
+Issues = "https://github.com/DOI-USGS/hydroloom/issues"
+
+# hatchling (VERIFICATION 1.3) ---------------------------------------------
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hydroloom"]
+# src/hydroloom/data/ holds the editable-install copies made by hatch_build.py;
+# a regular wheel takes the same files from force-include below.
+exclude = ["src/hydroloom/data"]
+
+# docstrings.json is added here when unit 3 generates it; a missing
+# force-include source fails the build.
+[tool.hatch.build.targets.wheel.force-include]
+"inst/extdata/hy_vocab.json" = "hydroloom/data/hy_vocab.json"
+"inst/extdata/abbreviations.json" = "hydroloom/data/abbreviations.json"
+"inst/extdata/remedies.json" = "hydroloom/data/remedies.json"
+
+# Editable installs import from src/hydroloom/, so hatch_build.py copies the
+# force-include targets under hydroloom/data/ into src/hydroloom/data/.
+[tool.hatch.build.targets.wheel.hooks.custom]
+
+# src/ also holds the no-op src/Makefile and src/install.libs.R that let R
+# install the package; only the Python package goes in the sdist.
+[tool.hatch.build.targets.sdist]
+exclude = ["src/hydroloom/data"]
+only-include = [
+  "src/hydroloom/",
+  "hatch_build.py",
+  "tests/python/",
+  "inst/extdata/",
+  "pyproject.toml",
+  "README.md",
+  "LICENSE.md",
+  "CHANGELOG.md",
+  "CITATION.cff",
+]
+
+# ruff (VERIFICATION 6) -----------------------------------------------------
+
+[tool.ruff]
+src = ["src", "tests/python"]
+target-version = "py310"
+# Python files only; keeps ruff off the markdown in .kiro/, dev/, and the root.
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+
+[tool.ruff.lint]
+select = ["PD", "NPY", "B", "UP", "I", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+# import-linter (SPEC K-9) --------------------------------------------------
+
+[tool.importlinter]
+root_package = "hydroloom"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "_kernels imports neither pandas, geopandas, shapely, nor hydroloom._hy"
+type = "forbidden"
+source_modules = ["hydroloom._kernels"]
+forbidden_modules = ["pandas", "geopandas", "shapely", "hydroloom._hy"]
+
+# pytest --------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]
+
+# pixi workspace (VERIFICATION 1.5) -----------------------------------------
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[tool.pixi.dependencies]
+python = ">=3.10,<3.15"
+python-gil = "*"
+pandas = ">=2.2.2"
+numpy = "*"
+scipy = "*"
+shapely = ">=2.0"
+geopandas-base = ">=1.0"
+pyogrio = "*"
+
+[tool.pixi.pypi-dependencies]
+hydroloom = { path = ".", editable = true }
+
+# A __pycache__/*.cpython-*.pyc under src/ matches pkgbuild's compiled-source
+# pattern, so devtools::load_all() would try to compile the R package.
+[tool.pixi.activation.env]
+PYTHONDONTWRITEBYTECODE = "1"
+
+[tool.pixi.tasks]
+install = "pixi reinstall hydroloom"
+lint = "ruff check . && ruff format --check . && lint-imports --no-cache"
+# pytest exit code 5 (no tests collected) counts as success until the harness lands.
+test = "python -c \"import pathlib, sys, pytest; p = 'tests/python'; rc = pytest.main([p, *sys.argv[1:]]) if pathlib.Path(p).is_dir() else 5; sys.exit(0 if rc == 5 else rc)\""
+build = "python -m build --outdir dist ."
+
+[tool.pixi.feature.dev.dependencies]
+pytest = "*"
+hypothesis = "*"
+import-linter = "*"
+ruff = "*"
+python-build = "*"
+
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+
+[tool.pixi.feature.r.dependencies]
+r-base = "*"
+pandoc = "*"
+r-devtools = "*"
+# Imports
+r-dplyr = ">=1.1.0"
+"r-data.table" = "*"
+r-sf = ">=1.0_0"
+r-units = "*"
+r-pbapply = "*"
+r-tidyr = "*"
+r-rann = "*"
+r-rlang = "*"
+r-fastmap = "*"
+r-jsonlite = ">=1.8.0"
+# Suggests (hydrogeofetch is not on conda-forge)
+r-testthat = "*"
+r-future = "*"
+r-lwgeom = "*"
+"r-future.apply" = "*"
+r-knitr = "*"
+r-rmarkdown = "*"
+r-jsonvalidate = ">=1.3.0"
+r-yaml = "*"
+# r-geos (Suggests) is omitted: the conda-forge solver finds no candidates on
+# any of the four platforms.
+
+# conda-forge r-sf 1.1_2 and 1.1_3 built for r-base 4.5 crash at load on
+# win-64 (Mingw-w64 "32 bit pseudo relocation ... out of range"); the r-base
+# 4.4 builds load.
+[tool.pixi.feature.r.target.win-64.dependencies]
+r-base = "4.4.*"
+
+[tool.pixi.feature.r.tasks.validate]
+# The tests run in a callr child that writes its failure count to a file. The
+# conda-forge r-v8 8.2.0 used by jsonvalidate can crash at process exit
+# (win-64), so the exit status comes from that file, not from the child; a
+# missing file (an error or crash before the write) exits 1.
+cmd = "Rscript -e \"s <- tempfile(); try(callr::r(function(s) { r <- as.data.frame(devtools::test(filter = 'conformance-schema')); writeLines(as.character(sum(r[['failed']]) + sum(r[['error']])), s) }, list(s), show = TRUE), silent = TRUE); quit(save = 'no', status = if (file.exists(s) && readLines(s) == '0') 0L else 1L)\""
+default-environment = "r"
+
+[tool.pixi.feature.r.tasks.r-check]
+# Builds from the checkout. PKG_BUILD_COPY_METHOD=copy makes pkgbuild copy the
+# package tree with .Rbuildignore applied before it calls R CMD build, which
+# otherwise copies everything first, .pixi/ (about 9 GB) included. src/Makefile
+# and src/install.libs.R let R install the package with src/ present.
+# The copy drops src/ (^src$), so nothing compiles; needs_compilation = FALSE
+# stops pkgbuild from requiring Rtools because the checkout has src/.
+cmd = "Rscript -e \"d <- tempfile('hl-r-check'); dir.create(d); tgz <- devtools::build(path = d, quiet = TRUE, needs_compilation = FALSE); setwd(d); quit(status = system2(file.path(R.home('bin'), 'R'), c('CMD', 'check', '--as-cran', basename(tgz))))\" && Rscript -e \"devtools::test(stop_on_failure = TRUE)\""
+env = { _R_CHECK_FORCE_SUGGESTS_ = "false", PKG_BUILD_COPY_METHOD = "copy" }
+default-environment = "r"
+
+# The one pinned GEOS shared by r and docs; 3.14.1 is the build the
+# conda-forge R spatial packages link on every platform.
+[tool.pixi.feature.geos.dependencies]
+geos = "==3.14.1"
+
+[tool.pixi.feature.r-floors]
+platforms = ["linux-64"]
+
+[tool.pixi.feature.r-floors.dependencies]
+r-base = "4.1.*"
+r-dplyr = "1.1.0.*"
+r-sf = "1.0_0.*"
+r-jsonlite = "1.8.0.*"
+
+[tool.pixi.feature.docs.dependencies]
+r-reticulate = "*"
+r-pkgdown = "*"
+quarto = "*"
+quartodoc = "*"
+
+[tool.pixi.environments]
+default = ["dev"]
+py310 = ["py310", "dev"]
+py313 = ["py313", "dev"]
+r = { features = ["r", "geos"], no-default-feature = true }
+r-floors = { features = ["r", "r-floors"], no-default-feature = true }
+docs = ["r", "geos", "docs"]

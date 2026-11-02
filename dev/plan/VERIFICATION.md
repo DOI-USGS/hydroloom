@@ -55,6 +55,7 @@ When a Rust core lands, `^src$` narrows to `^src/hydroloom$` and nothing else mo
 ^\.ruff_cache$
 ^\.pytest_cache$
 ^\.hypothesis$
+^dist$
 ```
 
 ### 1.3 hatchling

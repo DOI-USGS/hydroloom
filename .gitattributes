@@ -1,3 +1,9 @@
 * text=auto
 
 pkgdown/assets/slides/hydroloom.html linguist-vendored
+
+*.gpkg binary
+inst/extdata/conformance/**/*.yaml text eol=lf
+inst/extdata/conformance/**/*.json text eol=lf
+inst/extdata/conformance/**/*.md text eol=lf
+inst/extdata/conformance/**/*.R text eol=lf

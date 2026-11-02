@@ -20,3 +20,8 @@ docs/
 !.kiro/context/pr-body-template.md
 !.kiro/context/kickoff-template.md
 !inst/extdata/conformance/algorithms/TEMPLATE.md
+.pixi/
+__pycache__/
+*.egg-info/
+dist/
+src/hydroloom/data/
