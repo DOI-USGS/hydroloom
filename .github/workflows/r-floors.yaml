@@ -1,0 +1,67 @@
+# VERIFICATION 3 `r-floors`: `pixi run -e r-floors r-check` in the pixi
+# `r-floors` environment on Linux, which pins R and the Imports to the
+# DESCRIPTION version floors (SPEC D-2). The job always starts and its first
+# step decides whether to do the work (VERIFICATION 3, path filtering): it
+# skips only when every changed file is Python-only.
+on:
+  pull_request:
+
+name: r-floors
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  r-floors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          predicate-quantifier: every
+          filters: |
+            r:
+              - '**'
+              - '!src/hydroloom/**'
+              - '!tests/python/**'
+              - '!hatch_build.py'
+              - '!.pre-commit-config.yaml'
+              - '!.github/workflows/py-test.yaml'
+              - '!.github/workflows/py-min-versions.yaml'
+              - '!.github/workflows/lint.yaml'
+
+      - name: No R paths changed
+        if: steps.filter.outputs.r != 'true'
+        run: echo "Only Python paths changed; nothing to check."
+
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+        if: steps.filter.outputs.r == 'true'
+        with:
+          pixi-version: v0.81.0
+          environments: r-floors
+          locked: true
+
+      # The PDF manual that --as-cran builds needs pdflatex, and the PDF size
+      # check needs qpdf; neither the pixi environment nor the runner image
+      # has them.
+      - uses: r-lib/actions/setup-tinytex@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
+        if: steps.filter.outputs.r == 'true'
+        env:
+          TINYTEX_INSTALLER: TinyTeX
+
+      - name: Install qpdf
+        if: steps.filter.outputs.r == 'true'
+        run: sudo apt-get update && sudo apt-get install -y qpdf
+
+      - name: r-check at the floors
+        if: steps.filter.outputs.r == 'true'
+        run: pixi run -e r-floors r-check

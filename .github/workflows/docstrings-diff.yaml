@@ -35,7 +35,9 @@ jobs:
               - 'man/**'
               - 'inst/extdata/docstrings.json'
               - 'dev/docstrings.R'
+              - 'dev/document_check.R'
               - 'DESCRIPTION'
+              - 'pyproject.toml'
               - 'pixi.lock'
               - '.github/workflows/docstrings-diff.yaml'
 
@@ -52,10 +54,7 @@ jobs:
 
       - name: man/ matches roxygen
         if: steps.filter.outputs.docstrings == 'true'
-        run: |
-          pixi run -e r Rscript -e "devtools::document()"
-          git diff --exit-code -- man/ NAMESPACE
-          test -z "$(git status --porcelain -- man/ NAMESPACE)"
+        run: pixi run document-check
 
       - name: docstrings.json matches man/
         if: steps.filter.outputs.docstrings == 'true'

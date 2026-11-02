@@ -199,6 +199,12 @@ default-environment = "r"
 cmd = "Rscript dev/docstrings.R --check"
 default-environment = "r"
 
+[tool.pixi.feature.r.tasks.document-check]
+# The docstrings-diff CI job: devtools::document(), then fails if man/ or
+# NAMESPACE differ from the commit.
+cmd = "Rscript dev/document_check.R"
+default-environment = "r"
+
 [tool.pixi.feature.r.tasks.r-check]
 # dev/r_check.R runs the tarball check, then devtools::test() regardless of the
 # check's status, and exits nonzero if either failed.

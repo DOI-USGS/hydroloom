@@ -1,0 +1,62 @@
+# VERIFICATION 3 `py-min-versions`: pip on Python 3.10 at the lowest declared
+# [project] versions of pandas, shapely, and geopandas, so the floors are
+# honest. pip, not pixi: the point is to run outside pixi.lock (VERIFICATION
+# 1.5). numpy, scipy, and pyogrio carry no floor and resolve to versions that
+# install with those floors. numpy<2 because shapely 2.0.0 wheels are built
+# against numpy 1.x and fail to import under numpy 2; it is a CI constraint,
+# not a [project] bound. The job always starts and its first step decides
+# whether to do the work (VERIFICATION 3, path filtering).
+on:
+  pull_request:
+
+name: py-min-versions
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  py-min-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            python:
+              - 'src/hydroloom/**'
+              - 'tests/python/**'
+              - 'hatch_build.py'
+              - 'pyproject.toml'
+              - 'inst/extdata/*.json'
+              - 'inst/extdata/conformance/**'
+              - '.github/workflows/py-min-versions.yaml'
+
+      - name: No Python paths changed
+        if: steps.filter.outputs.python != 'true'
+        run: echo "No Python or shared paths changed; nothing to test."
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: steps.filter.outputs.python == 'true'
+        with:
+          python-version: '3.10'
+
+      - name: Install the floors
+        if: steps.filter.outputs.python == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pandas==2.2.2" "shapely==2.0.0" "geopandas==1.0.0" "numpy<2" scipy pyogrio pytest hypothesis pyyaml numpydoc
+          python -m pip install .
+          python -m pip list
+
+      - name: pytest
+        if: steps.filter.outputs.python == 'true'
+        run: python -m pytest tests/python

@@ -1,7 +1,8 @@
 # The .pre-commit-config.yaml hooks in CI: the schema validators for the
 # vocabulary, abbreviations, remedies, and manifest (VERIFICATION 2, 3), ruff,
 # and codespell. The job always starts and its first step decides whether to do
-# the work (VERIFICATION 3, path filtering).
+# the work (VERIFICATION 3, path filtering). The path filter decides only on a
+# pull request; a push always does the work.
 on:
   push:
     branches: [main, python-port]
@@ -15,7 +16,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -26,9 +27,9 @@ jobs:
           persist-credentials: false
 
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        if: github.event_name == 'pull_request'
         id: filter
         with:
-          base: ${{ github.ref_name }}
           filters: |
             lint:
               - 'src/hydroloom/**'
@@ -42,16 +43,16 @@ jobs:
               - '.github/**'
 
       - name: No linted paths changed
-        if: steps.filter.outputs.lint != 'true'
+        if: github.event_name == 'pull_request' && steps.filter.outputs.lint != 'true'
         run: echo "No Python, shared, or CI paths changed; nothing to lint."
 
       - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
-        if: steps.filter.outputs.lint == 'true'
+        if: github.event_name != 'pull_request' || steps.filter.outputs.lint == 'true'
         with:
           pixi-version: v0.81.0
           environments: default
           locked: true
 
       - name: pre-commit
-        if: steps.filter.outputs.lint == 'true'
+        if: github.event_name != 'pull_request' || steps.filter.outputs.lint == 'true'
         run: pixi run pre-commit run --all-files --show-diff-on-failure

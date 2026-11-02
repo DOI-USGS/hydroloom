@@ -1,0 +1,72 @@
+# VERIFICATION 3 `r-check`: `pixi run r-check` in the pixi `r` environment on
+# Linux, which is R CMD check --as-cran on a tarball, then devtools::test()
+# from the checkout, where R conformance runs (VERIFICATION 1.5). Runs on
+# every branch, so python-port gets R CMD check here while R-CMD-check.yaml
+# keeps its push and pull request triggers on main. The job always starts and
+# its first step decides whether to do the work (VERIFICATION 3, path
+# filtering). The path filter decides only on a pull request and skips only
+# when every changed file is Python-only; a push always does the work.
+on:
+  push:
+  pull_request:
+
+name: r-check
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  r-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        if: github.event_name == 'pull_request'
+        id: filter
+        with:
+          predicate-quantifier: every
+          filters: |
+            r:
+              - '**'
+              - '!src/hydroloom/**'
+              - '!tests/python/**'
+              - '!hatch_build.py'
+              - '!.pre-commit-config.yaml'
+              - '!.github/workflows/py-test.yaml'
+              - '!.github/workflows/py-min-versions.yaml'
+              - '!.github/workflows/lint.yaml'
+
+      - name: No R paths changed
+        if: github.event_name == 'pull_request' && steps.filter.outputs.r != 'true'
+        run: echo "Only Python paths changed; nothing to check."
+
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+        if: github.event_name != 'pull_request' || steps.filter.outputs.r == 'true'
+        with:
+          pixi-version: v0.81.0
+          environments: r
+          locked: true
+
+      # The PDF manual that --as-cran builds needs pdflatex, and the PDF size
+      # check needs qpdf; neither the pixi `r` environment nor the runner
+      # image has them.
+      - uses: r-lib/actions/setup-tinytex@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
+        if: github.event_name != 'pull_request' || steps.filter.outputs.r == 'true'
+        env:
+          TINYTEX_INSTALLER: TinyTeX
+
+      - name: Install qpdf
+        if: github.event_name != 'pull_request' || steps.filter.outputs.r == 'true'
+        run: sudo apt-get update && sudo apt-get install -y qpdf
+
+      - name: r-check
+        if: github.event_name != 'pull_request' || steps.filter.outputs.r == 'true'
+        run: pixi run r-check
