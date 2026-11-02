@@ -1,6 +1,7 @@
 """Unit tests of the harness converters and comparison on the stored expectations."""
 
 import functools
+import re
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from conformance import (
+    CONFORMANCE_DIR,
     EXPECTED_DIR,
     PYTHON_NAMES,
     Graph,
@@ -121,6 +123,15 @@ def test_python_names():
     assert python_name("hy") == "as_hy"
     assert python_name("sort_network") == "sort_network"
     assert set(PYTHON_NAMES) <= set(FUNCTIONS)
+
+
+@pytest.mark.parametrize("function", sorted(FUNCTIONS))
+def test_python_name_in_signature(function):
+    """The Python name is the one the description's Signature gives (S-4)."""
+    text = (CONFORMANCE_DIR / "algorithms" / f"{function}.md").read_text("utf-8")
+    signature = text.split("\n## Signature\n", 1)[1].split("\n## ", 1)[0]
+
+    assert re.search(rf"`{re.escape(python_name(function))}[(`]", signature)
 
 
 def test_skip_reason_names_function():
@@ -266,6 +277,22 @@ def test_measure_tolerance_per_row():
     assert_layer_equal(within, expected, compare="tolerance")
     with pytest.raises(AssertionError, match="id_measure"):
         assert_layer_equal(beyond, expected, compare="tolerance")
+
+
+def test_measure_tolerance_needs_length():
+    """A measure under tolerance without ``length_km`` fails, naming both (D-13)."""
+    expected = pd.DataFrame({"id_measure": [50.0]})
+
+    with pytest.raises(AssertionError, match="'id_measure'.*length_km"):
+        assert_layer_equal(expected, expected, compare="tolerance")
+
+
+def test_order_ignore_sorts_frame_on_id():
+    """An ``order: ignore`` frame sorts on ``id``, not on float values (D-7)."""
+    expected = pd.DataFrame({"length_km": [1.0, 1.0005], "id": ["a", "b"]})
+    actual = pd.DataFrame({"length_km": [1.0003, 1.0004], "id": ["b", "a"]})
+
+    assert_layer_equal(actual, expected, compare="tolerance", order="ignore")
 
 
 def test_aggregate_measure_rounded_exact():

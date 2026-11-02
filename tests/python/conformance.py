@@ -230,25 +230,25 @@ def graph_to_layer(graph: Any) -> pd.DataFrame:
     return _graph_part(graph)
 
 
+def _as_text(series: pd.Series) -> np.ndarray:
+    return series.astype(str).to_numpy(dtype=object)
+
+
 def _layer_graph(part: pd.DataFrame, mode: str | None) -> Graph:
-    ids = [str(v) for v in part["id"]]
-    neighbors = [str(v) for v in part["neighbor"]]
-    uniques = sorted(set(ids) | set(neighbors))
-    dense = {u: i for i, u in enumerate(uniques)}
-    rank = np.array([dense[v] for v in ids], dtype=np.int64)
+    # K-2: dense positions by factorize, then argsort, bincount, cumsum.
+    n = len(part)
+    both = np.concatenate([_as_text(part["id"]), _as_text(part["neighbor"])])
+    codes, uniques = pd.factorize(both, sort=True)
+    rank = codes[:n].astype(np.int64)
     sort = np.lexsort((part["position"].to_numpy(), rank))
 
     counts = np.bincount(rank, minlength=len(uniques))
     indptr = np.concatenate([[0], np.cumsum(counts)]).astype(np.int64)
-    indices = np.array([dense[neighbors[i]] for i in sort], dtype=np.int64)
+    indices = codes[n:].astype(np.int64)[sort]
     main = part["main"].to_numpy(dtype=bool)[sort] if "main" in part else None
-    edge_id = (
-        np.array([str(v) for v in part["edge_id"]], dtype=object)[sort]
-        if "edge_id" in part
-        else None
-    )
+    edge_id = _as_text(part["edge_id"])[sort] if "edge_id" in part else None
 
-    return Graph(indptr, indices, uniques, mode, main, edge_id)
+    return Graph(indptr, indices, list(uniques), mode, main, edge_id)
 
 
 def layer_to_graph(layer: pd.DataFrame) -> Graph | tuple[Graph, Graph]:
@@ -282,18 +282,16 @@ def traversal_to_layer(
             f"traversal has {len(result)} elements for {len(unique)} unique starts"
         )
 
-    rows = []
-    for start, element in zip(unique, result, strict=True):
-        order = 0
-        for path, ids in enumerate(element):
-            for ident in ids:
-                rows.append((start, path, order, str(ident)))
-                order += 1
-    layer = pd.DataFrame(rows, columns=["start", "path", "order", "id"])
+    # One row per path, then one row per visited flowline; empty paths drop out.
+    paths = pd.DataFrame({"start": unique, "id": list(result)}).explode("id")
+    paths["path"] = paths.groupby(level=0).cumcount()
+    visits = paths.explode("id").dropna(subset=["id"])
+    visits["order"] = visits.groupby(level=0).cumcount()
+    layer = visits[["start", "path", "order", "id"]].reset_index(drop=True)
 
     return layer.astype(
-        {"start": object, "path": np.int32, "order": np.int32, "id": object}
-    )
+        {"start": object, "path": np.int32, "order": np.int32, "id": str}
+    ).astype({"id": object})
 
 
 def layer_to_traversal(layer: pd.DataFrame) -> tuple[list[str], list[list[list[str]]]]:
@@ -301,18 +299,23 @@ def layer_to_traversal(layer: pd.DataFrame) -> tuple[list[str], list[list[list[s
 
     Starts with no visited flowline have no rows and are absent (S-7).
     """
-    starts = list(dict.fromkeys(str(s) for s in layer["start"]))
-    result = []
-    for start in starts:
-        rows = layer[layer["start"].astype(str) == start].sort_values(
-            "order", kind="stable"
-        )
-        paths: dict[int, list[str]] = {}
-        for path, ident in zip(rows["path"], rows["id"], strict=True):
-            paths.setdefault(int(path), []).append(str(ident))
-        result.append([paths[p] for p in sorted(paths)])
+    visits = pd.DataFrame(
+        {
+            "start": _as_text(layer["start"]),
+            "path": layer["path"].to_numpy(np.int64),
+            "order": layer["order"].to_numpy(np.int64),
+            "id": _as_text(layer["id"]),
+        }
+    )
+    starts = list(pd.unique(visits["start"]))
+    by_path = (
+        visits.sort_values("order", kind="stable")
+        .groupby(["start", "path"], sort=True)["id"]
+        .agg(list)
+    )
+    by_start = by_path.groupby(level="start", sort=False).agg(list)
 
-    return starts, result
+    return starts, [by_start[s] for s in starts]
 
 
 def scalar_to_layer(value: Any) -> pd.DataFrame:
@@ -367,29 +370,32 @@ def column_types(columns: Sequence[str], returns: str = "frame") -> dict[str, st
     return types
 
 
+def _decimal(value: Any) -> str:
+    if isinstance(value, float | np.floating) and float(value).is_integer():
+        return str(int(value))
+
+    return str(value)
+
+
 def _text(series: pd.Series, column: str, how: str) -> pd.Series:
     """Text as object dtype with ``None`` missing (I-13).
 
     ``how``: ``strict`` fails on a non-``str`` value (I-1), ``convert`` writes a
     number as its decimal string, ``keep`` leaves values as they are.
     """
-    out = []
-    for value in series.astype(object):
-        if value is None or (np.ndim(value) == 0 and pd.isna(value)):
-            out.append(None)
-        elif isinstance(value, str) or how == "keep":
-            out.append(value)
-        elif how == "strict":
-            raise AssertionError(
-                f"column {column!r}: value {value!r} is {type(value).__name__}, "
-                "not str (SPEC I-1)"
-            )
-        elif isinstance(value, float | np.floating) and float(value).is_integer():
-            out.append(str(int(value)))
-        else:
-            out.append(str(value))
+    s = series.astype(object)
+    na = s.isna()
+    other = ~na & ~s.map(type).eq(str)
+    if how == "strict" and other.any():
+        value = s[other].iloc[0]
+        raise AssertionError(
+            f"column {column!r}: value {value!r} is {type(value).__name__}, "
+            "not str (SPEC I-1)"
+        )
+    if how == "convert" and other.any():
+        s = s.where(~other, s[other].map(_decimal))
 
-    return pd.Series(out, index=series.index, dtype=object, name=series.name)
+    return s.where(~na, None)
 
 
 def _is_texty(series: pd.Series) -> bool:
@@ -440,7 +446,12 @@ def _atol(
     unit = load_vocab().get(col, {}).get("unit")
     if kind in {"length", "area"} and unit in ATOL_BY_UNIT:
         return ATOL_BY_UNIT[unit]
-    if kind == "measure" and "length_km" in expected.columns:
+    if kind == "measure":
+        if "length_km" not in expected.columns:
+            raise AssertionError(
+                f"column {col!r}: measure tolerance needs length_km, which the "
+                "layer does not have (SPEC D-13)"
+            )
         # D-13: one meter along the flowline, 100 / length_m percent, per row.
         with np.errstate(divide="ignore"):
             return 100.0 / (expected["length_km"].to_numpy(np.float64) * 1000.0)
@@ -449,21 +460,46 @@ def _atol(
 
 
 def _assert_close(a: pd.Series, e: pd.Series, col: str, atol: Any, rtol: float) -> None:
+    obj = f"column {col!r}"
+    if np.ndim(atol) == 0:
+        pd.testing.assert_series_equal(
+            a, e, check_names=False, check_exact=False, rtol=rtol, atol=atol, obj=obj
+        )
+        return
+
+    # Per-row atol (D-13 measure): pandas takes a scalar atol only.
+    pd.testing.assert_series_equal(a.isna(), e.isna(), check_names=False, obj=obj)
     if a.dtype != e.dtype:
-        raise AssertionError(f"column {col!r}: dtype {a.dtype}, expected {e.dtype}")
-    av = a.to_numpy(np.float64)
-    ev = e.to_numpy(np.float64)
-    a_na = np.isnan(av)
-    e_na = np.isnan(ev)
-    bad = (a_na != e_na) | (
-        ~a_na & ~e_na & (np.abs(av - ev) > atol + rtol * np.abs(ev))
-    )
+        raise AssertionError(f"{obj}: dtype {a.dtype}, expected {e.dtype}")
+    av, ev = a.to_numpy(np.float64), e.to_numpy(np.float64)
+    bad = np.abs(av - ev) > atol + rtol * np.abs(ev)
     if bad.any():
         i = int(np.flatnonzero(bad)[0])
         raise AssertionError(
-            f"column {col!r}: {int(bad.sum())} of {len(bad)} rows differ beyond "
+            f"{obj}: {int(bad.sum())} of {len(bad)} rows differ beyond "
             f"tolerance; first at row {i}: {av[i]!r}, expected {ev[i]!r}"
         )
+
+
+def _frame_sort(expected: pd.DataFrame, key: Sequence[str] | None) -> list[str]:
+    """Return the sort columns of an ``order: ignore`` frame.
+
+    ``id`` first (the D-7 sort), then ``key``, then the other non-float columns as
+    tie breakers; every non-geometry column only when neither ``id`` nor ``key``
+    is there.
+    """
+    cols = [c for c in expected.columns if c != "geometry"]
+    head = ["id"] if "id" in cols else []
+    head += [k for k in key or [] if k in cols and k not in head]
+    if not head:
+        return cols
+    rest = [
+        c
+        for c in cols
+        if c not in head and not pd.api.types.is_float_dtype(expected[c])
+    ]
+
+    return head + rest
 
 
 def assert_layer_equal(
@@ -482,8 +518,9 @@ def assert_layer_equal(
     Columns compare by name (D-14), after coercion to the vocabulary dtypes (S-7).
     ``compare="tolerance"`` applies the D-13 ``atol`` per type, or the case's
     ``atol``, with ``rtol`` 0 unless the case gives one. Rows are sorted before
-    comparison on ``key`` for a graph or traversal layer always, and for any layer
-    when ``order="ignore"`` (on all columns where there is no ``key``).
+    comparison on ``key`` for a graph or traversal layer always, and for a frame
+    when ``order="ignore"`` on ``id``, then ``key``, then the other non-float
+    columns (all columns where there is neither ``id`` nor ``key``).
     """
     missing = [c for c in expected.columns if c not in actual.columns]
     extra = [c for c in actual.columns if c not in expected.columns]
@@ -497,8 +534,13 @@ def assert_layer_equal(
     types = column_types(list(expected.columns), returns)
     actual, expected = _coerce(actual, expected, types)
 
-    if returns in {"graph", "traversal"} or order == "ignore":
-        by = list(key) if key else [c for c in expected.columns if c != "geometry"]
+    if returns in {"graph", "traversal"}:
+        by = list(key) if key else _frame_sort(expected, None)
+    elif order == "ignore":
+        by = _frame_sort(expected, key)
+    else:
+        by = []
+    if by:
         actual = actual.sort_values(by, kind="stable").reset_index(drop=True)
         expected = expected.sort_values(by, kind="stable").reset_index(drop=True)
 
