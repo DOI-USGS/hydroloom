@@ -49,3 +49,4 @@ CLAUDE.md
 ^\.pytest_cache$
 ^\.hypothesis$
 ^dist$
+^hatch_build\.py$

@@ -21,14 +21,6 @@ dependencies = [
   "pyogrio",
 ]
 
-[project.optional-dependencies]
-dev = [
-  "pytest",
-  "hypothesis",
-  "import-linter",
-  "ruff",
-]
-
 [project.urls]
 Homepage = "https://github.com/DOI-USGS/hydroloom"
 Issues = "https://github.com/DOI-USGS/hydroloom/issues"
@@ -63,7 +55,7 @@ only-include = [
   "inst/extdata/",
   "pyproject.toml",
   "README.md",
-  "LICENSE.md",
+  "LICENSE",
   "CHANGELOG.md",
   "CITATION.cff",
 ]
@@ -77,10 +69,20 @@ target-version = "py310"
 include = ["*.py", "*.pyi", "**/pyproject.toml"]
 
 [tool.ruff.lint]
-select = ["PD", "NPY", "B", "UP", "I", "D"]
+select = ["PD", "NPY", "B", "UP", "I", "D", "D417"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+# mypy (SPEC A-14) ----------------------------------------------------------
+
+# Standard checking everywhere; strict on _kernels and index_ids. No pandas-stubs.
+[tool.mypy]
+python_version = "3.10"
+
+[[tool.mypy.overrides]]
+module = ["hydroloom._kernels.*", "hydroloom.index_ids"]
+strict = true
 
 # import-linter (SPEC K-9) --------------------------------------------------
 
@@ -125,7 +127,7 @@ PYTHONDONTWRITEBYTECODE = "1"
 
 [tool.pixi.tasks]
 install = "pixi reinstall hydroloom"
-lint = "ruff check . && ruff format --check . && lint-imports --no-cache"
+lint = "ruff check . && ruff format --check . && lint-imports --no-cache && mypy src/hydroloom"
 # pytest exit code 5 (no tests collected) counts as success until the harness lands.
 test = "python -c \"import pathlib, sys, pytest; p = 'tests/python'; rc = pytest.main([p, *sys.argv[1:]]) if pathlib.Path(p).is_dir() else 5; sys.exit(0 if rc == 5 else rc)\""
 build = "python -m build --outdir dist ."
@@ -135,6 +137,7 @@ pytest = "*"
 hypothesis = "*"
 import-linter = "*"
 ruff = "*"
+mypy = "*"
 python-build = "*"
 
 [tool.pixi.feature.py310.dependencies]
@@ -147,6 +150,7 @@ python = "3.13.*"
 r-base = "*"
 pandoc = "*"
 r-devtools = "*"
+r-callr = "*"
 # Imports
 r-dplyr = ">=1.1.0"
 "r-data.table" = "*"
@@ -177,21 +181,14 @@ r-yaml = "*"
 r-base = "4.4.*"
 
 [tool.pixi.feature.r.tasks.validate]
-# The tests run in a callr child that writes its failure count to a file. The
-# conda-forge r-v8 8.2.0 used by jsonvalidate can crash at process exit
-# (win-64), so the exit status comes from that file, not from the child; a
-# missing file (an error or crash before the write) exits 1.
-cmd = "Rscript -e \"s <- tempfile(); try(callr::r(function(s) { r <- as.data.frame(devtools::test(filter = 'conformance-schema')); writeLines(as.character(sum(r[['failed']]) + sum(r[['error']])), s) }, list(s), show = TRUE), silent = TRUE); quit(save = 'no', status = if (file.exists(s) && readLines(s) == '0') 0L else 1L)\""
+# dev/validate.R explains why the tests run in a callr child.
+cmd = "Rscript dev/validate.R"
 default-environment = "r"
 
 [tool.pixi.feature.r.tasks.r-check]
-# Builds from the checkout. PKG_BUILD_COPY_METHOD=copy makes pkgbuild copy the
-# package tree with .Rbuildignore applied before it calls R CMD build, which
-# otherwise copies everything first, .pixi/ (about 9 GB) included. src/Makefile
-# and src/install.libs.R let R install the package with src/ present.
-# The copy drops src/ (^src$), so nothing compiles; needs_compilation = FALSE
-# stops pkgbuild from requiring Rtools because the checkout has src/.
-cmd = "Rscript -e \"d <- tempfile('hl-r-check'); dir.create(d); tgz <- devtools::build(path = d, quiet = TRUE, needs_compilation = FALSE); setwd(d); quit(status = system2(file.path(R.home('bin'), 'R'), c('CMD', 'check', '--as-cran', basename(tgz))))\" && Rscript -e \"devtools::test(stop_on_failure = TRUE)\""
+# dev/r_check.R runs the tarball check, then devtools::test() regardless of the
+# check's status, and exits nonzero if either failed.
+cmd = "Rscript dev/r_check.R"
 env = { _R_CHECK_FORCE_SUGGESTS_ = "false", PKG_BUILD_COPY_METHOD = "copy" }
 default-environment = "r"
 
