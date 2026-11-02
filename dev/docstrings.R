@@ -6,19 +6,25 @@
 #                                     if it differs from the committed file
 #
 # Each Rd file is indexed by every \alias it declares. Per alias the JSON holds
-# title, description, details, arguments (one key per argument name), and
-# value. Sections a roxygen block puts outside those five (\section, \seealso,
-# \note, \usage, \examples) are not transferred. A macro the converter does not
-# know stops the script with the file and macro named.
+# title, description, details, arguments (one key per argument name, in Rd
+# order), value, and sections (one key per \section title, in Rd order;
+# @inheritSection content arrives here already resolved into man/). A section
+# titled `Required columns` (the hy class pages) is left out, as `Required
+# attributes:` lines are. \seealso, \note, \usage, and \examples are not
+# transferred. A macro the converter does not know stops the script with the
+# file and macro named.
 
 out_path <- "inst/extdata/docstrings.json"
 
 # Rd sections read into the JSON, and sections read past without transfer.
-transferred <- c("\\title", "\\description", "\\details", "\\arguments", "\\value")
+transferred <- c("\\title", "\\description", "\\details", "\\arguments", "\\value", "\\section")
 skipped <- c(
-  "\\name", "\\alias", "\\usage", "\\examples", "\\section", "\\seealso",
+  "\\name", "\\alias", "\\usage", "\\examples", "\\seealso",
   "\\note", "\\docType", "\\keyword", "\\concept", "\\encoding", "COMMENT"
 )
+
+# \section titles read past without transfer.
+skipped_sections <- "Required columns"
 
 # Hard line break and list markers survive whitespace collapsing as these.
 br <- "\001"
@@ -26,10 +32,12 @@ br <- "\001"
 macros_seen <- character()
 
 fail <- function(file, ...) {
+
   stop(basename(file), ": ", ..., call. = FALSE)
 }
 
 unescape <- function(x) {
+
   gsub("\\\\([%{}\\\\])", "\\1", x)
 }
 
@@ -166,7 +174,25 @@ read_arguments <- function(x, file) {
     }
   }
 
-  args[sort(names(args), method = "radix")]
+  args
+}
+
+read_sections <- function(rd, tags, file) {
+
+  out <- list()
+  for (s in rd[tags == "\\section"]) {
+    macros_seen <<- c(macros_seen, "\\section")
+    title <- tidy(render(s[[1]], file))
+    if (is.na(title)) fail(file, "\\section with no title")
+    if (title %in% skipped_sections) next
+    if (!is.null(out[[title]])) fail(file, "section ", title, " documented twice")
+    out[[title]] <- tidy(render(s[[2]], file))
+  }
+
+  # an empty named list writes as {}
+  if (length(out) == 0) out <- setNames(list(), character())
+
+  out
 }
 
 read_rd <- function(file) {
@@ -178,6 +204,7 @@ read_rd <- function(file) {
   if (length(unknown) > 0) fail(file, "unsupported Rd section ", unknown[1])
 
   section <- function(tag) {
+
     i <- which(tags == tag)
     if (length(i) > 1) fail(file, "more than one ", tag)
     if (length(i) == 0) return(NULL)
@@ -185,6 +212,7 @@ read_rd <- function(file) {
   }
 
   text_of <- function(tag) {
+
     s <- section(tag)
     if (is.null(s)) return(NA_character_)
     tidy(render(s, file))
@@ -199,6 +227,7 @@ read_rd <- function(file) {
     arguments = args,
     description = text_of("\\description"),
     details = text_of("\\details"),
+    sections = read_sections(rd, tags, file),
     title = text_of("\\title"),
     value = text_of("\\value")
   )

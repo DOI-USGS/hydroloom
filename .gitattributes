@@ -7,3 +7,4 @@ inst/extdata/conformance/**/*.yaml text eol=lf
 inst/extdata/conformance/**/*.json text eol=lf
 inst/extdata/conformance/**/*.md text eol=lf
 inst/extdata/conformance/**/*.R text eol=lf
+inst/extdata/docstrings.json text eol=lf
