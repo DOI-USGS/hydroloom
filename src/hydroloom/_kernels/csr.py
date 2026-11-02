@@ -32,8 +32,9 @@ def from_edges(
     n : int
         Number of nodes.
     rank : NDArray[np.int64]
-        Sort key per node, length n. Each neighbor list is in ``rank`` order;
-        edges with equal neighbor rank keep their input order (D-3).
+        Sort key per node, length n; any int64 values. Each neighbor list is
+        in ``rank`` order; edges with equal neighbor rank keep their input
+        order (D-3).
 
     Returns
     -------
@@ -49,9 +50,8 @@ def from_edges(
     target = np.asarray(target, dtype=np.int64)
     rank = np.asarray(rank, dtype=np.int64)
 
-    # One stable argsort on (owning node, neighbor rank) (K-2, D-3, D-5).
-    key = source * np.int64(max(n, 1)) + rank[target]
-    order = np.argsort(key, kind="stable").astype(np.int64)
+    # One stable sort on (owning node, neighbor rank) (K-2, D-3, D-5).
+    order = np.lexsort((rank[target], source)).astype(np.int64)
 
     counts = np.bincount(source, minlength=n)
     indptr = np.zeros(n + 1, dtype=np.int64)
