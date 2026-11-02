@@ -2515,6 +2515,19 @@ cases:
     supported_by: [r]
     generator: [r]
 
+  # M4 SP-03; flownetwork; 2 has toid 3 in the table and toid 9 outside it:
+  # one edge 2 -> 3 (R's to column lists 3 then the sentinel 0, lengths 2;
+  # Python drops 2 -> 9); to 1 -> 2, 2 -> 3, 4 -> 2; from 2 <- 1, 4; 3 <- 2;
+  # 3 + 3 rows
+  - id: make_index_ids_toid_outside
+    function: make_index_ids
+    fixture: sort_divergence_leaves.gpkg
+    args: {mode: both}
+    compare: exact
+    order: ignore
+    supported_by: [r]
+    generator: [r]
+
   # M3 H-08; minor paths rejoin the main path: 6 leaves 1 and splits into 7
   # and 8; 7 rejoins at 4, 8 through 9 at 5; to 1 -> 2, 6; 6 -> 7, 8;
   # from 4 <- 3, 7; 5 <- 4, 9; 11 + 11 rows

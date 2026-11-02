@@ -19,7 +19,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | `hy_capabilities` | `capabilities` | r | 26 |
 | `is_dendritic` | `is_dendritic` | r | 26 |
 | `add_toids` | `add_toids` | r | 35 |
-| `make_index_ids` | `make_index_ids` | r | 32 |
+| `make_index_ids` | `make_index_ids` | r | 33 |
 | `check_hy_graph` | `check_hy_graph` | r | 47 |
 | `sort_network` | `sort_network` | r | 69 |
 | `add_topo_sort` | `add_topo_sort` | r | 37 |
