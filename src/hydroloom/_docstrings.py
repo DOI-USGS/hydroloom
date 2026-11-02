@@ -32,9 +32,13 @@ F = TypeVar("F", bound=Callable[..., Any])
 # over the whole of docstrings.json; a pair that never fires is not kept.
 SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     # The A-13 examples.
-    (r"data\.frame network compatible with hydroloom_names", "a table"),
-    (r"logical if TRUE", "if true"),
-    (r"logical if `TRUE`", "if true"),
+    (
+        r"data\.frame network compatible with hydroloom_names",
+        "a table whose columns use hydroloom names or names registered with "
+        "`register_names`",
+    ),
+    (r"logical if TRUE", "if `True`"),
+    (r"logical if `TRUE`", "if `True`"),
     # R type words opening an argument or value.
     (r"\Alogical\. ", ""),
     (r"\Alogical ", ""),
@@ -52,7 +56,7 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"\Adata\.frame\. ", ""),
     (
         r"\Avector of the same length as `nrow\(x\)` containing ",
-        "one value per row of `x`, containing ",
+        "one value per row of `network`, containing ",
     ),
     (r"\Avector ", "sequence "),
     # Spatial classes.
@@ -81,6 +85,12 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
         r"or list as returned by make_index_ids",
         "or index ids as returned by make_index_ids",
     ),
+    (r"an `hy` object", "a network table"),
+    (r"`hy` object", "network table"),
+    (r"\bhy object", "network table"),
+    (r"an `hy`", "a network table"),
+    (r"required attributes", "required columns"),
+    (r"requires attributes", "requires columns"),
     # Column types, in the vocabulary's type names.
     (r"\(character\)", "(text)"),
     (r"\(character:", "(text:"),
@@ -88,22 +98,27 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"a logical flag", "a flag"),
     (r"a logical value", "a flag"),
     (r"logical columns", "flag columns"),
-    # Logical, missing, and null values. `arg = TRUE` code spans are left alone.
-    (r"`TRUE`", "true"),
-    (r"`FALSE`", "false"),
-    (r"(?<!= )\bTRUE\b", "true"),
-    (r"(?<!= )\bFALSE\b", "false"),
+    # Logical, missing, and null values, as Python writes them.
+    (r"`(\w+) = TRUE`", r"`\1=True`"),
+    (r"`(\w+) = FALSE`", r"`\1=False`"),
+    (r"`TRUE`", "`True`"),
+    (r"`FALSE`", "`False`"),
+    (r"(?<!= )\bTRUE\b", "`True`"),
+    (r"(?<!= )\bFALSE\b", "`False`"),
     (r"an `NA`", "a missing"),
     (r"`NA`", "missing"),
     (r"If missing or NULL", "If not given"),
     (r"When non-NULL", "When given"),
     (r"When NULL", "When not given"),
-    (r"is NULL", "is not given"),
-    (r"Default NULL", "Default none"),
-    (r"or NULL", "or none"),
+    (r"is NULL", "is `None`"),
+    (r"Default NULL", "Default `None`"),
+    (r"or NULL", "or `None`"),
     (r"`Inf`", "infinity"),
     # R call syntax, and R functions with a differently named Python counterpart.
-    (r"`unqiue\(x\$id\)`", "the unique `id` values of `x`"),
+    (r"`unqiue\(x\$id\)`", "the unique `id` values of `network`"),
+    # Backticked `x` is the network everywhere but check_valid, whose `x` is
+    # the lines operand (A-9, phase 3).
+    (r"(?<!CRS of )`x`", "`network`"),
     (
         r"c\(UM, DM, UT, DD\) or equivalently c\(upmain, downmain, up, down\)",
         "UM, DM, UT, DD or equivalently upmain, downmain, up, down",
@@ -112,6 +127,9 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"`hy_capabilities\(\)`", "`capabilities()`"),
     (r"`is\.hy\(\)`", "`is_hy()`"),
     (r"See hydroloom_names for", "See register_names for"),
+    # Details follow the description in the extended summary, so a "See
+    # details" inside the description (accumulate_downstream) is left alone.
+    (r"(?i)\b(s)ee details\b(?! for required)", r"\1ee the description above"),
 )
 
 _COMPILED = tuple((re.compile(pattern), repl) for pattern, repl in SUBSTITUTIONS)
@@ -194,11 +212,12 @@ def compose(
     """Compose the numpydoc docstring for ``func`` from the Rd entry ``alias``.
 
     ``r_names`` maps a Python argument name to the R argument it documents
-    where the two differ (A-9); ``network`` maps to ``x`` unless the R entry has
-    its own ``network``. A Python argument with no R text raises ``KeyError``.
+    where the two differ (A-9). An argument resolves to its ``r_names`` entry,
+    then to the R argument of the same name, then to ``x`` for ``network``.
+    A Python argument with no R text raises ``KeyError``.
     """
     entry = r_docs()[alias]
-    names = {**_DEFAULT_R_NAMES, **(r_names or {})}
+    r_names = r_names or {}
     r_args = entry.get("arguments") or {}
     signature = inspect.signature(func)
 
@@ -209,9 +228,12 @@ def compose(
 
     params = []
     for param in signature.parameters.values():
-        r_name = (
-            param.name if param.name in r_args else names.get(param.name, param.name)
-        )
+        if param.name in r_names:
+            r_name = r_names[param.name]
+        elif param.name in r_args:
+            r_name = param.name
+        else:
+            r_name = _DEFAULT_R_NAMES.get(param.name, param.name)
         if r_name not in r_args:
             raise KeyError(f"{alias}.{param.name}")
         params.append(
