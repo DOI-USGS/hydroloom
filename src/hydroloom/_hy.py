@@ -424,6 +424,9 @@ class _Requirement:
     columns: tuple[str, ...]
     # The remedies key `_route` raises; None when the function takes any table.
     key: str | None
+    # Pattern -> name of the call `capabilities()` names to reach a needed
+    # pattern (A-4 `requires.via`). A name only; `convert` holds the callable.
+    via: Mapping[Representation, str]
 
 
 # Public function name -> what it needs; filled by `requires` (A-3).
@@ -438,16 +441,21 @@ def requires(
     *needs: Representation,
     convert: Mapping[Representation, Callable[..., Any]] | None = None,
     columns: Sequence[str] = (),
+    via: Mapping[Representation, str] | None = None,
 ) -> Callable[[F], F]:
     """Register the patterns a public function needs (A-3).
 
     No ``needs`` means the function takes any table. ``convert`` maps a
     pattern to the call that turns it into one the function needs.
-    ``columns`` lists the columns needed beyond the pattern's (A-4). A first
+    ``columns`` lists the columns needed beyond the pattern's (A-4). ``via``
+    maps a pattern to the name of the call `capabilities()` reports for it
+    (A-4); it is stored as given and need not match ``convert``. A first
     need with no guidance key in `_NEEDS_KEY` raises ``KeyError`` here.
     """
     key = _NEEDS_KEY[needs[0]] if needs else None
-    entry = _Requirement(tuple(needs), dict(convert or {}), tuple(columns), key)
+    entry = _Requirement(
+        tuple(needs), dict(convert or {}), tuple(columns), key, dict(via or {})
+    )
 
     def register(fn: F) -> F:
         _REGISTRY[fn.__name__] = entry
