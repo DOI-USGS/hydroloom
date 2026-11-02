@@ -31,7 +31,7 @@ Issues = "https://github.com/DOI-USGS/hydroloom/issues"
 packages = ["src/hydroloom"]
 # src/hydroloom/data/ holds the editable-install copies made by hatch_build.py;
 # a regular wheel takes the same files from force-include below.
-exclude = ["src/hydroloom/data"]
+exclude = ["src/hydroloom/data", "src/hydroloom/CLAUDE.md"]
 
 # docstrings.json is added here when unit 3 generates it; a missing
 # force-include source fails the build.
@@ -47,7 +47,7 @@ exclude = ["src/hydroloom/data"]
 # src/ also holds the no-op src/Makefile and src/install.libs.R that let R
 # install the package; only the Python package goes in the sdist.
 [tool.hatch.build.targets.sdist]
-exclude = ["src/hydroloom/data"]
+exclude = ["src/hydroloom/data", "src/hydroloom/CLAUDE.md"]
 only-include = [
   "src/hydroloom/",
   "hatch_build.py",
@@ -116,6 +116,8 @@ scipy = "*"
 shapely = ">=2.0"
 geopandas-base = ">=1.0"
 pyogrio = "*"
+# conda-forge geopandas-base, unlike pip geopandas, does not pull in pyproj.
+pyproj = "*"
 
 [tool.pixi.pypi-dependencies]
 hydroloom = { path = ".", editable = true }
@@ -128,8 +130,7 @@ PYTHONDONTWRITEBYTECODE = "1"
 [tool.pixi.tasks]
 install = "pixi reinstall hydroloom"
 lint = "ruff check . && ruff format --check . && lint-imports --no-cache && mypy src/hydroloom"
-# pytest exit code 5 (no tests collected) counts as success until the harness lands.
-test = "python -c \"import pathlib, sys, pytest; p = 'tests/python'; rc = pytest.main([p, *sys.argv[1:]]) if pathlib.Path(p).is_dir() else 5; sys.exit(0 if rc == 5 else rc)\""
+test = "pytest"
 build = "python -m build --outdir dist ."
 
 [tool.pixi.feature.dev.dependencies]
@@ -139,6 +140,7 @@ import-linter = "*"
 ruff = "*"
 mypy = "*"
 python-build = "*"
+pyyaml = "*"
 
 [tool.pixi.feature.py310.dependencies]
 python = "3.10.*"
