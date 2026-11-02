@@ -58,7 +58,11 @@ def _make_index_ids_impl(
     return to, up
 
 
-@requires(Representation.TOPO, Representation.FLOWNETWORK)
+@requires(
+    Representation.TOPO,
+    Representation.FLOWNETWORK,
+    via={Representation.NODE: "add_toids"},
+)
 @doc("make_index_ids")
 def make_index_ids(
     network: pd.DataFrame, *, mode: str = "to"

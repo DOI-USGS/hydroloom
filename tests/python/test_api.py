@@ -31,17 +31,20 @@ def _requires(function):
 def test_registry_matches_requires(name):
     """Each public function's registered needs equal its ``requires`` (A-4).
 
-    ``pattern`` and ``columns`` are compared. ``via`` is not: it names the
-    conversion `capabilities()` reports, which has no registry field until
-    that function lands, and `make_index_ids` registers no ``convert``.
+    ``pattern``, ``columns``, and ``via`` are compared. ``via`` is the
+    registry field `capabilities()` will name, distinct from ``convert``:
+    `make_index_ids` stores ``{hy_node: add_toids}`` and registers no
+    ``convert``.
     """
     requires = _requires(R_NAMES.get(name, name))
     pattern = requires["pattern"]
     entry = _REGISTRY[name]
     needs = {need.value for need in entry.needs}
+    via = {need.value: call for need, call in entry.via.items()}
 
     assert needs == (set() if pattern == ["any"] else set(pattern))
     assert list(entry.columns) == list(requires["columns"])
+    assert via == (requires["via"] or {})
 
 
 @pytest.mark.parametrize("name", sorted(hydroloom.__all__))

@@ -19,7 +19,16 @@ from shapely.geometry import LineString
 
 from hydroloom import _hy as hy_module
 from hydroloom import as_hy, representation
-from hydroloom._hy import Representation, _as_hy, _hy_reverse, _route, requires
+from hydroloom._hy import (
+    Representation,
+    _alias_map,
+    _as_hy,
+    _hy_reverse,
+    _route,
+    _terms,
+    _terms_of_type,
+    requires,
+)
 from hydroloom.errors import (
     HydroloomError,
     HydroloomWarning,
@@ -79,6 +88,82 @@ def test_as_hy_postconditions(table):
 def test_as_hy_idempotent_and_reversible(table):
     """A second pass changes nothing; _hy_reverse restores the input names."""
     out, names = _as_hy(table)
+
+    pd.testing.assert_frame_equal(as_hy(out), out)
+    assert list(_hy_reverse(out, names).columns) == list(table.columns)
+
+
+def _alias_choices():
+    """Per hy name, the column names that align to it alone.
+
+    An alias listed under two hy names, or equal to another term's hy name,
+    is left out: a column with it is a candidate for two names.
+    """
+    terms = _terms()
+    owners: dict[str, set[str]] = {}
+    for alias, name in _alias_map():
+        owners.setdefault(alias, set()).add(name)
+    choices: dict[str, list[str]] = {name: [name] for name in terms}
+    for alias, name in _alias_map():
+        if owners[alias] == {name} and (alias == name or alias not in terms):
+            if alias not in choices[name]:
+                choices[name].append(alias)
+
+    return choices
+
+
+_CHOICES = _alias_choices()
+
+
+@st.composite
+def alias_tables(draw):
+    """Tables whose column names come from the alias map, in any case.
+
+    Each hy name gets at most one column, so no draw holds a two-way alias
+    tie: idempotence after a tie is open with the maintainer (SP-01), and a
+    tie would fail this property until that is settled. The one candidate
+    pair drawn is `permanent_identifier` beside another id column, which
+    drops out by the step-4 rule.
+    """
+    n = draw(st.integers(0, 5))
+    others = sorted(set(_CHOICES) - {"id"})
+    hy_names = ["id", *draw(st.lists(st.sampled_from(others), unique=True, max_size=6))]
+    columns = {name: draw(st.sampled_from(_CHOICES[name])) for name in hy_names}
+    if columns["id"] != "permanent_identifier" and draw(st.booleans()):
+        columns["permanent_identifier"] = "permanent_identifier"
+    ids = list(range(1, n + 1))
+    flags = set(_terms_of_type("flag"))
+    data = {}
+    for name, column in columns.items():
+        column = "".join(c.upper() if draw(st.booleans()) else c for c in column)
+        if name == "id":
+            values = pd.Series(ids, dtype="int64")
+        elif name == "toid":
+            downs = [draw(st.one_of(st.none(), st.sampled_from(ids))) for _ in ids]
+            values = pd.Series(
+                [np.nan if d is None else float(d) for d in downs], dtype=float
+            )
+        elif name in flags:
+            draws = st.lists(st.sampled_from([0, 1]), min_size=n, max_size=n)
+            values = pd.Series(draw(draws), dtype="int64")
+        elif name == "permanent_identifier":
+            values = pd.Series([f"p{i}" for i in ids], dtype=object)
+        else:
+            draws = st.lists(st.integers(0, 9), min_size=n, max_size=n)
+            values = pd.Series(draw(draws), dtype="int64")
+        data[column] = values
+    order = draw(st.permutations(list(data)))
+
+    return pd.DataFrame({column: data[column] for column in order})
+
+
+@PROPERTY
+@given(alias_tables())
+def test_as_hy_idempotent_and_reversible_over_aliases(table):
+    """Idempotence and the name reverse over names drawn from the alias map."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out, names = _as_hy(table)
 
     pd.testing.assert_frame_equal(as_hy(out), out)
     assert list(_hy_reverse(out, names).columns) == list(table.columns)
@@ -236,15 +321,38 @@ def test_flag_not_binary_warns_and_passes_through():
 # representation --------------------------------------------------------------
 
 
+def _toids(draw, ids):
+    """Draw toid values, missing included, with distinct (id, toid) pairs (S-6).
+
+    A drawn value whose pair is taken becomes ``100 + row``, so every draw is
+    one `as_hy` accepts. Missing values are NaN, which `as_hy` fills with "".
+    """
+    seen = set()
+    toids = []
+    for row, i in enumerate(ids):
+        toid = draw(st.one_of(st.none(), st.integers(0, 6)))
+        if (i, toid) in seen:
+            toid = 100 + row
+        seen.add((i, toid))
+        toids.append(np.nan if toid is None else float(toid))
+
+    return pd.Series(toids, dtype=float)
+
+
 @st.composite
 def pattern_tables(draw):
-    """Tables over the columns that decide the pattern, ids possibly repeated."""
+    """Tables over the columns that decide the pattern, ids possibly repeated.
+
+    Returns the table and a second toid column for the same ids (None when
+    the table has no toid), for the toid-value independence postcondition.
+    """
     n = draw(st.integers(0, 6))
     ids = draw(st.lists(st.integers(1, 4), min_size=n, max_size=n))
     table = pd.DataFrame({"id": pd.Series(ids, dtype="int64")})
+    retoid = None
     if draw(st.booleans()):
-        # Distinct (id, toid) pairs (S-6).
-        table["toid"] = range(100, 100 + n)
+        table["toid"] = _toids(draw, ids)
+        retoid = _toids(draw, ids)
     if draw(st.booleans()):
         table["fromnode"] = range(n)
         table["tonode"] = range(1, n + 1)
@@ -252,13 +360,18 @@ def pattern_tables(draw):
         if draw(st.booleans()):
             table[column] = range(n)
 
-    return table
+    return table, retoid
 
 
 @PROPERTY
 @given(pattern_tables(), st.randoms(use_true_random=False))
-def test_representation_postconditions(table, rng):
-    """One of five names, row-order free, unchanged by as_hy and by values."""
+def test_representation_postconditions(drawn, rng):
+    """One of five names, row-order free, unchanged by as_hy and by values.
+
+    Values vary within the inputs `as_hy` accepts: toid with distinct
+    (id, toid) pairs and missing values, node values all missing (SP-03).
+    """
+    table, retoid = drawn
     value = representation(table)
     shuffled = table.sample(frac=1, random_state=rng.randint(0, 2**31))
 
@@ -276,6 +389,8 @@ def test_representation_postconditions(table, rng):
     if "fromnode" in columns:
         renodes = table.assign(fromnode=np.nan, tonode=np.nan)
         assert representation(renodes) == value
+    if retoid is not None:
+        assert representation(table.assign(toid=retoid)) == value
 
 
 def test_representation_returns_plain_str():
