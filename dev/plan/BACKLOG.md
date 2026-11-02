@@ -8,7 +8,6 @@ Columns: Item (what, with the fixed point it waits for); Source (the disposition
 
 | Item | Source | Rule | §4 | Owner |
 | --- | --- | --- | --- | --- |
-| Narrow the `hl-implementer.json` shell allowlist before the first `port-function` run, so the Python-side session cannot reach `R/` or write under `inst/extdata/` through the shell: `git diff*` prints R source given an R path, and `pixi run *` runs any command. `dev/FIXTURE_ARCHITECTURE.md` § Two sessions and a record states the gap; edit it when the allowlist changes. | M3-2 P-04 | DESIGN §1 (authorship split) | no | David |
 
 ## M5
 
