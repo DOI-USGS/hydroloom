@@ -134,6 +134,69 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
 
 _COMPILED = tuple((re.compile(pattern), repl) for pattern, repl in SUBSTITUTIONS)
 
+# The per-function pass (A-13): R phrasing in one Rd entry that the shared
+# table cannot fix. Keyed by alias, then by field (`title`, `description`,
+# `details`, `value`, `arguments.<name>`, `sections.<title>`); each pair is
+# applied to that field before SUBSTITUTIONS. tests/python/test_docstrings.py
+# checks that every pair fires.
+PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
+    "make_index_ids": {
+        # R's "both" is a named list; Python returns a (to, from) tuple.
+        "details": (
+            (
+                r'If "both", the list will contain both a "from" and a "to" '
+                r"element containing each version of the graph\.",
+                'If "both", the result is the pair of both versions of the '
+                'graph, "to" first and "from" second.',
+            ),
+        ),
+        # R's named list and the long_form note describe the R return.
+        "value": (
+            (
+                r"(?s)\Alist containing named elements:.*\Z",
+                '`IndexIds` for mode "to" or "from". Its `indptr` and '
+                "`indices` hold each flowline's neighbors as positions: the "
+                'downstream flowlines for "to", the upstream flowlines for '
+                '"from", each list in byte order of `id`. `uniques` gives the '
+                "`id` at each position, and `main` holds the main-path flag of "
+                'each connection when the network has `downmain` ("to") or '
+                '`upmain` ("from"), otherwise `None`. For mode "both", the '
+                "pair `(to, from)`.",
+            ),
+        ),
+    },
+}
+
+# Python-only arguments (A-9) have no roxygen text; theirs comes from the
+# Signature section of the function's description. Keyed by alias.
+PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
+    "hy": {
+        "id_col": "the input column to take as `id`, ahead of the alias "
+        "lookup; `None` leaves the lookup to decide.",
+        "toid_col": "the input column to take as `toid`, ahead of the alias "
+        "lookup; `None` leaves the lookup to decide.",
+    },
+}
+
+
+def per_function(alias: str, entry: dict[str, Any]) -> tuple[dict[str, Any], list[int]]:
+    """Apply the per-function pairs of ``alias`` to a copy of its entry.
+
+    Returns the entry and the number of fires of each pair, in table order.
+    """
+    entry = json.loads(json.dumps(entry))
+    counts = []
+    for key, pairs in PER_FUNCTION.get(alias, {}).items():
+        group, _, name = key.partition(".")
+        holder = entry[group] if name else entry
+        field = name or key
+        for pattern, repl in pairs:
+            holder[field], n = re.subn(pattern, repl, holder[field])
+            counts.append(n)
+
+    return entry, counts
+
+
 # A-9: the first positional argument is `network` wherever R's `x` is a network.
 _DEFAULT_R_NAMES = {"network": "x"}
 
@@ -213,12 +276,14 @@ def compose(
 
     ``r_names`` maps a Python argument name to the R argument it documents
     where the two differ (A-9). An argument resolves to its ``r_names`` entry,
-    then to the R argument of the same name, then to ``x`` for ``network``.
-    A Python argument with no R text raises ``KeyError``.
+    then to the R argument of the same name or its `PYTHON_ARGUMENTS` text,
+    then to ``x`` for ``network``. A Python argument with no text raises
+    ``KeyError``. The entry passes through `per_function` first.
     """
-    entry = r_docs()[alias]
+    entry = per_function(alias, r_docs()[alias])[0]
     r_names = r_names or {}
-    r_args = entry.get("arguments") or {}
+    r_args = dict(entry.get("arguments") or {})
+    r_args.update(PYTHON_ARGUMENTS.get(alias, {}))
     signature = inspect.signature(func)
 
     parts = [_field(entry["title"], period=True)]
