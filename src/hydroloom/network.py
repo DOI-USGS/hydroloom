@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import warnings
 
+import geopandas as gpd  # type: ignore[import-untyped]
 import numpy as np
 import pandas as pd  # type: ignore[import-untyped]
 
@@ -205,7 +206,11 @@ def _add_toids_impl(net: pd.DataFrame, *, return_dendritic: bool) -> pd.DataFram
     toid[hit] = net["id"].to_numpy(dtype=object)[d[hit].astype(np.int64)]
 
     out = net.iloc[u].reset_index(drop=True)
-    out.insert(1, "toid", pd.Series(toid, index=out.index, dtype=object))
+    # Computed columns append after the inputs, geometry last (D-14).
+    at = len(out.columns)
+    if isinstance(out, gpd.GeoDataFrame):
+        at = out.columns.get_loc(out.geometry.name)
+    out.insert(at, "toid", pd.Series(toid, index=out.index, dtype=object))
 
     return out
 

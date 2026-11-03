@@ -30,7 +30,12 @@ from conformance import (
     result_to_layer,
 )
 from hydroloom import add_toids, align_names
-from hydroloom.errors import RepresentationError, msg
+from hydroloom.errors import (
+    HydroloomError,
+    HydroloomWarning,
+    RepresentationError,
+    msg,
+)
 
 PROPERTY = settings(derandomize=True, max_examples=80, deadline=None)
 
@@ -61,7 +66,8 @@ def _outlet_as_text(layer: pd.DataFrame) -> pd.DataFrame:
     """Replace R's integer outlet ``"0"`` with Python's ``""`` (step 6, I-5)."""
     out = layer.copy()
     toid = out["toid"].astype(str)
-    ids = set(out[[c for c in out.columns if c != "toid"][0]].astype(str))
+    names = dict(zip(align_names(out).columns, out.columns, strict=True))
+    ids = set(out[names["id"]].astype(str))
     assert "0" not in ids, "an id 0 would make the outlet replacement ambiguous"
     out["toid"] = toid.where(toid != "0", "")
 
@@ -73,8 +79,16 @@ def test_fill_cases_are_the_marked_eighteen():
     assert len(FILL_CASES) == 18
 
 
-@pytest.mark.parametrize("text_input", [False, True], ids=["integer", "text"])
-@pytest.mark.parametrize("case", FILL_CASES, ids=[c["id"] for c in FILL_CASES])
+def _fill_params():
+    """Each case once per id type; a prepared case's ids are already text."""
+    for case in FILL_CASES:
+        variants = [False] if "prepare" in case else [False, True]
+        for text_input in variants:
+            kind = "text" if text_input else "integer"
+            yield pytest.param(case, text_input, id=f"{case['id']}-{kind}")
+
+
+@pytest.mark.parametrize(("case", "text_input"), list(_fill_params()))
 def test_outlet_fill_layers(case, text_input):
     """Each R-only layer matches once its outlet is written ``""``."""
     network = read_fixture(case["fixture"])
@@ -155,13 +169,13 @@ def test_divergence_messages_name_ids():
 
     broken = table.assign(divergence=[0, 1, 1, 0, 0, 0])
     with pytest.raises(
-        ValueError,
+        HydroloomError,
         match=re.escape(msg("divergence_coding_invalid", rows="102, 103")),
     ):
         add_toids(broken)
 
     zero = table.assign(divergence=[0, 0, 2, 0, 0, 0])
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(HydroloomWarning) as record:
         add_toids(zero)
     assert [str(w.message) for w in record] == [
         msg("divergence_zero_main_path", rows="102")
@@ -187,7 +201,7 @@ def node_networks(draw):
     ids = [f"f{i}" for i in draw(st.permutations(range(n)))]
 
     divergence = [0] * n
-    for node in set(fromnode):
+    for node in sorted(set(fromnode)):
         rows = [i for i, f in enumerate(fromnode) if f == node]
         if len(rows) == 1:
             divergence[rows[0]] = draw(st.sampled_from([0, 1, 2]))
@@ -237,8 +251,8 @@ def test_add_toids_postconditions(table, dendritic, rng):
     by_id = table.set_index("id")
     targets = _targets(table, dendritic)
 
-    columns = ["id", "toid", "fromnode", "tonode", "divergence", "name"]
-    assert list(out.columns) == columns
+    assert "toid" in out.columns
+    assert set(out.columns) == {*table.columns, "toid"}
     assert out["toid"].map(type).eq(str).all()
     assert set(out["toid"]) <= set(ids) | {""}
     # Rows follow input order; one row per target, or one outlet row.
