@@ -153,8 +153,7 @@ get_node <- function(x, position = "end") {
 #' @description If flowlines aren't digitized in the expected direction,
 #' this will reorder the nodes so they are.
 #' @param id integer The id of the flowline to check
-#' @param network data.frame. A table of flowlines or catchments (the land areas draining
-#' to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+#' @param network data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2,
 #' NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are
 #' renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
 #' source names hydroloom knows.

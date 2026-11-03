@@ -144,8 +144,7 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 #' @title Get Partial Flowpath Length
 #' @param hydro_location list containing a hydrologic locations with names
 #' aggregate_id (reachcode) and aggregate_id_measure (reachcode measure).
-#' @param network data.frame. A table of flowlines or catchments (the land areas draining
-#' to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+#' @param network data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2,
 #' NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are
 #' renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
 #' source names hydroloom knows.

@@ -1,7 +1,7 @@
 {
   "accumulate_downstream": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "var": "variable to accumulate.",
       "total": "logical if TRUE, accumulation will use \"total\" apportionment if FALSE, divergence or dendritic apportionment will apply ( see details).",
       "quiet": "logical quiet messages?"
@@ -14,7 +14,7 @@
   },
   "accumulate_downstream.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "var": "variable to accumulate.",
       "total": "logical if TRUE, accumulation will use \"total\" apportionment if FALSE, divergence or dendritic apportionment will apply ( see details).",
       "quiet": "logical quiet messages?"
@@ -27,7 +27,7 @@
   },
   "accumulate_downstream.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "var": "variable to accumulate.",
       "total": "logical if TRUE, accumulation will use \"total\" apportionment if FALSE, divergence or dendritic apportionment will apply ( see details).",
       "quiet": "logical quiet messages?"
@@ -40,7 +40,7 @@
   },
   "accumulate_downstream.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "var": "variable to accumulate.",
       "total": "logical if TRUE, accumulation will use \"total\" apportionment if FALSE, divergence or dendritic apportionment will apply ( see details).",
       "quiet": "logical quiet messages?"
@@ -53,7 +53,7 @@
   },
   "accumulate_downstream.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "var": "variable to accumulate.",
       "total": "logical if TRUE, accumulation will use \"total\" apportionment if FALSE, divergence or dendritic apportionment will apply ( see details).",
       "quiet": "logical quiet messages?"
@@ -66,7 +66,7 @@
   },
   "accumulate_downstream.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "var": "variable to accumulate.",
       "total": "logical if TRUE, accumulation will use \"total\" apportionment if FALSE, divergence or dendritic apportionment will apply ( see details).",
       "quiet": "logical quiet messages?"
@@ -79,7 +79,7 @@
   },
   "add_divergence": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal_outlet_ids": "vector of identifiers for network outlets that terminate at the coast.",
       "inland_outlet_ids": "vector of identifiers for network outlets that terminate inland.",
       "name_attr": "character attribute name of attribute containing a feature name or name identifier.",
@@ -94,7 +94,7 @@
   },
   "add_divergence.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal_outlet_ids": "vector of identifiers for network outlets that terminate at the coast.",
       "inland_outlet_ids": "vector of identifiers for network outlets that terminate inland.",
       "name_attr": "character attribute name of attribute containing a feature name or name identifier.",
@@ -109,7 +109,7 @@
   },
   "add_divergence.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal_outlet_ids": "vector of identifiers for network outlets that terminate at the coast.",
       "inland_outlet_ids": "vector of identifiers for network outlets that terminate inland.",
       "name_attr": "character attribute name of attribute containing a feature name or name identifier.",
@@ -124,7 +124,7 @@
   },
   "add_divergence.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal_outlet_ids": "vector of identifiers for network outlets that terminate at the coast.",
       "inland_outlet_ids": "vector of identifiers for network outlets that terminate inland.",
       "name_attr": "character attribute name of attribute containing a feature name or name identifier.",
@@ -139,7 +139,7 @@
   },
   "add_divergence.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal_outlet_ids": "vector of identifiers for network outlets that terminate at the coast.",
       "inland_outlet_ids": "vector of identifiers for network outlets that terminate inland.",
       "name_attr": "character attribute name of attribute containing a feature name or name identifier.",
@@ -224,7 +224,7 @@
   },
   "add_levelpaths": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "name_attribute": "character attribute to be used as name identifiers.",
       "weight_attribute": "character attribute to be used as weight.",
       "override_factor": "numeric multiplier to use to override `name_attribute`. See details.",
@@ -238,7 +238,7 @@
   },
   "add_levelpaths.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "name_attribute": "character attribute to be used as name identifiers.",
       "weight_attribute": "character attribute to be used as weight.",
       "override_factor": "numeric multiplier to use to override `name_attribute`. See details.",
@@ -252,7 +252,7 @@
   },
   "add_levelpaths.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "name_attribute": "character attribute to be used as name identifiers.",
       "weight_attribute": "character attribute to be used as weight.",
       "override_factor": "numeric multiplier to use to override `name_attribute`. See details.",
@@ -266,7 +266,7 @@
   },
   "add_levelpaths.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "name_attribute": "character attribute to be used as name identifiers.",
       "weight_attribute": "character attribute to be used as weight.",
       "override_factor": "numeric multiplier to use to override `name_attribute`. See details.",
@@ -280,7 +280,7 @@
   },
   "add_levelpaths.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "name_attribute": "character attribute to be used as name identifiers.",
       "weight_attribute": "character attribute to be used as weight.",
       "override_factor": "numeric multiplier to use to override `name_attribute`. See details.",
@@ -294,7 +294,7 @@
   },
   "add_levelpaths.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "name_attribute": "character attribute to be used as name identifiers.",
       "weight_attribute": "character attribute to be used as weight.",
       "override_factor": "numeric multiplier to use to override `name_attribute`. See details.",
@@ -338,7 +338,7 @@
   },
   "add_pathlength": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
     },
     "description": "Generates the main path length to a basin's terminal path.",
     "details": null,
@@ -348,7 +348,7 @@
   },
   "add_pathlength.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
     },
     "description": "Generates the main path length to a basin's terminal path.",
     "details": null,
@@ -358,7 +358,7 @@
   },
   "add_pathlength.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
     },
     "description": "Generates the main path length to a basin's terminal path.",
     "details": null,
@@ -368,7 +368,7 @@
   },
   "add_pathlength.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
     },
     "description": "Generates the main path length to a basin's terminal path.",
     "details": null,
@@ -378,7 +378,7 @@
   },
   "add_pathlength.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
     },
     "description": "Generates the main path length to a basin's terminal path.",
     "details": null,
@@ -388,7 +388,7 @@
   },
   "add_pfafstetter": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "max_level": "integer number of levels to attempt to calculate. If the network doesn't have resolution to support the desired level, unexpected behavior may occur.",
       "status": "boolean if status updates should be printed."
     },
@@ -400,7 +400,7 @@
   },
   "add_pfafstetter.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "max_level": "integer number of levels to attempt to calculate. If the network doesn't have resolution to support the desired level, unexpected behavior may occur.",
       "status": "boolean if status updates should be printed."
     },
@@ -412,7 +412,7 @@
   },
   "add_pfafstetter.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "max_level": "integer number of levels to attempt to calculate. If the network doesn't have resolution to support the desired level, unexpected behavior may occur.",
       "status": "boolean if status updates should be printed."
     },
@@ -424,7 +424,7 @@
   },
   "add_pfafstetter.hy_leveled": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "max_level": "integer number of levels to attempt to calculate. If the network doesn't have resolution to support the desired level, unexpected behavior may occur.",
       "status": "boolean if status updates should be printed."
     },
@@ -436,7 +436,7 @@
   },
   "add_pfafstetter.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "max_level": "integer number of levels to attempt to calculate. If the network doesn't have resolution to support the desired level, unexpected behavior may occur.",
       "status": "boolean if status updates should be printed."
     },
@@ -448,7 +448,7 @@
   },
   "add_pfafstetter.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "max_level": "integer number of levels to attempt to calculate. If the network doesn't have resolution to support the desired level, unexpected behavior may occur.",
       "status": "boolean if status updates should be printed."
     },
@@ -460,7 +460,7 @@
   },
   "add_return_divergence": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a return divergence attribute to the provided network. The method implemented matches that of the NHDPlus except in the rare case that a diversion includes more than one secondary path.\n\nSee add_divergence and make_node_topology.",
@@ -471,7 +471,7 @@
   },
   "add_return_divergence.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a return divergence attribute to the provided network. The method implemented matches that of the NHDPlus except in the rare case that a diversion includes more than one secondary path.\n\nSee add_divergence and make_node_topology.",
@@ -482,7 +482,7 @@
   },
   "add_return_divergence.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a return divergence attribute to the provided network. The method implemented matches that of the NHDPlus except in the rare case that a diversion includes more than one secondary path.\n\nSee add_divergence and make_node_topology.",
@@ -493,7 +493,7 @@
   },
   "add_return_divergence.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a return divergence attribute to the provided network. The method implemented matches that of the NHDPlus except in the rare case that a diversion includes more than one secondary path.\n\nSee add_divergence and make_node_topology.",
@@ -504,7 +504,7 @@
   },
   "add_return_divergence.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a return divergence attribute to the provided network. The method implemented matches that of the NHDPlus except in the rare case that a diversion includes more than one secondary path.\n\nSee add_divergence and make_node_topology.",
@@ -515,7 +515,7 @@
   },
   "add_streamlevel": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal": "character attribute name containing a logical flag indicating if a given terminal catchment flows to the coast of is an inland sink. If no coastal flag is included, all terminal paths are assumed to be coastal."
     },
     "description": "Applies a topological sort and calculates stream level. Algorithm: Terminal level paths are assigned level 1 (see note 1). Paths that terminate at a level 1 are assigned level 2. This pattern is repeated until no paths remain.\n\nIf a TRUE/FALSE coastal attribute is included, coastal terminal paths begin at 1 and internal terminal paths begin at 4 as is implemented by the NHD stream leveling rules.",
@@ -526,7 +526,7 @@
   },
   "add_streamlevel.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal": "character attribute name containing a logical flag indicating if a given terminal catchment flows to the coast of is an inland sink. If no coastal flag is included, all terminal paths are assumed to be coastal."
     },
     "description": "Applies a topological sort and calculates stream level. Algorithm: Terminal level paths are assigned level 1 (see note 1). Paths that terminate at a level 1 are assigned level 2. This pattern is repeated until no paths remain.\n\nIf a TRUE/FALSE coastal attribute is included, coastal terminal paths begin at 1 and internal terminal paths begin at 4 as is implemented by the NHD stream leveling rules.",
@@ -537,7 +537,7 @@
   },
   "add_streamlevel.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal": "character attribute name containing a logical flag indicating if a given terminal catchment flows to the coast of is an inland sink. If no coastal flag is included, all terminal paths are assumed to be coastal."
     },
     "description": "Applies a topological sort and calculates stream level. Algorithm: Terminal level paths are assigned level 1 (see note 1). Paths that terminate at a level 1 are assigned level 2. This pattern is repeated until no paths remain.\n\nIf a TRUE/FALSE coastal attribute is included, coastal terminal paths begin at 1 and internal terminal paths begin at 4 as is implemented by the NHD stream leveling rules.",
@@ -548,7 +548,7 @@
   },
   "add_streamlevel.hy_leveled": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal": "character attribute name containing a logical flag indicating if a given terminal catchment flows to the coast of is an inland sink. If no coastal flag is included, all terminal paths are assumed to be coastal."
     },
     "description": "Applies a topological sort and calculates stream level. Algorithm: Terminal level paths are assigned level 1 (see note 1). Paths that terminate at a level 1 are assigned level 2. This pattern is repeated until no paths remain.\n\nIf a TRUE/FALSE coastal attribute is included, coastal terminal paths begin at 1 and internal terminal paths begin at 4 as is implemented by the NHD stream leveling rules.",
@@ -559,7 +559,7 @@
   },
   "add_streamlevel.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "coastal": "character attribute name containing a logical flag indicating if a given terminal catchment flows to the coast of is an inland sink. If no coastal flag is included, all terminal paths are assumed to be coastal."
     },
     "description": "Applies a topological sort and calculates stream level. Algorithm: Terminal level paths are assigned level 1 (see note 1). Paths that terminate at a level 1 are assigned level 2. This pattern is repeated until no paths remain.\n\nIf a TRUE/FALSE coastal attribute is included, coastal terminal paths begin at 1 and internal terminal paths begin at 4 as is implemented by the NHD stream leveling rules.",
@@ -570,7 +570,7 @@
   },
   "add_streamorder": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a strahler stream order.\n\nAlgorithm: If more than one upstream flowline has an order equal to the maximum upstream order then the downstream flowline is assigned the maximum upstream order plus one. Otherwise it is assigned the maximum upstream order.\n\nTo match the NHDPlus algorithm, non-dendritic network connectivity must be included. All secondary paths will have the `stream_order` of upstream primary paths and a `stream_calculator` value of 0. Secondary paths have no affect on the order of downstream paths.",
@@ -581,7 +581,7 @@
   },
   "add_streamorder.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a strahler stream order.\n\nAlgorithm: If more than one upstream flowline has an order equal to the maximum upstream order then the downstream flowline is assigned the maximum upstream order plus one. Otherwise it is assigned the maximum upstream order.\n\nTo match the NHDPlus algorithm, non-dendritic network connectivity must be included. All secondary paths will have the `stream_order` of upstream primary paths and a `stream_calculator` value of 0. Secondary paths have no affect on the order of downstream paths.",
@@ -592,7 +592,7 @@
   },
   "add_streamorder.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a strahler stream order.\n\nAlgorithm: If more than one upstream flowline has an order equal to the maximum upstream order then the downstream flowline is assigned the maximum upstream order plus one. Otherwise it is assigned the maximum upstream order.\n\nTo match the NHDPlus algorithm, non-dendritic network connectivity must be included. All secondary paths will have the `stream_order` of upstream primary paths and a `stream_calculator` value of 0. Secondary paths have no affect on the order of downstream paths.",
@@ -603,7 +603,7 @@
   },
   "add_streamorder.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a strahler stream order.\n\nAlgorithm: If more than one upstream flowline has an order equal to the maximum upstream order then the downstream flowline is assigned the maximum upstream order plus one. Otherwise it is assigned the maximum upstream order.\n\nTo match the NHDPlus algorithm, non-dendritic network connectivity must be included. All secondary paths will have the `stream_order` of upstream primary paths and a `stream_calculator` value of 0. Secondary paths have no affect on the order of downstream paths.",
@@ -614,7 +614,7 @@
   },
   "add_streamorder.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a strahler stream order.\n\nAlgorithm: If more than one upstream flowline has an order equal to the maximum upstream order then the downstream flowline is assigned the maximum upstream order plus one. Otherwise it is assigned the maximum upstream order.\n\nTo match the NHDPlus algorithm, non-dendritic network connectivity must be included. All secondary paths will have the `stream_order` of upstream primary paths and a `stream_calculator` value of 0. Secondary paths have no affect on the order of downstream paths.",
@@ -625,7 +625,7 @@
   },
   "add_streamorder.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "status": "boolean if status updates should be printed."
     },
     "description": "Adds a strahler stream order.\n\nAlgorithm: If more than one upstream flowline has an order equal to the maximum upstream order then the downstream flowline is assigned the maximum upstream order plus one. Otherwise it is assigned the maximum upstream order.\n\nTo match the NHDPlus algorithm, non-dendritic network connectivity must be included. All secondary paths will have the `stream_order` of upstream primary paths and a `stream_calculator` value of 0. Secondary paths have no affect on the order of downstream paths.",
@@ -636,7 +636,7 @@
   },
   "add_toids": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "return_dendritic": "logical remove non dendritic paths if TRUE. Requires a \"divergence\" flag where 1 is main and 2 is secondary."
     },
     "description": "Generates a toid attribute from node topology by joining tonode and fromnode attributes.",
@@ -647,7 +647,7 @@
   },
   "add_toids.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "return_dendritic": "logical remove non dendritic paths if TRUE. Requires a \"divergence\" flag where 1 is main and 2 is secondary."
     },
     "description": "Generates a toid attribute from node topology by joining tonode and fromnode attributes.",
@@ -658,7 +658,7 @@
   },
   "add_toids.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "return_dendritic": "logical remove non dendritic paths if TRUE. Requires a \"divergence\" flag where 1 is main and 2 is secondary."
     },
     "description": "Generates a toid attribute from node topology by joining tonode and fromnode attributes.",
@@ -669,7 +669,7 @@
   },
   "add_toids.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "return_dendritic": "logical remove non dendritic paths if TRUE. Requires a \"divergence\" flag where 1 is main and 2 is secondary."
     },
     "description": "Generates a toid attribute from node topology by joining tonode and fromnode attributes.",
@@ -680,7 +680,7 @@
   },
   "add_toids.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "return_dendritic": "logical remove non dendritic paths if TRUE. Requires a \"divergence\" flag where 1 is main and 2 is secondary."
     },
     "description": "Generates a toid attribute from node topology by joining tonode and fromnode attributes.",
@@ -691,7 +691,7 @@
   },
   "add_toids.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "return_dendritic": "logical remove non dendritic paths if TRUE. Requires a \"divergence\" flag where 1 is main and 2 is secondary."
     },
     "description": "Generates a toid attribute from node topology by joining tonode and fromnode attributes.",
@@ -702,7 +702,7 @@
   },
   "add_topo_sort": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
     },
     "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
@@ -713,7 +713,7 @@
   },
   "add_topo_sort.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
     },
     "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
@@ -724,7 +724,7 @@
   },
   "add_topo_sort.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
     },
     "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
@@ -735,7 +735,7 @@
   },
   "add_topo_sort.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
     },
     "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
@@ -746,7 +746,7 @@
   },
   "add_topo_sort.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
     },
     "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
@@ -757,7 +757,7 @@
   },
   "add_topo_sort.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
     },
     "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
@@ -778,7 +778,7 @@
   },
   "check_hy_graph": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "divergence_check": "logical if TRUE, `divergence` and, where present, `divergence_fraction` are checked for internal consistency as described in details.",
       "fraction_tol": "numeric tolerance used when checking that `divergence_fraction` sums to 1 across a `fromnode` group."
     },
@@ -893,7 +893,7 @@
   "fix_flowdir": {
     "arguments": {
       "id": "integer The id of the flowline to check",
-      "network": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "network": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "fn_list": "list containing named elements `flowline`, `network`, and `check_end`, where `flowline` is the flowline to be checked and `network` the feature up or downstream of the flowline to be checked, and `check_end` is `\"start\"` or `\"end\"` depending if the `network` input is upstream (`\"start\"`) or downstream (`\"end\"`) of the flowline to be checked. This option allows pre-compilation of pairs of features which may be useful for very large numbers of flow direction checks."
     },
     "description": "If flowlines aren't digitized in the expected direction, this will reorder the nodes so they are.",
@@ -915,7 +915,7 @@
   },
   "get_bridge_flowlines": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "quiet": "logical quiet messages?"
     },
     "description": "Identifies bridge flowlines (cut edges) in the network. Bridge flowlines are those whose removal would disconnect the network. Flowlines are edges in the underlying node graph, so bridge detection correctly identifies the sole-path flowlines that separate parts of the network -- including flowlines within diversion systems that do not rejoin.",
@@ -926,7 +926,7 @@
   },
   "get_bridge_flowlines.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "quiet": "logical quiet messages?"
     },
     "description": "Identifies bridge flowlines (cut edges) in the network. Bridge flowlines are those whose removal would disconnect the network. Flowlines are edges in the underlying node graph, so bridge detection correctly identifies the sole-path flowlines that separate parts of the network -- including flowlines within diversion systems that do not rejoin.",
@@ -937,7 +937,7 @@
   },
   "get_bridge_flowlines.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "quiet": "logical quiet messages?"
     },
     "description": "Identifies bridge flowlines (cut edges) in the network. Bridge flowlines are those whose removal would disconnect the network. Flowlines are edges in the underlying node graph, so bridge detection correctly identifies the sole-path flowlines that separate parts of the network -- including flowlines within diversion systems that do not rejoin.",
@@ -948,7 +948,7 @@
   },
   "get_bridge_flowlines.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "quiet": "logical quiet messages?"
     },
     "description": "Identifies bridge flowlines (cut edges) in the network. Bridge flowlines are those whose removal would disconnect the network. Flowlines are edges in the underlying node graph, so bridge detection correctly identifies the sole-path flowlines that separate parts of the network -- including flowlines within diversion systems that do not rejoin.",
@@ -959,7 +959,7 @@
   },
   "get_bridge_flowlines.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "quiet": "logical quiet messages?"
     },
     "description": "Identifies bridge flowlines (cut edges) in the network. Bridge flowlines are those whose removal would disconnect the network. Flowlines are edges in the underlying node graph, so bridge detection correctly identifies the sole-path flowlines that separate parts of the network -- including flowlines within diversion systems that do not rejoin.",
@@ -970,7 +970,7 @@
   },
   "get_bridge_flowlines.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "quiet": "logical quiet messages?"
     },
     "description": "Identifies bridge flowlines (cut edges) in the network. Bridge flowlines are those whose removal would disconnect the network. Flowlines are edges in the underlying node graph, so bridge detection correctly identifies the sole-path flowlines that separate parts of the network -- including flowlines within diversion systems that do not rejoin.",
@@ -1064,7 +1064,7 @@
   "get_partial_length": {
     "arguments": {
       "hydro_location": "list containing a hydrologic locations with names aggregate_id (reachcode) and aggregate_id_measure (reachcode measure).",
-      "network": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "network": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "flowpath": "data.frame containing one flowpath that corresponds to the `hydro_location`. Not required if `x` is provided. `x` is not required if `flowpath` is provided."
     },
     "description": "Finds the upstream and downstream lengths along a given flowline. Internally, the function rescales the aggregate_id_measure to a id_measure and applies that rescaled measure to the length of the flowline.",
@@ -1150,11 +1150,11 @@
   },
   "hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "clean": "logical if TRUE, geometry and non-hydroloom compatible attributes will be removed.",
       "add_topo": "logical. If TRUE, auto-build topology (e.g. toid from fromnode/tonode) and classify into subclass hierarchy. If FALSE (default), classify based on existing columns only without constructing new attributes."
     },
-    "description": "Renames each column hydroloom knows by another name to its standard hydroloom name, as `COMID` becomes `id` and `ToCOMID` becomes `toid`. The vocabulary, the list of standard names and the source names known for each, ships with the package as `hy_vocab.json`. When two columns could take one name, the column whose source name comes later in the vocabulary takes it, with a warning, and the other keeps its input name. A `permanent_identifier` column keeps its name whenever another column could take the same name. Other columns keep their input names and values.\n\nEach identifier column takes one identifier type, and each flag column coded 1/0 becomes `TRUE`/`FALSE`. In R, that type is integer when the column, with its partner if it has one (`toid` for `id`, `tonode` for `fromnode`), holds only whole numbers within the 32-bit integer range, and text when either holds larger whole numbers or text. In Python, every identifier column becomes text (`str`). A missing `toid` becomes the value that marks an outlet (a flowline that flows to nothing else in the table), `\"\"` when identifiers are text. In R, that value is `0` when identifiers are integer. A table with geometry keeps its geometry column, moved to the last position. In R, that column is renamed `geom`. `hy_network_type()` reports which network layout the result follows, such as an id/toid list or a fromnode/tonode list.",
+    "description": "Renames each column hydroloom knows by another name to its standard hydroloom name, as `COMID` becomes `id` and `ToCOMID` becomes `toid`. The vocabulary, the list of standard names and the source names known for each, ships with the package as `hy_vocab.json`. When two columns could take one name, the column whose source name comes later in the vocabulary takes it, with a warning, and the other keeps its input name. A `permanent_identifier` column keeps its name whenever another column could take the same name. Other columns keep their input names and values.\n\nEach identifier column takes one identifier type, and each flag column coded 1/0 becomes `TRUE`/`FALSE`. In R, that type is integer when the column, with its partner if it has one (`toid` for `id`, `tonode` for `fromnode`), holds only whole numbers within the 32-bit integer range, and text when either holds larger whole numbers or text. In Python, every column the vocabulary types as an identifier (`id`, `toid`, `fromnode`, `tonode`, `levelpath`, and others) becomes text (`str`). A missing `toid` becomes the value that marks an outlet (a flowline that flows to nothing else in the table), `\"\"` when identifiers are text. In R, that value is `0` when identifiers are integer. A table with geometry keeps its geometry column, moved to the last position. In R, that column is renamed `geom`. `hy_network_type()` reports which network layout the result follows, such as an id/toid list or a fromnode/tonode list.",
     "details": null,
     "sections": {},
     "title": "Align a table with hydroloom names and types",
@@ -1195,7 +1195,7 @@
   },
   "hy_network_type": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name come from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`). In Python, columns hydroloom knows by another name are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows."
     },
     "description": "Returns the representation pattern of a network: the layout its columns follow once `hy()` has aligned their names. In R, the pattern is the most specific hydroloom S3 class the object carries, so `x` is the output of `hy()`. The pattern names map to database / graph representation patterns:\n\n- `\"hy_leveled\"`: enriched edge list (+ topo_sort, levelpath)\n- `\"hy_topo\"`: self-referencing edge list (id/toid, dendritic)\n- `\"hy_node\"`: fromnode/tonode graph (id/fromnode/tonode)\n- `\"hy_flownetwork\"`: junction table (id/toid/upmain/downmain)\n- `\"hy\"`: name-aligned base object",
     "details": null,
@@ -1241,7 +1241,7 @@
     "details": null,
     "sections": {},
     "title": "Hydroloom Name Definitions",
-    "value": "each hydroloom name with its definition, one entry per name, in the order of the vocabulary. In R, the value is a named character vector whose names are the hydroloom names, with class `hydroloom_names` for its custom print method. In Python, the value is a table with columns `name` and `definition`, one row per name."
+    "value": "each hydroloom name with its definition, one entry per name, in the order of the vocabulary. In R, the value is a named character vector whose names are the hydroloom names, with class `hydroloom_names` for its custom print method. In Python, the value is a table with columns `name` and `definition`."
   },
   "hydroloom_names": {
     "arguments": {
@@ -1326,7 +1326,7 @@
   },
   "index_points_to_lines": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "points": "sf or sfc of type POINT in analysis projection. NOTE: x will be projected to the projection of the points layer.",
       "search_radius": "units distance for the nearest neighbor search to extend in analysis projection. If missing or NULL, and points are in a lon lat projection, a default of 0.01 degree is used, otherwise 200 m is used. Conversion to the linear unit used by the provided crs of points is attempted. See RANN nn2 documentation for more details.",
       "precision": "numeric the resolution of measure precision in the output in meters.",
@@ -1344,7 +1344,7 @@
   },
   "index_points_to_lines.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "points": "sf or sfc of type POINT in analysis projection. NOTE: x will be projected to the projection of the points layer.",
       "search_radius": "units distance for the nearest neighbor search to extend in analysis projection. If missing or NULL, and points are in a lon lat projection, a default of 0.01 degree is used, otherwise 200 m is used. Conversion to the linear unit used by the provided crs of points is attempted. See RANN nn2 documentation for more details.",
       "precision": "numeric the resolution of measure precision in the output in meters.",
@@ -1362,7 +1362,7 @@
   },
   "index_points_to_lines.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "points": "sf or sfc of type POINT in analysis projection. NOTE: x will be projected to the projection of the points layer.",
       "search_radius": "units distance for the nearest neighbor search to extend in analysis projection. If missing or NULL, and points are in a lon lat projection, a default of 0.01 degree is used, otherwise 200 m is used. Conversion to the linear unit used by the provided crs of points is attempted. See RANN nn2 documentation for more details.",
       "precision": "numeric the resolution of measure precision in the output in meters.",
@@ -1415,7 +1415,7 @@
   },
   "make_attribute_topology": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "min_distance": "numeric distance in units compatible with the units of the projection of `lines`. If no nodes are found within this distance, no connection will be returned."
     },
     "description": "given a set of lines with starting and ending nodes that form a geometric network, construct an attribute topology.",
@@ -1426,7 +1426,7 @@
   },
   "make_attribute_topology.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "min_distance": "numeric distance in units compatible with the units of the projection of `lines`. If no nodes are found within this distance, no connection will be returned."
     },
     "description": "given a set of lines with starting and ending nodes that form a geometric network, construct an attribute topology.",
@@ -1437,7 +1437,7 @@
   },
   "make_attribute_topology.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "min_distance": "numeric distance in units compatible with the units of the projection of `lines`. If no nodes are found within this distance, no connection will be returned."
     },
     "description": "given a set of lines with starting and ending nodes that form a geometric network, construct an attribute topology.",
@@ -1460,7 +1460,7 @@
   },
   "make_index_ids": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
@@ -1468,11 +1468,11 @@
     "details": "mode determines the direction of the graph. If \"to\", the graph will be directed from the `id` to the `toid`. If \"from\", the graph will be directed from the `toid` to the `id`. If \"both\", the result holds the \"to\" and then the \"from\" version of the graph. In R, \"both\" returns a list with elements `to` and `from`.",
     "sections": {},
     "title": "Make Index ids",
-    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques` gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
+    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques`, a pandas Index, gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`. Its `main` holds the main-path flag of each connection, aligned with `indices`, taken from `downmain` (\"to\") or `upmain` (\"from\"), and is `None` when the table has no such column.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
   },
   "make_index_ids.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
@@ -1480,11 +1480,11 @@
     "details": "mode determines the direction of the graph. If \"to\", the graph will be directed from the `id` to the `toid`. If \"from\", the graph will be directed from the `toid` to the `id`. If \"both\", the result holds the \"to\" and then the \"from\" version of the graph. In R, \"both\" returns a list with elements `to` and `from`.",
     "sections": {},
     "title": "Make Index ids",
-    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques` gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
+    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques`, a pandas Index, gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`. Its `main` holds the main-path flag of each connection, aligned with `indices`, taken from `downmain` (\"to\") or `upmain` (\"from\"), and is `None` when the table has no such column.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
   },
   "make_index_ids.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
@@ -1492,11 +1492,11 @@
     "details": "mode determines the direction of the graph. If \"to\", the graph will be directed from the `id` to the `toid`. If \"from\", the graph will be directed from the `toid` to the `id`. If \"both\", the result holds the \"to\" and then the \"from\" version of the graph. In R, \"both\" returns a list with elements `to` and `from`.",
     "sections": {},
     "title": "Make Index ids",
-    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques` gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
+    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques`, a pandas Index, gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`. Its `main` holds the main-path flag of each connection, aligned with `indices`, taken from `downmain` (\"to\") or `upmain` (\"from\"), and is `None` when the table has no such column.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
   },
   "make_index_ids.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
@@ -1504,11 +1504,11 @@
     "details": "mode determines the direction of the graph. If \"to\", the graph will be directed from the `id` to the `toid`. If \"from\", the graph will be directed from the `toid` to the `id`. If \"both\", the result holds the \"to\" and then the \"from\" version of the graph. In R, \"both\" returns a list with elements `to` and `from`.",
     "sections": {},
     "title": "Make Index ids",
-    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques` gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
+    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques`, a pandas Index, gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`. Its `main` holds the main-path flag of each connection, aligned with `indices`, taken from `downmain` (\"to\") or `upmain` (\"from\"), and is `None` when the table has no such column.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
   },
   "make_index_ids.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "mode": "character indicating the mode of the graph. Choose from \"to\", \"from\", or \"both\". Default is \"to\". See Details for more information.",
       "long_form": "logical DEPRECATED"
     },
@@ -1516,11 +1516,11 @@
     "details": "mode determines the direction of the graph. If \"to\", the graph will be directed from the `id` to the `toid`. If \"from\", the graph will be directed from the `toid` to the `id`. If \"both\", the result holds the \"to\" and then the \"from\" version of the graph. In R, \"both\" returns a list with elements `to` and `from`.",
     "sections": {},
     "title": "Make Index ids",
-    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques` gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
+    "value": "index ids for mode \"to\" or \"from\": each flowline's neighbors as positions, the downstream flowlines for \"to\" and the upstream flowlines for \"from\", sorted by `id` as text, character by character (so \"100\" comes before \"30\"). In R, a \"to\" entry of 0 marks a `toid` outside the table and is not a position. When the table has `downmain` (\"to\") or `upmain` (\"from\"), each connection also says whether it is on the main path, the one that carries the same river on through a confluence or divergence. For mode \"both\", the \"to\" and then the \"from\" index ids.\n\nIn Python, the result's `uniques`, a pandas Index, gives the `id` at each position, as text, and its `indptr` and `indices` hold the neighbors: those of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`. Its `main` holds the main-path flag of each connection, aligned with `indices`, taken from `downmain` (\"to\") or `upmain` (\"from\"), and is `None` when the table has no such column.\n\nIn R, the value is a list containing named elements:\n\n- to: adjacency matrix with columns that correspond to `unqiue(x$id)`\n- lengths: vector indicating the number of connections from each node\n- to_list: a data.frame with an `id`, `indid` and a `toindid` list column.\n\nIn R, the list has names `froms`, `lengths`, and `froms_list` for mode \"from\".\n\nIn R, the long_form output is deprecated and will be removed in a future release."
   },
   "make_node_topology": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "add_div": "data.frame of logical containing id and toid diverted paths to add. Should have id and toid fields. If TRUE, the network will be interpreted as a directed acyclic graph with downstream diversions included in the edge topology.",
       "add": "logical if TRUE, node topology will be added to x in return."
     },
@@ -1532,7 +1532,7 @@
   },
   "make_node_topology.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "add_div": "data.frame of logical containing id and toid diverted paths to add. Should have id and toid fields. If TRUE, the network will be interpreted as a directed acyclic graph with downstream diversions included in the edge topology.",
       "add": "logical if TRUE, node topology will be added to x in return."
     },
@@ -1544,7 +1544,7 @@
   },
   "make_node_topology.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "add_div": "data.frame of logical containing id and toid diverted paths to add. Should have id and toid fields. If TRUE, the network will be interpreted as a directed acyclic graph with downstream diversions included in the edge topology.",
       "add": "logical if TRUE, node topology will be added to x in return."
     },
@@ -1556,7 +1556,7 @@
   },
   "make_node_topology.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "add_div": "data.frame of logical containing id and toid diverted paths to add. Should have id and toid fields. If TRUE, the network will be interpreted as a directed acyclic graph with downstream diversions included in the edge topology.",
       "add": "logical if TRUE, node topology will be added to x in return."
     },
@@ -1568,7 +1568,7 @@
   },
   "make_node_topology.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "add_div": "data.frame of logical containing id and toid diverted paths to add. Should have id and toid fields. If TRUE, the network will be interpreted as a directed acyclic graph with downstream diversions included in the edge topology.",
       "add": "logical if TRUE, node topology will be added to x in return."
     },
@@ -1580,7 +1580,7 @@
   },
   "navigate_connected_paths": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlets": "vector or list of length 2 of ids from data.frame",
       "status": "logical print status and progress bars?"
     },
@@ -1592,7 +1592,7 @@
   },
   "navigate_hydro_network": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "start": "character or numeric to match identifier attribute. The starting catchment is included.",
       "mode": "character chosen from c(UM, DM, UT, DD) or equivalently c(upmain, downmain, up, down).\n\n1. UM / upmain: upstream mainstem\n2. DM / downmain: downstream mainstem\n3. UT / up: upstream with tributaries\n4. DD / down: downstream with diversions",
       "distance": "numeric distance in km to limit navigation. The first catchment that exceeds the provided distance is included."
@@ -1605,7 +1605,7 @@
   },
   "navigate_hydro_network.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "start": "character or numeric to match identifier attribute. The starting catchment is included.",
       "mode": "character chosen from c(UM, DM, UT, DD) or equivalently c(upmain, downmain, up, down).\n\n1. UM / upmain: upstream mainstem\n2. DM / downmain: downstream mainstem\n3. UT / up: upstream with tributaries\n4. DD / down: downstream with diversions",
       "distance": "numeric distance in km to limit navigation. The first catchment that exceeds the provided distance is included."
@@ -1618,7 +1618,7 @@
   },
   "navigate_hydro_network.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "start": "character or numeric to match identifier attribute. The starting catchment is included.",
       "mode": "character chosen from c(UM, DM, UT, DD) or equivalently c(upmain, downmain, up, down).\n\n1. UM / upmain: upstream mainstem\n2. DM / downmain: downstream mainstem\n3. UT / up: upstream with tributaries\n4. DD / down: downstream with diversions",
       "distance": "numeric distance in km to limit navigation. The first catchment that exceeds the provided distance is included."
@@ -1631,7 +1631,7 @@
   },
   "navigate_hydro_network.hy_leveled": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "start": "character or numeric to match identifier attribute. The starting catchment is included.",
       "mode": "character chosen from c(UM, DM, UT, DD) or equivalently c(upmain, downmain, up, down).\n\n1. UM / upmain: upstream mainstem\n2. DM / downmain: downstream mainstem\n3. UT / up: upstream with tributaries\n4. DD / down: downstream with diversions",
       "distance": "numeric distance in km to limit navigation. The first catchment that exceeds the provided distance is included."
@@ -1644,7 +1644,7 @@
   },
   "navigate_hydro_network.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "start": "character or numeric to match identifier attribute. The starting catchment is included.",
       "mode": "character chosen from c(UM, DM, UT, DD) or equivalently c(upmain, downmain, up, down).\n\n1. UM / upmain: upstream mainstem\n2. DM / downmain: downstream mainstem\n3. UT / up: upstream with tributaries\n4. DD / down: downstream with diversions",
       "distance": "numeric distance in km to limit navigation. The first catchment that exceeds the provided distance is included."
@@ -1657,7 +1657,7 @@
   },
   "navigate_hydro_network.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "start": "character or numeric to match identifier attribute. The starting catchment is included.",
       "mode": "character chosen from c(UM, DM, UT, DD) or equivalently c(upmain, downmain, up, down).\n\n1. UM / upmain: upstream mainstem\n2. DM / downmain: downstream mainstem\n3. UT / up: upstream with tributaries\n4. DD / down: downstream with diversions",
       "distance": "numeric distance in km to limit navigation. The first catchment that exceeds the provided distance is included."
@@ -1706,7 +1706,7 @@
   },
   "sort_network": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
@@ -1718,7 +1718,7 @@
   },
   "sort_network.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
@@ -1730,7 +1730,7 @@
   },
   "sort_network.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
@@ -1742,7 +1742,7 @@
   },
   "sort_network.hy_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
@@ -1754,7 +1754,7 @@
   },
   "sort_network.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
@@ -1766,7 +1766,7 @@
   },
   "sort_network.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
       "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
@@ -1789,7 +1789,7 @@
   },
   "subset_network": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlet": "identifier of the outlet flowpath to subset upstream from.",
       "only_up": "logical if `TRUE`, only upstream navigation is used and any missed diversion connections are disconnected. If `FALSE` (default), nested endorheic basins reachable through diversions are also included."
     },
@@ -1801,7 +1801,7 @@
   },
   "subset_network.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlet": "identifier of the outlet flowpath to subset upstream from.",
       "only_up": "logical if `TRUE`, only upstream navigation is used and any missed diversion connections are disconnected. If `FALSE` (default), nested endorheic basins reachable through diversions are also included."
     },
@@ -1813,7 +1813,7 @@
   },
   "subset_network.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlet": "identifier of the outlet flowpath to subset upstream from.",
       "only_up": "logical if `TRUE`, only upstream navigation is used and any missed diversion connections are disconnected. If `FALSE` (default), nested endorheic basins reachable through diversions are also included."
     },
@@ -1825,7 +1825,7 @@
   },
   "subset_network.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlet": "identifier of the outlet flowpath to subset upstream from.",
       "only_up": "logical if `TRUE`, only upstream navigation is used and any missed diversion connections are disconnected. If `FALSE` (default), nested endorheic basins reachable through diversions are also included."
     },
@@ -1837,7 +1837,7 @@
   },
   "subset_network.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "outlet": "identifier of the outlet flowpath to subset upstream from.",
       "only_up": "logical if `TRUE`, only upstream navigation is used and any missed diversion connections are disconnected. If `FALSE` (default), nested endorheic basins reachable through diversions are also included."
     },
@@ -1849,7 +1849,7 @@
   },
   "to_flownetwork": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "warn_dendritic": "logical if TRUE and a dendritic `toid` attribute is provided, a warning will be emitted as toid is expected to be non-dendritic for any `downmain` to be `FALSE`."
     },
     "description": "converts an `hy` object into a flownetwork with \"id\", \"toid\", \"upmain\" and \"downmain attributes.",
@@ -1860,7 +1860,7 @@
   },
   "to_flownetwork.data.frame": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "warn_dendritic": "logical if TRUE and a dendritic `toid` attribute is provided, a warning will be emitted as toid is expected to be non-dendritic for any `downmain` to be `FALSE`."
     },
     "description": "converts an `hy` object into a flownetwork with \"id\", \"toid\", \"upmain\" and \"downmain attributes.",
@@ -1871,7 +1871,7 @@
   },
   "to_flownetwork.hy": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "warn_dendritic": "logical if TRUE and a dendritic `toid` attribute is provided, a warning will be emitted as toid is expected to be non-dendritic for any `downmain` to be `FALSE`."
     },
     "description": "converts an `hy` object into a flownetwork with \"id\", \"toid\", \"upmain\" and \"downmain attributes.",
@@ -1882,7 +1882,7 @@
   },
   "to_flownetwork.hy_leveled": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "warn_dendritic": "logical if TRUE and a dendritic `toid` attribute is provided, a warning will be emitted as toid is expected to be non-dendritic for any `downmain` to be `FALSE`."
     },
     "description": "converts an `hy` object into a flownetwork with \"id\", \"toid\", \"upmain\" and \"downmain attributes.",
@@ -1893,7 +1893,7 @@
   },
   "to_flownetwork.hy_node": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "warn_dendritic": "logical if TRUE and a dendritic `toid` attribute is provided, a warning will be emitted as toid is expected to be non-dendritic for any `downmain` to be `FALSE`."
     },
     "description": "converts an `hy` object into a flownetwork with \"id\", \"toid\", \"upmain\" and \"downmain attributes.",
@@ -1904,7 +1904,7 @@
   },
   "to_flownetwork.hy_topo": {
     "arguments": {
-      "x": "data.frame. A table of flowlines or catchments (the land areas draining to each flowline); columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
+      "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "warn_dendritic": "logical if TRUE and a dendritic `toid` attribute is provided, a warning will be emitted as toid is expected to be non-dendritic for any `downmain` to be `FALSE`."
     },
     "description": "converts an `hy` object into a flownetwork with \"id\", \"toid\", \"upmain\" and \"downmain attributes.",

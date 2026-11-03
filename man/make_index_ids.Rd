@@ -19,8 +19,7 @@ make_index_ids(x, mode = "to", long_form = NULL)
 \method{make_index_ids}{hy_topo}(x, mode = "to", long_form = NULL)
 }
 \arguments{
-\item{x}{data.frame. A table of flowlines or catchments (the land areas draining
-to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+\item{x}{data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2,
 NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
 renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
 source names hydroloom knows.}
@@ -40,9 +39,12 @@ each connection also says whether it is on the main path, the one that
 carries the same river on through a confluence or divergence. For mode
 "both", the "to" and then the "from" index ids.
 
-In Python, the result's \code{uniques} gives the \code{id} at each position, as
-text, and its \code{indptr} and \code{indices} hold the neighbors: those of the
-flowline at position i are \code{indices[indptr[i]:indptr[i + 1]]}.
+In Python, the result's \code{uniques}, a pandas Index, gives the \code{id} at each
+position, as text, and its \code{indptr} and \code{indices} hold the neighbors: those
+of the flowline at position i are \code{indices[indptr[i]:indptr[i + 1]]}. Its
+\code{main} holds the main-path flag of each connection, aligned with \code{indices},
+taken from \code{downmain} ("to") or \code{upmain} ("from"), and is \code{None} when the
+table has no such column.
 
 In R, the value is a list containing named elements:
 \describe{

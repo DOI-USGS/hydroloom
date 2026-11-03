@@ -646,7 +646,11 @@ hy_topo_to_node <- function(x, fn_name, guidance = hy_guidance_node,
 #'   \item \code{"hy_flownetwork"}: junction table (id/toid/upmain/downmain)
 #'   \item \code{"hy"}: name-aligned base object
 #' }
-#' @inheritParams hy
+#' @param x data.frame. A table of flowlines or catchments; columns hydroloom
+#' knows by another name come from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere
+#' (such as NHDPlus `COMID`, `ToCOMID`). In Python, columns hydroloom knows by
+#' another name are renamed to hydroloom names first. In R,
+#' \link{hydroloom_names} gives the source names hydroloom knows.
 #' @returns character. One of \code{"hy_leveled"}, \code{"hy_topo"},
 #' \code{"hy_node"}, \code{"hy_flownetwork"}, or \code{"hy"}. In R, the value
 #' is \code{"not a hydroloom object"} when \code{x} carries no hydroloom

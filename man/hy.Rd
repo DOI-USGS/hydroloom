@@ -7,8 +7,7 @@
 hy(x, clean = FALSE, add_topo = FALSE)
 }
 \arguments{
-\item{x}{data.frame. A table of flowlines or catchments (the land areas draining
-to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+\item{x}{data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2,
 NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
 renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
 source names hydroloom knows.}
@@ -43,7 +42,9 @@ coded 1/0 becomes \code{TRUE}/\code{FALSE}. In R, that type is integer when
 the column, with its partner if it has one (\code{toid} for \code{id},
 \code{tonode} for \code{fromnode}), holds only whole numbers within the
 32-bit integer range, and text when either holds larger whole numbers or
-text. In Python, every identifier column becomes text (\code{str}).
+text. In Python, every column the vocabulary types as an identifier
+(\code{id}, \code{toid}, \code{fromnode}, \code{tonode}, \code{levelpath},
+and others) becomes text (\code{str}).
 A missing \code{toid} becomes the value that marks an outlet (a
 flowline that flows to nothing else in the table), \code{""} when
 identifiers are text. In R,

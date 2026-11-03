@@ -63,7 +63,7 @@ read by `hl-modeler-reader` after it composes. Every unit is one Log entry in
    `definition`. The shared `network` substitution pair becomes `@param x` roxygen
    (item 8, P-4): `@inheritParams` from one holder where the text is identical, verbatim
    elsewhere, the substitution pair deleted; the agent's sentence is the draft and
-   "catchments" gets its gloss. `devtools::document()`, then `docstrings.json` regenerated;
+   "catchments" is glossed by the maintainer in the Any time row (item 8). `devtools::document()`, then `docstrings.json` regenerated;
    R conformance stays green. `hl-modeler-reader` reads the composed result against
    `.kiro/context/prose.md`; findings route per P-4.
 5. `register_names` and naming-block Python follow-up (Python) — the `register_names`

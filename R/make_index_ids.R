@@ -47,9 +47,12 @@
 #' carries the same river on through a confluence or divergence. For mode
 #' "both", the "to" and then the "from" index ids.
 #'
-#' In Python, the result's `uniques` gives the `id` at each position, as
-#' text, and its `indptr` and `indices` hold the neighbors: those of the
-#' flowline at position i are `indices[indptr[i]:indptr[i + 1]]`.
+#' In Python, the result's `uniques`, a pandas Index, gives the `id` at each
+#' position, as text, and its `indptr` and `indices` hold the neighbors: those
+#' of the flowline at position i are `indices[indptr[i]:indptr[i + 1]]`. Its
+#' `main` holds the main-path flag of each connection, aligned with `indices`,
+#' taken from `downmain` ("to") or `upmain` ("from"), and is `None` when the
+#' table has no such column.
 #'
 #' In R, the value is a list containing named elements:
 #' \describe{
