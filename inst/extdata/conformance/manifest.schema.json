@@ -115,8 +115,9 @@
           "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]*\\.gpkg$"
         },
         "compare": {
+          "description": "exact, or tolerance for the D-13 tolerances; values for a function that types nothing: the Python harness brings the actual frame to the layer's stored form before an exact comparison, and the R harness compares it as exact (M5 run 2 unit 6).",
           "type": "string",
-          "enum": ["exact", "tolerance"]
+          "enum": ["exact", "tolerance", "values"]
         },
         "atol": { "type": "number", "minimum": 0 },
         "rtol": { "type": "number", "minimum": 0 },
