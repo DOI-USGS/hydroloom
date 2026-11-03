@@ -11,14 +11,17 @@ test_that("the committed parity table is current", {
   expect_identical(readLines(parity_file(), warn = FALSE, encoding = "UTF-8"), lines)
 })
 
-test_that("every manifest function is supported by r only (M2)", {
+test_that("every manifest case lists r and every function has cases", {
   skip_if_no_conformance()
   skip_if_not_installed("yaml")
 
+  # M2 asserted every function `r` only; ROADMAP M5 Done-when moves the
+  # phase-1 functions to `r, python`. R stays the generator, so every case
+  # still lists r (S-7).
   manifest <- read_conformance_yaml(file.path(conformance_dir(), "manifest.yaml"))
   rows <- parity_rows(manifest)
 
-  expect_identical(rows$supported_by, rep("r", nrow(rows)))
+  expect_true(all(vapply(manifest$cases, function(x) "r" %in% unlist(x$supported_by), logical(1))))
   expect_true(all(rows$cases > 0))
 })
 

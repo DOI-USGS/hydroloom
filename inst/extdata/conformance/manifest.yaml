@@ -565,7 +565,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 boundary; hydroloom names already, rows come back unchanged
@@ -576,7 +576,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # I-11
@@ -653,7 +653,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true. D-7 pair of is_hy_new_hope: rows permuted; FALSE in both
@@ -664,7 +664,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # R-only: silent is an R argument with no Python counterpart (D3-17);
@@ -685,7 +685,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # R-only: TRUE after hy() renames and fills the missing toid (D3-11 prepare);
@@ -720,7 +720,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # R-only: hy() routes the divergent network to hy_flownetwork carrying
@@ -743,7 +743,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; S-6 single-row network; Python False by condition 2 (integer ids)
@@ -753,7 +753,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; S-6 five flowlines, no edges; Python False by condition 2 (integer ids)
@@ -763,7 +763,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; S-6 duplicated row (1 -> 2 twice); FALSE as read (TRUE after
@@ -775,7 +775,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; S-6 missing weight_attribute value; not read by is.hy; Python
@@ -786,7 +786,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; S-6 zero-length geometry; not read by is.hy; Python False by
@@ -797,7 +797,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # hydroloom_names -----------------------------------------------------------
@@ -836,7 +836,7 @@ cases:
     function: hydroloom_name_definitions
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # align_names ---------------------------------------------------------------
@@ -850,9 +850,9 @@ cases:
     function: align_names
     fixture: network.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D-7: rows permuted; names and values equal align_names_network after sorting
@@ -860,9 +860,9 @@ cases:
     function: align_names
     fixture: network_shuffled.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # permanent_identifier rule (step 4): NHDPlusID and Permanent_Identifier
@@ -871,9 +871,9 @@ cases:
     function: align_names
     fixture: nhdplushr.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id]
 
@@ -882,9 +882,9 @@ cases:
     function: align_names
     fixture: new_hope_3dhp.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id, toid]
 
@@ -893,9 +893,9 @@ cases:
     function: align_names
     fixture: sort_test.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # missing toid stays missing (no I-5 fill here)
@@ -903,9 +903,9 @@ cases:
     function: align_names
     fixture: coastal.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # worked example (shared fixture with hy)
@@ -913,9 +913,9 @@ cases:
     function: align_names
     fixture: hy_worked_example.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 boundaries; sf input with all-lowercase names: returned as read
@@ -923,27 +923,27 @@ cases:
     function: align_names
     fixture: single_flowline.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: align_names_all_terminals
     function: align_names
     fixture: all_terminals.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: align_names_empty_network
     function: align_names
     fixture: empty_network.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # ID, ToID, MyCol -> id, toid, MyCol
@@ -951,9 +951,9 @@ cases:
     function: align_names
     fixture: hy_mixed_case_names.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # tie rule (step 5): featureid (later in map order) wins over nhdplusid
@@ -961,9 +961,9 @@ cases:
     function: align_names
     fixture: hy_duplicate_alias_tie.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D3-182: the name_alias_duplicate warning from align_names; the tie's
@@ -972,9 +972,9 @@ cases:
     function: align_names
     fixture: hy_duplicate_alias_tie.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: warning
     raises_key: name_alias_duplicate
@@ -984,9 +984,9 @@ cases:
     function: align_names
     fixture: align_names_duplicate_alias_swapped.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # totda beside TotDASqKM (test_align_names.R): totda wins
@@ -994,9 +994,9 @@ cases:
     function: align_names
     fixture: align_names_totda.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # sf New Hope as read in source names with TotDA added (test_align_names.R):
@@ -1006,9 +1006,9 @@ cases:
     function: align_names
     fixture: align_names_new_hope_totda.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id, total_da_sqkm, TotDASqKM]
 
@@ -1017,9 +1017,9 @@ cases:
     function: align_names
     fixture: align_names_three_aliases.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: name_alias_ambiguous
@@ -1029,9 +1029,9 @@ cases:
     function: align_names
     fixture: hy_permanent_identifier_tie.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # permanent_identifier drops although id is not the repeated name; the toid
@@ -1041,9 +1041,9 @@ cases:
     function: align_names
     fixture: align_names_permanent_identifier_elsewhere.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # permanent_identifier with to_permanent_identifier only: id, toid; no
@@ -1052,9 +1052,9 @@ cases:
     function: align_names
     fixture: align_names_permanent_identifier_pair.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # permanent_identifier alone: becomes id
@@ -1062,9 +1062,9 @@ cases:
     function: align_names
     fixture: align_names_permanent_identifier_alone.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: align_names_conflict
