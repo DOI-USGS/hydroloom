@@ -12,7 +12,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | `hy` | `as_hy` | r | 38 |
 | `hy_reverse` | `hy_reverse` | r | 11 |
 | `is.hy` | `is_hy` | r | 15 |
-| `align_names` | `align_names` | r | 25 |
+| `align_names` | `align_names` | r | 26 |
 | `hydroloom_name_definitions` | `name_definitions` | r, python | 1 |
 | `hydroloom_names` | `register_names` | r | 2 |
 | `hy_network_type` | `representation` | r | 21 |

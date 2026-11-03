@@ -1073,7 +1073,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: name_alias_conflict
@@ -1085,10 +1085,22 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: name_alias_conflict
+
+  # second pass over align_names_nhdplushr's names: permanent_identifier beside
+  # id drops before the conflict check (step 3) and the table returns
+  # unchanged; R stopped with name_alias_conflict before M5 run 3 unit 3 (B-3)
+  - id: align_names_permanent_identifier_beside_id
+    function: align_names
+    fixture: align_names_permanent_identifier_beside_id.gpkg
+    args: {}
+    compare: values
+    order: exact
+    supported_by: [r, python]
+    generator: [r]
 
   # R-only accidents (Python returns the aligned GeoDataFrame; keep r only).
   # mainstemid lowercase beside COMID on sf input: sf's rename stops

@@ -356,6 +356,18 @@ fixtures:
   exercises: 'permanent_identifier the only id alias: becomes id'
   rules: []
   bytes: 73728
+- file: align_names_permanent_identifier_beside_id.gpkg
+  source: synthetic; the align_names output of an NHDPlusHR table (align_names_nhdplushr)
+  rows: 2
+  geometry: none
+  columns:
+  - id
+  - Permanent_Identifier
+  - toid
+  exercises: 'permanent_identifier beside id on a second pass: the permanent_identifier
+    rule drops it before the conflict check and the table returns unchanged'
+  rules: []
+  bytes: 73728
 - file: align_names_permanent_identifier_elsewhere.gpkg
   source: synthetic
   rows: 2
