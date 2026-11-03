@@ -5,7 +5,7 @@ required_atts_check_divergence <- c("id", "fromnode", "divergence")
 #' Check hy Graph
 #' @description check that a network graph doesn't contain cycles
 #' and, optionally, that its divergence attributes are internally consistent.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @details
 #'
 #' Required attributes: `id`, `toid`

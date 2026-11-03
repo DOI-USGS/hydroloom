@@ -2,7 +2,7 @@
 #' @description Given a dendritic network and set of ids, finds paths or
 #' lengths between all identified flowpath outlets. This algorithm finds
 #' paths between outlets regardless of flow direction.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param outlets vector or list of length 2 of ids from data.frame
 #' @param status logical print status and progress bars?
 #' @details
@@ -144,7 +144,11 @@ navigate_connected_paths <- function(x, outlets, status = FALSE) {
 #' @title Get Partial Flowpath Length
 #' @param hydro_location list containing a hydrologic locations with names
 #' aggregate_id (reachcode) and aggregate_id_measure (reachcode measure).
-#' @param network data.frame network compatible with \link{hydroloom_names}.
+#' @param network data.frame. A table of flowlines or catchments (the land areas draining
+#' to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+#' NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are
+#' renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+#' source names hydroloom knows.
 #' @param flowpath data.frame containing one flowpath that corresponds to the
 #' `hydro_location`. Not required if `x` is provided. `x` is not required if
 #' `flowpath` is provided.

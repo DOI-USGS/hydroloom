@@ -22,7 +22,11 @@ to_flownetwork(x, warn_dendritic = TRUE)
 \method{to_flownetwork}{hy_leveled}(x, warn_dendritic = TRUE)
 }
 \arguments{
-\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+\item{x}{data.frame. A table of flowlines or catchments (the land areas draining
+to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
+renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+source names hydroloom knows.}
 
 \item{warn_dendritic}{logical if TRUE and a dendritic \code{toid} attribute is
 provided, a warning will be emitted as toid is expected to be non-dendritic

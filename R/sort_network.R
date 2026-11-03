@@ -14,7 +14,7 @@
 #' implementation detail.
 #'
 #' @export
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @details
 #'
 #' Required attributes: `id`, `toid`
@@ -317,7 +317,7 @@ sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
 #' Add topo_sort
 #' @description calls \link{sort_network} without support for splitting the network
 #' and adds a `nrow:1` topo_sort attribute.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param outlets same as id in x. if specified, only the network
 #' emanating from these outlets will be considered and returned.
 #' @details

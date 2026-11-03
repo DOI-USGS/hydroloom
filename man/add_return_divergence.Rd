@@ -19,7 +19,11 @@ add_return_divergence(x, status = TRUE)
 \method{add_return_divergence}{hy_node}(x, status = TRUE)
 }
 \arguments{
-\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+\item{x}{data.frame. A table of flowlines or catchments (the land areas draining
+to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
+renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+source names hydroloom knows.}
 
 \item{status}{boolean if status updates should be printed.}
 }

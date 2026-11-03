@@ -2,7 +2,7 @@
 #' @description given a variable, accumulate according to network topology.
 #' See details for required attributes and additional information.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param var variable to accumulate.
 #' @param total logical if TRUE, accumulation will use "total" apportionment
 #' if FALSE, divergence or dendritic apportionment will apply ( see details).

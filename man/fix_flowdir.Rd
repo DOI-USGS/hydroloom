@@ -9,7 +9,11 @@ fix_flowdir(id, network = NULL, fn_list = NULL)
 \arguments{
 \item{id}{integer The id of the flowline to check}
 
-\item{network}{data.frame network compatible with \link{hydroloom_names}.}
+\item{network}{data.frame. A table of flowlines or catchments (the land areas draining
+to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
+renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+source names hydroloom knows.}
 
 \item{fn_list}{list containing named elements \code{flowline}, \code{network}, and \code{check_end},
 where \code{flowline} is the flowline to be checked and \code{network} the feature up or downstream

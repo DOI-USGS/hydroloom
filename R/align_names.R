@@ -110,7 +110,8 @@ align_names <- function(x) {
 #' @returns each hydroloom name with its definition, one entry per name, in
 #' the order of the vocabulary. In R, the value is a named character vector
 #' whose names are the hydroloom names, with class `hydroloom_names` for its
-#' custom print method.
+#' custom print method. In Python, the value is a table with columns `name`
+#' and `definition`, one row per name.
 #' @export
 #' @examples
 #' hydroloom_name_definitions

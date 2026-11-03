@@ -21,8 +21,7 @@ from hydroloom._docstrings import (
 # these; the table and these counts are reviewed together (VERIFICATION 6).
 EXPECTED_FIRES = {
     r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)": 15,
-    r" In R,[^\n]*?[.?!](?=\s|\Z)": 26,
-    r"data\.frame network compatible with hydroloom_names": 107,
+    r" In R,[^\n]*?[.?!](?=\s|\Z)": 133,
     r"logical if TRUE": 29,
     r"logical if `TRUE`": 5,
     r"\Alogical\. ": 7,
@@ -38,7 +37,7 @@ EXPECTED_FIRES = {
     r"\Ainteger ": 7,
     r"\Aunits distance ": 3,
     r"\Acrs\. ": 3,
-    r"\Adata\.frame\. ": 30,
+    r"\Adata\.frame\. ": 137,
     r"\Avector of the same length as `nrow\(x\)` containing ": 6,
     r"\Avector ": 35,
     r"sfc_POINT simple feature geometry list of length `nrow\(indexes\)`": 1,
@@ -225,9 +224,10 @@ def test_composed_sections(func):
 
 
 SHARED_NETWORK = (
-    "A table of flowlines or catchments; columns hydroloom knows by another "
-    "name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus "
-    "`COMID`, `ToCOMID`), are renamed to hydroloom names first."
+    "A table of flowlines or catchments (the land areas draining to each "
+    "flowline); columns hydroloom knows by another name, from NHDPlusV2, "
+    "NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are "
+    "renamed to hydroloom names first."
 )
 
 

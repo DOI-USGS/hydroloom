@@ -2,7 +2,7 @@ utils::globalVariables(c("fromid", "."))
 
 #' @title Make Node Topology from Edge Topology
 #' @description creates a node topology table from an edge topology
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @details
 #'
 #' Required attributes: `id`, `toid`

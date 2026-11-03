@@ -31,7 +31,7 @@ get_start_row <- function(x, id) {
 #' @title Navigate Hydro Network
 #' @description Navigates a network of connected catchments using NHDPlus style
 #' network attributes.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param start character or numeric to match identifier attribute. The
 #' starting catchment is included.
 #' @param mode character chosen from c(UM, DM, UT, DD) or equivalently

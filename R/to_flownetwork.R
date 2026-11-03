@@ -3,7 +3,7 @@
 #' converts an `hy` object into a flownetwork with "id", "toid",
 #' "upmain" and "downmain attributes.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param warn_dendritic logical if TRUE and a dendritic `toid` attribute is
 #' provided, a warning will be emitted as toid is expected to be non-dendritic
 #' for any `downmain` to be `FALSE`.

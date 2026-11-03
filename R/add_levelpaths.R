@@ -13,7 +13,7 @@ required_atts_add_levelpaths <- c("id", "toid")
 #' If a "topo_sort" (hydrosequence in nhdplus terms) attribute is included,
 #' it will be used instead of recreation.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param name_attribute character attribute to be used as name identifiers.
 #' @param weight_attribute character attribute to be used as weight.
 #' @param override_factor numeric multiplier to use to override `name_attribute`.

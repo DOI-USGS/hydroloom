@@ -12,7 +12,7 @@
 #' entire basin upstream of where the diversion terminates. this function
 #' will return both closed basins and intersecting basins.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param outlet identifier of the outlet flowpath to subset upstream from.
 #' @param only_up logical if \code{TRUE}, only upstream navigation is used and
 #' any missed diversion connections are disconnected. If \code{FALSE} (default),

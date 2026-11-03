@@ -22,8 +22,10 @@
 #' @description makes index ids for the provided hy object. These can be used
 #' for graph traversal algorithms such that each flowline, one distinct
 #' \code{id}, has an integer position. In R, positions run from 1 to n in the
-#' order of \code{unique(x$id)}.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' order of \code{unique(x$id)}. In Python, positions run from 0 to n - 1,
+#' where n is the number of distinct \code{id} values, in order of first
+#' appearance.
+#' @inheritParams hy
 #' @param long_form logical DEPRECATED
 #' @param mode character indicating the mode of the graph. Choose from "to",
 #' "from", or "both". Default is "to". See Details for more information.
@@ -44,6 +46,10 @@
 #' each connection also says whether it is on the main path, the one that
 #' carries the same river on through a confluence or divergence. For mode
 #' "both", the "to" and then the "from" index ids.
+#'
+#' In Python, the result's `uniques` gives the `id` at each position, as
+#' text, and its `indptr` and `indices` hold the neighbors: those of the
+#' flowline at position i are `indices[indptr[i]:indptr[i + 1]]`.
 #'
 #' In R, the value is a list containing named elements:
 #' \describe{

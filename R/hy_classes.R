@@ -646,7 +646,7 @@ hy_topo_to_node <- function(x, fn_name, guidance = hy_guidance_node,
 #'   \item \code{"hy_flownetwork"}: junction table (id/toid/upmain/downmain)
 #'   \item \code{"hy"}: name-aligned base object
 #' }
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @returns character. One of \code{"hy_leveled"}, \code{"hy_topo"},
 #' \code{"hy_node"}, \code{"hy_flownetwork"}, or \code{"hy"}. In R, the value
 #' is \code{"not a hydroloom object"} when \code{x} carries no hydroloom

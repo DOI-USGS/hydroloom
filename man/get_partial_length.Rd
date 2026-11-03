@@ -10,7 +10,11 @@ get_partial_length(hydro_location, network = NULL, flowpath = NULL)
 \item{hydro_location}{list containing a hydrologic locations with names
 aggregate_id (reachcode) and aggregate_id_measure (reachcode measure).}
 
-\item{network}{data.frame network compatible with \link{hydroloom_names}.}
+\item{network}{data.frame. A table of flowlines or catchments (the land areas draining
+to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
+renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+source names hydroloom knows.}
 
 \item{flowpath}{data.frame containing one flowpath that corresponds to the
 \code{hydro_location}. Not required if \code{x} is provided. \code{x} is not required if

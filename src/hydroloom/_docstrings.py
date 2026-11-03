@@ -45,12 +45,6 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)", ""),
     (r" In R,[^\n]*?[.?!](?=\s|\Z)", ""),
     # The A-13 examples.
-    (
-        r"data\.frame network compatible with hydroloom_names",
-        "a table of flowlines or catchments; columns hydroloom knows by another "
-        "name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus "
-        "`COMID`, `ToCOMID`), are renamed to hydroloom names first",
-    ),
     (r"logical if TRUE", "if `True`"),
     (r"logical if `TRUE`", "if `True`"),
     # R type words opening an argument or value.

@@ -1,7 +1,7 @@
 #' @title Add Downstream IDs
 #' @description Generates a toid attribute from node topology by joining
 #' tonode and fromnode attributes.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param return_dendritic logical remove non dendritic paths if TRUE. Requires
 #' a "divergence" flag where 1 is main and 2 is secondary.
 #' @details

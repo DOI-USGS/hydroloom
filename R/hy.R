@@ -14,7 +14,8 @@
 #' the column, with its partner if it has one (\code{toid} for \code{id},
 #' \code{tonode} for \code{fromnode}), holds only whole numbers within the
 #' 32-bit integer range, and text when either holds larger whole numbers or
-#' text. A missing \code{toid} becomes the value that marks an outlet (a
+#' text. In Python, every identifier column becomes text (`str`).
+#' A missing \code{toid} becomes the value that marks an outlet (a
 #' flowline that flows to nothing else in the table), \code{""} when
 #' identifiers are text. In R,
 #' that value is \code{0} when identifiers are integer. A table with geometry
@@ -22,7 +23,11 @@
 #' is renamed \code{geom}.
 #' \code{hy_network_type()} reports which network layout the result follows,
 #' such as an id/toid list or a fromnode/tonode list.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @param x data.frame. A table of flowlines or catchments (the land areas draining
+#' to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+#' NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are
+#' renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+#' source names hydroloom knows.
 #' @param clean logical if TRUE, geometry and non-hydroloom compatible attributes
 #' will be removed.
 #' @param add_topo logical. If TRUE, auto-build topology (e.g. toid

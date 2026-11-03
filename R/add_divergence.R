@@ -3,7 +3,7 @@ required_atts_add_divergence <- c("id", "fromnode", "tonode")
 #' Add Divergence Attribute
 #' @description Given a non-dendritic flow network and required attributes,
 #' adds a divergence attribute according to NHDPlus data model methods.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param coastal_outlet_ids vector of identifiers for network outlets that
 #' terminate at the coast.
 #' @param inland_outlet_ids vector of identifiers for network outlets that
@@ -393,7 +393,7 @@ down_level <- function(x) {
 #' the most upstream feature in the set of features downstream of the primary
 #' outlet of the diversion is marked as the return divergence.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param status boolean if status updates should be printed.
 #' @returns data.frame containing `return_divergence` attribute
 #' @export

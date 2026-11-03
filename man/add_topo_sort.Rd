@@ -22,7 +22,11 @@ add_topo_sort(x, outlets = NULL)
 \method{add_topo_sort}{hy_topo}(x, outlets = NULL)
 }
 \arguments{
-\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+\item{x}{data.frame. A table of flowlines or catchments (the land areas draining
+to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
+renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+source names hydroloom knows.}
 
 \item{outlets}{same as id in x. if specified, only the network
 emanating from these outlets will be considered and returned.}

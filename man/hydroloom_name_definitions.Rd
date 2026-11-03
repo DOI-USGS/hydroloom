@@ -7,7 +7,8 @@
 each hydroloom name with its definition, one entry per name, in
 the order of the vocabulary. In R, the value is a named character vector
 whose names are the hydroloom names, with class \code{hydroloom_names} for its
-custom print method.
+custom print method. In Python, the value is a table with columns \code{name}
+and \code{definition}, one row per name.
 }
 \description{
 Definitions of all attributes used in the hydroloom package.

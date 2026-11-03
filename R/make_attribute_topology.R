@@ -1,7 +1,7 @@
 #' @title Make Attribute Topology
 #' @description given a set of lines with starting and ending nodes that
 #' form a geometric network, construct an attribute topology.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @details
 #'
 #' Required attributes: `id` and sf linestring geometry

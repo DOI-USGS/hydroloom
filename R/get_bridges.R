@@ -7,7 +7,7 @@
 #' correctly identifies the sole-path flowlines that separate parts of the
 #' network -- including flowlines within diversion systems that do not rejoin.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param quiet logical quiet messages?
 #' @details
 #'

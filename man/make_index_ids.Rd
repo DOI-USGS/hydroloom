@@ -19,7 +19,11 @@ make_index_ids(x, mode = "to", long_form = NULL)
 \method{make_index_ids}{hy_topo}(x, mode = "to", long_form = NULL)
 }
 \arguments{
-\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+\item{x}{data.frame. A table of flowlines or catchments (the land areas draining
+to each flowline); columns hydroloom knows by another name, from NHDPlusV2,
+NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), are
+renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
+source names hydroloom knows.}
 
 \item{mode}{character indicating the mode of the graph. Choose from "to",
 "from", or "both". Default is "to". See Details for more information.}
@@ -36,6 +40,10 @@ each connection also says whether it is on the main path, the one that
 carries the same river on through a confluence or divergence. For mode
 "both", the "to" and then the "from" index ids.
 
+In Python, the result's \code{uniques} gives the \code{id} at each position, as
+text, and its \code{indptr} and \code{indices} hold the neighbors: those of the
+flowline at position i are \code{indices[indptr[i]:indptr[i + 1]]}.
+
 In R, the value is a list containing named elements:
 \describe{
 \item{to}{adjacency matrix with columns that correspond to \code{unqiue(x$id)}}
@@ -51,7 +59,9 @@ In R, the long_form output is deprecated and will be removed in a future release
 makes index ids for the provided hy object. These can be used
 for graph traversal algorithms such that each flowline, one distinct
 \code{id}, has an integer position. In R, positions run from 1 to n in the
-order of \code{unique(x$id)}.
+order of \code{unique(x$id)}. In Python, positions run from 0 to n - 1,
+where n is the number of distinct \code{id} values, in order of first
+appearance.
 }
 \details{
 Required attributes: \code{id}, \code{toid}

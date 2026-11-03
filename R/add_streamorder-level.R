@@ -10,7 +10,7 @@
 #' primary paths and a `stream_calculator` value of 0. Secondary paths have
 #' no affect on the order of downstream paths.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @param status boolean if status updates should be printed.
 #' @details
 #'
@@ -187,7 +187,7 @@ add_streamorder.hy_topo <- function(x, status = TRUE) {
 #' If a TRUE/FALSE coastal attribute is included, coastal terminal paths
 #' begin at 1 and internal terminal paths begin at 4 as is implemented by
 #' the NHD stream leveling rules.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @inheritParams hy
 #' @details
 #'
 #' Required attributes: `levelpath`, `dn_levelpath`
