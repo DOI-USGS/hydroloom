@@ -7,9 +7,14 @@ Every message a user reads comes from ``remedies.json`` by key through
 from __future__ import annotations
 
 import functools
+import inspect
 import json
+import os
 from importlib.resources import files
 from typing import Any
+
+# The package directory; a frame whose file lies under it is inside hydroloom.
+_PACKAGE_DIR = os.path.normcase(os.path.dirname(os.path.abspath(__file__)))
 
 
 class HydroloomError(ValueError):
@@ -29,6 +34,28 @@ class HydroloomWarning(UserWarning):
 
     Deprecations are ``FutureWarning`` (A-11).
     """
+
+
+def _stack_level() -> int:
+    """Return the ``stacklevel`` of the first frame outside hydroloom (A-11).
+
+    Pass it to ``warnings.warn`` so the warning points at the user's call, as
+    pandas' ``find_stack_level`` does. The count includes this function's own
+    frame, which stands in for the ``warnings.warn`` call site.
+    """
+    frame = inspect.currentframe()
+    level = 0
+    try:
+        while frame is not None:
+            path = os.path.normcase(os.path.abspath(frame.f_code.co_filename))
+            if not path.startswith(_PACKAGE_DIR + os.sep):
+                break
+            frame = frame.f_back
+            level += 1
+    finally:
+        del frame
+
+    return level
 
 
 @functools.cache

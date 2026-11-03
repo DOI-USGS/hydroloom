@@ -610,6 +610,24 @@ def assert_raises(call: Callable[[], Any], case: Mapping[str, Any]) -> None:
 # One case ------------------------------------------------------------------
 
 
+def _prepare_is_the_target(case: Mapping[str, Any]) -> bool:
+    """Whether the case's ``prepare`` is a step the Python target runs itself.
+
+    R's `hy_network_type` reads the class `hy()` stamps, so its cases prepare
+    with `hy`. Python's `representation` aligns names and types `id` on its
+    own and validates no edge (hy_network_type.md Algorithm step 1,
+    Preconditions); running `as_hy` first would raise on edges it does not
+    check, such as a repeated (id, toid) pair.
+    """
+    prepare = case["prepare"]
+
+    return (
+        case["function"] == "hy_network_type"
+        and prepare["function"] == "hy"
+        and not prepare.get("args")
+    )
+
+
 def run_case(case: Mapping[str, Any], manifest: Mapping[str, Any]) -> None:
     """Run one manifest case through the Python package and compare."""
     import hydroloom
@@ -620,7 +638,7 @@ def run_case(case: Mapping[str, Any], manifest: Mapping[str, Any]) -> None:
 
     if "fixture" in case:
         network = read_fixture(case["fixture"])
-        if "prepare" in case:
+        if "prepare" in case and not _prepare_is_the_target(case):
             prepare = case["prepare"]
             fn = getattr(hydroloom, python_name(prepare["function"]))
             network = fn(network, **(prepare.get("args") or {}))

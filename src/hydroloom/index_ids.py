@@ -32,7 +32,7 @@ def _byte_rank(uniques: Any) -> NDArray[np.int64]:
     return rank
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class IndexIds:
     """A network graph in compressed sparse row form (SPEC K-3).
 
@@ -40,6 +40,7 @@ class IndexIds:
     in identifier byte order (D-5). ``uniques[i]`` is the ``id`` of node ``i``.
     In mode ``"to"`` the neighbors are the downstream flowlines, in mode
     ``"from"`` the upstream ones. A terminal has an empty range (K-4).
+    Equality and hashing are by object identity, since the fields are arrays.
 
     Attributes
     ----------

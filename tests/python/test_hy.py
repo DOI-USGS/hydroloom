@@ -243,9 +243,14 @@ def test_mixed_identifier_raises_type_error():
     ids=["Int64", "uint64", "float32", "float-beyond-int64", "bool", "object"],
 )
 def test_identifier_ingest_by_dtype(values, expected):
-    """Each identifier dtype becomes its exact decimal string, missing None (I-2)."""
-    out = as_hy(pd.DataFrame({"id": values}))
-    got = out["id"].tolist()
+    """Each identifier dtype becomes its exact decimal string, missing None (I-2).
+
+    The values go in ``fromnode``, where a missing value stays missing; a
+    missing ``id`` raises (B-1).
+    """
+    ids = pd.Series(range(len(values)), dtype="int64")
+    out = as_hy(pd.DataFrame({"id": ids, "fromnode": values}))
+    got = out["fromnode"].tolist()
 
     assert [None if pd.isna(v) else v for v in got] == expected
     assert all(type(v) is str for v in got if not pd.isna(v))
@@ -485,3 +490,171 @@ def test_first_need_without_guidance_fails_at_registration(registry):
     """A first need with no remedies key raises when registered, not when called."""
     with pytest.raises(KeyError):
         requires(Representation.FLOWNETWORK)
+
+
+def test_route_with_no_needs_falls_back_to_the_hy_body(registry):
+    """A pattern with no body of its own takes the ``hy`` body (A-3, S-16)."""
+
+    @requires()
+    def anything(network):
+        return _route(network, anything, {Representation.HY: _body})
+
+    for table in (
+        {"id": [1], "toid": [0]},
+        {"id": [1, 1], "toid": [2, 3]},
+        {"id": [1], "fromnode": [1], "tonode": [2]},
+        {
+            "id": [1],
+            "toid": [0],
+            "topo_sort": [1],
+            "levelpath": [1],
+            "levelpath_outlet_id": [1],
+        },
+    ):
+        assert anything(as_hy(pd.DataFrame(table)))[0] == "topo"
+
+
+# Missing id (B-1, hy.md step 5) -----------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        pd.Series([1.0, np.nan, 3.0, np.nan]),
+        pd.Series([1, None, 3, None], dtype="Int64"),
+        pd.Series(["a", None, "c", pd.NA], dtype=object),
+        pd.Series([1, None, 3, np.nan], dtype=object),
+    ],
+    ids=["float-nan", "Int64-na", "object-text", "object-number"],
+)
+def test_missing_id_raises_with_column_and_rows(values):
+    """A missing id raises id_missing, naming the input column and 1-based rows."""
+    table = pd.DataFrame({"COMID": values, "ToCOMID": [0, 0, 0, 0]})
+    table.index = [5, 6, 7, 8]
+    text = msg("id_missing", column="COMID", rows="2, 4")
+
+    with pytest.raises(HydroloomError, match=re.escape(text)):
+        as_hy(table)
+    with pytest.raises(HydroloomError, match=re.escape(text)):
+        representation(table)
+
+
+@pytest.mark.parametrize(
+    ("values", "error"),
+    [
+        (pd.Series([1.5, np.nan]), HydroloomError),
+        (pd.Series([np.inf, np.nan]), HydroloomError),
+        (pd.Series(["a", 2, None], dtype=object), TypeError),
+    ],
+    ids=["fraction", "infinite", "mixed"],
+)
+def test_missing_id_is_checked_after_the_type_checks(values, error):
+    """Fractional, infinite, and mixed-type ids raise first (hy.md step 5)."""
+    with pytest.raises(error) as info:
+        as_hy(pd.DataFrame({"id": values}))
+
+    assert "has no value on these rows" not in str(info.value)
+
+
+def test_missing_value_does_not_count_toward_mixed_types():
+    """None beside strings is missing, not a number (hy.md step 5)."""
+    text = msg("id_missing", column="id", rows="2")
+
+    with pytest.raises(HydroloomError, match=re.escape(text)):
+        as_hy(pd.DataFrame({"id": pd.Series(["a", None], dtype=object)}))
+
+
+def test_missing_toid_is_still_the_outlet():
+    """Only id raises on a missing value; toid takes the outlet value (I-5)."""
+    out = as_hy(pd.DataFrame({"id": [1, 2], "toid": [2, np.nan]}))
+
+    assert out["toid"].tolist() == ["2", ""]
+
+
+# representation does not validate edges (hy_network_type.md Preconditions) ----
+
+
+@pytest.mark.parametrize(
+    ("table", "expected"),
+    [
+        ({"id": [1, 1], "toid": [2, 2]}, "hy_flownetwork"),
+        ({"id": [1, 2], "toid": [2.5, 0.0]}, "hy_topo"),
+        ({"id": [1, 2], "toid": [np.inf, 0.0]}, "hy_topo"),
+        ({"id": [1, 2], "toid": pd.Series(["a", 2], dtype=object)}, "hy_topo"),
+        ({"id": [1, 2], "fromnode": [1.5, 2.0], "tonode": [2.0, 3.0]}, "hy_node"),
+        ({"id": [1, 2], "fromnode": [np.inf, 2.0], "tonode": [2.0, 3.0]}, "hy_node"),
+        (
+            {
+                "id": [1, 1, 2],
+                "toid": [2, 3, 3],
+                "downmain": [True, True, True],
+                "upmain": [True, True, True],
+            },
+            "hy_flownetwork",
+        ),
+        ({"id": [1, 2], "toid": [2, 0], "TerminalFl": [0, 2]}, "hy_topo"),
+    ],
+    ids=[
+        "repeated-pair",
+        "toid-not-whole",
+        "toid-infinite",
+        "toid-mixed",
+        "fromnode-not-whole",
+        "fromnode-infinite",
+        "main-invariants",
+        "flag-not-binary",
+    ],
+)
+def test_representation_does_not_validate_edges(table, expected):
+    """Edge conditions as_hy checks neither raise nor warn here (SP-03, SP-04)."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert representation(pd.DataFrame(table)) == expected
+
+
+@PROPERTY
+@given(
+    st.lists(st.integers(1, 4), max_size=6).flatmap(
+        lambda ids: st.tuples(
+            st.just(ids),
+            st.lists(
+                st.one_of(
+                    st.none(),
+                    st.integers(0, 6),
+                    st.floats(allow_nan=True, allow_infinity=True),
+                    st.text(max_size=2),
+                ),
+                min_size=len(ids),
+                max_size=len(ids),
+            ),
+        )
+    )
+)
+def test_representation_ignores_toid_values(drawn):
+    """The value does not depend on toid values, repeats included (Postconditions)."""
+    ids, toids = drawn
+    base = pd.DataFrame({"id": pd.Series(ids, dtype="int64")})
+    table = base.assign(toid=pd.Series(toids, dtype=object))
+
+    assert representation(table) == representation(base.assign(toid=0))
+
+
+# Warning stack level (A-11) -------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "table",
+    [
+        pd.DataFrame({"nhdplusid": [1], "featureid": [1]}),
+        pd.DataFrame({"id": [1, 2], "TerminalFl": [0, 2]}),
+    ],
+    ids=["name_alias_duplicate", "flag_value_not_binary"],
+)
+def test_as_hy_warning_points_at_the_caller(table):
+    """A warning from as_hy is attributed to this file, not to hydroloom."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        as_hy(table)
+
+    assert [w.category for w in caught] == [HydroloomWarning]
+    assert caught[0].filename == __file__

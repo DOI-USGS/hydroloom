@@ -29,6 +29,7 @@ from hydroloom.errors import (
     HydroloomError,
     HydroloomWarning,
     RepresentationError,
+    _stack_level,
     msg,
 )
 
@@ -172,7 +173,7 @@ def _align(columns: Sequence[Any], forced: Mapping[str, Any]) -> dict[Any, str]:
                     aliases=_join([c for _, c in found]),
                 ),
                 HydroloomWarning,
-                stacklevel=2,
+                stacklevel=_stack_level(),
             )
         renamed[found[-1][1]] = name
 
@@ -310,7 +311,7 @@ def _flag_values(values: pd.Series, column: Any, ids: pd.Series) -> pd.Series:
                 rows=_join(ids[other].tolist()),
             ),
             HydroloomWarning,
-            stacklevel=2,
+            stacklevel=_stack_level(),
         )
         return values
 
@@ -325,6 +326,38 @@ def _true(values: pd.Series) -> np.ndarray:
     return np.asarray(values.eq(True).fillna(False), dtype=bool)
 
 
+def _align_frame(
+    network: pd.DataFrame, forced: Mapping[str, Any]
+) -> tuple[pd.DataFrame, dict[Any, str], Any]:
+    """Align names and type ``id`` (hy.md steps 1, 2, 4, 5 on ``id``).
+
+    Returns the attribute table with its index reset, the rename map, and the
+    name of the geometry set aside (None for a plain frame). This is all
+    `representation` checks (hy_network_type.md Algorithm step 1).
+    """
+    geometry = None
+    if isinstance(network, gpd.GeoDataFrame):
+        geometry = network.geometry.name
+    attrs = pd.DataFrame(network, copy=True)
+    if geometry is not None:
+        attrs = attrs.drop(columns=geometry)
+
+    names = _align(list(attrs.columns), forced)
+    attrs = attrs.rename(columns=names).reset_index(drop=True)
+    if "id" not in attrs.columns:
+        raise RepresentationError(msg("no_id_column"))
+
+    column = next((c for c, hy in names.items() if hy == "id"), "id")
+    values = _identifier_values(attrs["id"], column)
+    missing = [row for row, value in enumerate(values, start=1) if value is None]
+    if missing:
+        # B-1: after the fractional, infinite, and mixed-type checks (step 5).
+        raise HydroloomError(msg("id_missing", column=column, rows=_join(missing)))
+    attrs["id"] = pd.Series(values, index=attrs.index)
+
+    return attrs, names, geometry
+
+
 def _as_hy(
     network: pd.DataFrame,
     *,
@@ -336,26 +369,16 @@ def _as_hy(
     The map is ``{input column: hy name}`` for every column whose name
     changed, the value `_hy_reverse` takes back (A-17, I-14).
     """
-    geometry = None
-    if isinstance(network, gpd.GeoDataFrame):
-        geometry = network.geometry.name
-    attrs = pd.DataFrame(network, copy=True)
-    if geometry is not None:
-        attrs = attrs.drop(columns=geometry)
-
     forced = {
         name: column
         for name, column in (("id", id_col), ("toid", toid_col))
         if column is not None
     }
-    names = _align(list(attrs.columns), forced)
-    attrs = attrs.rename(columns=names).reset_index(drop=True)
-    if "id" not in attrs.columns:
-        raise RepresentationError(msg("no_id_column"))
+    attrs, names, geometry = _align_frame(network, forced)
 
     inverse = {hy: column for column, hy in names.items()}
     for term in _terms_of_type("id"):
-        if term in attrs.columns:
+        if term in attrs.columns and term != "id":
             values = _identifier_values(attrs[term], inverse.get(term, term))
             if term == "toid":
                 # I-5: a missing toid is the reserved outlet value.
@@ -477,7 +500,9 @@ def _route(
     """Call the body of ``fn`` for the pattern of ``df`` (A-3).
 
     Applies the registered conversion first; a leveled frame takes the topo
-    body when it has none of its own; a pattern with no body raises
+    body when it has none of its own; a function with no needs takes the
+    ``hy`` body for a pattern with no body of its own, since every frame
+    `_as_hy` returns is a hy frame; any other pattern with no body raises
     `RepresentationError`.
     """
     entry = _REGISTRY[fn.__name__]
@@ -488,6 +513,8 @@ def _route(
     label = current
     if label is Representation.LEVELED and label not in native:
         label = Representation.TOPO
+    if entry.key is None and label not in native:
+        label = Representation.HY
     if entry.key is not None and (label not in entry.needs or label not in native):
         text = msg(entry.key, function=fn.__name__, current=current.value)
         raise RepresentationError(text)
@@ -533,6 +560,6 @@ def representation(network: pd.DataFrame) -> str:
     >>> representation(pd.DataFrame({"id": [1, 2], "toid": [2, None]}))
     'hy_topo'
     """
-    df, _ = _as_hy(network)
+    df, _, _ = _align_frame(network, {})
 
     return _classify(df).value

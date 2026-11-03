@@ -30,11 +30,8 @@ def _make_index_ids_impl(
 
     Identifiers are text after `_as_hy` (I-2), so no type check is needed, and
     a repeated (id, toid) pair has already raised there (S-6); one body serves
-    both patterns.
+    both patterns. `make_index_ids` has checked ``mode``.
     """
-    if mode not in _MODES:
-        raise ValueError(msg("index_mode_invalid"))
-
     # Dense positions in first-appearance order; a toid that is no id is an
     # outlet and gives no edge (I-4).
     codes, uniques = pd.factorize(net["id"])
@@ -81,6 +78,9 @@ def make_index_ids(
     >>> up.uniques[up.indices[up.indptr[node] : up.indptr[node + 1]]].tolist()
     ['100', '30', '4']
     """
+    if mode not in _MODES:
+        raise ValueError(msg("index_mode_invalid"))
+
     df, _ = _as_hy(network)
     native = {
         Representation.TOPO: _make_index_ids_impl,

@@ -111,3 +111,8 @@ def test_not_in_all():
     """The classes are importable from hydroloom.errors, not exported (A-18)."""
     for name in ("HydroloomError", "RepresentationError", "CRSError", "msg"):
         assert name not in hydroloom.__all__
+
+
+def test_stack_level_counts_frames_inside_the_package():
+    """Called from outside hydroloom, the level is 1: the caller (A-11)."""
+    assert errors._stack_level() == 1
