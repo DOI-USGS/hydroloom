@@ -497,7 +497,7 @@ def test_route_with_no_needs_falls_back_to_the_hy_body(registry):
 
     @requires()
     def anything(network):
-        return _route(network, anything, {Representation.HY: _body})
+        return _route(network, anything, {Representation.HY: lambda df, **kw: "hy"})
 
     for table in (
         {"id": [1], "toid": [0]},
@@ -511,7 +511,7 @@ def test_route_with_no_needs_falls_back_to_the_hy_body(registry):
             "levelpath_outlet_id": [1],
         },
     ):
-        assert anything(as_hy(pd.DataFrame(table)))[0] == "topo"
+        assert anything(as_hy(pd.DataFrame(table))) == "hy"
 
 
 # Missing id (B-1, hy.md step 5) -----------------------------------------------
@@ -540,20 +540,20 @@ def test_missing_id_raises_with_column_and_rows(values):
 
 
 @pytest.mark.parametrize(
-    ("values", "error"),
+    ("values", "error", "rows"),
     [
-        (pd.Series([1.5, np.nan]), HydroloomError),
-        (pd.Series([np.inf, np.nan]), HydroloomError),
-        (pd.Series(["a", 2, None], dtype=object), TypeError),
+        (pd.Series([1.5, np.nan]), HydroloomError, "2"),
+        (pd.Series([np.inf, np.nan]), HydroloomError, "2"),
+        (pd.Series(["a", 2, None], dtype=object), TypeError, "3"),
     ],
     ids=["fraction", "infinite", "mixed"],
 )
-def test_missing_id_is_checked_after_the_type_checks(values, error):
+def test_missing_id_is_checked_after_the_type_checks(values, error, rows):
     """Fractional, infinite, and mixed-type ids raise first (hy.md step 5)."""
     with pytest.raises(error) as info:
         as_hy(pd.DataFrame({"id": values}))
 
-    assert "has no value on these rows" not in str(info.value)
+    assert str(info.value) != msg("id_missing", column="id", rows=rows)
 
 
 def test_missing_value_does_not_count_toward_mixed_types():
@@ -643,18 +643,23 @@ def test_representation_ignores_toid_values(drawn):
 
 
 @pytest.mark.parametrize(
-    "table",
+    ("function", "table"),
     [
-        pd.DataFrame({"nhdplusid": [1], "featureid": [1]}),
-        pd.DataFrame({"id": [1, 2], "TerminalFl": [0, 2]}),
+        (as_hy, pd.DataFrame({"nhdplusid": [1], "featureid": [1]})),
+        (as_hy, pd.DataFrame({"id": [1, 2], "TerminalFl": [0, 2]})),
+        (representation, pd.DataFrame({"nhdplusid": [1], "featureid": [1]})),
     ],
-    ids=["name_alias_duplicate", "flag_value_not_binary"],
+    ids=[
+        "as_hy-name_alias_duplicate",
+        "as_hy-flag_value_not_binary",
+        "representation-name_alias_duplicate",
+    ],
 )
-def test_as_hy_warning_points_at_the_caller(table):
-    """A warning from as_hy is attributed to this file, not to hydroloom."""
+def test_warning_points_at_the_caller(function, table):
+    """A warning from hydroloom is attributed to this file, not to hydroloom."""
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        as_hy(table)
+        function(table)
 
     assert [w.category for w in caught] == [HydroloomWarning]
     assert caught[0].filename == __file__

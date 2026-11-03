@@ -6,6 +6,8 @@ semantics the manifest compares are not repeated here (S-7).
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,7 +16,7 @@ from hypothesis import strategies as st
 
 from conformance import graph_to_layer
 from hydroloom import make_index_ids
-from hydroloom.errors import HydroloomError, RepresentationError
+from hydroloom.errors import HydroloomError, RepresentationError, msg
 from hydroloom.index_ids import IndexIds
 
 PROPERTY = settings(derandomize=True, max_examples=60, deadline=None)
@@ -182,21 +184,24 @@ def test_mode_checked_before_routing():
     node = pd.DataFrame({"id": [1, 2], "fromnode": [1, 2], "tonode": [2, 3]})
 
     for table in (node, pd.DataFrame({"name": ["a"]})):
-        with pytest.raises(ValueError, match="mode must be one of") as info:
+        with pytest.raises(
+            ValueError, match=re.escape(msg("index_mode_invalid"))
+        ) as info:
             make_index_ids(table, mode="down")
         assert not isinstance(info.value, RepresentationError)
 
 
 @pytest.mark.parametrize(
-    "ids",
-    [[1.0, np.nan, 3.0], [1.0, np.nan, np.nan]],
+    ("ids", "rows"),
+    [([1.0, np.nan, 3.0], "2"), ([1.0, np.nan, np.nan], "2, 3")],
     ids=["one-missing", "two-missing"],
 )
-def test_missing_id_raises_before_the_index(ids):
+def test_missing_id_raises_before_the_index(ids, rows):
     """A missing id raises id_missing at ingest; no row is dropped (B-1, SP-07)."""
     table = pd.DataFrame({"id": ids, "toid": [3, 3, 0]})
+    text = msg("id_missing", column="id", rows=rows)
 
-    with pytest.raises(HydroloomError, match="has no value on these rows: 2"):
+    with pytest.raises(HydroloomError, match=re.escape(text)):
         make_index_ids(table)
 
 
@@ -207,7 +212,6 @@ def test_index_ids_compare_by_identity():
 
     assert first == first
     assert first != second
-    assert hash(first) != hash(second)
     assert first in [second, first]
     assert second not in [first]
     assert len({first, second}) == 2

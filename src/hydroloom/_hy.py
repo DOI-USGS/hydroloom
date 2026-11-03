@@ -328,7 +328,7 @@ def _true(values: pd.Series) -> np.ndarray:
 
 def _align_frame(
     network: pd.DataFrame, forced: Mapping[str, Any]
-) -> tuple[pd.DataFrame, dict[Any, str], Any]:
+) -> tuple[pd.DataFrame, dict[Any, str], Hashable | None]:
     """Align names and type ``id`` (hy.md steps 1, 2, 4, 5 on ``id``).
 
     Returns the attribute table with its index reset, the rename map, and the
@@ -348,11 +348,13 @@ def _align_frame(
         raise RepresentationError(msg("no_id_column"))
 
     column = next((c for c, hy in names.items() if hy == "id"), "id")
+    rows = np.flatnonzero(attrs["id"].isna().to_numpy()) + 1
     values = _identifier_values(attrs["id"], column)
-    missing = [row for row, value in enumerate(values, start=1) if value is None]
-    if missing:
+    if rows.size:
         # B-1: after the fractional, infinite, and mixed-type checks (step 5).
-        raise HydroloomError(msg("id_missing", column=column, rows=_join(missing)))
+        raise HydroloomError(
+            msg("id_missing", column=column, rows=_join(rows.tolist()))
+        )
     attrs["id"] = pd.Series(values, index=attrs.index)
 
     return attrs, names, geometry

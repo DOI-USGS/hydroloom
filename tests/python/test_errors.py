@@ -113,6 +113,6 @@ def test_not_in_all():
         assert name not in hydroloom.__all__
 
 
-def test_stack_level_counts_frames_inside_the_package():
+def test_stack_level_from_outside_the_package_is_one():
     """Called from outside hydroloom, the level is 1: the caller (A-11)."""
     assert errors._stack_level() == 1
