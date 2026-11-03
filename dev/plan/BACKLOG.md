@@ -13,7 +13,6 @@ Columns: Item (what, with the fixed point it waits for); Source (the disposition
 
 | Item | Source | Rule | §4 | Owner |
 | --- | --- | --- | --- | --- |
-| Reference hydrofabric subset fixture and an `hy` alias case for the hydrofabric alias set, fetched by a hydrogeofetch call before the exemplar run; nothing else exercises those aliases. | D2-15 | S-2 | no | M5 run |
 | `supported_by: [python]` raise cases on `sort_network_dups.gpkg` (repeated `id`/`toid` pair) and the `check_hy_graph` Python-only case, added when `generator: [python]` has something to run; keeps the M2 parity invariant until then. | D3-217, D3-210, D3-166 | B-5 | no | M5 run |
 | `register_names()` tie rule when several aliases map to one hydroloom name: which alias wins, whether Python raises. Lands with the naming block. | navigate_network_dfs reader H-02 (2026-10-29), D3-15 | — | no | maintainer at M5 start |
 | `R CMD build .` on Linux from a checkout with `src/` (the `.gitlab-ci.yml` `rc/*` tarball job) relies on the no-op `src/Makefile` and `src/install.libs.R`, which have been run only on win-64, and stamps `NeedsCompilation: yes` while `pixi run r-check` checks a pkgbuild-copy tarball stamped `no`. Build once on Linux before the next `rc/*` branch, record the value, and either accept the difference or make the release job build the way `r-check` does. | M4 unit 1 S-03 | AGENTS § CI and release | no | M5 run |

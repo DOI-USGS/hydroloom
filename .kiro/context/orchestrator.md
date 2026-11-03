@@ -60,7 +60,7 @@ user-visible behavior change nothing names (RULES B-3). Never push.
   answer with a list of what it would hold. It names the milestone,
   the units in dependency order, the base SHA, the effort level, the BACKLOG rows pulled
   in, and for each description the SHA of its last logged read.
-- The unit list is the kickoff's (RULES P-5). A run ends on its last unit or at a block,
+- The unit list is the kickoff's (RULES P-5). A run ends on its last unit,
   never by adding a unit; what a run finds goes to a bin.
 - A reader round reads a diff (RULES P-4): the binding sections changed since the
   description's last-read SHA, the whole file only on a first read. A description with no

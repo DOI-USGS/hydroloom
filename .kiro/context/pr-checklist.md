@@ -13,7 +13,8 @@ with manifest ids) run first. This list is the rest.
 - A-9 — function and argument names copied from R; data first, then `*`; first argument is
   `network` (phase 1–2) or the operand noun (phase 3).
 - A-10 — error text from `remedies.json` by key.
-- A-11 — `stacklevel=2` on every `warnings.warn`; the package warning class.
+- A-11 — every `warnings.warn` uses the first frame outside hydroloom as its stack
+  level, not a fixed number (REVIEW_11022026 item 5); the package warning class.
 - A-13 — docstring composed from `docstrings.json`; hand-written doctest present; no R
   phrasing left (`data.frame`, `logical`, `sf`).
 - A-18 — `__all__` updated; `test_api.py` passes.

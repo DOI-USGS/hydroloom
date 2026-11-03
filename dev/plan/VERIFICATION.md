@@ -189,14 +189,15 @@ flowchart LR
 
 GeoPackage throughout, one file per fixture; attribute-only fixtures are aspatial tables. Geometry fixtures stored projected in EPSG:5070; each under a megabyte. Expected outputs are one GeoPackage per function with a layer per case.
 
-Real subsets, one per source, which is what exercises the vocabulary's `aliases`:
+Real subsets, one per source that a sample in hand represents, which is what exercises the vocabulary's `aliases`:
 
 | Fixture | Source | Exercises |
 | --- | --- | --- |
 | New Hope | NHDPlusV2 | the default network; already shipped by hydroloom and hydrogeofetch; PR-scale runs of the scale harness and the pipeline test |
 | NHDPlus HR subset | NHDPlus HR | identifiers outside 32-bit range: `character` in R by I-2, `str` in Python like every identifier; the HU04 0204 scale fixture (ROADMAP §3, closed 2026-10-25) |
 | 3DHP subset | 3DHP | string identifiers; the `3dhp` alias set |
-| reference hydrofabric subset | reference hydrofabric | the `hydrofabric` alias set |
+
+An alias or a source tag may exist with no fixture that exercises it: the vocabulary supports fabrics no sample in hand represents (RULES B-4). The `hydrofabric` source tag is one (REVIEW_11022026 item 1).
 
 Synthetic networks, a dozen flowlines each, for topology edges no real subset reliably contains:
 
