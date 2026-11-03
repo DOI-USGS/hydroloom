@@ -96,6 +96,44 @@ type = "forbidden"
 source_modules = ["hydroloom._kernels"]
 forbidden_modules = ["pandas", "geopandas", "shapely", "hydroloom._hy"]
 
+# towncrier (VERIFICATION 1.7) ----------------------------------------------
+
+# Fragments in changelog.d/ build CHANGELOG.md, the Python changelog; R keeps
+# NEWS.md. A fragment with no issue number is named +<slug>.<type>.md.
+[tool.towncrier]
+name = "hydroloom"
+directory = "changelog.d"
+filename = "CHANGELOG.md"
+start_string = "<!-- towncrier release notes start -->\n"
+title_format = "## {version} ({project_date})"
+issue_format = "[#{issue}](https://github.com/DOI-USGS/hydroloom/issues/{issue})"
+
+# keep-a-changelog types (VERIFICATION 1.7, DESIGN tooling defaults).
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "changed"
+name = "Changed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "deprecated"
+name = "Deprecated"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "removed"
+name = "Removed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
 # pytest --------------------------------------------------------------------
 
 [tool.pytest.ini_options]
@@ -132,6 +170,9 @@ install = "pixi reinstall hydroloom"
 lint = "ruff check . && ruff format --check . && lint-imports --no-cache && mypy src/hydroloom"
 test = "pytest"
 build = "python -m build --outdir dist ."
+# Renders the unreleased fragments without writing CHANGELOG.md; a release
+# runs `towncrier build --version <version>`.
+changelog = "towncrier build --draft --version unreleased"
 
 [tool.pixi.feature.dev.dependencies]
 pytest = "*"
@@ -143,6 +184,7 @@ python-build = "*"
 pyyaml = "*"
 numpydoc = "*"
 pre-commit = "*"
+towncrier = "*"
 
 [tool.pixi.feature.py310.dependencies]
 python = "3.10.*"
