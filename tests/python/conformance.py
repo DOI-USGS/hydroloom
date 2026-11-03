@@ -405,7 +405,8 @@ def _is_texty(series: pd.Series) -> bool:
 def _cast_integer(actual: pd.Series, dtype: Any) -> pd.Series:
     # S-4 `compare: values`: an integer layer column with no missing value; a
     # cast that would change a value is not made, so the comparison fails.
-    if actual.isna().any():
+    # A text column is not cast: text against an integer layer fails.
+    if actual.isna().any() or pd.api.types.infer_dtype(actual) == "string":
         return actual
     try:
         cast = actual.astype(dtype)

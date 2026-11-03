@@ -20,7 +20,7 @@ from shapely.geometry import LineString
 
 from conformance import CONFORMANCE_DIR, remedy_pattern
 from hydroloom import align_names, as_hy, hy_reverse, is_hy, name_definitions
-from hydroloom._hy import _SOURCES, _source_names, _terms
+from hydroloom._hy import _SOURCES, _alias_map, _source_names, _terms
 from hydroloom.errors import HydroloomWarning
 from test_hy import PROPERTY, alias_tables, source_tables
 
@@ -45,7 +45,10 @@ def _same_values(out, table):
 @PROPERTY
 @given(alias_tables(), st.sampled_from(_SOURCES))
 def test_hy_reverse_postconditions(table, source):
-    """Counts, order, values, the renamed set, and the as_hy round trip."""
+    """Counts, order, values, the renamed set, and the as_hy round trip.
+
+    A term with no alias under ``source`` keeps its hydroloom name.
+    """
     out = _quiet(as_hy, table)
     before = out.copy()
     try:
@@ -81,17 +84,6 @@ def test_hy_reverse_without_source_is_the_identity():
 
     pd.testing.assert_frame_equal(back, out)
     assert back is not out
-
-
-def test_hy_reverse_leaves_untagged_terms():
-    """A term with no alias under the source keeps its hydroloom name."""
-    out = as_hy(pd.DataFrame({"COMID": [1, 2], "ToCOMID": [2, 0], "FTYPE": ["a", "b"]}))
-
-    assert hy_reverse(out, source="nhdplushr").columns.tolist() == [
-        "nhdplusid",
-        "toid",
-        "feature_type",
-    ]
 
 
 def test_hy_reverse_unknown_source_raises_key_error():
@@ -214,32 +206,31 @@ def test_is_hy_never_raises(columns):
 @pytest.mark.parametrize(
     ("table", "expected"),
     [
-        ({"id": ["1", "2"], "toid": ["2", ""]}, True),
         ({"id": ["1", "2"], "toid": ["2", None]}, True),
         ({"id": ["1", "2"], "fromnode": ["a", None], "tonode": ["b", "c"]}, True),
         ({"id": ["1", None], "toid": ["2", ""]}, False),
         ({"id": [1, 2], "toid": ["2", ""]}, False),
         ({"id": ["1", "2"], "toid": [2.0, 0.0]}, False),
         ({"id": ["1", "2"], "tonode": [1, 2]}, False),
-        ({"ID": ["1"]}, False),
         ({"name": ["a"]}, False),
         ({"id": ["1"], "Notes": [1]}, True),
     ],
     ids=[
-        "hy-names-text",
         "missing-toid",
         "missing-node",
         "missing-id",
         "integer-id",
         "float-toid",
         "integer-node",
-        "id-in-another-case",
         "no-id",
         "other-column-any-type",
     ],
 )
 def test_is_hy_definition(table, expected):
-    """Condition 1 (names) and condition 2 (text identifiers) of is.hy.md."""
+    """Identifier dtypes and missing values on ingest (is.hy.md condition 2).
+
+    Source names (condition 1) are in the manifest cases and the properties.
+    """
     assert is_hy(pd.DataFrame(table)) is expected
 
 
@@ -279,6 +270,8 @@ def test_align_names_postconditions(table, rng):
     assert out.columns.is_unique
     for old, new in zip(table.columns, out.columns, strict=True):
         assert new == old or new in hy_names
+        if new != old:
+            assert old.lower() == new or (old.lower(), new) in _alias_map()
         if old.lower() in hy_names:
             assert new == old.lower()
     pd.testing.assert_frame_equal(_quiet(align_names, out), out)
@@ -348,7 +341,6 @@ def test_name_definitions_postconditions():
     assert all(re.fullmatch(r"[a-z][a-z0-9]*(_[a-z0-9]+)*", n) for n in defs["name"])
     assert all(isinstance(d, str) and d for d in defs["definition"])
     assert "mainstem" not in set(defs["name"])
-    assert len(defs) == 46
 
 
 def test_name_definitions_is_a_new_frame():

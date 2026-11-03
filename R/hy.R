@@ -257,8 +257,13 @@ ingest_id <- function(v) {
   s
 }
 
-#' Is Valid `hy` Class?
-#' @description test if object is a valid according to the hy s3 class
+#' Test whether a table is in the form `hy()` returns
+#' @description tests whether a table is in the form \code{hy()} returns:
+#' hydroloom column names, and identifier columns in the type \code{hy()}
+#' gives them. In R, the test reads the object's S3 class, \code{hy} or
+#' \code{hy_flownetwork}, and the original names attribute \code{hy()}
+#' attaches, so a table in hydroloom names that \code{hy()} did not produce
+#' is \code{FALSE}.
 #' @param x object to test
 #' @param silent logical should messages be emitted?
 #' @returns logical TRUE if valid
@@ -286,11 +291,13 @@ is.hy <- function(x, silent = FALSE) {
   TRUE
 }
 
-#' Reverse `hy` to Original Names
-#' @description renames hy object to original names and removes hy object
-#' attributes.
+#' Restore source column names
+#' @description renames columns back to the names they had in the source
+#' data. A column with no source name keeps its name. In R, the source names
+#' are those the table had when it was passed to \code{hy()}, and the hy
+#' classes and attributes are removed.
 #' @param x data.frame network compatible with \link{hydroloom_names}.
-#' @returns returns x with attribute names converted to original names provided to \link{hy}
+#' @returns the input table with its columns renamed to their source names.
 #' @export
 #' @examples
 #' x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

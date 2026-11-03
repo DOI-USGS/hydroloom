@@ -4,11 +4,14 @@
 \alias{hydroloom_name_definitions}
 \title{Hydroloom Name Definitions}
 \value{
-named character vector with \code{hydroloom_names} class to support custom print method
+each hydroloom name with its definition, one entry per name, in
+the order of the vocabulary. In R, the value is a named character vector
+whose names are the hydroloom names, with class \code{hydroloom_names} for its
+custom print method.
 }
 \description{
-A names character vector containing definitions of all
-attributes used in the hydroloom package.
+Definitions of all attributes used in the hydroloom package.
+In R, these are a named character vector, read by name rather than called.
 }
 \examples{
 hydroloom_name_definitions

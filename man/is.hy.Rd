@@ -2,7 +2,7 @@
 % Please edit documentation in R/hy.R
 \name{is.hy}
 \alias{is.hy}
-\title{Is Valid \code{hy} Class?}
+\title{Test whether a table is in the form \code{hy()} returns}
 \usage{
 is.hy(x, silent = FALSE)
 }
@@ -15,5 +15,10 @@ is.hy(x, silent = FALSE)
 logical TRUE if valid
 }
 \description{
-test if object is a valid according to the hy s3 class
+tests whether a table is in the form \code{hy()} returns:
+hydroloom column names, and identifier columns in the type \code{hy()}
+gives them. In R, the test reads the object's S3 class, \code{hy} or
+\code{hy_flownetwork}, and the original names attribute \code{hy()}
+attaches, so a table in hydroloom names that \code{hy()} did not produce
+is \code{FALSE}.
 }

@@ -770,7 +770,7 @@
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names."
     },
-    "description": "this function aligns the attribute names in x with those used in hydroloom. See hydroloom_names for how to add more attribute name mappings if the attributes in your data are not supported.\n\nSee hydroloom_name_definitions for definitions of the names used in hydroloom.",
+    "description": "this function aligns the attribute names in the table with those used in hydroloom. In R, see hydroloom_names for how to add more attribute name mappings if the attributes in your data are not supported.\n\nSee hydroloom_name_definitions for definitions of the names used in hydroloom.",
     "details": null,
     "sections": {},
     "title": "Align Names to Hydroloom Convention",
@@ -1218,11 +1218,11 @@
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names."
     },
-    "description": "renames hy object to original names and removes hy object attributes.",
+    "description": "renames columns back to the names they had in the source data. A column with no source name keeps its name. In R, the source names are those the table had when it was passed to `hy()`, and the hy classes and attributes are removed.",
     "details": null,
     "sections": {},
-    "title": "Reverse `hy` to Original Names",
-    "value": "returns x with attribute names converted to original names provided to hy"
+    "title": "Restore source column names",
+    "value": "the input table with its columns renamed to their source names."
   },
   "hy_topo": {
     "arguments": {},
@@ -1237,11 +1237,11 @@
   },
   "hydroloom_name_definitions": {
     "arguments": {},
-    "description": "A names character vector containing definitions of all attributes used in the hydroloom package.",
+    "description": "Definitions of all attributes used in the hydroloom package. In R, these are a named character vector, read by name rather than called.",
     "details": null,
     "sections": {},
     "title": "Hydroloom Name Definitions",
-    "value": "named character vector with `hydroloom_names` class to support custom print method"
+    "value": "each hydroloom name with its definition, one entry per name, in the order of the vocabulary. In R, the value is a named character vector whose names are the hydroloom names, with class `hydroloom_names` for its custom print method."
   },
   "hydroloom_names": {
     "arguments": {
@@ -1396,10 +1396,10 @@
       "x": "object to test",
       "silent": "logical should messages be emitted?"
     },
-    "description": "test if object is a valid according to the hy s3 class",
+    "description": "tests whether a table is in the form `hy()` returns: hydroloom column names, and identifier columns in the type `hy()` gives them. In R, the test reads the object's S3 class, `hy` or `hy_flownetwork`, and the original names attribute `hy()` attaches, so a table in hydroloom names that `hy()` did not produce is `FALSE`.",
     "details": null,
     "sections": {},
-    "title": "Is Valid `hy` Class?",
+    "title": "Test whether a table is in the form `hy()` returns",
     "value": "logical TRUE if valid"
   },
   "is_dendritic": {

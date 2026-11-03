@@ -265,6 +265,15 @@ def test_compare_values_still_compares_values(column, value):
         assert_layer_equal(actual, expected, compare="values")
 
 
+def test_compare_values_does_not_cast_text_to_integer():
+    """Text where the layer stores integers fails under compare: values."""
+    actual, expected = _stored_form_layers()
+    actual["topo_sort"] = ["2", "1"]
+
+    with pytest.raises(AssertionError, match="topo_sort"):
+        assert_layer_equal(actual, expected, compare="values")
+
+
 def test_count_outside_32_bit_compares_as_double():
     """A count outside the 32-bit range compares as double (I-15)."""
     expected = pd.DataFrame({"topo_sort": [2.0**40, 1.0]})

@@ -5,7 +5,9 @@ identifier and flag columns (I-2, I-3, I-5, I-12, M-18, G-14); it returns the
 rename map as a local value, never as frame state (I-14), and `_hy_reverse`
 takes it back. `representation` names the pattern a frame follows (A-2).
 `requires` fills the registry `_route` reads to dispatch a public function on
-that pattern (A-3, A-17).
+that pattern (A-3, A-17). The naming block, `hy_reverse`, `is_hy`,
+`align_names`, and `name_definitions`, renames columns, tests names and
+identifier types, and lists the vocabulary without typing any value (A-5).
 """
 
 from __future__ import annotations
@@ -80,12 +82,15 @@ def _join(values: Sequence[Any]) -> str:
     return ", ".join(str(v) for v in values)
 
 
-def _align(columns: Sequence[Any], forced: Mapping[str, Any]) -> dict[Any, str]:
+def _align(
+    columns: Sequence[Any], forced: Mapping[str, Any], *, warn: bool = True
+) -> dict[Any, str]:
     """Return ``{input column: hy name}`` for every column whose name changes.
 
     ``forced`` maps a hy name to the input column given for it (``id_col``,
     ``toid_col``); that column takes the name ahead of the alias lookup and
-    the other candidates for the name keep their input names.
+    the other candidates for the name keep their input names. ``warn=False``
+    leaves the two-alias tie silent.
     """
     terms = _terms()
     lower = {}
@@ -164,7 +169,7 @@ def _align(columns: Sequence[Any], forced: Mapping[str, Any]) -> dict[Any, str]:
     for name, found in candidates.items():
         if not found:
             continue
-        if len(found) == 2:
+        if len(found) == 2 and warn:
             # The later alias in map order wins (step 5).
             warnings.warn(
                 msg(
@@ -326,6 +331,14 @@ def _true(values: pd.Series) -> np.ndarray:
     return np.asarray(values.eq(True).fillna(False), dtype=bool)
 
 
+def _geometry_name(network: pd.DataFrame) -> Hashable | None:
+    if isinstance(network, gpd.GeoDataFrame):
+        name: Hashable = network.geometry.name
+        return name
+
+    return None
+
+
 def _align_frame(
     network: pd.DataFrame, forced: Mapping[str, Any]
 ) -> tuple[pd.DataFrame, dict[Any, str], Hashable | None]:
@@ -335,9 +348,7 @@ def _align_frame(
     name of the geometry set aside (None for a plain frame). This is all
     `representation` checks (hy_network_type.md Algorithm step 1).
     """
-    geometry = None
-    if isinstance(network, gpd.GeoDataFrame):
-        geometry = network.geometry.name
+    geometry = _geometry_name(network)
     attrs = pd.DataFrame(network, copy=True)
     if geometry is not None:
         attrs = attrs.drop(columns=geometry)
@@ -588,14 +599,6 @@ def _source_names(source: str) -> dict[str, str]:
     }
 
 
-def _geometry_name(network: pd.DataFrame) -> Hashable | None:
-    if isinstance(network, gpd.GeoDataFrame):
-        name: Hashable = network.geometry.name
-        return name
-
-    return None
-
-
 @requires()
 @doc("hy_reverse")
 def hy_reverse(network: pd.DataFrame, *, source: str | None = None) -> pd.DataFrame:
@@ -638,7 +641,7 @@ def _is_text_column(values: pd.Series, *, missing: bool) -> bool:
     if not missing and len(present) < len(values):
         return False
 
-    return all(isinstance(v, str) for v in present.tolist())
+    return pd.api.types.infer_dtype(present, skipna=True) in {"string", "empty"}
 
 
 @requires()
@@ -666,13 +669,11 @@ def is_hy(network: Any) -> bool:
     columns = [c for c in network.columns if c != geometry]
 
     # A name as_hy would change, or a name problem it would raise on.
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        try:
-            if _align(columns, {}):
-                return False
-        except KeyError:
+    try:
+        if _align(columns, {}, warn=False):
             return False
+    except KeyError:
+        return False
     if "id" not in columns:
         return False
 

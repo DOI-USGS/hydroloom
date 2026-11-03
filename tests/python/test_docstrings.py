@@ -21,7 +21,7 @@ from hydroloom._docstrings import (
 # these; the table and these counts are reviewed together (VERIFICATION 6).
 EXPECTED_FIRES = {
     r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)": 15,
-    r" In R,[^\n]*?[.?!](?=\s|\Z)": 21,
+    r" In R,[^\n]*?[.?!](?=\s|\Z)": 26,
     r"data\.frame network compatible with hydroloom_names": 109,
     r"logical if TRUE": 29,
     r"logical if `TRUE`": 5,
@@ -61,7 +61,7 @@ EXPECTED_FIRES = {
     r"or list as returned by make_index_ids": 1,
     r"an `hy` object": 6,
     r"`hy` object": 2,
-    r"\bhy object": 14,
+    r"\bhy object": 12,
     r"an `hy`": 1,
     r"required attributes": 11,
     r"requires attributes": 1,
@@ -88,11 +88,11 @@ EXPECTED_FIRES = {
     r"`Inf`": 6,
     r"(?<!CRS of )`x`": 98,
     r"c\(UM, DM, UT, DD\) or equivalently c\(upmain, downmain, up, down\)": 6,
-    r"`hy\(\)`": 24,
+    r"`hy\(\)`": 27,
     r"`hy_network_type\(\)`": 1,
     r"`hy_capabilities\(\)`": 5,
     r"`is\.hy\(\)`": 1,
-    r"See hydroloom_names for": 1,
+    r"\bhydroloom_name_definitions\b": 1,
     r"(?i)\b(s)ee details\b(?! for required)": 24,
 }
 
@@ -275,9 +275,8 @@ def test_explicit_r_name_wins_over_same_name():
 PUBLIC = [getattr(hydroloom, name) for name in sorted(hydroloom.__all__)]
 
 # The hy_network_type title is a question; rewording it is roxygen work, the
-# maintainer's (A-13), outside this docstring pass. The is.hy title is a
-# question too, opening "Is", for the same reason.
-PUBLIC_ALLOWED = {"representation": {"SS03"}, "is_hy": {"SS03", "SS05"}}
+# maintainer's (A-13), outside this docstring pass.
+PUBLIC_ALLOWED = {"representation": {"SS03"}}
 
 
 @pytest.mark.parametrize("func", PUBLIC, ids=lambda f: f.__name__)

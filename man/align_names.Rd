@@ -13,8 +13,8 @@ align_names(x)
 data.frame renamed to match hydroloom as possible.
 }
 \description{
-this function aligns the attribute names in x
-with those used in hydroloom. See \link{hydroloom_names} for how
+this function aligns the attribute names in the table
+with those used in hydroloom. In R, see \link{hydroloom_names} for how
 to add more attribute name mappings if the attributes in your data
 are not supported.
 

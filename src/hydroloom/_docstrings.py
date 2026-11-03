@@ -137,7 +137,7 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"`hy_network_type\(\)`", "`representation()`"),
     (r"`hy_capabilities\(\)`", "`capabilities()`"),
     (r"`is\.hy\(\)`", "`is_hy()`"),
-    (r"See hydroloom_names for", "See register_names for"),
+    (r"\bhydroloom_name_definitions\b", "`name_definitions()`"),
     # Details follow the description in the extended summary, so a "See
     # details" inside the description (accumulate_downstream) is left alone.
     (r"(?i)\b(s)ee details\b(?! for required)", r"\1ee the description above"),

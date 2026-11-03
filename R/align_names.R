@@ -9,8 +9,8 @@ align_name_char <- function(x) {
 }
 
 #' @title Align Names to Hydroloom Convention
-#' @description this function aligns the attribute names in x
-#' with those used in hydroloom. See \link{hydroloom_names} for how
+#' @description this function aligns the attribute names in the table
+#' with those used in hydroloom. In R, see \link{hydroloom_names} for how
 #' to add more attribute name mappings if the attributes in your data
 #' are not supported.
 #'
@@ -87,10 +87,13 @@ align_names <- function(x) {
 }
 
 #' Hydroloom Name Definitions
-#' @description A names character vector containing definitions of all
-#' attributes used in the hydroloom package.
+#' @description Definitions of all attributes used in the hydroloom package.
+#' In R, these are a named character vector, read by name rather than called.
 #' @name hydroloom_name_definitions
-#' @returns named character vector with `hydroloom_names` class to support custom print method
+#' @returns each hydroloom name with its definition, one entry per name, in
+#' the order of the vocabulary. In R, the value is a named character vector
+#' whose names are the hydroloom names, with class `hydroloom_names` for its
+#' custom print method.
 #' @export
 #' @examples
 #' hydroloom_name_definitions

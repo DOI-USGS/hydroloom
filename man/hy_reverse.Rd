@@ -2,7 +2,7 @@
 % Please edit documentation in R/hy.R
 \name{hy_reverse}
 \alias{hy_reverse}
-\title{Reverse \code{hy} to Original Names}
+\title{Restore source column names}
 \usage{
 hy_reverse(x)
 }
@@ -10,11 +10,13 @@ hy_reverse(x)
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 }
 \value{
-returns x with attribute names converted to original names provided to \link{hy}
+the input table with its columns renamed to their source names.
 }
 \description{
-renames hy object to original names and removes hy object
-attributes.
+renames columns back to the names they had in the source
+data. A column with no source name keeps its name. In R, the source names
+are those the table had when it was passed to \code{hy()}, and the hy
+classes and attributes are removed.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))
