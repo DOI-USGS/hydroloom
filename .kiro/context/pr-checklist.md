@@ -18,7 +18,9 @@ with manifest ids) run first. This list is the rest.
 - A-11 — every `warnings.warn` uses the first frame outside hydroloom as its stack
   level, not a fixed number (REVIEW_11022026 item 5); the package warning class.
 - A-13 — docstring composed from `docstrings.json`; hand-written doctest present; no R
-  phrasing left (`data.frame`, `logical`, `sf`).
+  phrasing left (`data.frame`, `logical`, `sf`); roxygen R-only facts in their own "In R,"
+  sentence (no "e.g."/"i.e.") or "In R," paragraph, every other sentence true in both
+  languages (REVIEW_11022026 item 8).
 - A-18 — `__all__` updated; `test_api.py` passes.
 - Helper reuse — no new private helper without checking `_hy.py` and `_kernels/csr.py`
   for an existing one.
