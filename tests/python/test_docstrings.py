@@ -20,8 +20,8 @@ from hydroloom._docstrings import (
 # docstrings.json, keyed by pattern. Regenerating docstrings.json can change
 # these; the table and these counts are reviewed together (VERIFICATION 6).
 EXPECTED_FIRES = {
-    r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- )|\Z)": 15,
-    r" In R,[^\n]*?\.(?=\s|\Z)": 21,
+    r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)": 15,
+    r" In R,[^\n]*?[.?!](?=\s|\Z)": 21,
     r"data\.frame network compatible with hydroloom_names": 109,
     r"logical if TRUE": 29,
     r"logical if `TRUE`": 5,
@@ -337,3 +337,78 @@ def test_public_docstrings_drop_r_classes(name):
 
     for phrase in R_ONLY:
         assert phrase not in text
+
+
+DROP_CASES = {
+    "sentence-mid-paragraph": (
+        "Shared one. In R, only R. Shared two.",
+        "Shared one. Shared two.",
+    ),
+    "sentence-ends-field": ("Shared one. In R, only R.", "Shared one."),
+    "sentence-ends-in-question": (
+        "Shared one. In R, is it R? Shared two.",
+        "Shared one. Shared two.",
+    ),
+    "paragraph-at-field-start": ("In R, only R.\n\nShared.", "Shared."),
+    "paragraph-then-bullets": (
+        "Shared.\n\nIn R, these:\n\n- one\n- two\n\nShared two.",
+        "Shared.\n\nShared two.",
+    ),
+    "paragraph-then-numbered": (
+        "Shared.\n\nIn R, these:\n\n1. one\n2. two\n\nShared two.",
+        "Shared.\n\nShared two.",
+    ),
+    "paragraph-then-shared-paragraph": (
+        "Shared.\n\nIn R, only R.\n\nShared two.",
+        "Shared.\n\nShared two.",
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"), DROP_CASES.values(), ids=DROP_CASES.keys()
+)
+def test_in_r_drops(text, expected):
+    """The two "In R," pairs drop each R-only case the code comment states."""
+    assert substitute(text)[0].strip() == expected
+
+
+def test_no_in_r_left_after_substitution():
+    """No field of any alias keeps "In R," once substituted (A-13, P-4)."""
+    for alias, entry in r_docs().items():
+        for text in _fields(entry):
+            assert "In R," not in substitute(text)[0], alias
+
+
+def test_in_r_sentences_hold_no_abbreviation():
+    """An "In R," sentence ends at its first `.`, `?` or `!`, so no "e.g."."""
+    for alias, entry in r_docs().items():
+        for text in _fields(entry):
+            for match in re.finditer(r"In R,[^\n]*?[.?!](?=\s|\Z)", text):
+                assert not re.search(r"\b(?:e\.g|i\.e)\.", match.group()), alias
+
+
+def test_wholly_r_only_fields_add_nothing(monkeypatch):
+    """A field that substitutes to nothing adds no part, Returns, or blank run."""
+    entry = {
+        "title": "Synthetic title",
+        "description": "In R, only R.",
+        "details": "Shared details.",
+        "arguments": {"x": "In R, only R.", "mode": "Shared mode."},
+        "value": "In R, a list.",
+        "sections": {"Only R": "In R, only R."},
+    }
+    monkeypatch.setattr("hydroloom._docstrings.r_docs", lambda: {"synthetic": entry})
+
+    @doc("synthetic")
+    def f(network, *, mode="to"):
+        pass
+
+    text = f.__doc__
+
+    assert "In R," not in text
+    assert "\n\n\n" not in text
+    assert "Returns" not in text
+    assert "Notes" not in text
+    assert "Shared details." in text
+    assert "network\nmode : default 'to'\n    Shared mode." in text

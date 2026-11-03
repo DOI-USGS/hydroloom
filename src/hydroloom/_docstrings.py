@@ -34,11 +34,14 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     # R-only facts (A-13, P-4). The roxygen states each one in a sentence or
     # paragraph of its own that starts "In R,"; these two pairs drop them, with
     # the space or blank line before, and run first so no phrasing pair
-    # rewrites R text. A paragraph that starts "In R," is R-only to its end,
-    # list items included; a sentence inside a paragraph ends at its first
-    # period followed by a space or the end of the field.
-    (r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- )|\Z)", ""),
-    (r" In R,[^\n]*?\.(?=\s|\Z)", ""),
+    # rewrites R text. A paragraph that opens with "In R," is R-only through
+    # its end, with any list that follows it, bullet (`- `) or numbered
+    # (`1. `). An "In R," sentence inside a paragraph ends at its first `.`,
+    # `?` or `!` followed by whitespace or the end of the field, so it must
+    # not contain an abbreviation such as "e.g. " or "i.e. ";
+    # tests/python/test_docstrings.py enforces this over docstrings.json.
+    (r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)", ""),
+    (r" In R,[^\n]*?[.?!](?=\s|\Z)", ""),
     # The A-13 examples.
     (
         r"data\.frame network compatible with hydroloom_names",
@@ -245,10 +248,13 @@ def compose(
     r_args.update(PYTHON_ARGUMENTS.get(alias, {}))
     signature = inspect.signature(func)
 
+    # A field is appended only if text is left after substitution, so a field
+    # that is R-only from start to end adds nothing.
     parts = [_field(entry["title"], period=True)]
     for key in ("description", "details"):
-        if entry.get(key):
-            parts.append(_field(entry[key]))
+        text = _field(entry.get(key) or "")
+        if text:
+            parts.append(text)
 
     params = []
     for param in signature.parameters.values():
@@ -260,19 +266,18 @@ def compose(
             r_name = _DEFAULT_R_NAMES.get(param.name, param.name)
         if r_name not in r_args:
             raise KeyError(f"{alias}.{param.name}")
-        params.append(
-            f"{_parameter_line(param)}\n{_indent(_field(r_args[r_name], period=True))}"
-        )
+        # PYTHON_ARGUMENTS text already replaces the R text; an R-only
+        # argument with no Python text keeps its line and no description.
+        text = _field(r_args[r_name], period=True)
+        line = _parameter_line(param)
+        params.append(f"{line}\n{_indent(text)}" if text else line)
     if params:
         parts.append(_section("Parameters", "\n".join(params)))
 
-    if entry.get("value"):
+    value = _field(entry.get("value") or "", period=True)
+    if value:
         returns = _annotation(signature.return_annotation)
-        parts.append(
-            _section(
-                "Returns", f"{returns}\n{_indent(_field(entry['value'], period=True))}"
-            )
-        )
+        parts.append(_section("Returns", f"{returns}\n{_indent(value)}"))
 
     parts.append(
         _section(
@@ -284,6 +289,7 @@ def compose(
     notes = [
         f"{_field(title)}:\n\n{_field(text)}"
         for title, text in (entry.get("sections") or {}).items()
+        if _field(text)
     ]
     if notes:
         parts.append(_section("Notes", "\n\n".join(notes)))
