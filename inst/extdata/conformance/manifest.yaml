@@ -1996,6 +1996,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid]
 
   # changes_with: i2; hy route, hy names, R class hy_topo
@@ -2008,6 +2009,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [id, toid]
 
   # changes_with: i2; 832 rows; id repeats (flownetwork pattern)
@@ -2019,6 +2021,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid]
 
   # changes_with: i2; identifiers beyond 32 bits; id and toid
@@ -2030,7 +2033,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [NHDPlusID, toid]
 
@@ -2044,6 +2047,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; step 7 tie order; 16 rows, (3,4),(3,5),(7,8),(7,13),
   # (8,9),(8,10) in downstream input order
@@ -2055,6 +2059,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   - id: add_toids_divergence_no_attribute
     function: add_toids
@@ -2062,7 +2067,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: divergence_required
@@ -2076,6 +2081,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; minor path returning to the main path at nodes 104 and
   # 105; 10 rows
@@ -2087,6 +2093,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; (1,2),(2,4),(3,5),(4,6),(5,6),(6,0); minor path 3 is a
   # headwater and rejoins at 6
@@ -2098,6 +2105,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; (1,2),(1,3),(2,4),(3,5),(4,6),(5,6),(6,0)
   - id: add_toids_worked_example_not_dendritic
@@ -2108,6 +2116,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # D3-182: the return_dendritic_deprecated warning; the output is compared
   # by add_toids_worked_example_not_dendritic
@@ -2117,7 +2126,7 @@ cases:
     args: {return_dendritic: false}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: warning
     raises_key: return_dendritic_deprecated
@@ -2132,6 +2141,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; D-7 pair of add_toids_worked_example_not_dendritic; 3
   # precedes 2 in input, so 1 lists (1,3) before (1,2) (step 7 tie rule)
@@ -2143,6 +2153,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; step 7 tie rule; (1,3),(1,2),(3,5),(2,4),(4,6),(5,6),(6,0)
   # because id 3 precedes id 2 in input
@@ -2154,6 +2165,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # D3-56: id 2 divergence missing stops naming it; shared. changes_with: i2
   - id: add_toids_missing_divergence
@@ -2162,7 +2174,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: divergence_missing
@@ -2175,7 +2187,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: divergence_missing
@@ -2187,7 +2199,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: divergence_coding_invalid
@@ -2199,7 +2211,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: divergence_coding_invalid
@@ -2213,7 +2225,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: warning
     raises_key: divergence_zero_main_path
@@ -2228,7 +2240,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: warning
     raises_key: divergence_minor_only_path
@@ -2243,6 +2255,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # D3-56: id 2 (missing tonode) is a terminal and stays the target of ids 1
   # and 3, input order; (1,2),(2,0),(3,2); shared. changes_with: i2
@@ -2254,6 +2267,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # D3-56 under return_dendritic = FALSE, the route internal callers use:
   # id 2 stays the target of ids 1 and 3; (1,2),(2,0),(3,2) (add_toids H-04)
@@ -2265,6 +2279,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # outlet value "" for character id
   - id: add_toids_character_id
@@ -2273,7 +2288,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: i2; S-6 n = 1 on the node pattern; (1,0)
@@ -2285,6 +2300,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; S-6 all terminals on the node pattern; every toid 0,
   # input order
@@ -2296,6 +2312,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; I-11; toid typed with no rows
   - id: add_toids_zero_rows
@@ -2304,7 +2321,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # test_add_toids.R migration: hy route with return_dendritic = FALSE (no
@@ -2319,6 +2336,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [id, toid]
 
   # test_add_toids.R migration: character COMID; outlet toid "" at the rows
@@ -2329,7 +2347,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [COMID, toid]
 
@@ -2340,7 +2358,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: toid_already_present
@@ -2352,7 +2370,7 @@ cases:
     args: {return_dendritic: false}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: toid_already_present
@@ -2364,7 +2382,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_node
@@ -2377,7 +2395,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_node
@@ -2457,7 +2475,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # confluences; 745 edges; upstream lists in identifier byte order (D-5)
@@ -2468,7 +2486,7 @@ cases:
     args: {mode: from}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # one layer with a mode column; 745 + 745 rows, byte order (D-5)
@@ -2479,7 +2497,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # flownetwork without main; 831 + 831 rows; divergences in byte order (D-5)
@@ -2490,7 +2508,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # main from downmain; 831 rows; divergences in byte order (D-5)
@@ -2523,7 +2541,7 @@ cases:
     args: {}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # 32 missing tocomid filled by hy (I-5); many outlets; 516 edges, byte order
@@ -2603,7 +2621,7 @@ cases:
     args: {mode: both}
     compare: exact
     order: ignore
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # make_index_ids H-03; return_divergence as a flownetwork with downmain and

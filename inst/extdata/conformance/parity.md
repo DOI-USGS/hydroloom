@@ -18,7 +18,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | `hy_network_type` | `representation` | r, python | 21 | 7 |
 | `hy_capabilities` | `capabilities` | r | 26 | 12 |
 | `is_dendritic` | `is_dendritic` | r | 26 | 3 |
-| `add_toids` | `add_toids` | r | 35 | 1 |
+| `add_toids` | `add_toids` | r, python | 35 | 19 |
 | `make_index_ids` | `make_index_ids` | r | 33 | 3 |
 | `check_hy_graph` | `check_hy_graph` | r | 47 | 0 |
 | `sort_network` | `sort_network` | r | 69 | 2 |
