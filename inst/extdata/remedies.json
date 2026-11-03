@@ -732,13 +732,27 @@
     },
     "register_name_unknown": {
       "kind": "error",
-      "message": "These aliases are registered to names that are not hydroloom names: {names}. A column renamed to a name hydroloom does not use gets its input name back, so these entries would rename nothing. Map each alias to a hydroloom name and register again; nothing was registered.",
+      "message": "These aliases map to names that are not hydroloom names: {names}. A column renamed to a name hydroloom does not use gets its input name back, so these entries would rename nothing. Map each alias to a hydroloom name and register again; nothing was registered.",
       "placeholders": {
         "names": "each alias whose value is not a hydroloom name, with that value"
       },
-      "condition": "A registered alias maps to a value that is not a hydroloom name. Such an entry can never rename a column, the silent no-op D3-65 fixed for uppercase aliases (B-4, B-3).",
+      "condition": "An alias given for registration maps to a value that is not a hydroloom name. Such an entry could never rename a column, since a column renamed to a name hydroloom does not use gets its input name back.",
       "rows": "the aliases whose value is not a hydroloom name, with those values",
       "fix": "Map each alias to a hydroloom name before registering.",
+      "raised_by": ["hydroloom_names"],
+      "languages": ["python"],
+      "r_text": [],
+      "python_class": "KeyError"
+    },
+    "register_alias_is_name": {
+      "kind": "error",
+      "message": "These aliases are themselves hydroloom names, mapped to a different hydroloom name: {names}. Each entry would rename a column that already carries a hydroloom name to another one, for example a toid column to id. Use the input column's own name as the alias, or drop the entry, and register again; nothing was registered.",
+      "placeholders": {
+        "names": "each alias that is a hydroloom name other than its value, with that value"
+      },
+      "condition": "An alias given for registration, lowercased, is a hydroloom name other than the one it maps to. A column with that name already carries a hydroloom name, and the entry would rename it to a different one, so the result would hold one column under the name of another with no warning. An alias equal to its value, such as toid mapped to toid, renames nothing and is accepted, as the identity pairs in the vocabulary are.",
+      "rows": "the aliases that are hydroloom names other than their values, with those values",
+      "fix": "Use the input column's own name as the alias, or drop the entry, before registering.",
       "raised_by": ["hydroloom_names"],
       "languages": ["python"],
       "r_text": [],

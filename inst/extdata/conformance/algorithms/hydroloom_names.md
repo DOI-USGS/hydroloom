@@ -46,7 +46,8 @@ reading is not part of the Python function (B-5).
   among them, are undone with it. Nested blocks restore in reverse order.
 - Validation: a value that is not a vocabulary column term (a hydroloom name) raises
   `KeyError` (`register_name_unknown`, A-10, a vocabulary problem) and leaves the
-  registry as it was (B-4).
+  registry as it was (B-4). So does an alias that, lowercased, is a hydroloom name other
+  than its value (`register_alias_is_name`, B-1); an identity entry is accepted.
 
 Argument and return prose come from roxygen (A-13). No kernel is involved (K-6).
 
@@ -58,7 +59,13 @@ all stops with `unnamed_name_mapping`, and the registry is left as it was. Pytho
 partly named `x` passes the check. In R and Python, a value of `x` or `mapping` that is
 not a vocabulary column term stops with `register_name_unknown`, giving the alias and the
 value, and the registry is left as it was, `clear` or `replace` included: an entry that
-can never rename a column is the silent no-op D3-65 fixed (B-4, B-3).
+can never rename a column is the silent no-op D3-65 fixed (B-4, B-3). In the same way,
+an alias that, lowercased, is a hydroloom name other than its value stops with
+`register_alias_is_name`, giving the alias and the value: registering `toid` as `id`, or
+`id` as `toid`, would rename a column that already carries a hydroloom name to another
+one with no warning (B-1). An identity entry, an alias equal to its value (`id` as `id`),
+is accepted, since the vocabulary already holds identity pairs (`toid`, `fromnode`,
+`tonode`, `divergence`) and such a pair renames nothing.
 
 ## Definition
 
@@ -89,7 +96,10 @@ hydroloom name, lowercase as the registry holds it (`hy_reverse.md`, D3-65).
 1. Read the registry from the package environment.
 2. If `x` is given and has no names, stop (`unnamed_name_mapping`).
 3. If `x` is given and any value is not a vocabulary column term, stop
-   (`register_name_unknown`), before `clear` is applied, so the registry is unchanged.
+   (`register_name_unknown`). Otherwise, if any name of `x`, lowercased, is a vocabulary
+   column term that differs from its value, stop (`register_alias_is_name`, B-1); an
+   identity entry passes. Both checks run before `clear` is applied, so the registry is
+   unchanged on either stop.
 4. If `clear`, rebuild the vocabulary alias map (`vocab_alias_map()`, as at load) and
    store it as the registry.
 5. If `x` is `NULL`, return the registry as it now stands.
@@ -124,6 +134,10 @@ No sentinel and no CSR index; nothing lies below the kernel boundary (K-1).
   (`register_name_unknown`), and the registry after the stop equals the registry before
   it, with `clear = TRUE` or `replace=True` too. So every value in the registry is a
   vocabulary column term.
+- An `x` or `mapping` with an alias that, lowercased, is a vocabulary column term other
+  than its value stops (`register_alias_is_name`), and the registry after the stop equals
+  the registry before it, with `clear = TRUE` or `replace=True` too. So every registry
+  alias that is a hydroloom name maps to itself.
 - Python: on exit from `with register_names(mapping):`, by any route, the registry equals
   the registry before the call.
 
@@ -158,7 +172,12 @@ looking it up. A value that is not a hydroloom name stops with `register_name_un
 in R and Python. In R this is a named change (B-3): through hydroloom 1.3.x
 `hydroloom_names()` registers such a value, and `align_names()` renames the column and
 then restores its original name, so the entry has no effect; the stop lands in R in M5
-run 3 unit 3 with a NEWS entry. A registered alias that is also the vocabulary alias of
+run 3 unit 3 with a NEWS entry. An alias that is a hydroloom name other than its value
+(`toid` as `id`) stops with `register_alias_is_name`, also a named change in R landing in
+unit 3: through hydroloom 1.3.x R registers it, and a `toid` column then becomes `id`.
+An identity entry (`id` as `id`) is accepted and renames nothing; where it repeats a
+seeded identity pair (`toid` as `toid`) it is a duplicated alias and warns with
+`name_alias_duplicate`, as above. A registered alias that is also the vocabulary alias of
 another term (`comid` registered as `toid`) is a candidate for the registered name only
 (`align_names.md` step 2). A non-character `x`
 is coerced to character by `c()`.
@@ -173,11 +192,13 @@ the next time the package is loaded, which includes every R restart.
 | --- | --- | --- | --- | --- |
 | `x` has no names | the mapping gives hydroloom names without the input column names they apply to | every element of the mapping | `hydroloom_names(c(<input column> = "<hydroloom name>"))` | `unnamed_name_mapping` |
 | a registered value is not a hydroloom name (key drafted) | the mapping renames an alias to a name that is not a hydroloom name, so the entry could never rename a column | the aliases whose value is not a hydroloom name, with those values | map each alias to a hydroloom name before registering | `register_name_unknown` |
+| a registered alias is a hydroloom name other than its value (key drafted) | the entry would rename a column that already carries a hydroloom name to a different one | the aliases that are hydroloom names other than their values, with those values | use the input column's own name as the alias, or drop the entry, before registering | `register_alias_is_name` |
 
-`register_name_unknown` is agent-drafted in `remedies.json` for the M6 read, as
-`id_missing` was; `remedies.json` has no in-file draft marker, so the draft is recorded
-here. It lists Python only until R raises it in M5 run 3 unit 3, which adds `r` and the
-R text. Python raises it as `KeyError` (A-10).
+`register_name_unknown` and `register_alias_is_name` are agent-drafted in
+`remedies.json` for the M6 read, as `id_missing` was; `remedies.json` has no in-file
+draft marker, so the drafts are recorded here. Each lists Python only until R raises it
+in M5 run 3 unit 3, which adds `r` and the R text. Python raises both as `KeyError`
+(A-10).
 
 ## References
 
@@ -262,3 +283,13 @@ load, so its expectation is the vocabulary's alias table as two columns, `name` 
   alias of another term included (G-11), and what `hy_reverse(source=None)` restores.
   Edge cases cite `align_names.md` step 3 for the `permanent_identifier` rule, which
   moved there from step 4 (item 1).
+- 2026-11-03, suite 0.1.0, M5 run 3 unit 2 fix round. Hydro H-01 (RULES B-1, B-3,
+  D3-65): an alias that, lowercased, is a hydroloom name other than its value stops with
+  `register_alias_is_name` (key drafted, Python only until unit 3), since `toid`
+  registered as `id` would make a `toid` column `id`; an identity entry is accepted
+  because the vocabulary holds identity pairs. Signature, Preconditions, Algorithm step
+  3, Postconditions, Edge cases, and Remedies follow; the registry is unchanged on the
+  stop. Hydro H-02: the `register_name_unknown` message says "map to" in place of "are
+  registered to", and its `condition` drops the anchors D3-65, B-4, and B-3, which a
+  user cannot follow; that provenance (the D3-65 silent no-op, B-4, B-3) is recorded
+  here, since the `remedies.json` schema has no field users do not read.
