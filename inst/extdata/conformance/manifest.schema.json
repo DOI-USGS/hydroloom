@@ -130,6 +130,11 @@
           "description": "Which of supported_by writes the expectation; both once Python is co-generator (S-7).",
           "$ref": "#/definitions/languages"
         },
+        "r_only": {
+          "description": "On a case whose supported_by is [r], the anchor that makes it R-only by design: a description section (hy.md §Signature) or a SPEC anchor. The parity generator counts such cases apart; a [r] case without it counts against parity (SPEC S-4, RULES P-5).",
+          "type": "string",
+          "minLength": 1
+        },
         "raises": {
           "description": "A condition the call must signal (S-6 boundary cases). The case asserts the condition and writes and compares no layer (D3-182); a warning case with raises_key must warn with that key's r_text.",
           "type": "string",
@@ -160,6 +165,10 @@
         {
           "if": { "required": ["raises"] },
           "then": { "not": { "anyOf": [{ "required": ["columns"] }, { "required": ["geometry"] }] } }
+        },
+        {
+          "if": { "required": ["r_only"] },
+          "then": { "properties": { "supported_by": { "const": ["r"] } } }
         },
         {
           "if": {

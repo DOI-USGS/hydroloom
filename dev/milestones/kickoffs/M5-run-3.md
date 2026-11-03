@@ -26,7 +26,7 @@ read by `hl-modeler-reader` after it composes. Every unit is one Log entry in
    `r_only:` case field (item 9): a `[r]` case not R-only by design counts against parity,
    one carrying `r_only:` with its description-section anchor counts apart; the M5
    Done-when "the parity table shows the phase-1 functions as `r, python`" is reworded to
-   read as P-5's parity line. SPEC A-3 and B-4 already hold the item-4 and item-6 text from
+   read as P-5's parity line. RULES B-4 already holds the item-4 and item-6 text from
    `a771b5a`; this unit adds no RULES line. The M6 BACKLOG row carrying D3-57 gains the note
    item 3 requires: when R's `hy()` raises on the repeated (`id`, `toid`) pair,
    `hy_network_type_duplicated_edge` becomes a raise case under `hy` or is dropped with that
