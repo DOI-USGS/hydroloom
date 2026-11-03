@@ -8,9 +8,10 @@ from hydroloom._hy import (
     name_definitions,
     representation,
 )
-from hydroloom.network import make_index_ids
+from hydroloom.network import add_toids, make_index_ids
 
 __all__ = [
+    "add_toids",
     "align_names",
     "as_hy",
     "hy_reverse",
