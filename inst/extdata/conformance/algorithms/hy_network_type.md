@@ -35,11 +35,21 @@ No kernel is involved (K-1, K-11).
 R: none. The function accepts any object, including `NULL`, a list, and a zero-row
 table, reads only `class(x)`, and never raises.
 
-Python: none on representation; `requires` is `[any]`. The pattern is computed from the
-names and identifiers `as_hy` gives the input, so Python raises what `as_hy` raises on
-the same input (Remedies) and nothing else. A table with no `id` column is one of those
-inputs: R's `hy()` warns (`no_id_column`) and the R value is `"hy"`; Python raises
-`RepresentationError` (D3-130).
+Python: none on representation; `requires` is `[any]`. `representation` aligns the
+column names and types `id` as `as_hy` does (Algorithm step 1), and it checks only what
+those two steps read. Name alignment raises on an alias beside its hy name
+(`name_alias_conflict`), on three or more aliases of one hy name
+(`name_alias_ambiguous`), on two column names equal ignoring case
+(`column_name_duplicate`), and on an empty column name (`column_name_empty`), and warns
+on two aliases of one hy name (`name_alias_duplicate`). Typing `id` raises when `id`
+holds both text and numbers (`identifier_mixed_type`, I-3), a value with a fractional
+part (`identifier_not_whole`), an infinite value (`identifier_not_finite`), or a missing
+value (`id_missing`, B-1). A table with no `id` column raises `RepresentationError`
+(`no_id_column`, D3-130), where R's `hy()` warns and the R value is `"hy"`.
+`representation` does not validate edges. A repeated (`id`, `toid`) pair, a `toid`,
+`fromnode`, or `tonode` value with a fractional part, an infinite value, or mixed types,
+broken `upmain`/`downmain` invariants, and a flag column not coded 0/1 neither raise nor
+warn here, though `as_hy` raises or warns on each (`hy.md` Preconditions).
 
 ## Definition
 
@@ -123,7 +133,8 @@ index is built.
   after `hy()`).
 - `"hy_node"` only if `toid` is absent and `id`, `fromnode`, `tonode` are present with
   unique `id` (R: after `hy()`).
-- Python: `representation(as_hy(network)) == representation(network)`.
+- Python: `representation(as_hy(network)) == representation(network)` for every
+  `network` that `as_hy` accepts.
 - Python: `representation(network)` does not depend on `toid`, `fromnode`, or `tonode`
   values, missing values included.
 - The input is not modified (A-8).
@@ -142,8 +153,14 @@ uniqueness test.
 - No connections (all terminals): `"hy_topo"`; every `toid` is an outlet, which the rule
   does not read.
 - Duplicated row (repeated `id` with `toid`, S-6 duplicated edge): `"hy_flownetwork"`;
-  the function does not raise on it. The value does not tell a divergence from an exactly
-  repeated row; both are a repeated `id` with `toid`.
+  the function does not raise on it in R or Python, though Python's `as_hy` raises on the
+  same table (`id_toid_pair_repeated`). The value does not tell a divergence from an
+  exactly repeated row; both are a repeated `id` with `toid`.
+- A `fromnode`, `tonode`, or `toid` value with a fractional part: not read, so Python
+  returns the pattern; R's `hy()` in `prepare` stops (`identifier_not_whole`).
+- A missing `id` value: Python raises (`id_missing`), giving the row positions (I-12).
+  R's `hy()` keeps the missing value, and two of them count as a repeated `id`, so a
+  table with `toid` is `"hy_flownetwork"`.
 - Divergence with and without a `divergence` attribute, through `add_topo` (R only):
   `divergence_attribute` gives `"hy_topo"`, since the attribute drops the minor paths;
   `divergence_no_attribute` gives `"hy_flownetwork"`, since both downstream rows stay.
@@ -170,14 +187,20 @@ uniqueness test.
 | alias beside its hy name (Python) | an input column renames to a hy name that another column already has, so two columns would carry one name | none; the columns are named in the message | drop or rename one of the two columns | `name_alias_conflict` |
 | two aliases for one hy name (Python, warning) | two input columns are aliases of one hy name; the one later in the alias list took the name and the other kept its input name | none; the columns are named in the message | drop the column that should not carry the hy name | `name_alias_duplicate` |
 | three or more aliases for one hy name (Python) | three or more input columns are aliases of one hy name, and none can be chosen to carry it | none; the columns are named in the message | drop all but one of the aliasing columns | `name_alias_ambiguous` |
+| two column names equal ignoring case (Python) | names are compared lowercased, so two names equal ignoring case collide | none; the columns are named in the message | rename one column so the lowercased names differ | `column_name_duplicate` |
+| empty column name (Python) | a column has no name | none; the column position is in the message | give the column a name | `column_name_empty` |
 | no `id` column (Python error, D3-130) | no input column is `id` or one of its aliases, so the catchments or flowlines have no identifier | all | rename the identifier column to `id` | `no_id_column` |
-| identifier column of mixed types (Python, I-3) | one identifier column holds both strings and numbers | the rows whose type differs from the first value's | cast the column to one type before the call | `identifier_mixed_type` |
-| non-whole floating-point identifier (R `hy()` and Python, D3-07) | an identifier column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
-| infinite identifier (R `hy()` and Python, I2-3; key drafted, D3-180) | an identifier column arrives as floating-point numbers and a value is `Inf` or `-Inf`, which is neither a whole number nor text that names the same identifier | the rows whose value is infinite | correct the values before the call | `identifier_not_finite` |
+| `id` column of mixed types (Python, I-3) | the `id` column holds both strings and numbers | the rows whose type differs from the first value's | cast the column to one type before the call | `identifier_mixed_type` |
+| non-whole floating-point `id` (R `hy()` and Python, D3-07) | the `id` column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
+| infinite `id` (R `hy()` and Python, I2-3; key drafted, D3-180) | the `id` column arrives as floating-point numbers and a value is `Inf` or `-Inf`, which is neither a whole number nor text that names the same identifier | the rows whose value is infinite | correct the values before the call | `identifier_not_finite` |
+| missing `id` value (Python, B-1; key drafted) | a row has no `id`, so the flowline or catchment on it cannot be identified | the row positions whose `id` is missing | give those rows an `id`, or drop them, before the call | `id_missing` |
 
 R's `hy_network_type` raises and warns on nothing; in R the `no_id_column` warning and the
-`identifier_not_whole` and `identifier_not_finite` raises come from `hy()` in `prepare`. Python's rows are the conditions `as_hy` raises in name
-alignment and identifier typing (`hy.md` Remedies); the keys are `hy`'s, not new ones.
+`identifier_not_whole` and `identifier_not_finite` raises come from `hy()` in `prepare`. Python's rows are the conditions `as_hy` raises or warns on in name
+alignment and in typing `id` (`hy.md` Remedies); the keys are `hy`'s. The
+conditions `as_hy` checks beyond those (`id_toid_pair_repeated`,
+`flownetwork_multiple_downmain`, `flownetwork_multiple_upmain`, `flag_value_not_binary`,
+and the identifier conditions on columns other than `id`) are not checked here.
 
 ## References
 
@@ -248,3 +271,14 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
   `hy()` then raises on a table with no `id`, as Python does, case
   `hy_network_type_no_id` becomes an error case, and the Postconditions exclusion of
   tables on which `hy()` warns `no_id_column` falls away.
+- 2026-11-03, suite 0.1.0, M5 run 2 unit 2, REVIEW_11022026 item 3 (SP-03, SP-04; P-1):
+  Preconditions are the section corrected. Python's `representation` aligns names and
+  types `id`, as Algorithm step 1 reads, and validates no edge: a repeated (`id`, `toid`)
+  pair, a non-whole or mixed-type `toid`, `fromnode`, or `tonode`, the
+  `upmain`/`downmain` invariants, and a flag not coded 0/1 do not raise or warn here.
+  Remedies lists the name-alignment rows `column_name_duplicate` and `column_name_empty`,
+  narrows the identifier rows to `id`, and states which `as_hy` conditions are not
+  checked. Postconditions qualify `representation(as_hy(network))` by what `as_hy`
+  accepts; Edge cases add the non-whole node value. REVIEW_11022026 item 4 (SP-07,
+  SP-S3; B-1): a missing `id` value raises `id_missing` (Preconditions, Edge cases,
+  Remedies; key agent-drafted for the M6 read).

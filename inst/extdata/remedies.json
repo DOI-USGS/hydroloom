@@ -701,6 +701,21 @@
       "r_text": [],
       "python_class": "HydroloomError"
     },
+    "id_missing": {
+      "kind": "error",
+      "message": "Column {column} has no id on these rows: {rows}. Each flowline or catchment needs an id, since results and messages identify it by that value. Give those rows an id, or drop them, and call again.",
+      "placeholders": {
+        "column": "the input column read as id",
+        "rows": "the 1-based positions of the rows whose id is missing"
+      },
+      "condition": "The id column, which identifies each flowline or catchment, is missing a value on one or more rows. A row without an id cannot be connected to, reported, or told apart from another row without one, so no function can return a correct answer for it (B-1).",
+      "rows": "the row positions whose id is missing",
+      "fix": "Give each of those rows an id, or drop them, before as_hy().",
+      "raised_by": ["hy", "hy_network_type"],
+      "languages": ["python"],
+      "r_text": [],
+      "python_class": "HydroloomError"
+    },
     "unnamed_name_mapping": {
       "kind": "error",
       "message": "input must be named",
