@@ -865,7 +865,7 @@ cases:
     supported_by: [r, python]
     generator: [r]
 
-  # permanent_identifier rule (step 4): NHDPlusID and Permanent_Identifier
+  # permanent_identifier rule (step 3): NHDPlusID and Permanent_Identifier
   # both alias id; Permanent_Identifier keeps its name, with an R message
   - id: align_names_nhdplushr
     function: align_names

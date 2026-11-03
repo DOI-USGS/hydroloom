@@ -730,6 +730,20 @@
       ],
       "python_class": null
     },
+    "register_name_unknown": {
+      "kind": "error",
+      "message": "These aliases are registered to names that are not hydroloom names: {names}. A column renamed to a name hydroloom does not use gets its input name back, so these entries would rename nothing. Map each alias to a hydroloom name and register again; nothing was registered.",
+      "placeholders": {
+        "names": "each alias whose value is not a hydroloom name, with that value"
+      },
+      "condition": "A registered alias maps to a value that is not a hydroloom name. Such an entry can never rename a column, the silent no-op D3-65 fixed for uppercase aliases (B-4, B-3).",
+      "rows": "the aliases whose value is not a hydroloom name, with those values",
+      "fix": "Map each alias to a hydroloom name before registering.",
+      "raised_by": ["hydroloom_names"],
+      "languages": ["python"],
+      "r_text": [],
+      "python_class": "KeyError"
+    },
     "not_hy_object": {
       "kind": "error",
       "message": "must be an hy object",
