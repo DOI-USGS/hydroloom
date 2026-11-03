@@ -99,9 +99,7 @@ test_that("permanent_identifier beside id returns unchanged (align_names.md step
 
   expect_identical(out, x)
 
-  x <- sf::read_sf(system.file("extdata/conformance/fixtures/nhdplushr.gpkg",
-    package = "hydroloom"))
-  x <- sf::st_drop_geometry(x)
+  x <- data.frame(id = 1:2, Permanent_Identifier = c("a", "b"), toid = c(2L, 0L))
 
   once <- suppressMessages(align_names(x))
 
