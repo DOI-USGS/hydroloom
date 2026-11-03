@@ -94,6 +94,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
     columns: [id, start_flag, terminal_flag]
 
   # python_omitted; changes_with: i2 (toid double -> integer)
@@ -106,6 +107,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
     columns: [id, toid, start_flag, terminal_flag]
 
   # python_omitted; changes_with: i2; warns nonunique_id_with_toid, 832 rows
@@ -118,6 +120,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
     raises: warning
     raises_key: nonunique_id_with_toid
 
@@ -133,6 +136,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
     columns: [id, toid]
 
   # changes_with: i2 (whole-valued double ids -> integer; NA toid -> 0L)
@@ -144,6 +148,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   - id: hy_toid_missing_integer
     function: hy
@@ -153,6 +158,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   - id: hy_toid_missing_character
     function: hy
@@ -221,6 +227,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # changes_with: i2; id and toid become character together and the outlet
   # toid is "" (I-2); R 1.3.0 stopped with a vctrs cast error in the toid fill
@@ -330,6 +337,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # python_omitted; changes_with: i2 (toid double -> integer);
   # D3-56 (through add_toids): the row with missing tonode keeps its first
@@ -342,6 +350,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # changes_with: i2 (toid double -> integer); test_hydroloom.R: toid 2, 0
   - id: hy_toid_missing_with_nodes
@@ -352,6 +361,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # changes_with: i2 (toid double -> integer); test_outlet_conventions.R:
   # missing toid of 5 filled with 0 (I-5)
@@ -363,6 +373,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # changes_with: i2; D-7: sorted on all columns, equals hy_new_hope_default's layer
   # M-18: start_flag, terminal_flag arrive integer 1/0 and are logical
@@ -414,6 +425,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Edge cases
 
   # probed: pass-through, da_sqkm NA on row 2 stays NA; R class hy_topo
   - id: hy_missing_weight
@@ -454,6 +466,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # changes_with: i2 (NHDPlusID, FromNode, ToNode double beyond 32 bits ->
   # character); R message "defaulting to comid rather than
@@ -509,6 +522,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_reverse.md §Preconditions
 
   # toid stays hydroloom-named; add_toids moved FromNode (I-2 landed)
   # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
@@ -521,6 +535,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # non-vocabulary columns and geometry stay dropped (I-2 landed)
   # M-18: StartFlag, TerminalFl arrive integer 1/0 and return logical
@@ -533,6 +548,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # worked example; toID NA -> 0 (I-5) is not restored
   - id: hy_reverse_renamed
@@ -544,6 +560,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_reverse.md §Preconditions
 
   # D-7 pair of hy_reverse_renamed: rows reordered 3, 1, 2; rows come back
   # in the new input order (D-14), compared in order (D3-198)
@@ -556,6 +573,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_reverse.md §Preconditions
 
   # S-6 boundary; hydroloom names already, the rename is the identity
   - id: hy_reverse_single_row
@@ -589,6 +607,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_reverse.md §Preconditions
 
   # S-6 boundary; repeated id -> hy() gives hy_flownetwork carrying
   # orig_names; hy_reverse() restores the names and drops the class (D3-16)
@@ -601,6 +620,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Edge cases
 
   # ID 1 -> 2 and 1 -> 3: hy() gives hy_flownetwork carrying orig_names;
   # hy_reverse() restores ID and toID (D3-16)
@@ -613,6 +633,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_reverse.md §Preconditions
 
   # not_hy_object; changes_with: a10; raw fixture, no hy()
   - id: hy_reverse_not_hy_raises
@@ -623,6 +644,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_reverse.md §Preconditions
     raises: error
     raises_key: not_hy_object
 
@@ -677,6 +699,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: is.hy.md §Signature
 
   # shared: true; worked example; source names with an NA tocomid
   - id: is_hy_source_names
@@ -710,6 +733,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: is.hy.md §Signature
 
   # shared: true; divergent network in id/toid form (repeated id, character
   # ids); R FALSE as read (no class); Python False by the identifier-type
@@ -813,6 +837,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hydroloom_names.md §Signature
 
   # unnamed_name_mapping; stops before the registry is touched
   - id: hydroloom_names_unnamed_input
@@ -823,6 +848,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hydroloom_names.md §Preconditions
     raises: error
     raises_key: unnamed_name_mapping
 
@@ -1112,6 +1138,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: align_names.md §Preconditions
     raises: error
     raises_key: sf_mixed_case_names
 
@@ -1124,6 +1151,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: align_names.md §Preconditions
     raises: error
     raises_key: sf_geometry_name_case
 
@@ -1164,6 +1192,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # shared: false; expect "not a hydroloom object"; no hy class as read,
   # Python gives hy_node here
@@ -1174,6 +1203,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_network_type.md §Definition
 
   # shared: true; expect hy_leveled; all three level-path columns, unique id.
   # Proposed fixture hy_network_type_leveled repointed to hy_leveled (same
@@ -1229,6 +1259,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # shared: false; expect hy_topo; the divergence attribute drops the minor
   # path, so id stays unique
@@ -1240,6 +1271,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # shared: true; expect hy_topo; string identifiers (3DHP)
   - id: hy_network_type_new_hope_3dhp
@@ -1293,6 +1325,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Edge cases
 
   # shared: true; expect hy_topo; weight not read
   - id: hy_network_type_missing_weight
@@ -1343,6 +1376,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_network_type.md §Definition
 
   # R-only: no id column; hy() warns no_id_column (suppressed in prepare)
   # and the R value is "hy"; Python representation raises RepresentationError
@@ -1355,6 +1389,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_network_type.md §Edge cases
 
   # hy_capabilities -----------------------------------------------------------
   # R reads the class hy() stamps, so most cases apply hy() through prepare
@@ -1398,6 +1433,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; hy_topo that still carries fromnode/tonode; node rows
   # FALSE (class test)
@@ -1409,6 +1445,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Signature
 
   # changes_with: A-4; hy_topo, string ids, aggregate_id and length_km, no geometry
   - id: hy_capabilities_new_hope_3dhp
@@ -1430,6 +1467,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; hy_node with divergence and no aggregate_id;
   # add_return_divergence TRUE, aggregate rows FALSE
@@ -1464,6 +1502,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; no hy class; only the two geometry rows TRUE (sf). R only.
   - id: hy_capabilities_raw_new_hope
@@ -1473,6 +1512,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Preconditions
 
   # changes_with: A-4; hydroloom names but no hy class; only geometry rows TRUE
   # in R. Python would read hy_topo. R only.
@@ -1483,6 +1523,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Preconditions
 
   # S-6 boundary fixtures and I-11; requires is [any], so each runs here.
   # changes_with: A-4; single row; hy_topo with node columns and geometry
@@ -1506,6 +1547,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; five flowlines, no edges; toid values not read
   - id: hy_capabilities_all_terminals
@@ -1528,6 +1570,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; I-11 zero rows without include_conversions, the case
   # Python runs; hy_topo; every via ""
@@ -1551,6 +1594,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Edge cases
 
   # changes_with: A-4; no via entry for hy_flownetwork, same values as the
   # direct call
@@ -1563,6 +1607,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; missing weight; not read
   - id: hy_capabilities_missing_weight
@@ -1609,6 +1654,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; hy_node without a divergence column; add_toids,
   # add_divergence, subset_network, get_confluences TRUE; add_return_divergence
@@ -1633,6 +1679,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Signature
 
   # changes_with: A-4; hy_node with aggregate_id and length_km;
   # add_hydro_location_distance, index_hydro_location_distance, get_subpath
@@ -1709,6 +1756,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: is_dendritic.md §Preconditions
 
   # source table already has lowercase divergence with 2; FALSE without hy()
   - id: is_dendritic_new_hope_3dhp
@@ -1847,6 +1895,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: is_dendritic.md §Edge cases
 
   # python_omitted: R-only for the result (D3-57, D3-197); duplicated edge,
   # validate_data false; Python raises at alignment; expect TRUE
@@ -1858,6 +1907,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: is_dendritic.md §Edge cases
 
   # missing weight value; not read; expect TRUE
   - id: is_dendritic_missing_weight
@@ -2342,6 +2392,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Edge cases
     raises: error
     raises_key: toid_already_present
 
@@ -2597,6 +2648,7 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
+    r_only: make_index_ids.md §Edge cases
 
   # one connection on two rows differing in downmain; both kept, to
   # (1,0,2,main TRUE), (1,1,2,main FALSE); R-only (D3-46)
@@ -2608,6 +2660,7 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
+    r_only: make_index_ids.md §Edge cases
 
   # from (2,0,1), (2,1,1), no main (no upmain); separate from the "to" case
   # because mode "both" fails in graph_to_layer when only one direction has
@@ -2620,6 +2673,7 @@ cases:
     order: ignore
     supported_by: [r]
     generator: [r]
+    r_only: make_index_ids.md §Edge cases
 
   # I-11; shared: an index with no nodes and a graph layer with no rows (D3-46;
   # R 1.3.0 stopped "subscript out of bounds" after a max() warning)
@@ -3322,6 +3376,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: sort_network.md §Edge cases
 
   # I-11; shared: zero rows with id and toid typed (D3-46; R 1.3.0 stopped in
   # the index build, "subscript out of bounds")
@@ -3733,6 +3788,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: sort_network.md §Edge cases
 
   # changes_with: D-4; one terminal; distinct (id, toid) rows (D3-210)
   - id: sort_network_sort_network_dups_split
@@ -4264,6 +4320,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_topo_sort.md §Edge cases
 
   # note: a reciprocal pair stops (D-8)
   - id: add_topo_sort_reciprocal_pair
@@ -4670,6 +4727,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: navigate_network_dfs.md §Edge cases
 
   # I-11; shared: empty starts on a zero-row network give an empty list, a
   # traversal layer with no rows (D3-46; R 1.3.0 stopped in make_index_ids)

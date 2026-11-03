@@ -38,4 +38,20 @@ test_that("parity rows take the languages common to every case", {
   expect_identical(rows$supported_by, c("r", "r, python", "none"))
   expect_identical(rows$python, c("a", "as_hy", "b"))
   expect_identical(rows$cases, c(2L, 1L, 0L))
+  expect_identical(rows$r_only, c(0L, 0L, 0L))
+})
+
+test_that("parity rows count r_only cases apart", {
+  m <- list(suite_version = "0.0.0",
+    functions = list(a = list(), b = list()),
+    cases = list(
+      list(id = "a1", `function` = "a", supported_by = list("r", "python")),
+      list(id = "a2", `function` = "a", supported_by = list("r"), r_only = "a.md §Signature"),
+      list(id = "b1", `function` = "b", supported_by = list("r"), r_only = "b.md §Signature")))
+
+  rows <- parity_rows(m)
+
+  expect_identical(rows$supported_by, c("r, python", "r"))
+  expect_identical(rows$cases, c(2L, 1L))
+  expect_identical(rows$r_only, c(1L, 1L))
 })

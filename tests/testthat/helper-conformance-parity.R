@@ -1,6 +1,9 @@
 # Parity table generated from the manifest's `supported_by` (SPEC A-15, S-4;
 # ROADMAP M2). One row per manifest function, in manifest order. A function's
-# `supported_by` is the set of languages that support every one of its cases.
+# `supported_by` is the set of languages that support every one of its cases
+# that carries no `r_only`; a case with `r_only` is R-only by design and is
+# counted apart (SPEC S-4, RULES P-5). A function whose every case carries
+# `r_only` reads `r`.
 
 parity_file <- function() file.path(conformance_dir(), "parity.md")
 
@@ -15,14 +18,18 @@ parity_python_names <- c(
   hy_capabilities = "capabilities"
 )
 
-# Returns a data.frame with columns function, python, supported_by, cases.
+# Returns a data.frame with columns function, python, supported_by, cases,
+# r_only.
 parity_rows <- function(manifest) {
 
   fns <- names(manifest$functions)
   case_fn <- vapply(manifest$cases, function(x) x[["function"]], "")
+  r_only <- vapply(manifest$cases, function(x) !is.null(x$r_only), TRUE)
 
   supported <- vapply(fns, function(fn) {
-    by <- lapply(manifest$cases[case_fn == fn], function(x) unlist(x$supported_by))
+    cases <- manifest$cases[case_fn == fn & !r_only]
+    if (length(cases) == 0 && any(case_fn == fn)) return("r")
+    by <- lapply(cases, function(x) unlist(x$supported_by))
     if (length(by) == 0) return("none")
     langs <- intersect(c("r", "python"), Reduce(intersect, by))
     if (length(langs) == 0) "none" else paste(langs, collapse = ", ")
@@ -34,6 +41,7 @@ parity_rows <- function(manifest) {
   data.frame(`function` = fns, python = unname(python),
     supported_by = unname(supported),
     cases = vapply(fns, function(fn) sum(case_fn == fn), 0L, USE.NAMES = FALSE),
+    r_only = vapply(fns, function(fn) sum(case_fn == fn & r_only), 0L, USE.NAMES = FALSE),
     check.names = FALSE, stringsAsFactors = FALSE)
 }
 
@@ -50,12 +58,15 @@ parity_lines <- function(manifest) {
     "# Parity table",
     "",
     paste0("Suite version ", manifest$suite_version, ". A function's `supported_by` ",
-      "lists the languages that support every one of its cases."),
+      "lists the languages that support every one of its cases that carries no ",
+      "`r_only`. A case with `r_only` is R-only by design and counts apart, in the ",
+      "`r_only` column (SPEC S-4, RULES P-5); a function whose every case carries ",
+      "it reads `r`."),
     "",
-    "| function | Python | supported_by | cases |",
-    "| --- | --- | --- | --- |",
-    sprintf("| `%s` | `%s` | %s | %d |",
-      rows[["function"]], rows$python, rows$supported_by, rows$cases))
+    "| function | Python | supported_by | cases | r_only |",
+    "| --- | --- | --- | --- | --- |",
+    sprintf("| `%s` | `%s` | %s | %d | %d |",
+      rows[["function"]], rows$python, rows$supported_by, rows$cases, rows$r_only))
 }
 
 write_parity <- function(lines, path = parity_file()) {

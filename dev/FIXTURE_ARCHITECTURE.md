@@ -100,7 +100,7 @@ A case is one call on one fixture. The manifest, `inst/extdata/conformance/manif
   generator: [r]
 ```
 
-The `id` is the layer name in `expected/sort_network.gpkg` and will be the pytest test id. `order: exact` says row order is part of the answer. `supported_by` and `generator` say which languages pass the case and which write its expectation; the parity table in `conformance/parity.md` is generated from them.
+The `id` is the layer name in `expected/sort_network.gpkg` and will be the pytest test id. `order: exact` says row order is part of the answer. `supported_by` and `generator` say which languages pass the case and which write its expectation; the parity table in `conformance/parity.md` is generated from them. A case that is R-only by design keeps `supported_by: [r]` and adds `r_only:`, the description section or SPEC anchor that makes it so; the parity table counts those cases apart, so a function reads `r, python` when every case without `r_only` lists both languages.
 
 ## One case, end to end
 
