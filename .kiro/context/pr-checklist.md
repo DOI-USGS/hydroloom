@@ -7,12 +7,14 @@ with manifest ids) run first. This list is the rest.
   as a side effect.
 - I-1, I-2 — every identifier column is `str` on ingest and on return; nothing widens or
   casts it back to a number.
-- I-9 — no nullable extension dtype in the public API; computed integers complete `int32`.
+- I-9 — no nullable extension dtype for a computed integer attribute, which is complete
+  `int32`; a flag column with a missing value is nullable `boolean`.
 - D-3 — `kind="stable"` on every `sort_values` and `argsort`.
 - K-5 — no kernel reaches upward.
 - A-9 — function and argument names copied from R; data first, then `*`; first argument is
   `network` (phase 1–2) or the operand noun (phase 3).
-- A-10 — error text from `remedies.json` by key.
+- A-10 — error text from `remedies.json` by key; an argument naming an absent column raises
+  `KeyError(column)` with no key.
 - A-11 — every `warnings.warn` uses the first frame outside hydroloom as its stack
   level, not a fixed number (REVIEW_11022026 item 5); the package warning class.
 - A-13 — docstring composed from `docstrings.json`; hand-written doctest present; no R

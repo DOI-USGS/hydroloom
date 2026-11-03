@@ -189,7 +189,7 @@ flowchart LR
 
 GeoPackage throughout, one file per fixture; attribute-only fixtures are aspatial tables. Geometry fixtures stored projected in EPSG:5070; each under a megabyte. Expected outputs are one GeoPackage per function with a layer per case.
 
-Real subsets, one per source that a sample in hand represents, which is what exercises the vocabulary's `aliases`:
+Real subsets, which exercise the vocabulary's `aliases`, one per source that a sample in hand represents:
 
 | Fixture | Source | Exercises |
 | --- | --- | --- |
