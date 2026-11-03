@@ -275,8 +275,9 @@ def test_explicit_r_name_wins_over_same_name():
 PUBLIC = [getattr(hydroloom, name) for name in sorted(hydroloom.__all__)]
 
 # The hy_network_type title is a question; rewording it is roxygen work, the
-# maintainer's (A-13), outside this docstring pass.
-PUBLIC_ALLOWED = {"representation": {"SS03"}}
+# maintainer's (A-13), outside this docstring pass. The is.hy title is a
+# question too, opening "Is", for the same reason.
+PUBLIC_ALLOWED = {"representation": {"SS03"}, "is_hy": {"SS03", "SS05"}}
 
 
 @pytest.mark.parametrize("func", PUBLIC, ids=lambda f: f.__name__)

@@ -156,6 +156,11 @@ PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
         "column hydroloom would choose by its known source names; `None` lets "
         "hydroloom choose.",
     },
+    "hy_reverse": {
+        "source": "the vocabulary alias source whose names the columns take "
+        "back, one of `nhdplus`, `nhdplushr`, `3dhp`, or `hydrofabric`; "
+        "`None` returns the table with its names unchanged.",
+    },
 }
 
 

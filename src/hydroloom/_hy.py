@@ -565,3 +565,167 @@ def representation(network: pd.DataFrame) -> str:
     df, _, _ = _align_frame(network, {})
 
     return _classify(df).value
+
+
+# Naming block (A-5, A-16, I-14) ------------------------------------------------
+
+# The S-2 alias sources, the `source` enum of hy_vocab.schema.json; a source may
+# tag no alias (hydrofabric at vocabulary 1.0.0).
+_SOURCES = ("nhdplus", "nhdplushr", "3dhp", "hydrofabric")
+
+# The identifier columns is_hy reads (is.hy.md Definition condition 2).
+_NETWORK_IDS = ("id", "toid", "fromnode", "tonode")
+
+
+@functools.cache
+def _source_names(source: str) -> dict[str, str]:
+    # hy name -> its alias tagged `source`, lowercase (hy_reverse.md Edge cases).
+    return {
+        name: alias["name"].lower()
+        for name, term in _terms().items()
+        for alias in term.get("aliases") or []
+        if alias.get("source") == source and alias["name"].lower() != name
+    }
+
+
+def _geometry_name(network: pd.DataFrame) -> Hashable | None:
+    if isinstance(network, gpd.GeoDataFrame):
+        name: Hashable = network.geometry.name
+        return name
+
+    return None
+
+
+@requires()
+@doc("hy_reverse")
+def hy_reverse(network: pd.DataFrame, *, source: str | None = None) -> pd.DataFrame:
+    """Reverse hy to original names.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import as_hy, hy_reverse
+    >>> net = as_hy(pd.DataFrame({"COMID": [1, 2], "ToCOMID": [2, None]}))
+    >>> hy_reverse(net, source="nhdplus").columns.tolist()
+    ['comid', 'tocomid']
+    >>> hy_reverse(net).columns.tolist()
+    ['id', 'toid']
+    """
+    if source is None:
+        # No mapping is registered in Python yet, so nothing is restored.
+        return network.copy()
+    if source not in _SOURCES:
+        raise KeyError(msg("unknown_alias_source", source=source))
+
+    inverse = _source_names(source)
+    names = {c: inverse[c] for c in network.columns if c in inverse}
+    kept = {str(c).lower(): c for c in network.columns if c not in names}
+    for alias in names.values():
+        if alias in kept:
+            raise KeyError(
+                msg("column_name_duplicate", columns=_join([kept[alias], alias]))
+            )
+
+    return network.rename(columns=names)
+
+
+def _is_text_column(values: pd.Series, *, missing: bool) -> bool:
+    # A string column: object or string dtype, every present value a str.
+    dtype = values.dtype
+    if not (dtype == object or isinstance(dtype, pd.StringDtype)):
+        return False
+    present = values.dropna()
+    if not missing and len(present) < len(values):
+        return False
+
+    return all(isinstance(v, str) for v in present.tolist())
+
+
+@requires()
+@doc("is.hy")
+def is_hy(network: Any) -> bool:
+    """Test whether a table is in hydroloom names and identifier types.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import as_hy, is_hy
+    >>> net = pd.DataFrame({"COMID": [1, 2], "ToCOMID": [2, None]})
+    >>> is_hy(net)
+    False
+    >>> is_hy(as_hy(net))
+    True
+    """
+    if not isinstance(network, pd.DataFrame) or not network.columns.is_unique:
+        return False
+    try:
+        geometry = _geometry_name(network)
+    except AttributeError:
+        # A GeoDataFrame with no active geometry, which as_hy cannot read.
+        return False
+    columns = [c for c in network.columns if c != geometry]
+
+    # A name as_hy would change, or a name problem it would raise on.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        try:
+            if _align(columns, {}):
+                return False
+        except KeyError:
+            return False
+    if "id" not in columns:
+        return False
+
+    # A missing id raises in as_hy; a missing toid, fromnode, or tonode does not.
+    return all(
+        _is_text_column(network[c], missing=c != "id")
+        for c in _NETWORK_IDS
+        if c in columns
+    )
+
+
+@requires()
+@doc("align_names")
+def align_names(network: pd.DataFrame) -> pd.DataFrame:
+    """Align names to hydroloom convention.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import align_names
+    >>> net = pd.DataFrame(
+    ...     {"COMID": [101, 102], "ToCOMID": [102.0, None], "Notes": ["a", "b"]}
+    ... )
+    >>> out = align_names(net)
+    >>> out.columns.tolist()
+    ['id', 'toid', 'Notes']
+    >>> out["id"].tolist()
+    [101, 102]
+    """
+    geometry = _geometry_name(network)
+    columns = [c for c in network.columns if c != geometry]
+
+    return network.rename(columns=_align(columns, {}))
+
+
+@doc("hydroloom_name_definitions")
+def name_definitions() -> pd.DataFrame:
+    """Hydroloom name definitions.
+
+    Examples
+    --------
+    >>> from hydroloom import name_definitions
+    >>> defs = name_definitions()
+    >>> defs.columns.tolist()
+    ['name', 'definition']
+    >>> defs["name"].head(3).tolist()
+    ['id', 'toid', 'fromnode']
+    """
+    terms = _terms()
+
+    return pd.DataFrame(
+        {
+            "name": list(terms),
+            "definition": [term["definition"] for term in terms.values()],
+        }
+    )

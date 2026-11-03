@@ -402,10 +402,36 @@ def _is_texty(series: pd.Series) -> bool:
     return series.dtype == object or isinstance(series.dtype, pd.StringDtype)
 
 
+def _cast_integer(actual: pd.Series, dtype: Any) -> pd.Series:
+    # S-4 `compare: values`: an integer layer column with no missing value; a
+    # cast that would change a value is not made, so the comparison fails.
+    if actual.isna().any():
+        return actual
+    try:
+        cast = actual.astype(dtype)
+    except (TypeError, ValueError, OverflowError):
+        return actual
+    if not (cast.astype(np.float64) == actual.astype(np.float64)).all():
+        return actual
+
+    return cast
+
+
 def _coerce(
-    actual: pd.DataFrame, expected: pd.DataFrame, types: Mapping[str, str]
+    actual: pd.DataFrame,
+    expected: pd.DataFrame,
+    types: Mapping[str, str],
+    *,
+    stored_form: bool = False,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Coerce the expectation to the vocabulary dtypes; text on both sides (S-7)."""
+    """Coerce the expectation to the vocabulary dtypes; text on both sides (S-7).
+
+    ``stored_form`` (S-4 ``compare: values``, a function that types nothing)
+    brings the actual frame to the layer's stored form instead of checking
+    I-1: every identifier column and every column the layer stores as text
+    becomes decimal strings, and an integer column with no missing value
+    takes the layer's dtype.
+    """
     actual = actual.copy()
     expected = expected.copy()
     for col in expected.columns:
@@ -414,7 +440,8 @@ def _coerce(
             continue
         if kind in TEXT_TYPES:
             expected[col] = _text(expected[col], col, "convert")
-            actual[col] = _text(actual[col], col, "strict")
+            how = "convert" if stored_form else "strict"
+            actual[col] = _text(actual[col], col, how)
         elif kind in INTEGER_TYPES:
             values = expected[col].astype(np.float64)
             outside = ((values < INT32.min) | (values > INT32.max)).any()
@@ -431,8 +458,12 @@ def _coerce(
         else:
             if _is_texty(expected[col]):
                 expected[col] = _text(expected[col], col, "keep")
+                if stored_form:
+                    actual[col] = _text(actual[col], col, "convert")
             if _is_texty(actual[col]):
                 actual[col] = _text(actual[col], col, "keep")
+        if stored_form and pd.api.types.is_integer_dtype(expected[col]):
+            actual[col] = _cast_integer(actual[col], expected[col].dtype)
 
     return actual, expected
 
@@ -517,7 +548,9 @@ def assert_layer_equal(
 
     Columns compare by name (D-14), after coercion to the vocabulary dtypes (S-7).
     ``compare="tolerance"`` applies the D-13 ``atol`` per type, or the case's
-    ``atol``, with ``rtol`` 0 unless the case gives one. Rows are sorted before
+    ``atol``, with ``rtol`` 0 unless the case gives one. ``compare="values"``
+    brings the actual frame to the layer's stored form in place of the I-1
+    strict text check, then compares exactly (S-4). Rows are sorted before
     comparison on ``key`` for a graph or traversal layer always, and for a frame
     when ``order="ignore"`` on ``id``, then ``key``, then the other non-float
     columns (all columns where there is neither ``id`` nor ``key``).
@@ -532,7 +565,7 @@ def assert_layer_equal(
     actual = actual[list(expected.columns)].reset_index(drop=True)
     expected = expected.reset_index(drop=True)
     types = column_types(list(expected.columns), returns)
-    actual, expected = _coerce(actual, expected, types)
+    actual, expected = _coerce(actual, expected, types, stored_form=compare == "values")
 
     if returns in {"graph", "traversal"}:
         by = list(key) if key else _frame_sort(expected, None)

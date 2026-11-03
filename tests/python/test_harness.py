@@ -221,6 +221,50 @@ def test_count_dtype_change_fails():
         assert_layer_equal(bad, layer, **_compare_args(case))
 
 
+def _stored_form_layers():
+    expected = pd.DataFrame(
+        {
+            "id": ["1", "2"],
+            "toid": ["2", None],
+            "nhdplusid": ["5", "6"],
+            "topo_sort": np.array([2, 1], dtype=np.int32),
+        }
+    )
+    actual = pd.DataFrame(
+        {
+            "id": [1, 2],
+            "toid": [2.0, np.nan],
+            "nhdplusid": [5, 6],
+            "topo_sort": [2.0, 1.0],
+        }
+    )
+
+    return actual, expected
+
+
+def test_compare_values_brings_actual_to_stored_form():
+    """compare: values converts identifiers and text, casts integers (S-4)."""
+    actual, expected = _stored_form_layers()
+
+    assert_layer_equal(actual, expected, compare="values")
+    with pytest.raises(AssertionError, match="not str"):
+        assert_layer_equal(actual, expected, compare="exact")
+
+
+@pytest.mark.parametrize(
+    ("column", "value"),
+    [("id", 3), ("nhdplusid", 7), ("topo_sort", 2.5)],
+)
+def test_compare_values_still_compares_values(column, value):
+    """A changed value fails under compare: values; a lossy cast is not made."""
+    actual, expected = _stored_form_layers()
+    actual[column] = actual[column].astype(object)
+    actual.loc[1, column] = value
+
+    with pytest.raises(AssertionError, match=column):
+        assert_layer_equal(actual, expected, compare="values")
+
+
 def test_count_outside_32_bit_compares_as_double():
     """A count outside the 32-bit range compares as double (I-15)."""
     expected = pd.DataFrame({"topo_sort": [2.0**40, 1.0]})

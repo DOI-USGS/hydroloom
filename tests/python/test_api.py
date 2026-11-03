@@ -34,10 +34,14 @@ def test_registry_matches_requires(name):
     ``pattern``, ``columns``, and ``via`` are compared. ``via`` is the
     registry field `capabilities()` will name, distinct from ``convert``:
     `make_index_ids` stores ``{hy_node: add_toids}`` and registers no
-    ``convert``.
+    ``convert``. A function whose pattern is ``[none]`` takes no network, so
+    it has no capability to report and is not registered.
     """
     requires = _requires(R_NAMES.get(name, name))
     pattern = requires["pattern"]
+    if pattern == ["none"]:
+        assert name not in _REGISTRY
+        return
     entry = _REGISTRY[name]
     needs = {need.value for need in entry.needs}
     via = {need.value: call for need, call in entry.via.items()}
