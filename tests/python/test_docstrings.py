@@ -188,8 +188,10 @@ def index_points_to_lines(
 
 COMPOSED = [make_index_ids, navigate_network_dfs, add_toids, index_points_to_lines]
 
-# numpydoc codes the composed docstrings may carry. None so far.
-ALLOWED_CODES: set[str] = set()
+# numpydoc codes the composed docstrings may carry. SA01, no See Also: the
+# only See Also entry the composer could write is the R function, which is not
+# a Python object, so the R provenance goes in Notes (M5 M-08, ST-13 to ST-16).
+ALLOWED_CODES: set[str] = {"SA01"}
 
 
 @pytest.mark.parametrize("func", COMPOSED, ids=lambda f: f.__name__)
@@ -203,10 +205,14 @@ def test_composed_docstring_validates(func):
 
 @pytest.mark.parametrize("func", COMPOSED, ids=lambda f: f.__name__)
 def test_composed_sections(func):
-    """The R text arrives substituted, with a See Also and the own Examples."""
+    """The R text arrives substituted, with the R provenance and own Examples."""
     text = func.__doc__
 
-    assert f"{func.__name__} : R function `hydroloom::{func.__name__}()`" in text
+    assert "See Also" not in text
+    assert (
+        f"Documentation adapted from the R function `hydroloom::{func.__name__}()`."
+        in text
+    )
     assert text.count("Examples\n--------") == 1
     assert f">>> {func.__name__}.__name__" in text
     assert "data.frame" not in text
@@ -224,10 +230,66 @@ def test_parameters_follow_python_signature():
 
     assert [p.name for p in params] == ["network", "mode"]
     assert params[0].desc == [
-        "A table whose columns use hydroloom names or names registered with "
-        "`register_names`."
+        "A table of flowlines or catchments; columns named as in a known source "
+        "(such as NHDPlus `COMID`, `ToCOMID`) are renamed to hydroloom names first."
     ]
     assert params[1].type == "str, default 'to'"
+
+
+# The R function is the provenance and goes in Notes; a See Also entry would
+# name an object Python does not have (M5 M-08, ST-13 to ST-16).
+PROVENANCE = {
+    "align_names": "align_names",
+    "as_hy": "hy",
+    "hy_reverse": "hy_reverse",
+    "is_hy": "is.hy",
+    "make_index_ids": "make_index_ids",
+    "name_definitions": "hydroloom_name_definitions",
+    "representation": "hy_network_type",
+}
+
+
+@pytest.mark.parametrize("name", sorted(PROVENANCE))
+def test_r_provenance_in_notes(name):
+    """Each public docstring names its R source in Notes and has no See Also."""
+    doc_object = get_doc_object(getattr(hydroloom, name))
+    notes = "\n".join(doc_object["Notes"])
+
+    assert not doc_object["See Also"]
+    assert notes.endswith(
+        f"Documentation adapted from the R function `hydroloom::{PROVENANCE[name]}()`."
+    )
+
+
+def test_provenance_follows_sections():
+    """The provenance line comes after the transferred Rd sections."""
+    notes = "\n".join(get_doc_object(index_points_to_lines)["Notes"])
+
+    assert notes.startswith("Measures:")
+    assert notes.endswith("`hydroloom::index_points_to_lines()`.")
+
+
+@pytest.mark.parametrize(
+    ("name", "start"),
+    [
+        ("align_names", "A table of flowlines or catchments; columns named as in"),
+        ("hy_reverse", "A table of flowlines or catchments whose columns use"),
+    ],
+)
+def test_network_text_per_function(name, start):
+    """align_names and hy_reverse carry their own `network` text."""
+    params = get_doc_object(getattr(hydroloom, name))["Parameters"]
+    desc = " ".join(params[0].desc)
+
+    assert params[0].name == "network"
+    assert desc.startswith(start)
+    assert "first" not in desc
+
+
+def test_no_public_docstring_names_register_names():
+    """Python has no `register_names` yet, so no docstring points to it (A-5)."""
+    for name in hydroloom.__all__:
+        assert "register_names" not in getattr(hydroloom, name).__doc__, name
 
 
 def test_sections_go_to_notes():
@@ -409,6 +471,10 @@ def test_wholly_r_only_fields_add_nothing(monkeypatch):
     assert "In R," not in text
     assert "\n\n\n" not in text
     assert "Returns" not in text
-    assert "Notes" not in text
+    assert "Only R" not in text
+    assert (
+        "Notes\n-----\nDocumentation adapted from the R function `hydroloom::synthetic()`."
+        in text
+    )
     assert "Shared details." in text
     assert "network\nmode : default 'to'\n    Shared mode." in text

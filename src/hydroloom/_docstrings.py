@@ -8,9 +8,11 @@ through :data:`SUBSTITUTIONS`, the R-phrasing table, in order.
 The composed docstring holds, in numpydoc order: the summary from ``title``;
 the extended summary from ``description`` then ``details``; Parameters from
 ``arguments``, restricted to and ordered by the Python signature; Returns from
-``value``; a See Also entry for the R function; Notes holding each transferred
-Rd section as a paragraph led by its title; and the Examples block of the
-function's own hand-written ``__doc__``, the only part of that ``__doc__`` kept.
+``value``; Notes holding each transferred Rd section as a paragraph led by its
+title, then a line naming the R function the text comes from; and the Examples
+block of the function's own hand-written ``__doc__``, the only part of that
+``__doc__`` kept. No See Also is written: the R function is not a Python
+object numpydoc can link.
 """
 
 from __future__ import annotations
@@ -45,8 +47,8 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     # The A-13 examples.
     (
         r"data\.frame network compatible with hydroloom_names",
-        "a table whose columns use hydroloom names or names registered with "
-        "`register_names`",
+        "a table of flowlines or catchments; columns named as in a known source "
+        "(such as NHDPlus `COMID`, `ToCOMID`) are renamed to hydroloom names first",
     ),
     (r"logical if TRUE", "if `True`"),
     (r"logical if `TRUE`", "if `True`"),
@@ -146,8 +148,16 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
 _COMPILED = tuple((re.compile(pattern), repl) for pattern, repl in SUBSTITUTIONS)
 
 # Python-only arguments (A-9) have no roxygen text; theirs comes from the
-# Signature section of the function's description. Keyed by alias.
+# Signature section of the function's description. Keyed by alias. A `network`
+# entry replaces the shared network text where that text is not true of the
+# function: align_names does the renaming itself, and hy_reverse reads
+# hydroloom names.
 PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
+    "align_names": {
+        "network": "a table of flowlines or catchments; columns named as in a "
+        "known source (such as NHDPlus `COMID`, `ToCOMID`) are renamed to "
+        "hydroloom names.",
+    },
     "hy": {
         "id_col": "the input column to take as `id`, in place of any column "
         "hydroloom would choose by its known source names; `None` lets "
@@ -157,6 +167,8 @@ PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
         "hydroloom choose.",
     },
     "hy_reverse": {
+        "network": "a table of flowlines or catchments whose columns use "
+        "hydroloom names, as `as_hy` returns.",
         "source": "the dataset whose column names to rename to: `nhdplus`, "
         "`nhdplushr`, `3dhp`, or `hydrofabric`. `None` returns the table "
         "unchanged.",
@@ -284,20 +296,13 @@ def compose(
         returns = _annotation(signature.return_annotation)
         parts.append(_section("Returns", f"{returns}\n{_indent(value)}"))
 
-    parts.append(
-        _section(
-            "See Also",
-            f"{alias} : R function `hydroloom::{alias}()`, the source of this documentation.",
-        )
-    )
-
     notes = [
         f"{_field(title)}:\n\n{_field(text)}"
         for title, text in (entry.get("sections") or {}).items()
         if _field(text)
     ]
-    if notes:
-        parts.append(_section("Notes", "\n\n".join(notes)))
+    notes.append(f"Documentation adapted from the R function `hydroloom::{alias}()`.")
+    parts.append(_section("Notes", "\n\n".join(notes)))
 
     own = inspect.cleandoc(func.__doc__ or "")
     match = _EXAMPLES.search(own)
