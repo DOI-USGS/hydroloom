@@ -298,7 +298,7 @@ def test_network_text_per_function(name, expected):
 
 
 def test_no_public_docstring_names_register_names():
-    """`register_names` is not exported (B-4), so no public docstring names it."""
+    """`register_names` is not exported (SPEC A-18: the hydroloom_names cases are all `[r]`), so no public docstring names it."""
     for name in hydroloom.__all__:
         assert "register_names" not in getattr(hydroloom, name).__doc__, name
 
