@@ -1271,13 +1271,15 @@ cases:
     generator: [r]
 
   # shared: true; expect hy_flownetwork; the pattern, not a raise
+  # r only: S-4 runs prepare hy first and Python's as_hy raises
+  # id_toid_pair_repeated there (D3-57) until R's hy() raises too (M6)
   - id: hy_network_type_duplicated_edge
     function: hy_network_type
     fixture: duplicated_edge.gpkg
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r, python]
+    supported_by: [r]
     generator: [r]
 
   # shared: true; expect hy_topo; weight not read
