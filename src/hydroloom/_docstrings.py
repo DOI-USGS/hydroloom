@@ -157,9 +157,9 @@ PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
         "hydroloom choose.",
     },
     "hy_reverse": {
-        "source": "the vocabulary alias source whose names the columns take "
-        "back, one of `nhdplus`, `nhdplushr`, `3dhp`, or `hydrofabric`; "
-        "`None` returns the table with its names unchanged.",
+        "source": "the dataset whose column names to rename to: `nhdplus`, "
+        "`nhdplushr`, `3dhp`, or `hydrofabric`. `None` returns the table "
+        "unchanged.",
     },
 }
 

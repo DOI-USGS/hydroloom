@@ -1218,11 +1218,11 @@
     "arguments": {
       "x": "data.frame network compatible with hydroloom_names."
     },
-    "description": "renames columns back to the names they had in the source data. A column with no source name keeps its name. In R, the source names are those the table had when it was passed to `hy()`, and the hy classes and attributes are removed.",
+    "description": "renames columns from their hydroloom names back to source names. A column with no source name keeps its name. In R, the source names are the names the table had when it was passed to `hy()`, and the hy classes and attributes are removed.",
     "details": null,
     "sections": {},
     "title": "Restore source column names",
-    "value": "the input table with its columns renamed to their source names."
+    "value": "the input table with its columns renamed from hydroloom names to source names."
   },
   "hy_topo": {
     "arguments": {},

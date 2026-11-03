@@ -10,12 +10,13 @@ hy_reverse(x)
 \item{x}{data.frame network compatible with \link{hydroloom_names}.}
 }
 \value{
-the input table with its columns renamed to their source names.
+the input table with its columns renamed from hydroloom names to
+source names.
 }
 \description{
-renames columns back to the names they had in the source
-data. A column with no source name keeps its name. In R, the source names
-are those the table had when it was passed to \code{hy()}, and the hy
+renames columns from their hydroloom names back to source
+names. A column with no source name keeps its name. In R, the source names
+are the names the table had when it was passed to \code{hy()}, and the hy
 classes and attributes are removed.
 }
 \examples{
