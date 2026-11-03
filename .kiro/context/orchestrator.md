@@ -54,7 +54,10 @@ user-visible behavior change nothing names (RULES B-3). Never push.
 ## Running
 
 - A run starts from a kickoff file in the shape of `.kiro/context/kickoff-template.md`,
-  committed under `dev/milestones/kickoffs/` by the maintainer. It names the milestone,
+  committed under `dev/milestones/kickoffs/` by the orchestrator when the maintainer says
+  to continue and the last review file's Disposition lines are filled (RULES P-5). Write
+  it from those dispositions and the open BACKLOG rows, commit it, and start; do not
+  answer with a list of what it would hold. It names the milestone,
   the units in dependency order, the base SHA, the effort level, the BACKLOG rows pulled
   in, and for each description the SHA of its last logged read.
 - The unit list is the kickoff's (RULES P-5). A run ends on its last unit or at a block,

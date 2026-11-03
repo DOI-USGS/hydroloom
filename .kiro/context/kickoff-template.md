@@ -1,7 +1,8 @@
 # Kickoff — the one file a run starts from
 
-File: `dev/milestones/kickoffs/<milestone>-run-<n>.md`, written by the maintainer at
-milestone start or between runs, committed before the run. The orchestrator reads it,
+File: `dev/milestones/kickoffs/<milestone>-run-<n>.md`, written by the orchestrator between
+runs from the last review file's dispositions and the open BACKLOG rows, committed before
+the run (RULES P-5). The maintainer edits it only to disagree with it. The orchestrator reads it,
 `.kiro/context/orchestrator.md`, and `dev/plan/RULES.md`, and nothing else is restated in
 a prompt. The unit list here is the run (RULES P-5).
 
