@@ -47,9 +47,9 @@ part (`identifier_not_whole`), an infinite value (`identifier_not_finite`), or a
 value (`id_missing`, B-1). A table with no `id` column raises `RepresentationError`
 (`no_id_column`, D3-130), where R's `hy()` warns and the R value is `"hy"`.
 `representation` does not validate edges. A repeated (`id`, `toid`) pair, a `toid`,
-`fromnode`, or `tonode` value with a fractional part, an infinite value, or mixed types,
-broken `upmain`/`downmain` invariants, and a flag column not coded 0/1 neither raise nor
-warn here, though `as_hy` raises or warns on each (`hy.md` Preconditions).
+`fromnode`, or `tonode` value that is non-whole, infinite, or of mixed type, broken
+`upmain`/`downmain` invariants, and a flag column not coded 0/1 neither raise nor warn
+here, though `as_hy` raises or warns on each (`hy.md` Preconditions).
 
 ## Definition
 
@@ -77,8 +77,8 @@ carries no hydroloom class, whatever its column names, so its value is
 
 Python keeps no class on a frame (I-14), so `representation(network)` applies the same
 classification rule to the frame on demand (A-2): the value equals R's
-`hy_network_type(hy(x))` on the same table. With the columns named and the identifiers
-typed as `as_hy` would leave them, first match wins:
+`hy_network_type(hy(x))` on the same table when `id` has no missing value. With the
+columns named and the identifiers typed as `as_hy` would leave them, first match wins:
 
 1. `id` and `toid` present and `id` unique: `"hy_leveled"` when `topo_sort`,
    `levelpath`, and `levelpath_outlet_id` are all present, else `"hy_topo"`;
@@ -126,7 +126,7 @@ index is built.
 - The result is unchanged by any permutation of the input rows (D-7).
 - R: `hy_network_type(hy(x))` is never `"not a hydroloom object"` for a table `x`.
 - R: `hy_network_type(hy(x))` equals Python `representation(x)` for every table `x` that
-  `hy()` accepts without the `no_id_column` warning.
+  `hy()` accepts without the `no_id_column` warning and whose `id` has no missing value.
 - `"hy_leveled"` only if `id`, `toid`, `topo_sort`, `levelpath`, and
   `levelpath_outlet_id` are present and `id` is unique (R: after `hy()`).
 - `"hy_flownetwork"` if and only if `id` and `toid` are present and `id` repeats (R:
@@ -191,9 +191,9 @@ uniqueness test.
 | empty column name (Python) | a column has no name | none; the column position is in the message | give the column a name | `column_name_empty` |
 | no `id` column (Python error, D3-130) | no input column is `id` or one of its aliases, so the catchments or flowlines have no identifier | all | rename the identifier column to `id` | `no_id_column` |
 | `id` column of mixed types (Python, I-3) | the `id` column holds both strings and numbers | the rows whose type differs from the first value's | cast the column to one type before the call | `identifier_mixed_type` |
-| non-whole floating-point `id` (R `hy()` and Python, D3-07) | the `id` column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
-| infinite `id` (R `hy()` and Python, I2-3; key drafted, D3-180) | the `id` column arrives as floating-point numbers and a value is `Inf` or `-Inf`, which is neither a whole number nor text that names the same identifier | the rows whose value is infinite | correct the values before the call | `identifier_not_finite` |
-| missing `id` value (Python, B-1; key drafted) | a row has no `id`, so the flowline or catchment on it cannot be identified | the row positions whose `id` is missing | give those rows an `id`, or drop them, before the call | `id_missing` |
+| non-whole floating-point identifier (R `hy()` on any identifier column; Python on `id`; D3-07) | the identifier column arrives as floating-point numbers and a value has a fractional part, so it cannot be read as a whole-number identifier without changing the value | the rows whose value has a fractional part | correct the values, or cast the column to text, before the call | `identifier_not_whole` |
+| infinite identifier (R `hy()` on any identifier column; Python on `id`; I2-3; key drafted, D3-180) | the identifier column arrives as floating-point numbers and a value is `Inf` or `-Inf`, which is neither a whole number nor text that names the same identifier | the rows whose value is infinite | correct the values before the call | `identifier_not_finite` |
+| missing `id` value (Python, B-1; key drafted) | a row has no `id`, so the flowline or catchment on it cannot be identified | the row positions whose `id` is missing | give each of those rows its identifier (for catchments joined to flowlines, the catchment's own identifier) before the call; dropping the rows instead removes their area from accumulated values downstream | `id_missing` |
 
 R's `hy_network_type` raises and warns on nothing; in R the `no_id_column` warning and the
 `identifier_not_whole` and `identifier_not_finite` raises come from `hy()` in `prepare`. Python's rows are the conditions `as_hy` raises or warns on in name
@@ -274,7 +274,7 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
 - 2026-11-03, suite 0.1.0, M5 run 2 unit 2, REVIEW_11022026 item 3 (SP-03, SP-04; P-1):
   Preconditions are the section corrected. Python's `representation` aligns names and
   types `id`, as Algorithm step 1 reads, and validates no edge: a repeated (`id`, `toid`)
-  pair, a non-whole or mixed-type `toid`, `fromnode`, or `tonode`, the
+  pair, a non-whole, infinite, or mixed-type `toid`, `fromnode`, or `tonode`, the
   `upmain`/`downmain` invariants, and a flag not coded 0/1 do not raise or warn here.
   Remedies lists the name-alignment rows `column_name_duplicate` and `column_name_empty`,
   narrows the identifier rows to `id`, and states which `as_hy` conditions are not
@@ -282,3 +282,11 @@ unique, and `toid` outranks `fromnode`/`tonode`. `representation(network)` is
   accepts; Edge cases add the non-whole node value. REVIEW_11022026 item 4 (SP-07,
   SP-S3; B-1): a missing `id` value raises `id_missing` (Preconditions, Edge cases,
   Remedies; key agent-drafted for the M6 read).
+- 2026-11-03, suite 0.1.0, M5 run 2 unit 2 fix round: S-01, the Definition sentence and
+  the R-equals-Python Postcondition hold when `id` has no missing value. S-02, the
+  Preconditions list of unvalidated edge values reads "non-whole, infinite, or of mixed
+  type", as the 2026-11-03 line above now does. S-06, the `identifier_not_whole` and
+  `identifier_not_finite` Remedies rows scope the column per language. H-02, the
+  `id_missing` fix leads with giving each row its identifier and says that dropping rows
+  removes their area from accumulated values (Remedies, mirroring the `remedies.json`
+  draft).

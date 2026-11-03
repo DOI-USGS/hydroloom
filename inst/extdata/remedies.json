@@ -703,14 +703,14 @@
     },
     "id_missing": {
       "kind": "error",
-      "message": "Column {column} has no id on these rows: {rows}. Each flowline or catchment needs an id, since results and messages identify it by that value. Give those rows an id, or drop them, and call again.",
+      "message": "Column {column}, read as id, has no value on these rows: {rows}. Each flowline or catchment needs an id, since results and messages identify it by that value. Give each of those rows its identifier (for catchments joined to flowlines, the catchment's own identifier) and call again; dropping the rows instead removes their area from accumulated values downstream.",
       "placeholders": {
         "column": "the input column read as id",
         "rows": "the 1-based positions of the rows whose id is missing"
       },
       "condition": "The id column, which identifies each flowline or catchment, is missing a value on one or more rows. A row without an id cannot be connected to, reported, or told apart from another row without one, so no function can return a correct answer for it (B-1).",
       "rows": "the row positions whose id is missing",
-      "fix": "Give each of those rows an id, or drop them, before as_hy().",
+      "fix": "Give each of those rows its identifier (for catchments joined to flowlines, the catchment's own identifier) before as_hy(). Dropping the rows instead removes their area from accumulated values downstream.",
       "raised_by": ["hy", "hy_network_type"],
       "languages": ["python"],
       "r_text": [],
