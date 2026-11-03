@@ -87,7 +87,7 @@ dropped and the vocabulary aliases stay.
 
 A registered alias wins over a vocabulary alias for the same column, the vocabulary
 alias of another term included: registering `comid` as `toid` makes a `COMID` column
-`toid`, not `id` (`align_names.md` steps 2 and 5, B-4, G-11). In Python,
+`toid`, not `id` (`align_names.md` steps 2 and 5, B-4, REVIEW_11032026 item 4). In Python,
 `hy_reverse(source=None)` restores the most recently registered alias for each
 hydroloom name, lowercase as the registry holds it (`hy_reverse.md`, D3-65).
 
@@ -280,7 +280,7 @@ load, so its expectation is the vocabulary's alias table as two columns, `name` 
   Remedies add the `register_name_unknown` stop in R and Python, with the key drafted
   for the M6 read; in R it is a named change (B-3) landing in M5 run 3 unit 3 with
   NEWS. Definition states that a registered alias wins over a vocabulary alias, the
-  alias of another term included (G-11), and what `hy_reverse(source=None)` restores.
+  alias of another term included (REVIEW_11032026 item 4), and what `hy_reverse(source=None)` restores.
   Edge cases cite `align_names.md` step 3 for the `permanent_identifier` rule, which
   moved there from step 4 (item 1).
 - 2026-11-03, suite 0.1.0, M5 run 3 unit 2 fix round. Hydro H-01 (RULES B-1, B-3,

@@ -82,7 +82,7 @@ test_that("hydroloom_names stops on an alias that is another hydroloom name", {
   expect_equal(out[[length(out)]], "id")
 })
 
-test_that("a registered alias wins over another term's vocabulary alias (G-11)", {
+test_that("a registered alias wins over another term's vocabulary alias (REVIEW_11032026 item 4)", {
   on.exit(hydroloom_names(clear = TRUE))
 
   hydroloom_names(c(comid = "toid"))

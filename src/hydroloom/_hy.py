@@ -125,7 +125,7 @@ def _align(
     forced_columns = set(forced.values())
 
     # Candidates per hy name, in alias-map order (step 2). An alias with pairs
-    # to two or more different hy names keeps only its latest pair (G-11).
+    # to two or more different hy names keeps only its latest pair (REVIEW_11032026 item 4).
     pairs = _alias_map()
     owners: dict[str, set[str]] = {}
     latest: dict[str, int] = {}

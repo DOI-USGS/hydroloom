@@ -1,7 +1,7 @@
 """register_names: the alias registry, its raises, and its readers.
 
 Properties follow the Postconditions of hydroloom_names.md; align_names.md step 2
-(G-11) and hy_reverse.md (``source=None``) give the readers' behavior. No manifest
+(REVIEW_11032026 item 4) and hy_reverse.md (``source=None``) give the readers' behavior. No manifest
 case can register a mapping (SPEC S-4), so these tests stand in for one.
 """
 
@@ -202,7 +202,7 @@ def test_register_names_doctest():
     assert tests and runner.failures == 0
 
 
-# align_names and as_hy (align_names.md step 2, G-11) ----------------------------
+# align_names and as_hy (align_names.md step 2, REVIEW_11032026 item 4) ----------------------------
 
 
 def test_registered_alias_wins_over_another_terms_alias():
