@@ -7,15 +7,20 @@
 hy_network_type(x)
 }
 \arguments{
-\item{x}{object to query.}
+\item{x}{data.frame network compatible with \link{hydroloom_names}.}
 }
 \value{
-character. Most specific hydroloom class name, or
-\code{"not a hydroloom object"} if x has no hydroloom class.
+character. One of \code{"hy_leveled"}, \code{"hy_topo"},
+\code{"hy_node"}, \code{"hy_flownetwork"}, or \code{"hy"}. In R, the value
+is \code{"not a hydroloom object"} when \code{x} carries no hydroloom
+class.
 }
 \description{
-Returns the most specific hydroloom class. The class names map
-to database / graph representation patterns:
+Returns the representation pattern of a network: the layout
+its columns follow once \code{hy()} has aligned their names. In R, the
+pattern is the most specific hydroloom S3 class the object carries, so
+\code{x} is the output of \code{hy()}. The pattern names map to database /
+graph representation patterns:
 \itemize{
 \item \code{"hy_leveled"}: enriched edge list (+ topo_sort, levelpath)
 \item \code{"hy_topo"}: self-referencing edge list (id/toid, dendritic)

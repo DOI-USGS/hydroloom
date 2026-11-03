@@ -2,7 +2,7 @@
 % Please edit documentation in R/hy.R
 \name{hy}
 \alias{hy}
-\title{Create a hy Fabric S3 Object}
+\title{Align a table with hydroloom names and types}
 \usage{
 hy(x, clean = FALSE, add_topo = FALSE)
 }
@@ -18,14 +18,35 @@ from fromnode/tonode) and classify into subclass hierarchy. If FALSE
 new attributes.}
 }
 \value{
-hy object with attributes compatible with the hydroloom package.
+the input table with hydroloom names and types, keeping its
+geometry when it has one. In R, the result is a \code{hy} object whose S3
+class is the most specific hydroloom subclass its columns fit, such as
+\code{hy_topo} or \code{hy_node}.
 }
 \description{
-converts a compatible dataset into a fabric s3 class.
-Automatically detects the network representation and classifies the
-result as the most specific hydroloom subclass (e.g. \code{hy_topo},
-\code{hy_node}). With \code{add_topo = TRUE}, also auto-builds
-topology (e.g. toid from fromnode/tonode).
+Renames each column hydroloom knows by another name to its
+standard hydroloom name, as \code{COMID} becomes \code{id} and
+\code{ToCOMID} becomes \code{toid}. The vocabulary, the list of standard
+names and the source names known for each, ships with the package as
+\code{hy_vocab.json}. When two columns could take one name, the column
+whose source name comes later in the vocabulary takes it, with a warning,
+and the other keeps its input name. A \code{permanent_identifier} column
+keeps its name whenever another column could take the same name. Other
+columns keep their input names and values.
+
+Each identifier column takes one identifier type, and each flag column
+coded 1/0 becomes \code{TRUE}/\code{FALSE}. In R, that type is integer when
+the column, with its partner if it has one (\code{toid} for \code{id},
+\code{tonode} for \code{fromnode}), holds only whole numbers within the
+32-bit integer range, and text when either holds larger whole numbers or
+text. A missing \code{toid} becomes the value that marks an outlet (a
+flowline that flows to nothing else in the table), \code{""} when
+identifiers are text. In R,
+that value is \code{0} when identifiers are integer. A table with geometry
+keeps its geometry column, moved to the last position. In R, that column
+is renamed \code{geom}.
+\code{hy_network_type()} reports which network layout the result follows,
+such as an id/toid list or a fromnode/tonode list.
 }
 \examples{
 x <- sf::read_sf(system.file("extdata/new_hope.gpkg", package = "hydroloom"))

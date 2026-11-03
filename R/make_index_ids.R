@@ -20,7 +20,9 @@
 
 #' @title Make Index ids
 #' @description makes index ids for the provided hy object. These can be used
-#' for graph traversal algorithms such that the row number and id are equal.
+#' for graph traversal algorithms such that each flowline, one distinct
+#' \code{id}, has an integer position. In R, positions run from 1 to n in the
+#' order of \code{unique(x$id)}.
 #' @param x data.frame network compatible with \link{hydroloom_names}.
 #' @param long_form logical DEPRECATED
 #' @param mode character indicating the mode of the graph. Choose from "to",
@@ -31,18 +33,28 @@
 #'
 #' mode determines the direction of the graph. If "to", the graph will
 #' be directed from the `id` to the `toid`. If "from", the graph will be
-#' directed from the `toid` to the `id`. If "both", the list will contain both
-#' a "from" and a "to" element containing each version of the graph.
-#' @returns list containing named elements:
+#' directed from the `toid` to the `id`. If "both", the result holds the "to"
+#' and then the "from" version of the graph. In R, "both" returns a list with
+#' elements `to` and `from`.
+#' @returns index ids for mode "to" or "from": each flowline's neighbors as
+#' positions, the downstream flowlines for "to" and the upstream flowlines for
+#' "from", sorted by `id` as text, character by character (so "100" comes
+#' before "30"). In R, a "to" entry of 0 marks a `toid` outside the table and
+#' is not a position. When the table has `downmain` ("to") or `upmain` ("from"),
+#' each connection also says whether it is on the main path, the one that
+#' carries the same river on through a confluence or divergence. For mode
+#' "both", the "to" and then the "from" index ids.
+#'
+#' In R, the value is a list containing named elements:
 #' \describe{
 #'   \item{to}{adjacency matrix with columns that correspond to `unqiue(x$id)`}
 #'   \item{lengths}{vector indicating the number of connections from each node}
 #'   \item{to_list}{a data.frame with an `id`, `indid` and a `toindid` list column.}
 #' }
 #'
-#' List will have names `froms`, `lengths`, and `froms_list` for mode "from".
+#' In R, the list has names `froms`, `lengths`, and `froms_list` for mode "from".
 #'
-#' NOTE: the long_form output is deprecated and will be removed in a future release.
+#' In R, the long_form output is deprecated and will be removed in a future release.
 #'
 #' @name make_index_ids
 #' @export

@@ -15,7 +15,6 @@ function's own hand-written ``__doc__``, the only part of that ``__doc__`` kept.
 
 from __future__ import annotations
 
-import copy
 import functools
 import inspect
 import json
@@ -32,6 +31,14 @@ F = TypeVar("F", bound=Callable[..., Any])
 # slot instead. tests/python/test_docstrings.py counts the fires of each pair
 # over the whole of docstrings.json; a pair that never fires is not kept.
 SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
+    # R-only facts (A-13, P-4). The roxygen states each one in a sentence or
+    # paragraph of its own that starts "In R,"; these two pairs drop them, with
+    # the space or blank line before, and run first so no phrasing pair
+    # rewrites R text. A paragraph that starts "In R," is R-only to its end,
+    # list items included; a sentence inside a paragraph ends at its first
+    # period followed by a space or the end of the field.
+    (r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- )|\Z)", ""),
+    (r" In R,[^\n]*?\.(?=\s|\Z)", ""),
     # The A-13 examples.
     (
         r"data\.frame network compatible with hydroloom_names",
@@ -116,7 +123,6 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"or NULL", "or `None`"),
     (r"`Inf`", "infinity"),
     # R call syntax, and R functions with a differently named Python counterpart.
-    (r"`unqiue\(x\$id\)`", "the unique `id` values of `network`"),
     # Backticked `x` is the network everywhere but check_valid, whose `x` is
     # the lines operand (A-9, phase 3).
     (r"(?<!CRS of )`x`", "`network`"),
@@ -125,6 +131,7 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
         "UM, DM, UT, DD or equivalently upmain, downmain, up, down",
     ),
     (r"`hy\(\)`", "`as_hy()`"),
+    (r"`hy_network_type\(\)`", "`representation()`"),
     (r"`hy_capabilities\(\)`", "`capabilities()`"),
     (r"`is\.hy\(\)`", "`is_hy()`"),
     (r"See hydroloom_names for", "See register_names for"),
@@ -134,119 +141,6 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
 )
 
 _COMPILED = tuple((re.compile(pattern), repl) for pattern, repl in SUBSTITUTIONS)
-
-# The per-function pass (A-13): R phrasing in one Rd entry that the shared
-# table cannot fix. Keyed by alias, then by field (`title`, `description`,
-# `details`, `value`, `arguments.<name>`, `sections.<title>`); each pair is
-# applied to that field before SUBSTITUTIONS. tests/python/test_docstrings.py
-# checks that every pair fires.
-PER_FUNCTION: dict[str, dict[str, tuple[tuple[str, str], ...]]] = {
-    # R's hy() stamps an S3 class and has add_topo; as_hy does neither (A-1,
-    # A-5). Text from the Signature and Definition sections of hy.md.
-    "hy": {
-        "title": (
-            (
-                r"\ACreate a hy Fabric S3 Object\Z",
-                "Align a table with hydroloom names and types",
-            ),
-        ),
-        "description": (
-            (
-                r"(?s)\Aconverts a compatible dataset into a fabric s3 class\..*\Z",
-                "Renames each column hydroloom knows by another name to its "
-                "standard hydroloom name, as `COMID` becomes `id` and `ToCOMID` "
-                "becomes `toid`. The vocabulary, the list of standard names and "
-                "the source names known for each, ships as "
-                "`hydroloom/data/hy_vocab.json`. When two columns could take one "
-                "name, the column whose source name comes later in the "
-                "vocabulary takes it, with a warning, and the other keeps its "
-                "input name. A `permanent_identifier` column keeps its name "
-                "whenever another column could take the same name. Other columns "
-                "keep their input names and values.\n\n"
-                "Each identifier column becomes text (str), and each flag column "
-                'coded 0/1 becomes boolean. A missing `toid` becomes "", the '
-                "value that marks an outlet (a flowline that flows to nothing "
-                "else in the table). The row index is reset, and a GeoDataFrame "
-                "keeps its geometry column, moved to the last position. The "
-                "result is a plain DataFrame (or GeoDataFrame); call "
-                "`representation()` to find which network layout it follows, "
-                "such as an id/toid list or a fromnode/tonode list.",
-            ),
-        ),
-        "value": (
-            (
-                r"\Ahy object with attributes compatible with the hydroloom "
-                r"package\.\Z",
-                "the input table with hydroloom names and identifier columns "
-                "as text (str), a GeoDataFrame when the input is one.",
-            ),
-        ),
-    },
-    # Python computes a pattern name from the columns; it keeps no class and
-    # never returns "not a hydroloom object" (A-2, hy_network_type.md).
-    "hy_network_type": {
-        "description": (
-            (
-                r"\AReturns the most specific hydroloom class\. The class names "
-                r"map to",
-                "Calls `as_hy` on the table, then returns its representation "
-                "pattern, the layout its columns follow. The pattern names map to",
-            ),
-        ),
-        "value": (
-            (
-                r"(?s)\Acharacter\. Most specific hydroloom class name.*\Z",
-                'one of "hy_leveled", "hy_topo", "hy_node", "hy_flownetwork", or "hy".',
-            ),
-        ),
-        # The same `network` text as as_hy and make_index_ids, through the
-        # shared substitution.
-        "arguments.x": (
-            (
-                r"\Aobject to query\.\Z",
-                "data.frame network compatible with hydroloom_names.",
-            ),
-        ),
-    },
-    "make_index_ids": {
-        # R's ids are 1-based row numbers; IndexIds holds 0-based positions.
-        "description": (
-            (
-                r"such that the row number and id are equal\.",
-                "such that each flowline has a position from 0 to n - 1, where n "
-                "is the number of distinct `id` values. The result's `uniques` "
-                "field gives the `id` at each position, as text, as `as_hy` "
-                "makes it.",
-            ),
-        ),
-        # R's "both" is a named list; Python returns a (to, from) tuple.
-        "details": (
-            (
-                r'If "both", the list will contain both a "from" and a "to" '
-                r"element containing each version of the graph\.",
-                'If "both", the result is a tuple `(to, from)`.',
-            ),
-        ),
-        # R's named list and the long_form note describe the R return.
-        "value": (
-            (
-                r"(?s)\Alist containing named elements:.*\Z",
-                '`IndexIds` for mode "to" or "from". Its `indptr` and '
-                "`indices` hold each flowline's neighbors as positions: the "
-                'downstream flowlines for "to", the upstream flowlines for '
-                '"from". The neighbors of the flowline at position i are '
-                "`indices[indptr[i]:indptr[i + 1]]`, sorted by `id` as text, "
-                'character by character (so "100" comes before "30"). '
-                "`uniques` gives the `id` at each position, as text. `main` "
-                "marks each connection on the main path, the one that carries "
-                "the same river on through a confluence or divergence. It comes "
-                'from `downmain` ("to") or `upmain` ("from") when the table has '
-                'that column, otherwise it is `None`. For mode "both", the '
-                "tuple `(to, from)`.",
-            ),
-        ),
-    },
-}
 
 # Python-only arguments (A-9) have no roxygen text; theirs comes from the
 # Signature section of the function's description. Keyed by alias.
@@ -260,24 +154,6 @@ PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
         "hydroloom choose.",
     },
 }
-
-
-def per_function(alias: str, entry: dict[str, Any]) -> tuple[dict[str, Any], list[int]]:
-    """Apply the per-function pairs of ``alias`` to a copy of its entry.
-
-    Returns the entry and the number of fires of each pair, in table order.
-    """
-    entry = copy.deepcopy(entry)
-    counts = []
-    for key, pairs in PER_FUNCTION.get(alias, {}).items():
-        group, _, name = key.partition(".")
-        holder = entry[group] if name else entry
-        field = name or key
-        for pattern, repl in pairs:
-            holder[field], n = re.subn(pattern, repl, holder[field])
-            counts.append(n)
-
-    return entry, counts
 
 
 # A-9: the first positional argument is `network` wherever R's `x` is a network.
@@ -361,9 +237,9 @@ def compose(
     where the two differ (A-9). An argument resolves to its ``r_names`` entry,
     then to the R argument of the same name or its `PYTHON_ARGUMENTS` text,
     then to ``x`` for ``network``. A Python argument with no text raises
-    ``KeyError``. The entry passes through `per_function` first.
+    ``KeyError``.
     """
-    entry = per_function(alias, r_docs()[alias])[0]
+    entry = r_docs()[alias]
     r_names = r_names or {}
     r_args = dict(entry.get("arguments") or {})
     r_args.update(PYTHON_ARGUMENTS.get(alias, {}))

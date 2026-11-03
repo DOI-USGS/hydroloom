@@ -10,10 +10,8 @@ from numpydoc.validate import validate
 
 import hydroloom
 from hydroloom._docstrings import (
-    PER_FUNCTION,
     SUBSTITUTIONS,
     doc,
-    per_function,
     r_docs,
     substitute,
 )
@@ -22,7 +20,9 @@ from hydroloom._docstrings import (
 # docstrings.json, keyed by pattern. Regenerating docstrings.json can change
 # these; the table and these counts are reviewed together (VERIFICATION 6).
 EXPECTED_FIRES = {
-    r"data\.frame network compatible with hydroloom_names": 108,
+    r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- )|\Z)": 15,
+    r" In R,[^\n]*?\.(?=\s|\Z)": 21,
+    r"data\.frame network compatible with hydroloom_names": 109,
     r"logical if TRUE": 29,
     r"logical if `TRUE`": 5,
     r"\Alogical\. ": 7,
@@ -57,11 +57,11 @@ EXPECTED_FIRES = {
     r"\bsfc\b": 7,
     r"data,frame": 5,
     r"\bdataframe\b": 1,
-    r"data\.frame": 125,
+    r"data\.frame": 120,
     r"or list as returned by make_index_ids": 1,
     r"an `hy` object": 6,
     r"`hy` object": 2,
-    r"\bhy object": 15,
+    r"\bhy object": 14,
     r"an `hy`": 1,
     r"required attributes": 11,
     r"requires attributes": 1,
@@ -71,10 +71,10 @@ EXPECTED_FIRES = {
     r"a logical flag": 5,
     r"a logical value": 1,
     r"logical columns": 1,
-    r"`(\w+) = TRUE`": 9,
+    r"`(\w+) = TRUE`": 8,
     r"`(\w+) = FALSE`": 5,
-    r"`TRUE`": 9,
-    r"`FALSE`": 31,
+    r"`TRUE`": 10,
+    r"`FALSE`": 32,
     r"(?<!= )\bTRUE\b": 36,
     r"(?<!= )\bFALSE\b": 15,
     r"an `NA`": 5,
@@ -86,10 +86,10 @@ EXPECTED_FIRES = {
     r"Default NULL": 6,
     r"or NULL": 12,
     r"`Inf`": 6,
-    r"`unqiue\(x\$id\)`": 5,
     r"(?<!CRS of )`x`": 98,
     r"c\(UM, DM, UT, DD\) or equivalently c\(upmain, downmain, up, down\)": 6,
-    r"`hy\(\)`": 23,
+    r"`hy\(\)`": 24,
+    r"`hy_network_type\(\)`": 1,
     r"`hy_capabilities\(\)`": 5,
     r"`is\.hy\(\)`": 1,
     r"See hydroloom_names for": 1,
@@ -272,14 +272,6 @@ def test_explicit_r_name_wins_over_same_name():
     assert params[1].desc[0].startswith("If `True`, reset graph for each start")
 
 
-@pytest.mark.parametrize("alias", sorted(PER_FUNCTION))
-def test_per_function_pairs_fire_once(alias):
-    """Each per-function pair matches its R text once (A-13)."""
-    assert per_function(alias, r_docs()[alias])[1] == [
-        1 for pairs in PER_FUNCTION[alias].values() for _ in pairs
-    ]
-
-
 PUBLIC = [getattr(hydroloom, name) for name in sorted(hydroloom.__all__)]
 
 # The hy_network_type title is a question; rewording it is roxygen work, the
@@ -298,15 +290,19 @@ def test_public_docstring_validates(func):
 
 
 def test_make_index_ids_returns_describe_index_ids():
-    """The Returns text is Python's, with the tuple order for mode both."""
+    """The Returns text is the shared text, with the "to" then "from" order."""
     doc_object = get_doc_object(hydroloom.make_index_ids)
     returns = " ".join(" ".join(r.desc) for r in doc_object["Returns"])
     text = hydroloom.make_index_ids.__doc__
 
-    assert "IndexIds" in returns and "`(to, from)`" in returns
+    assert "IndexIds" in doc_object["Returns"][0].type
+    assert 'For mode "both", the "to" and then the "from" index ids.' in returns
     assert "long_form" not in text
     assert "to_list" not in text and "adjacency matrix" not in text
-    assert '"both", the result is a tuple `(to, from)`' in text
+    assert (
+        'If "both", the result holds the "to" and then the "from" version of '
+        "the graph." in " ".join(text.split())
+    )
 
 
 def test_python_only_arguments_are_documented():
@@ -317,17 +313,27 @@ def test_python_only_arguments_are_documented():
     assert params[1].desc[0].startswith("The input column to take as `id`")
 
 
-@pytest.mark.parametrize(
-    ("name", "r_phrases"),
-    [
-        ("as_hy", ["S3", "s3 class", "subclass", "add_topo", "hy object"]),
-        ("representation", ["not a hydroloom object", "hydroloom class", "`x`"]),
-        ("make_index_ids", ["row number"]),
-    ],
-)
-def test_public_docstrings_drop_r_classes(name, r_phrases):
-    """The per-function pass removes R class and argument text (A-13, A-1, A-5)."""
+R_ONLY = [
+    "S3",
+    "subclass",
+    "add_topo",
+    "not a hydroloom object",
+    "row number",
+    "In R,",
+    "unqiue",
+    "froms",
+    "long_form",
+    "s3 class",
+    "hy object",
+    "hydroloom class",
+    "`x`",
+]
+
+
+@pytest.mark.parametrize("name", ["as_hy", "representation", "make_index_ids"])
+def test_public_docstrings_drop_r_classes(name):
+    """The "In R," drop pairs remove R class and argument text (A-13, P-4)."""
     text = getattr(hydroloom, name).__doc__
 
-    for phrase in r_phrases:
+    for phrase in R_ONLY:
         assert phrase not in text

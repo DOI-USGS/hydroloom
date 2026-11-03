@@ -27,28 +27,40 @@ make_index_ids(x, mode = "to", long_form = NULL)
 \item{long_form}{logical DEPRECATED}
 }
 \value{
-list containing named elements:
+index ids for mode "to" or "from": each flowline's neighbors as
+positions, the downstream flowlines for "to" and the upstream flowlines for
+"from", sorted by \code{id} as text, character by character (so "100" comes
+before "30"). In R, a "to" entry of 0 marks a \code{toid} outside the table and
+is not a position. When the table has \code{downmain} ("to") or \code{upmain} ("from"),
+each connection also says whether it is on the main path, the one that
+carries the same river on through a confluence or divergence. For mode
+"both", the "to" and then the "from" index ids.
+
+In R, the value is a list containing named elements:
 \describe{
 \item{to}{adjacency matrix with columns that correspond to \code{unqiue(x$id)}}
 \item{lengths}{vector indicating the number of connections from each node}
 \item{to_list}{a data.frame with an \code{id}, \code{indid} and a \code{toindid} list column.}
 }
 
-List will have names \code{froms}, \code{lengths}, and \code{froms_list} for mode "from".
+In R, the list has names \code{froms}, \code{lengths}, and \code{froms_list} for mode "from".
 
-NOTE: the long_form output is deprecated and will be removed in a future release.
+In R, the long_form output is deprecated and will be removed in a future release.
 }
 \description{
 makes index ids for the provided hy object. These can be used
-for graph traversal algorithms such that the row number and id are equal.
+for graph traversal algorithms such that each flowline, one distinct
+\code{id}, has an integer position. In R, positions run from 1 to n in the
+order of \code{unique(x$id)}.
 }
 \details{
 Required attributes: \code{id}, \code{toid}
 
 mode determines the direction of the graph. If "to", the graph will
 be directed from the \code{id} to the \code{toid}. If "from", the graph will be
-directed from the \code{toid} to the \code{id}. If "both", the list will contain both
-a "from" and a "to" element containing each version of the graph.
+directed from the \code{toid} to the \code{id}. If "both", the result holds the "to"
+and then the "from" version of the graph. In R, "both" returns a list with
+elements \code{to} and \code{from}.
 }
 \examples{
 
