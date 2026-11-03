@@ -1277,7 +1277,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; expect hy_topo; weight not read
