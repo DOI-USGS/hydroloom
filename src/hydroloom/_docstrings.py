@@ -155,8 +155,9 @@ PYTHON_ARGUMENTS: dict[str, dict[str, str]] = {
     },
     "hy_reverse": {
         "source": "the dataset whose column names to rename to: `nhdplus`, "
-        "`nhdplushr`, `3dhp`, or `hydrofabric`. `None` returns the table "
-        "unchanged.",
+        "`nhdplushr`, `3dhp`, or `hydrofabric`. `None` gives each hydroloom "
+        "name the alias most recently registered for it, in lowercase, and "
+        "leaves a name with no registered alias as it is.",
     },
 }
 

@@ -6,8 +6,9 @@ rename map as a local value, never as frame state (I-14), and `_hy_reverse`
 takes it back. `representation` names the pattern a frame follows (A-2).
 `requires` fills the registry `_route` reads to dispatch a public function on
 that pattern (A-3, A-17). The naming block, `hy_reverse`, `is_hy`,
-`align_names`, and `name_definitions`, renames columns, tests names and
-identifier types, and lists the vocabulary without typing any value (A-5).
+`align_names`, `name_definitions`, and `register_names`, renames columns, tests
+names and identifier types, lists the vocabulary, and registers aliases,
+without typing any value (A-5).
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ import json
 import math
 import warnings
 from collections.abc import Callable, Hashable, Mapping, Sequence
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from enum import Enum
 from importlib.resources import files
@@ -62,13 +64,23 @@ def _terms() -> dict[str, dict[str, Any]]:
 
 
 @functools.cache
-def _alias_map() -> tuple[tuple[str, str], ...]:
+def _vocab_alias_map() -> tuple[tuple[str, str], ...]:
     # (alias, hy name) in term order, then alias order (align_names.md).
     return tuple(
         (alias["name"].lower(), name)
         for name, term in _terms().items()
         for alias in term.get("aliases") or []
     )
+
+
+# The (alias, hy name) pairs register_names() adds, aliases lowercased, in
+# registration order; one list per process (hydroloom_names.md Signature).
+_REGISTERED: list[tuple[str, str]] = []
+
+
+def _alias_map() -> tuple[tuple[str, str], ...]:
+    # The vocabulary pairs, then the registered pairs (align_names.md).
+    return _vocab_alias_map() + tuple(_REGISTERED)
 
 
 def _terms_of_type(kind: str) -> tuple[str, ...]:
@@ -112,9 +124,18 @@ def _align(
             raise KeyError(column)
     forced_columns = set(forced.values())
 
-    # Candidates per hy name, in alias-map order (step 2).
+    # Candidates per hy name, in alias-map order (step 2). An alias with pairs
+    # to two or more different hy names keeps only its latest pair (G-11).
+    pairs = _alias_map()
+    owners: dict[str, set[str]] = {}
+    latest: dict[str, int] = {}
+    for position, (alias, name) in enumerate(pairs):
+        owners.setdefault(alias, set()).add(name)
+        latest[alias] = position
     candidates: dict[str, list[tuple[str, Any]]] = {}
-    for alias, name in _alias_map():
+    for position, (alias, name) in enumerate(pairs):
+        if len(owners[alias]) > 1 and position != latest[alias]:
+            continue
         if name in forced:
             continue
         for column in by_lower.get(alias, []):
@@ -615,12 +636,14 @@ def hy_reverse(network: pd.DataFrame, *, source: str | None = None) -> pd.DataFr
     ['id', 'toid']
     """
     if source is None:
-        # No mapping is registered in Python yet, so nothing is restored.
-        return network.copy()
-    if source not in _SOURCES:
+        # The latest registered alias of each hy name (hy_reverse.md tie rules);
+        # an identity entry restores the name itself, an empty alias nothing.
+        inverse = {name: alias for alias, name in _REGISTERED if alias}
+    elif source not in _SOURCES:
         raise KeyError(msg("unknown_alias_source", source=source))
+    else:
+        inverse = _source_names(source)
 
-    inverse = _source_names(source)
     names = {c: inverse[c] for c in network.columns if c in inverse}
     kept = {str(c).lower(): c for c in network.columns if c not in names}
     for alias in names.values():
@@ -630,6 +653,61 @@ def hy_reverse(network: pd.DataFrame, *, source: str | None = None) -> pd.DataFr
             )
 
     return network.rename(columns=names)
+
+
+class _Registration(AbstractContextManager[None]):
+    """The handle `register_names` returns; leaving ``with`` restores the registry."""
+
+    def __init__(self, before: list[tuple[str, str]]) -> None:
+        self._before = before
+
+    def __enter__(self) -> None:
+        return None
+
+    def __exit__(self, *exc: object) -> None:
+        _REGISTERED[:] = self._before
+
+
+@doc("hydroloom_names", mapping="x", replace="clear")
+def register_names(
+    mapping: Mapping[str, str], *, replace: bool = False
+) -> AbstractContextManager[None]:
+    """Register column names as aliases of hydroloom names.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import align_names
+    >>> from hydroloom._hy import register_names
+    >>> net = pd.DataFrame({"FlowlineID": [1, 2], "Next_ID": [2, 0]})
+    >>> with register_names({"FlowlineID": "id", "Next_ID": "toid"}):
+    ...     align_names(net).columns.tolist()
+    ['id', 'toid']
+    >>> align_names(net).columns.tolist()
+    ['FlowlineID', 'Next_ID']
+    """
+    terms = _terms()
+    unknown = [
+        f"{alias} = {value}"
+        for alias, value in mapping.items()
+        if not isinstance(value, str) or value not in terms
+    ]
+    if unknown:
+        raise KeyError(msg("register_name_unknown", names=_join(unknown)))
+    clash = [
+        f"{alias} = {value}"
+        for alias, value in mapping.items()
+        if alias.lower() in terms and alias.lower() != value
+    ]
+    if clash:
+        raise KeyError(msg("register_alias_is_name", names=_join(clash)))
+
+    before = list(_REGISTERED)
+    if replace:
+        _REGISTERED.clear()
+    _REGISTERED.extend((alias.lower(), value) for alias, value in mapping.items())
+
+    return _Registration(before)
 
 
 def _is_text_column(values: pd.Series, *, missing: bool) -> bool:

@@ -78,7 +78,7 @@ def test_hy_reverse_rows_follow_input(table, source, rng):
 
 
 def test_hy_reverse_without_source_is_the_identity():
-    """With no registry in Python, source=None restores nothing (D3-15)."""
+    """With nothing registered, source=None restores nothing (B-4)."""
     out = as_hy(pd.DataFrame({"COMID": [1, 2], "ToCOMID": [2, None]}))
     back = hy_reverse(out)
 
@@ -258,12 +258,20 @@ def test_is_hy_geometry_name_is_not_read():
 
 
 @PROPERTY
-@given(alias_tables(), st.randoms(use_true_random=False))
+@given(alias_tables(ties=True), st.randoms(use_true_random=False))
 def test_align_names_postconditions(table, rng):
-    """Values and positions kept; names hy or as input; idempotent; order free."""
+    """Values and positions kept; names hy or as input; idempotent; order free.
+
+    After a two-way tie the second pass raises `name_alias_conflict` in place
+    of returning its input (align_names.md Postconditions).
+    """
     hy_names = set(_terms())
     before = table.copy()
-    out = _quiet(align_names, table)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        out = align_names(table)
+    tie = remedy_pattern("name_alias_duplicate")
+    assert all(tie.fullmatch(str(w.message)) for w in caught)
 
     pd.testing.assert_frame_equal(table, before)
     _same_values(out, table)
@@ -274,14 +282,21 @@ def test_align_names_postconditions(table, rng):
             assert old.lower() == new or (old.lower(), new) in _alias_map()
         if old.lower() in hy_names:
             assert new == old.lower()
-    pd.testing.assert_frame_equal(_quiet(align_names, out), out)
+    if caught:
+        with pytest.raises(KeyError) as info:
+            align_names(out)
+        assert remedy_pattern("name_alias_conflict").fullmatch(info.value.args[0])
+    else:
+        pd.testing.assert_frame_equal(_quiet(align_names, out), out)
 
     names = dict(zip(table.columns, out.columns, strict=True))
-    rows = table.sample(frac=1, random_state=rng.randint(0, 2**31))
-    pd.testing.assert_frame_equal(_quiet(align_names, rows), out.loc[rows.index])
-    order = list(table.columns)
-    rng.shuffle(order)
-    moved = _quiet(align_names, table[order])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", HydroloomWarning)
+        rows = table.sample(frac=1, random_state=rng.randint(0, 2**31))
+        pd.testing.assert_frame_equal(align_names(rows), out.loc[rows.index])
+        order = list(table.columns)
+        rng.shuffle(order)
+        moved = align_names(table[order])
     assert list(moved.columns) == [names[c] for c in order]
 
 

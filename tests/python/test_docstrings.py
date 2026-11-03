@@ -298,7 +298,7 @@ def test_network_text_per_function(name, expected):
 
 
 def test_no_public_docstring_names_register_names():
-    """Python has no `register_names` yet, so no docstring points to it (A-5)."""
+    """`register_names` is not exported (B-4), so no public docstring names it."""
     for name in hydroloom.__all__:
         assert "register_names" not in getattr(hydroloom, name).__doc__, name
 

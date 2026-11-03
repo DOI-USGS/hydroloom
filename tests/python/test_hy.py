@@ -17,6 +17,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from shapely.geometry import LineString
 
+from conformance import remedy_pattern
 from hydroloom import _hy as hy_module
 from hydroloom import as_hy, representation
 from hydroloom._hy import (
@@ -114,27 +115,44 @@ def _alias_choices():
 
 _CHOICES = _alias_choices()
 
+# Per hy name, the aliases two of which make a two-way tie: not the name
+# itself, which would conflict, and not `permanent_identifier`, which drops out.
+_TIE_CHOICES = {
+    name: [a for a in aliases if a not in (name, "permanent_identifier")]
+    for name, aliases in _CHOICES.items()
+}
+
 
 @st.composite
-def alias_tables(draw):
+def alias_tables(draw, ties=False):
     """Tables whose column names come from the alias map, in any case.
 
-    Each hy name gets at most one column, so no draw holds a two-way alias
-    tie: idempotence after a tie is open with the maintainer (SP-01), and a
-    tie would fail this property until that is settled. The one candidate
-    pair drawn is `permanent_identifier` beside another id column, which
-    drops out by the step-4 rule.
+    Each hy name gets at most one column, plus `permanent_identifier` beside
+    another id column, which drops out by the step-3 rule. With ``ties``, a
+    draw may give one hy name a second column with another of its aliases: a
+    two-way tie (align_names.md step 5). The tie leaves `permanent_identifier`
+    out, and the id column is then not `permanent_identifier`, which a tie
+    elsewhere would make drop out.
     """
     n = draw(st.integers(0, 5))
     others = sorted(set(_CHOICES) - {"id"})
     hy_names = ["id", *draw(st.lists(st.sampled_from(others), unique=True, max_size=6))]
     columns = {name: draw(st.sampled_from(_CHOICES[name])) for name in hy_names}
+    entries = list(columns.items())
+    tied = [name for name in hy_names if len(_TIE_CHOICES[name]) > 1]
+    if ties and tied and draw(st.booleans()):
+        name = draw(st.sampled_from(tied))
+        pair = draw(st.permutations(_TIE_CHOICES[name]))[:2]
+        columns[name] = pair[0]
+        if columns["id"] == "permanent_identifier":
+            columns["id"] = "id"
+        entries = [*columns.items(), (name, pair[1])]
     if columns["id"] != "permanent_identifier" and draw(st.booleans()):
-        columns["permanent_identifier"] = "permanent_identifier"
+        entries.append(("permanent_identifier", "permanent_identifier"))
     ids = list(range(1, n + 1))
     flags = set(_terms_of_type("flag"))
     data = {}
-    for name, column in columns.items():
+    for name, column in entries:
         column = "".join(c.upper() if draw(st.booleans()) else c for c in column)
         if name == "id":
             values = pd.Series(ids, dtype="int64")
@@ -158,14 +176,25 @@ def alias_tables(draw):
 
 
 @PROPERTY
-@given(alias_tables())
+@given(alias_tables(ties=True))
 def test_as_hy_idempotent_and_reversible_over_aliases(table):
-    """Idempotence and the name reverse over names drawn from the alias map."""
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        out, names = _as_hy(table)
+    """Idempotence and the name reverse over names drawn from the alias map.
 
-    pd.testing.assert_frame_equal(as_hy(out), out)
+    After a two-way tie the losing alias sits beside the name it lost, and a
+    second pass raises `name_alias_conflict` (align_names.md Postconditions).
+    """
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        out, names = _as_hy(table)
+    tie = remedy_pattern("name_alias_duplicate")
+    assert all(tie.fullmatch(str(w.message)) for w in caught)
+
+    if caught:
+        with pytest.raises(KeyError) as info:
+            as_hy(out)
+        assert remedy_pattern("name_alias_conflict").fullmatch(info.value.args[0])
+    else:
+        pd.testing.assert_frame_equal(as_hy(out), out)
     assert list(_hy_reverse(out, names).columns) == list(table.columns)
 
 
