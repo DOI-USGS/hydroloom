@@ -46,6 +46,12 @@ Changes to behavior:
   with a warning; warns when the main path is coded 0; keeps a flowline
   with missing `tonode` in place and still connects to it. Functions that
   build `toid` through `add_toids()` change the same way.
+- `align_names()` keeps `permanent_identifier` beside `id` instead of
+  stopping, so a second call on its own output returns it unchanged.
+- `hydroloom_names()` stops when a value is not a hydroloom name or an
+  alias is a different hydroloom name; nothing is registered.
+- `align_names()` uses a registered alias over another name's built-in
+  alias: after `hydroloom_names(c(comid = "toid"))`, `COMID` becomes `toid`.
 
 hydroloom 1.3.0
 ==========

@@ -14,12 +14,12 @@ test_that("hydroloom_names", {
 
   expect_equal(hln, hydroloom:::hydroloom_env$hydroloom_name_map)
 
-  hln_add <- hydroloom_names(c(foo = "bar"))
+  hln_add <- hydroloom_names(c(foo = "id"))
 
   expect_error(hydroloom_names(c("foobar")), "input must be named")
 
-  expect_true(hln_add[["foo"]] == "bar")
-  expect_true(hydroloom:::hydroloom_env$hydroloom_name_map[["foo"]] == "bar")
+  expect_true(hln_add[["foo"]] == "id")
+  expect_true(hydroloom:::hydroloom_env$hydroloom_name_map[["foo"]] == "id")
 
   hln_clear <- hydroloom_names(clear = TRUE)
 
@@ -30,7 +30,7 @@ test_that("hydroloom_names", {
 test_that("hydroloom_names clear = TRUE resets to the vocabulary aliases plus x (H-03, D3-20)", {
   on.exit(hydroloom_names(clear = TRUE))
 
-  hydroloom_names(c(foo = "bar"))
+  hydroloom_names(c(foo = "toid"))
 
   out <- hydroloom_names(c(FlowlineID = "id"), clear = TRUE)
 
@@ -54,4 +54,56 @@ test_that("hydroloom_names lowercases a registered alias (D3-65)", {
   x <- data.frame(FlowlineID = c(1, 2), toid = c(2, 0))
 
   expect_equal(names(hy(x))[1], "id")
+})
+
+test_that("hydroloom_names stops on a value that is not a hydroloom name", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  before <- hydroloom_names(c(flowline_id = "id"))
+
+  expect_error(hydroloom_names(c(foo = "bar"), clear = TRUE),
+    "not hydroloom names: foo = bar")
+
+  expect_equal(hydroloom_names(), before)
+})
+
+test_that("hydroloom_names stops on an alias that is another hydroloom name", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  before <- hydroloom_names(c(flowline_id = "id"))
+
+  expect_error(hydroloom_names(c(TOID = "id"), clear = TRUE),
+    "mapped to a different hydroloom name: TOID = id")
+
+  expect_equal(hydroloom_names(), before)
+
+  out <- hydroloom_names(c(id = "id"))
+
+  expect_equal(out[[length(out)]], "id")
+})
+
+test_that("a registered alias wins over another term's vocabulary alias (G-11)", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  hydroloom_names(c(comid = "toid"))
+
+  x <- data.frame(COMID = c(1, 2), other = c("a", "b"))
+
+  expect_equal(names(align_names(x)), c("toid", "other"))
+})
+
+test_that("permanent_identifier beside id returns unchanged (align_names.md step 3)", {
+  x <- data.frame(id = c(1, 2), Permanent_Identifier = c("a", "b"))
+
+  expect_message(out <- align_names(x), "permanent_identifier")
+
+  expect_identical(out, x)
+
+  x <- sf::read_sf(system.file("extdata/conformance/fixtures/nhdplushr.gpkg",
+    package = "hydroloom"))
+  x <- sf::st_drop_geometry(x)
+
+  once <- suppressMessages(align_names(x))
+
+  expect_identical(suppressMessages(align_names(once)), once)
 })

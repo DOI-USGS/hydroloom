@@ -740,8 +740,10 @@
       "rows": "the aliases whose value is not a hydroloom name, with those values",
       "fix": "Map each alias to a hydroloom name before registering.",
       "raised_by": ["hydroloom_names"],
-      "languages": ["python"],
-      "r_text": [],
+      "languages": ["r", "python"],
+      "r_text": [
+        "These aliases map to names that are not hydroloom names: <aliases with values>. A column renamed to a name hydroloom does not use gets its input name back, so these entries would rename nothing. Map each alias to a hydroloom name and register again; nothing was registered."
+      ],
       "python_class": "KeyError"
     },
     "register_alias_is_name": {
@@ -754,8 +756,10 @@
       "rows": "the aliases that are hydroloom names other than their values, with those values",
       "fix": "Use the input column's own name as the alias, or drop the entry, before registering.",
       "raised_by": ["hydroloom_names"],
-      "languages": ["python"],
-      "r_text": [],
+      "languages": ["r", "python"],
+      "r_text": [
+        "These aliases are themselves hydroloom names, mapped to a different hydroloom name: <aliases with values>. Each entry would rename a column that already carries a hydroloom name to another one, for example a toid column to id. Use the input column's own name as the alias, or drop the entry, and register again; nothing was registered."
+      ],
       "python_class": "KeyError"
     },
     "not_hy_object": {
