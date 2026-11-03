@@ -617,7 +617,7 @@ fixture(data.frame(id = 1:2, tocomid = c(2L, 0L), toid = c(2L, 0L)),
 
 fixture(data.frame(id = 1:2, Permanent_Identifier = c("a", "b"), toid = c(2L, 0L)),
   "align_names_permanent_identifier_beside_id",
-  "synthetic; the align_names output of an NHDPlusHR table (align_names_nhdplushr)",
+  "synthetic; a two-row table carrying NHDPlusHR-style names, in the form align_names gives an NHDPlusHR table (align_names_nhdplushr)",
   "permanent_identifier beside id on a second pass: the permanent_identifier rule drops it before the conflict check and the table returns unchanged")
 
 fixture(sf::st_sf(

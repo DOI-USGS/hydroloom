@@ -114,8 +114,9 @@ column's values must be read to confirm they are strings.
   table as read, with the message "no hy class attribute" unless `silent`, and `TRUE`
   after `hy()`, since the result is an `hy_flownetwork` carrying `orig_names` (D3-64).
   Python `False` on `loop.gpkg` as read, by condition 2: its `id` and `toid` are
-  strings but its `fromnode` and `tonode` are numeric. Cases `is_hy_loop` (shared) and
-  `is_hy_loop_after_hy` (R only) hold the two values.
+  strings but its `fromnode` and `tonode` are numeric. Python is `True` after `as_hy`,
+  matching R after `hy()`. Cases `is_hy_loop` and `is_hy_loop_after_hy`, both shared,
+  hold the two values.
 - Duplicated row (the same `id`/`toid` pair listed twice, `duplicated_edge.gpkg`): S-6
   lists this as a raise; D3-46 and D3-57 keep it from raising. `is.hy` reads no rows and
   does not raise; `hy()` does not raise either and returns `hy_flownetwork`, so R is
@@ -203,3 +204,7 @@ object altered after `hy()`, stays in testthat as an interface test.
   `is_hy_new_hope_shuffled`; Edge cases give the loop and duplicated-row cases and state
   that the boundary cases and `is_hy_empty_network` are shared and run without `silent`
   (is.hy H-03, D3-190). No behavior change.
+- 2026-11-03, suite 0.1.0, M5 run 3 unit 3 fix round (U3-01, RULES P-2): the
+  divergence bullet in Edge cases called `is_hy_loop_after_hy` R only; the case passes
+  in the Python harness, so it and `is_hy_after_hy` and `is_hy_comid_nodes_after_hy`
+  are shared, and the bullet says so. No behavior change.

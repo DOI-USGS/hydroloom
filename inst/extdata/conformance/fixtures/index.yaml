@@ -357,7 +357,7 @@ fixtures:
   rules: []
   bytes: 73728
 - file: align_names_permanent_identifier_beside_id.gpkg
-  source: synthetic; the align_names output of an NHDPlusHR table (align_names_nhdplushr)
+  source: synthetic; a two-row table carrying NHDPlusHR-style names, in the form align_names gives an NHDPlusHR table (align_names_nhdplushr)
   rows: 2
   geometry: none
   columns:

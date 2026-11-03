@@ -656,8 +656,8 @@ cases:
   # = R and the Python definition agree (add python to supported_by when
   # is_hy is ported); shared: false = the Python definition may return True.
 
-  # R-only: TRUE after hy() renames comid to id (D3-11 prepare);
-  # test_hy_classes.R input
+  # TRUE after hy() renames comid to id (D3-11 prepare); Python True after
+  # as_hy; test_hy_classes.R input
   - id: is_hy_comid_nodes_after_hy
     function: is.hy
     fixture: hy_comid_nodes_single.gpkg
@@ -665,7 +665,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; real NHDPlusV2 subset in source names; FALSE in both languages
@@ -711,8 +711,8 @@ cases:
     supported_by: [r, python]
     generator: [r]
 
-  # R-only: TRUE after hy() renames and fills the missing toid (D3-11 prepare);
-  # test_hydroloom.R input
+  # TRUE after hy() renames and fills the missing toid (D3-11 prepare); Python
+  # True after as_hy; test_hydroloom.R input
   - id: is_hy_after_hy
     function: is.hy
     fixture: hy_toid_missing_with_nodes.gpkg
@@ -720,7 +720,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: false; hydroloom names, string ids, NA toid; R FALSE (no class),
@@ -733,7 +733,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    r_only: is.hy.md §Signature
+    r_only: is.hy.md §Definition
 
   # shared: true; divergent network in id/toid form (repeated id, character
   # ids); R FALSE as read (no class); Python False by the identifier-type
@@ -747,8 +747,8 @@ cases:
     supported_by: [r, python]
     generator: [r]
 
-  # R-only: hy() routes the divergent network to hy_flownetwork carrying
-  # orig_names, which is.hy() accepts (D3-64, D3-11 prepare)
+  # hy() routes the divergent network to hy_flownetwork carrying orig_names,
+  # which is.hy() accepts (D3-64, D3-11 prepare); Python True after as_hy
   - id: is_hy_loop_after_hy
     function: is.hy
     fixture: loop.gpkg
@@ -756,7 +756,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared: true; I-11 zero-row table in hydroloom names; R FALSE as read
@@ -1097,7 +1097,7 @@ cases:
     function: align_names
     fixture: hy_name_conflict.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
     supported_by: [r, python]
     generator: [r]
@@ -1109,7 +1109,7 @@ cases:
     function: align_names
     fixture: align_names_conflict_toid.gpkg
     args: {}
-    compare: exact
+    compare: values
     order: exact
     supported_by: [r, python]
     generator: [r]

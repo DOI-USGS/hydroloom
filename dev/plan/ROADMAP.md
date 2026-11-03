@@ -155,7 +155,7 @@ Each is a NEWS entry and new expectations, landed on `python-port` in the milest
 | Tolerated codings warn, naming the rows by `id`: a flag column value other than 0, 1, or missing passes through (D3-152); in `add_toids`, a 0 at a split is read as the main path (D3-174), and a lone downstream flowline coded 2 is connected to in place of leaving the flowline above a terminal (D3-158) | S-2, I-6 | M3 |
 | 3DHP `hydrosequence` becomes an alias of `topo_sort` in the vocabulary (add_topo_sort H-04); `dnhydrosequence` of `dn_topo_sort`, and `uphydrosequence` of `up_topo_sort` where 3DHP carries it (D3-184) | S-2 | M3 |
 | `hy_reverse()` restores names on an `hy_flownetwork`; `is.hy()` accepts one carrying `orig_names` (D3-16, D3-64) | I-14 | M3 |
-| `hydroloom_names()` stops when a value is not a hydroloom name (`register_name_unknown`) or an alias is a hydroloom name other than its value (`register_alias_is_name`), leaving the registry unchanged; in `align_names()` a registered alias wins over the vocabulary alias of another term (G-11) (REVIEW_11032026 item 4, B-4) | S-2 | M5 |
+| `hydroloom_names()` stops when a value is not a hydroloom name (`register_name_unknown`) or an alias is a hydroloom name other than its value (`register_alias_is_name`), leaving the registry unchanged; in `align_names()` a registered alias wins over the vocabulary alias of another term (REVIEW_11032026 item 4, B-4) | S-2 | M5 |
 | Divergence and level-path ties fall through to identifier byte order | D-9, D-11 | M6 |
 | Missing `weight_attribute` raises naming the row | S-6 | M6 |
 | `no_id_column` raises in R `hy()` in place of warning (D3-147, D3-195) | A-10 | M6 |

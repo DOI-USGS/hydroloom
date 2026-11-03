@@ -44,7 +44,7 @@ align_names <- function(x) {
 
   # an alias mapped to two or more hydroloom names resolves to its latest
   # mapping, so a registered alias wins over the vocabulary alias of another
-  # term (align_names.md step 2, G-11)
+  # term (align_names.md step 2, REVIEW_11032026 item 4)
   if (any(duplicated(names(replace_names)))) {
     n_values <- tapply(unname(replace_names), names(replace_names),
       function(v) length(unique(v)))
@@ -149,21 +149,23 @@ hydroloom_names <- function(x = NULL, clear = FALSE) {
     good_names <- vocab_good_names()
 
     unknown <- !x %in% good_names
-    if (any(unknown))
+    if (any(unknown)) {
       stop("These aliases map to names that are not hydroloom names: ",
         paste(names(x)[unknown], "=", x[unknown], collapse = ", "),
         ". A column renamed to a name hydroloom does not use gets its input ",
         "name back, so these entries would rename nothing. Map each alias to ",
         "a hydroloom name and register again; nothing was registered.")
+    }
 
     is_name <- tolower(names(x)) %in% good_names & tolower(names(x)) != x
-    if (any(is_name))
+    if (any(is_name)) {
       stop("These aliases are themselves hydroloom names, mapped to a different ",
         "hydroloom name: ", paste(names(x)[is_name], "=", x[is_name], collapse = ", "),
         ". Each entry would rename a column that already carries a hydroloom ",
         "name to another one, for example a toid column to id. Use the input ",
         "column's own name as the alias, or drop the entry, and register again; ",
         "nothing was registered.")
+    }
   }
 
   # clear = TRUE resets to the registry seeded at load: the vocabulary
