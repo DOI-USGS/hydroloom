@@ -17,7 +17,9 @@ align_name_char <- function(x) {
 #' See \link{hydroloom_name_definitions} for definitions of the names
 #' used in hydroloom.
 #'
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @param x a table of flowlines or catchments; columns hydroloom knows by
+#' another name (such as NHDPlus `COMID`, `ToCOMID`) are renamed to hydroloom
+#' names.
 #' @returns data.frame renamed to match hydroloom as possible.
 #' @export
 #' @examples

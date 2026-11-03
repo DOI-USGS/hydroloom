@@ -768,7 +768,7 @@
   },
   "align_names": {
     "arguments": {
-      "x": "data.frame network compatible with hydroloom_names."
+      "x": "a table of flowlines or catchments; columns hydroloom knows by another name (such as NHDPlus `COMID`, `ToCOMID`) are renamed to hydroloom names."
     },
     "description": "this function aligns the attribute names in the table with those used in hydroloom. In R, see hydroloom_names for how to add more attribute name mappings if the attributes in your data are not supported.\n\nSee hydroloom_name_definitions for definitions of the names used in hydroloom.",
     "details": null,
@@ -1216,7 +1216,7 @@
   },
   "hy_reverse": {
     "arguments": {
-      "x": "data.frame network compatible with hydroloom_names."
+      "x": "a table of flowlines or catchments whose columns use hydroloom names, as `hy()` returns."
     },
     "description": "renames columns from their hydroloom names back to source names. A column with no source name keeps its name. In R, the source names are the names the table had when it was passed to `hy()`, and the hy classes and attributes are removed.",
     "details": null,

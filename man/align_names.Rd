@@ -7,7 +7,9 @@
 align_names(x)
 }
 \arguments{
-\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+\item{x}{a table of flowlines or catchments; columns hydroloom knows by
+another name (such as NHDPlus \code{COMID}, \code{ToCOMID}) are renamed to hydroloom
+names.}
 }
 \value{
 data.frame renamed to match hydroloom as possible.

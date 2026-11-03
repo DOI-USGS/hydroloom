@@ -296,7 +296,8 @@ is.hy <- function(x, silent = FALSE) {
 #' names. A column with no source name keeps its name. In R, the source names
 #' are the names the table had when it was passed to \code{hy()}, and the hy
 #' classes and attributes are removed.
-#' @param x data.frame network compatible with \link{hydroloom_names}.
+#' @param x a table of flowlines or catchments whose columns use hydroloom
+#' names, as \code{hy()} returns.
 #' @returns the input table with its columns renamed from hydroloom names to
 #' source names.
 #' @export

@@ -7,7 +7,8 @@
 hy_reverse(x)
 }
 \arguments{
-\item{x}{data.frame network compatible with \link{hydroloom_names}.}
+\item{x}{a table of flowlines or catchments whose columns use hydroloom
+names, as \code{hy()} returns.}
 }
 \value{
 the input table with its columns renamed from hydroloom names to

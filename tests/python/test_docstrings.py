@@ -22,7 +22,7 @@ from hydroloom._docstrings import (
 EXPECTED_FIRES = {
     r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)": 15,
     r" In R,[^\n]*?[.?!](?=\s|\Z)": 26,
-    r"data\.frame network compatible with hydroloom_names": 109,
+    r"data\.frame network compatible with hydroloom_names": 107,
     r"logical if TRUE": 29,
     r"logical if `TRUE`": 5,
     r"\Alogical\. ": 7,
@@ -88,7 +88,7 @@ EXPECTED_FIRES = {
     r"`Inf`": 6,
     r"(?<!CRS of )`x`": 98,
     r"c\(UM, DM, UT, DD\) or equivalently c\(upmain, downmain, up, down\)": 6,
-    r"`hy\(\)`": 27,
+    r"`hy\(\)`": 28,
     r"`hy_network_type\(\)`": 1,
     r"`hy_capabilities\(\)`": 5,
     r"`is\.hy\(\)`": 1,
@@ -210,7 +210,7 @@ def test_composed_sections(func):
 
     assert "See Also" not in text
     assert (
-        f"Documentation adapted from the R function `hydroloom::{func.__name__}()`."
+        f"Documentation adapted from `{func.__name__}()` in the hydroloom R package."
         in text
     )
     assert text.count("Examples\n--------") == 1
@@ -224,15 +224,19 @@ def test_composed_sections(func):
     assert text.splitlines()[1] == r_docs()[func.__name__]["title"] + "."
 
 
+SHARED_NETWORK = (
+    "A table of flowlines or catchments; columns hydroloom knows by another "
+    "name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus "
+    "`COMID`, `ToCOMID`), are renamed to hydroloom names first."
+)
+
+
 def test_parameters_follow_python_signature():
     """R-only arguments are dropped and the Python order is kept."""
     params = get_doc_object(make_index_ids)["Parameters"]
 
     assert [p.name for p in params] == ["network", "mode"]
-    assert params[0].desc == [
-        "A table of flowlines or catchments; columns named as in a known source "
-        "(such as NHDPlus `COMID`, `ToCOMID`) are renamed to hydroloom names first."
-    ]
+    assert " ".join(params[0].desc) == SHARED_NETWORK
     assert params[1].type == "str, default 'to'"
 
 
@@ -251,13 +255,13 @@ PROVENANCE = {
 
 @pytest.mark.parametrize("name", sorted(PROVENANCE))
 def test_r_provenance_in_notes(name):
-    """Each public docstring names its R source in Notes and has no See Also."""
+    """Each public docstring gives its R source in Notes and has no See Also."""
     doc_object = get_doc_object(getattr(hydroloom, name))
     notes = "\n".join(doc_object["Notes"])
 
     assert not doc_object["See Also"]
     assert notes.endswith(
-        f"Documentation adapted from the R function `hydroloom::{PROVENANCE[name]}()`."
+        f"Documentation adapted from `{PROVENANCE[name]}()` in the hydroloom R package."
     )
 
 
@@ -266,24 +270,31 @@ def test_provenance_follows_sections():
     notes = "\n".join(get_doc_object(index_points_to_lines)["Notes"])
 
     assert notes.startswith("Measures:")
-    assert notes.endswith("`hydroloom::index_points_to_lines()`.")
+    assert notes.endswith("`index_points_to_lines()` in the hydroloom R package.")
 
 
 @pytest.mark.parametrize(
-    ("name", "start"),
+    ("name", "expected"),
     [
-        ("align_names", "A table of flowlines or catchments; columns named as in"),
-        ("hy_reverse", "A table of flowlines or catchments whose columns use"),
+        (
+            "align_names",
+            "A table of flowlines or catchments; columns hydroloom knows by "
+            "another name (such as NHDPlus `COMID`, `ToCOMID`) are renamed to "
+            "hydroloom names.",
+        ),
+        (
+            "hy_reverse",
+            "A table of flowlines or catchments whose columns use hydroloom "
+            "names, as `as_hy()` returns.",
+        ),
     ],
 )
-def test_network_text_per_function(name, start):
-    """align_names and hy_reverse carry their own `network` text."""
+def test_network_text_per_function(name, expected):
+    """align_names and hy_reverse take their `network` text from roxygen (P-4)."""
     params = get_doc_object(getattr(hydroloom, name))["Parameters"]
-    desc = " ".join(params[0].desc)
 
     assert params[0].name == "network"
-    assert desc.startswith(start)
-    assert "first" not in desc
+    assert " ".join(params[0].desc) == expected
 
 
 def test_no_public_docstring_names_register_names():
@@ -395,10 +406,14 @@ R_ONLY = [
 @pytest.mark.parametrize("name", ["as_hy", "representation", "make_index_ids"])
 def test_public_docstrings_drop_r_classes(name):
     """The "In R," drop pairs remove R class and argument text (A-13, P-4)."""
-    text = getattr(hydroloom, name).__doc__
+    func = getattr(hydroloom, name)
+    text = func.__doc__
 
     for phrase in R_ONLY:
         assert phrase not in text
+    params = get_doc_object(func)["Parameters"]
+    assert params[0].name == "network"
+    assert " ".join(params[0].desc) == SHARED_NETWORK
 
 
 DROP_CASES = {
@@ -473,7 +488,7 @@ def test_wholly_r_only_fields_add_nothing(monkeypatch):
     assert "Returns" not in text
     assert "Only R" not in text
     assert (
-        "Notes\n-----\nDocumentation adapted from the R function `hydroloom::synthetic()`."
+        "Notes\n-----\nDocumentation adapted from `synthetic()` in the hydroloom R package."
         in text
     )
     assert "Shared details." in text
