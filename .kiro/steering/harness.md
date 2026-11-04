@@ -15,7 +15,8 @@ fileMatchPattern: "tests/python/**"
   runs on every manifest function; `derandomize=True` in CI; a shrunk failure becomes a
   synthetic fixture and a manifest case, never a tolerance change.
 - `test_api.py` asserts `hydroloom.__all__` equals the manifest functions whose
-  `supported_by` includes `python` (A-18).
+  `supported_by` includes `python`, plus a function whose input is process state that
+  RULES P-3 admits (A-18).
 - Every public function has a hand-written doctest; `--doctest-modules` runs it.
 - Interface tests (argument validation, error classes, ingest dtypes) are language-local
   and live here; semantics live in the manifest.

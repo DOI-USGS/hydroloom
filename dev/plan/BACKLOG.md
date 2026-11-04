@@ -14,7 +14,7 @@ Columns: Item (what, with the fixed point it waits for); Source (the disposition
 | Item | Source | Rule | §4 | Owner |
 | --- | --- | --- | --- | --- |
 | `R CMD build .` on Linux from a checkout with `src/` (the `.gitlab-ci.yml` `rc/*` tarball job) relies on the no-op `src/Makefile` and `src/install.libs.R`, which have been run only on win-64, and stamps `NeedsCompilation: yes` while `pixi run r-check` checks a pkgbuild-copy tarball stamped `no`. Build once on Linux before the next `rc/*` branch, record the value, and either accept the difference or make the release job build the way `r-check` does. | M4 unit 1 S-03 | AGENTS § CI and release | no | M5 run |
-| Release setup for `py-v0.1.0`: PyPI and TestPyPI accounts, project-scoped token, `py-v*` protected tag, code.usgs.gov token variables and egress, DOI certificate as a file-type variable. Steps in VERIFICATION §7. Outside the agent process. | ROADMAP §3 (deferred 2026-10-25) | — | no | David |
+| Release setup for `py-v0.1.0`: PyPI and TestPyPI accounts, project-scoped token, `py-v*` protected tag, code.usgs.gov token variables and egress, DOI certificate as a file-type variable. Steps in VERIFICATION §7. Outside the agent process. The code.usgs.gov `rc/py-*` job needs `GIT_DEPTH: 0` so hatch-vcs counts commits from the `py-v*` tag (M5 run 4 unit 9 U9-01). | ROADMAP §3 (deferred 2026-10-25) | — | no | David |
 
 ## M6
 

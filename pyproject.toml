@@ -177,7 +177,7 @@ PYTHONDONTWRITEBYTECODE = "1"
 [tool.pixi.tasks]
 install = "pixi reinstall hydroloom"
 lint = "ruff check . && ruff format --check . && lint-imports --no-cache && mypy src/hydroloom"
-test = "pytest"
+test = { cmd = "pytest", depends-on = ["install"] }
 build = "python -m build --outdir dist ."
 # Renders the unreleased fragments without writing CHANGELOG.md; a release
 # runs `towncrier build --version <version>`.
