@@ -89,10 +89,6 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"data,frame", "table"),
     (r"\bdataframe\b", "table"),
     (r"data\.frame", "table"),
-    (
-        r"or list as returned by make_index_ids",
-        "or index ids as returned by make_index_ids",
-    ),
     (r"an `hy` object", "a network table"),
     (r"`hy` object", "network table"),
     (r"\bhy object", "network table"),

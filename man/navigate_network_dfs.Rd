@@ -7,15 +7,16 @@
 navigate_network_dfs(x, starts, direction = "down", reset = FALSE)
 }
 \arguments{
-\item{x}{data.frame containing hydroloom compatible network or list
-as returned by \link{make_index_ids} ("to" mode for downstream or "from" mode
-for upstream). The index list format avoids recreating the index ids for every call
+\item{x}{data.frame. A table of flowlines, or index ids as returned by
+\link{make_index_ids} ("to" mode for downstream or "from" mode for upstream).
+In R, index ids are the list \link{make_index_ids} returns. The index ids
+avoid recreating the index ids for every call
 to navigate network dfs in the case that it needs to be called many times.}
 
-\item{starts}{vector with ids from x to start at.}
+\item{starts}{vector with ids from \code{x} to start at.}
 
 \item{direction}{character "up", "upmain", "down", or "downmain". If "upmain" or
-"downmain", x must contain sufficient information to construct an upmain and
+"downmain", \code{x} must contain sufficient information to construct an upmain and
 downmain network (see details).}
 
 \item{reset}{logical if TRUE, reset graph for each start such that later paths
@@ -37,8 +38,8 @@ is more complicated but can be much faster in certain circumstances.
 \code{hy} object:
 
 If the function will only be called one or a few times, it can be called
-with x containing (at a minimum) \code{id} and \code{toid}. For "upmain" and "downmain"
-support, x also requires attributes for determination of the primary upstream
+with \code{x} containing (at a minimum) \code{id} and \code{toid}. For "upmain" and "downmain"
+support, \code{x} also requires attributes for determination of the primary upstream
 and downstream connection across every junction.
 
 In this pattern, the \code{hy} object will be passed to  \link{make_index_ids}
@@ -48,9 +49,10 @@ will be used for network navigation.
 Index ids:
 
 If the function will be called repeatedly or index_ids are available for
-other reasons, the index_id list as created by \link{make_index_ids} ("to"
+other reasons, the index ids as created by \link{make_index_ids} ("to"
 mode for downstream or "from" mode for upstream). For "upmain"
-and "downmain" support, the \code{main} element must be included.
+and "downmain" support, the index ids must include the main-path flag of
+each connection. In R, that flag is the \code{main} element of the list.
 }
 \examples{
 

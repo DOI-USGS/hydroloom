@@ -21,7 +21,7 @@ from hydroloom._docstrings import (
 # these; the table and these counts are reviewed together (VERIFICATION 6).
 EXPECTED_FIRES = {
     r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)": 15,
-    r" In R,[^\n]*?[.?!](?=\s|\Z)": 133,
+    r" In R,[^\n]*?[.?!](?=\s|\Z)": 135,
     r"logical if TRUE": 29,
     r"logical if `TRUE`": 5,
     r"\Alogical\. ": 7,
@@ -37,7 +37,7 @@ EXPECTED_FIRES = {
     r"\Ainteger ": 7,
     r"\Aunits distance ": 3,
     r"\Acrs\. ": 3,
-    r"\Adata\.frame\. ": 137,
+    r"\Adata\.frame\. ": 138,
     r"\Avector of the same length as `nrow\(x\)` containing ": 6,
     r"\Avector ": 35,
     r"sfc_POINT simple feature geometry list of length `nrow\(indexes\)`": 1,
@@ -56,8 +56,7 @@ EXPECTED_FIRES = {
     r"\bsfc\b": 7,
     r"data,frame": 5,
     r"\bdataframe\b": 1,
-    r"data\.frame": 120,
-    r"or list as returned by make_index_ids": 1,
+    r"data\.frame": 119,
     r"an `hy` object": 6,
     r"`hy` object": 2,
     r"\bhy object": 12,
@@ -85,7 +84,7 @@ EXPECTED_FIRES = {
     r"Default NULL": 6,
     r"or NULL": 12,
     r"`Inf`": 6,
-    r"(?<!CRS of )`x`": 98,
+    r"(?<!CRS of )`x`": 102,
     r"c\(UM, DM, UT, DD\) or equivalently c\(upmain, downmain, up, down\)": 6,
     r"`hy\(\)`": 28,
     r"`hy_network_type\(\)`": 1,
@@ -224,10 +223,18 @@ def test_composed_sections(func):
 
 
 SHARED_NETWORK = (
-    "A table of flowlines or catchments (the land areas draining to each "
-    "flowline); columns hydroloom knows by another name, from NHDPlusV2, "
+    "A table of flowlines or catchments; columns hydroloom knows by another "
+    "name, from NHDPlusV2, "
     "NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are "
     "renamed to hydroloom names first."
+)
+
+# hy_network_type has its own @param x (M5 run 3 unit 4 fix round).
+REPRESENTATION_NETWORK = (
+    "A table of flowlines or catchments; columns hydroloom knows by another "
+    "name come from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus "
+    "`COMID`, `ToCOMID`). In Python, columns hydroloom knows by another name "
+    "are renamed to hydroloom names first."
 )
 
 
@@ -407,7 +414,9 @@ def test_public_docstrings_drop_r_classes(name):
         assert phrase not in text
     params = get_doc_object(func)["Parameters"]
     assert params[0].name == "network"
-    assert " ".join(params[0].desc) == SHARED_NETWORK
+    assert " ".join(params[0].desc) == (
+        REPRESENTATION_NETWORK if name == "representation" else SHARED_NETWORK
+    )
 
 
 DROP_CASES = {

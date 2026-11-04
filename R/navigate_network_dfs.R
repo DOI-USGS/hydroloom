@@ -1,13 +1,14 @@
 #' @title Navigate all Paths Depth First
 #' @description given a starting node, return all reachable paths. Once visited,
 #' a node is marked as visited and will not take part in a future path.
-#' @param x data.frame containing hydroloom compatible network or list
-#' as returned by \link{make_index_ids} ("to" mode for downstream or "from" mode
-#' for upstream). The index list format avoids recreating the index ids for every call
+#' @param x data.frame. A table of flowlines, or index ids as returned by
+#' \link{make_index_ids} ("to" mode for downstream or "from" mode for upstream).
+#' In R, index ids are the list \link{make_index_ids} returns. The index ids
+#' avoid recreating the index ids for every call
 #' to navigate network dfs in the case that it needs to be called many times.
-#' @param starts vector with ids from x to start at.
+#' @param starts vector with ids from `x` to start at.
 #' @param direction character "up", "upmain", "down", or "downmain". If "upmain" or
-#' "downmain", x must contain sufficient information to construct an upmain and
+#' "downmain", `x` must contain sufficient information to construct an upmain and
 #' downmain network (see details).
 #' @param reset logical if TRUE, reset graph for each start such that later paths
 #' will have overlapping results.
@@ -21,8 +22,8 @@
 #' `hy` object:
 #'
 #' If the function will only be called one or a few times, it can be called
-#' with x containing (at a minimum) `id` and `toid`. For "upmain" and "downmain"
-#' support, x also requires attributes for determination of the primary upstream
+#' with `x` containing (at a minimum) `id` and `toid`. For "upmain" and "downmain"
+#' support, `x` also requires attributes for determination of the primary upstream
 #' and downstream connection across every junction.
 #'
 #' In this pattern, the `hy` object will be passed to  \link{make_index_ids}
@@ -32,9 +33,10 @@
 #' Index ids:
 #'
 #' If the function will be called repeatedly or index_ids are available for
-#' other reasons, the index_id list as created by \link{make_index_ids} ("to"
+#' other reasons, the index ids as created by \link{make_index_ids} ("to"
 #' mode for downstream or "from" mode for upstream). For "upmain"
-#' and "downmain" support, the `main` element must be included.
+#' and "downmain" support, the index ids must include the main-path flag of
+#' each connection. In R, that flag is the `main` element of the list.
 #'
 #' @returns list containing dfs result for each start.
 #' @export
