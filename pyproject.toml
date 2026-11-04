@@ -1,11 +1,10 @@
 [build-system]
-requires = ["hatchling>=1.27"]
+requires = ["hatchling>=1.27", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "hydroloom"
-# Static placeholder; hatch-vcs reads the py-v* tag from M5 (VERIFICATION 1.7, ROADMAP M5).
-version = "0.0.0"
+dynamic = ["version"]
 description = "Utilities to weave hydrologic fabrics."
 readme = "README.md"
 license = "CC0-1.0"
@@ -26,6 +25,16 @@ Homepage = "https://github.com/DOI-USGS/hydroloom"
 Issues = "https://github.com/DOI-USGS/hydroloom/issues"
 
 # hatchling (VERIFICATION 1.3) ---------------------------------------------
+
+# The version comes from the py-v* tag (VERIFICATION 1.7). --match keeps git
+# describe off the R v* and suite-v* tags; with no py-v* tag the version is
+# 0.1.devN. An sdist carries its version in PKG-INFO, so no fallback_version.
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+tag_regex = "^py-v(?P<version>.+)$"
+git_describe_command = 'git describe --dirty --tags --long --match "py-v*"'
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hydroloom"]

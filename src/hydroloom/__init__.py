@@ -1,5 +1,7 @@
 """Utilities to weave hydrologic fabrics."""
 
+from importlib.metadata import version as _version
+
 from hydroloom._hy import (
     align_names,
     as_hy,
@@ -17,6 +19,8 @@ from hydroloom.network import (
     navigate_network_dfs,
     sort_network,
 )
+
+__version__ = _version("hydroloom")
 
 __all__ = [
     "add_toids",
