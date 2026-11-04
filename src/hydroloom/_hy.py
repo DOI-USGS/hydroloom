@@ -27,6 +27,7 @@ from typing import Any, TypeVar
 import geopandas as gpd  # type: ignore[import-untyped]
 import numpy as np
 import pandas as pd  # type: ignore[import-untyped]
+from numpy.typing import NDArray
 
 from hydroloom._docstrings import doc
 from hydroloom.errors import (
@@ -348,7 +349,7 @@ def _flag_values(values: pd.Series, column: Any, ids: pd.Series) -> pd.Series:
     return flags
 
 
-def _true(values: pd.Series) -> np.ndarray:
+def _true(values: pd.Series) -> NDArray[np.bool_]:
     return np.asarray(values.eq(True).fillna(False), dtype=bool)
 
 

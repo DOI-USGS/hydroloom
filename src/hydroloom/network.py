@@ -9,6 +9,7 @@ from typing import Any, Literal, cast
 import geopandas as gpd  # type: ignore[import-untyped]
 import numpy as np
 import pandas as pd  # type: ignore[import-untyped]
+from numpy.typing import NDArray
 
 from hydroloom._docstrings import doc
 from hydroloom._hy import (
@@ -36,11 +37,13 @@ from hydroloom.index_ids import IndexIds, _byte_rank, _from_edges
 _MODES = ("to", "from", "both")
 
 
-def _main(df: pd.DataFrame, column: str, keep: np.ndarray) -> np.ndarray | None:
+def _main(
+    df: pd.DataFrame, column: str, keep: NDArray[np.bool_]
+) -> NDArray[np.bool_] | None:
     if column not in df.columns:
         return None
 
-    flags: np.ndarray = _true(df[column])[keep]
+    flags: NDArray[np.bool_] = _true(df[column])[keep]
 
     return flags
 
@@ -114,7 +117,7 @@ def make_index_ids(
     return result
 
 
-def _eligible(net: pd.DataFrame) -> np.ndarray:
+def _eligible(net: pd.DataFrame) -> NDArray[np.bool_]:
     """Check the divergence coding; return the rows that may be a target.
 
     add_toids.md Algorithm step 3: a missing divergence and a broken coding at
@@ -171,7 +174,7 @@ def _eligible(net: pd.DataFrame) -> np.ndarray:
             stacklevel=_stack_level(),
         )
 
-    eligible: np.ndarray = ~(minor & split)
+    eligible: NDArray[np.bool_] = ~(minor & split)
 
     return eligible
 
