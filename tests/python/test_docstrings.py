@@ -254,6 +254,7 @@ PROVENANCE = {
     "align_names": "align_names",
     "as_hy": "hy",
     "hy_reverse": "hy_reverse",
+    "is_dendritic": "is_dendritic",
     "is_hy": "is.hy",
     "make_index_ids": "make_index_ids",
     "name_definitions": "hydroloom_name_definitions",
@@ -349,9 +350,10 @@ def test_explicit_r_name_wins_over_same_name():
 
 PUBLIC = [getattr(hydroloom, name) for name in sorted(hydroloom.__all__)]
 
-# The hy_network_type title is a question; rewording it is roxygen work, the
-# maintainer's (A-13), outside this docstring pass.
-PUBLIC_ALLOWED = {"representation": {"SS03"}}
+# The hy_network_type and is_dendritic titles are questions; rewording them is
+# roxygen work, the maintainer's (A-13), outside this docstring pass. numpydoc
+# also reads "Is" in the is_dendritic title as a third-person verb (SS05).
+PUBLIC_ALLOWED = {"representation": {"SS03"}, "is_dendritic": {"SS03", "SS05"}}
 
 
 @pytest.mark.parametrize("func", PUBLIC, ids=lambda f: f.__name__)

@@ -602,6 +602,43 @@ def representation(network: pd.DataFrame) -> str:
     return _classify(df).value
 
 
+def _is_dendritic_impl(net: pd.DataFrame, *, validate_data: bool) -> bool:
+    """Apply the two tests of is_dendritic.md Definition to an aligned frame."""
+    # Rule 1: a divergence of 2; a missing value is ignored (Edge cases).
+    if "divergence" in net.columns:
+        divergence = pd.to_numeric(net["divergence"], errors="coerce")
+        if divergence.eq(2).any():
+            return False
+
+    # Rule 2: a repeated id beside toid, the flownetwork pattern (I-6).
+    if validate_data and "toid" in net.columns and not net["id"].is_unique:
+        return False
+
+    return True
+
+
+@requires()
+@doc("is_dendritic")
+def is_dendritic(network: pd.DataFrame, *, validate_data: bool = True) -> bool:
+    """Test whether a network has no divergences.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import is_dendritic
+    >>> net = pd.DataFrame({"id": [1, 1, 2, 3, 4], "toid": [2, 3, 4, 4, 0]})
+    >>> is_dendritic(net)
+    False
+    >>> is_dendritic(net, validate_data=False)
+    True
+    """
+    df, _ = _as_hy(network)
+    native = {Representation.HY: _is_dendritic_impl}
+    result: bool = _route(df, is_dendritic, native, validate_data=validate_data)
+
+    return result
+
+
 def _capability_input(network: Any) -> tuple[Representation | None, set[str]]:
     """Return the pattern of ``network`` and the hy column names it holds.
 
