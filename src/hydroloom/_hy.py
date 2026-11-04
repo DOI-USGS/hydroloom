@@ -677,8 +677,7 @@ def register_names(
     Examples
     --------
     >>> import pandas as pd
-    >>> from hydroloom import align_names
-    >>> from hydroloom._hy import register_names
+    >>> from hydroloom import align_names, register_names
     >>> net = pd.DataFrame({"FlowlineID": [1, 2], "Next_ID": [2, 0]})
     >>> with register_names({"FlowlineID": "id", "Next_ID": "toid"}):
     ...     align_names(net).columns.tolist()

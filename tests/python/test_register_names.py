@@ -18,8 +18,8 @@ from hypothesis import strategies as st
 
 from conformance import remedy_pattern
 from hydroloom import _hy as hy_module
-from hydroloom import align_names, as_hy, hy_reverse
-from hydroloom._hy import _alias_map, _terms, _vocab_alias_map, register_names
+from hydroloom import align_names, as_hy, hy_reverse, register_names
+from hydroloom._hy import _alias_map, _terms, _vocab_alias_map
 from hydroloom.errors import HydroloomWarning
 from test_hy import PROPERTY
 
@@ -75,6 +75,14 @@ def test_replace_drops_registered_and_keeps_vocabulary():
     register_names({"next_id": "toid"}, replace=True)
 
     assert _alias_map() == (*VOCAB, ("next_id", "toid"))
+
+
+def test_replace_with_empty_mapping_is_the_registry_at_load():
+    """replace=True with no entries drops every registration (D3-20)."""
+    register_names({"flowline_id": "id"})
+    register_names({}, replace=True)
+
+    assert _alias_map() == VOCAB
 
 
 def test_unknown_value_raises_and_registers_nothing():
@@ -141,6 +149,7 @@ def test_register_postconditions(mapping, replace):
         added = tuple((a.lower(), v) for a, v in mapping.items())
         assert _alias_map() == (VOCAB if replace else before) + added
         assert all(v in terms for _, v in _alias_map())
+        assert all(a == v for a, v in _alias_map() if a in terms)
     assert _alias_map() == before
 
 
@@ -193,7 +202,7 @@ def test_registration_outside_with_stays():
 
 
 def test_register_names_doctest():
-    """The hand-written example runs (A-13); register_names is not exported."""
+    """The hand-written example runs (A-13)."""
     tests = doctest.DocTestFinder().find(register_names, "register_names", globs={})
     runner = doctest.DocTestRunner()
     for test in tests:

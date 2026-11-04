@@ -14,7 +14,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | `is.hy` | `is_hy` | r, python | 15 | 2 |
 | `align_names` | `align_names` | r, python | 26 | 2 |
 | `hydroloom_name_definitions` | `name_definitions` | r, python | 1 | 0 |
-| `hydroloom_names` | `register_names` | r | 2 | 2 |
+| `hydroloom_names` | `register_names` | r, python | 2 | 2 |
 | `hy_network_type` | `representation` | r, python | 21 | 7 |
 | `hy_capabilities` | `capabilities` | r | 26 | 12 |
 | `is_dendritic` | `is_dendritic` | r | 26 | 3 |

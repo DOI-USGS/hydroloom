@@ -6,6 +6,7 @@ from hydroloom._hy import (
     hy_reverse,
     is_hy,
     name_definitions,
+    register_names,
     representation,
 )
 from hydroloom.network import add_toids, make_index_ids
@@ -18,5 +19,6 @@ __all__ = [
     "is_hy",
     "make_index_ids",
     "name_definitions",
+    "register_names",
     "representation",
 ]

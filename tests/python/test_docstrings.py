@@ -297,12 +297,6 @@ def test_network_text_per_function(name, expected):
     assert " ".join(params[0].desc) == expected
 
 
-def test_no_public_docstring_names_register_names():
-    """`register_names` is not exported (SPEC A-18: the hydroloom_names cases are all `[r]`), so no public docstring names it."""
-    for name in hydroloom.__all__:
-        assert "register_names" not in getattr(hydroloom, name).__doc__, name
-
-
 def test_sections_go_to_notes():
     """The transferred Measures section is a Notes paragraph led by its title."""
     notes = "\n".join(get_doc_object(index_points_to_lines)["Notes"])

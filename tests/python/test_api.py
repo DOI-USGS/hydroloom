@@ -11,13 +11,25 @@ from hydroloom._hy import _REGISTRY
 
 R_NAMES = {python: r for r, python in PYTHON_NAMES.items()}
 
+# Functions whose input is process state, exported with every manifest case
+# R-only by design once the Python suite covers each Postcondition (RULES P-3,
+# SPEC S-4); tests/python/test_register_names.py covers hydroloom_names.md.
+PROCESS_STATE = {"register_names"}
+
 
 def test_all_matches_manifest():
-    """``hydroloom.__all__`` is the set of manifest functions Python supports."""
+    """``hydroloom.__all__`` is the manifest's Python functions (A-18, S-4).
+
+    A process-state function (P-3) is exported though its cases are R-only.
+    """
     exported = list(hydroloom.__all__)
+    manifest = load_manifest()
 
     assert len(exported) == len(set(exported))
-    assert set(exported) == python_functions(load_manifest())
+    assert set(exported) == python_functions(manifest) | PROCESS_STATE
+    for name in PROCESS_STATE:
+        cases = [c for c in manifest["cases"] if c["function"] == R_NAMES[name]]
+        assert cases and all("r_only" in c for c in cases), name
 
 
 def _requires(function):
