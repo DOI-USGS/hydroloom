@@ -1448,17 +1448,18 @@ cases:
 
   # hy_capabilities -----------------------------------------------------------
   # R reads the class hy() stamps, so most cases apply hy() through prepare
-  # (D3-11). The return is a (function, available, via) frame (A-4). Every
+  # (D3-11). The return is a (function, available, via) frame (A-4). Every R
   # case carries changes_with: A-4 (D3-14), the change that regenerated its
   # layer from the named logical vector R 1.3.0 returned. order: exact pins code-table
   # order (A-4). Cases without prepare stay R only: R reads a class, Python
   # reads columns. Cases passing include_conversions stay R only: Python
   # capabilities(network) takes no such argument (D3-31). No case raises.
   # The other 14 cases carry r_only: hy_capabilities.md §Algorithm, since R's
-  # code table lists R's 24 functions and Python's lists its @requires
-  # registry in function-name order (B-4; REVIEW_11042026 item 2). Each has a
-  # case of its own, id ending _python, on the same fixture and args,
-  # supported_by: [python] and generator: [python]; these are not B-5 raises.
+  # code table lists R's 24 functions and Python's lists its @requires registry
+  # in ascending code-point order of the function value (B-4; REVIEW_11042026
+  # item 2). Each has a case of its own, id ending _python, on the same fixture
+  # and args, supported_by: [python] and generator: [python]; these are not B-5
+  # raises.
 
   # changes_with: A-4; hy_node, sf, aggregate_id (mainstemid) and length_km;
   # node, geometry, and aggregate-flowpath rows TRUE
@@ -1472,8 +1473,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_new_hope_node; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_new_hope_node; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_new_hope_node_python
     function: hy_capabilities
     fixture: new_hope.gpkg
@@ -1495,8 +1497,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_new_hope_node_shuffled; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_new_hope_node_shuffled; rows in ascending code-point order
+  # of the function value
   - id: hy_capabilities_new_hope_node_shuffled_python
     function: hy_capabilities
     fixture: new_hope_shuffled.gpkg
@@ -1542,8 +1545,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_new_hope_3dhp; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_new_hope_3dhp; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_new_hope_3dhp_python
     function: hy_capabilities
     fixture: new_hope_3dhp.gpkg
@@ -1578,8 +1582,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_return_divergence; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_return_divergence; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_return_divergence_python
     function: hy_capabilities
     fixture: return_divergence.gpkg
@@ -1601,8 +1606,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_leveled; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_leveled; rows in ascending code-point order of the function
+  # value
   - id: hy_capabilities_leveled_python
     function: hy_capabilities
     fixture: capabilities_leveled.gpkg
@@ -1658,8 +1664,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_single_flowline; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_single_flowline; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_single_flowline_python
     function: hy_capabilities
     fixture: single_flowline.gpkg
@@ -1693,8 +1700,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_all_terminals; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_all_terminals; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_all_terminals_python
     function: hy_capabilities
     fixture: all_terminals.gpkg
@@ -1729,8 +1737,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_empty_network_no_conversions; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_empty_network_no_conversions; rows in ascending code-point
+  # order of the function value
   - id: hy_capabilities_empty_network_no_conversions_python
     function: hy_capabilities
     fixture: empty_network.gpkg
@@ -1777,8 +1786,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_missing_weight; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_missing_weight; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_missing_weight_python
     function: hy_capabilities
     fixture: missing_weight.gpkg
@@ -1799,8 +1809,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_zero_length; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_zero_length; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_zero_length_python
     function: hy_capabilities
     fixture: zero_length.gpkg
@@ -1825,8 +1836,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_sort_network_dups; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_sort_network_dups; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_sort_network_dups_python
     function: hy_capabilities
     fixture: sort_network_dups_distinct.gpkg
@@ -1862,8 +1874,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_divergence_no_attribute; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_divergence_no_attribute; rows in ascending code-point order
+  # of the function value
   - id: hy_capabilities_divergence_no_attribute_python
     function: hy_capabilities
     fixture: divergence_no_attribute.gpkg
@@ -1899,8 +1912,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_node_aggregate; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_node_aggregate; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_node_aggregate_python
     function: hy_capabilities
     fixture: capabilities_node_aggregate.gpkg
@@ -1922,8 +1936,9 @@ cases:
     generator: [r]
     r_only: hy_capabilities.md §Algorithm
 
-  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
-  # and args as hy_capabilities_node_bare; rows in function-name order
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture and args as
+  # hy_capabilities_node_bare; rows in ascending code-point order of the
+  # function value
   - id: hy_capabilities_node_bare_python
     function: hy_capabilities
     fixture: capabilities_node_bare.gpkg

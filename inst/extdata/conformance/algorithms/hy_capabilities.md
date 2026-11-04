@@ -150,8 +150,8 @@ applies. No CSR index is built.
 ## Postconditions
 
 - The output has one row per code-table entry; `function` is unique and in code-table
-  order (A-4): in R the order of `hy_requires`, in Python function-name order over the
-  `@requires` registry (B-4).
+  order (A-4): in R the order of `hy_requires`, in Python ascending code-point order of
+  the `function` value over the `@requires` registry (B-4).
 - `available` and `via` are never missing.
 - With `include_conversions = FALSE` in R, and always in Python, `via != ""` implies
   `available` is `FALSE`.
