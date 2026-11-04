@@ -173,6 +173,9 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
 
 ## Edge cases
 
+Row counts and named rows below refer to R's code table (`hy_requires`); Python reports
+only the rows its `@requires` registry holds (B-4).
+
 - One flowline: after `hy()` on `single_flowline.gpkg` (which has `toid` and node
   columns) the input is `hy_topo`, so the hy_topo rows are available and the node rows
   are not, though the table carries `fromnode`/`tonode`. When a table has both `toid`
@@ -241,8 +244,8 @@ With `include_conversions = FALSE`, fifteen rows are available: `make_node_topol
 `add_pfafstetter`, `add_streamlevel`, `navigate_network_dfs`, `make_index_ids`,
 `get_confluences`. The other nine are not. Of those nine, `add_divergence`,
 `add_return_divergence`, and `subset_network` have `via = "make_node_topology"`; `add_toids`
-and the geometry and aggregate-flowpath rows have `via = ""`. Python reports the same
-fifteen, with `via = "make_node_topology"` on the three node rows. With
+and the geometry and aggregate-flowpath rows have `via = ""`. The fifteen are rows of
+R's code table; Python reports only the rows its `@requires` registry holds (B-4). With
 `include_conversions = TRUE` (R only) those three become available too, eighteen in all.
 
 ## Changes
@@ -305,3 +308,7 @@ fifteen, with `via = "make_node_topology"` on the three node rows. With
   and Python's function-name order. The 14 shared cases carry
   `r_only: hy_capabilities.md §Algorithm`, and each has a `generator: [python]` case on
   the same fixture and `args`, id ending `_python`.
+- 2026-11-04, suite 0.1.0, M5 run 5 unit 2 (SP-01, SP-02, RULES P-2): the worked
+  example's fifteen are stated as R's code table, and Edge cases open with a sentence
+  that their row counts and named rows refer to `hy_requires`, with Python reporting
+  only its `@requires` registry rows (B-4). No binding section changes.
