@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import warnings
-from collections.abc import Sequence
-from typing import Any, cast
+from collections.abc import Iterable, Sequence
+from typing import Any, Literal, cast
 
 import geopandas as gpd  # type: ignore[import-untyped]
 import numpy as np
@@ -485,9 +485,9 @@ def _navigate_dfs_index(
 @doc("navigate_network_dfs")
 def navigate_network_dfs(
     network: pd.DataFrame | IndexIds,
-    starts: Sequence[str],
+    starts: str | int | Iterable[str | int | float],
     *,
-    direction: str = "down",
+    direction: Literal["down", "up", "downmain", "upmain"] = "down",
     reset: bool = False,
 ) -> list[list[pd.Index]]:
     """Navigate all paths depth first.
@@ -524,8 +524,16 @@ def navigate_network_dfs(
     df, _ = _as_hy(network)
     # A node table walked down or up converts silently with every connection
     # kept (Preconditions). The main directions route through to_flownetwork,
-    # which Python does not have, so _route gives the representation guidance.
-    if not is_main and _classify(df) is Representation.NODE:
+    # which Python does not have yet (Remedies, node_main_needs_flownetwork).
+    if _classify(df) is Representation.NODE:
+        if is_main:
+            raise RepresentationError(
+                msg(
+                    "node_main_needs_flownetwork",
+                    function="navigate_network_dfs",
+                    direction=direction,
+                )
+            )
         df = _add_toids_impl(df, return_dendritic=False)
     native = {
         Representation.TOPO: _make_index_ids_impl,

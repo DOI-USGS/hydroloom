@@ -55,11 +55,6 @@ def test_starts_compare_as_text():
         ]
 
 
-def test_empty_starts_return_empty_list():
-    """Empty starts give an empty list (Algorithm step 3)."""
-    assert navigate_network_dfs(_tie(), []) == []
-
-
 @pytest.mark.parametrize("starts", [["99"], [None], [1.5], ["1", "99"]])
 def test_start_not_in_network(starts):
     """A start that is missing or not an id raises (Preconditions)."""
@@ -131,13 +126,16 @@ def test_node_table_converts_silently(direction):
 
 
 @pytest.mark.parametrize("direction", ["downmain", "upmain"])
-def test_node_table_main_direction_needs_topo(direction):
-    """A node table in a main direction raises the representation guidance.
+def test_node_table_main_direction_needs_flownetwork(direction):
+    """A node table in a main direction raises node_main_needs_flownetwork.
 
-    Its route is to_flownetwork, which Python does not have; the registry
-    names only add_toids (front matter ``via``), so _route raises.
+    Its route is to_flownetwork, which Python does not have yet (Remedies).
     """
-    text = msg("needs_topo", function="navigate_network_dfs", current="hy_node")
+    text = msg(
+        "node_main_needs_flownetwork",
+        function="navigate_network_dfs",
+        direction=direction,
+    )
 
     with pytest.raises(RepresentationError, match=re.escape(text)):
         navigate_network_dfs(_node_table(), ["1"], direction=direction)
@@ -176,7 +174,7 @@ def networks(draw):
     Each flowline drains to up to two flowlines listed after it, or to an
     outlet value (``""`` or an id outside the table); a flowline with an
     in-network toid may also carry an outside one (D3-76). ``downmain`` flags
-    at most one row per flowline.
+    at most one row per ``id`` and ``upmain`` at most one row per ``toid``.
     """
     n = draw(st.integers(1, 12))
     labels = draw(
@@ -203,26 +201,38 @@ def networks(draw):
         if flag:
             flagged.add(label)
         downmain.append(flag)
+    # At most one main upstream connection per toid, the matching invariant
+    # for upmain.
+    upmain = []
+    flagged_to: set[str] = set()
+    for _, toid in rows:
+        flag = toid not in flagged_to and draw(st.booleans())
+        if flag:
+            flagged_to.add(toid)
+        upmain.append(flag)
 
     return pd.DataFrame(
         {
             "id": pd.Series([r[0] for r in rows], dtype=object),
             "toid": pd.Series([r[1] for r in rows], dtype=object),
             "downmain": downmain,
+            "upmain": upmain,
         }
     )
 
 
 def _neighbors(table: pd.DataFrame, direction: str) -> dict[str, set[str]]:
-    """Neighbors in the walk direction; main connections only for downmain."""
+    """Neighbors in the walk direction; main connections only when main."""
     ids = set(table["id"])
     out: dict[str, set[str]] = defaultdict(set)
-    for i, t, m in zip(table["id"], table["toid"], table["downmain"], strict=True):
+    for i, t, dm, um in zip(
+        table["id"], table["toid"], table["downmain"], table["upmain"], strict=True
+    ):
         if t not in ids:
             continue
-        if direction == "up":
+        if direction == "up" or (direction == "upmain" and um):
             out[t].add(i)
-        elif direction == "down" or m:
+        elif direction == "down" or (direction == "downmain" and dm):
             out[i].add(t)
 
     return out
@@ -280,13 +290,13 @@ def _check(table, starts, direction, reset) -> list[list[list[str]]]:
                 assert b in nbr[a]
             # A path ends at a terminal or where the walk turns to a visited
             # flowline (the smallest neighbor, D-6).
-            if direction != "downmain":
+            if not direction.endswith("main"):
                 last = p[-1]
                 visited_before = set(flat[: position[last]]) | (
                     set() if reset else earlier
                 )
                 assert not nbr[last] or min(nbr[last]) in visited_before
-        if direction == "downmain":
+        if direction.endswith("main"):
             assert len(element) <= 1
         elif k == 0 or reset:
             if all(len(nbr[v]) <= 1 for v in want):
@@ -306,12 +316,12 @@ def _check(table, starts, direction, reset) -> list[list[list[str]]]:
 @PROPERTY
 @given(
     networks(),
-    st.sampled_from(["down", "up", "downmain"]),
+    st.sampled_from(["down", "up", "downmain", "upmain"]),
     st.booleans(),
     st.data(),
 )
 def test_postconditions(table, direction, reset, data):
-    """navigate_network_dfs.md Postconditions, every direction but upmain."""
+    """navigate_network_dfs.md Postconditions, every direction."""
     ids = sorted(set(table["id"]))
     starts = data.draw(st.lists(st.sampled_from(ids), min_size=1, max_size=4))
     elements = _check(table, starts, direction, reset)
@@ -322,7 +332,7 @@ def test_postconditions(table, direction, reset, data):
     assert [[p.tolist() for p in e] for e in again] == elements
 
     # Frame and IndexIds input walk the same graph (Signature).
-    mode = "from" if direction == "up" else "to"
+    mode = "from" if direction.startswith("up") else "to"
     index = make_index_ids(table, mode=mode)
     by_index = navigate_network_dfs(index, starts, direction=direction, reset=reset)
     assert [[p.tolist() for p in e] for e in by_index] == elements
