@@ -16,7 +16,7 @@ front_matter_requires <- function(path) {
 normalize_requires <- function(r) {
 
   via <- unlist(r$via)
-  if (is.null(via)) via <- stats::setNames(character(), character())
+  if (length(via) == 0) via <- stats::setNames(character(), character())
 
   list(
     pattern = as.character(unlist(r$pattern)),

@@ -779,7 +779,7 @@ hy_requires <- local({
 
   list(
     # representation conversions
-    add_toids               = node(),
+    add_toids               = none("hy_node"),
     make_node_topology      = topo(),
     to_flownetwork          = none("hy_leveled", "divergence"),
 

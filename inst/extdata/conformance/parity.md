@@ -5,7 +5,7 @@
 
 # Parity table
 
-Suite version 0.1.0. A function's `supported_by` lists the languages that support every one of its cases that carries no `r_only`. A case with `r_only` is R-only by design and counts apart, in the `r_only` column (SPEC S-4, RULES P-5); a function whose every case carries it reads `r`.
+Suite version 0.1.0. A function's `supported_by` lists the languages that support every one of its cases that carries no `r_only`. A case with `r_only` is R-only by design and counts apart, in the `r_only` column (SPEC S-4, RULES P-5); a function whose every case carries it reads `r, python` when its Python name is in `hydroloom.__all__`, and `r` otherwise (SPEC S-4, RULES P-3).
 
 | function | Python | supported_by | cases | r_only |
 | --- | --- | --- | --- | --- |

@@ -215,7 +215,7 @@ def _add_toids_impl(net: pd.DataFrame, *, return_dendritic: bool) -> pd.DataFram
     return out
 
 
-@requires(Representation.NODE, via={Representation.TOPO: "make_node_topology"})
+@requires(Representation.NODE)
 @doc("add_toids")
 def add_toids(network: pd.DataFrame, *, return_dendritic: bool = True) -> pd.DataFrame:
     """Add toids.

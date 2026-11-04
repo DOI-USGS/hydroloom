@@ -55,3 +55,24 @@ test_that("parity rows count r_only cases apart", {
   expect_identical(rows$cases, c(2L, 1L))
   expect_identical(rows$r_only, c(1L, 1L))
 })
+
+test_that("an all r_only function reads r, python when Python exports it", {
+  m <- list(suite_version = "0.0.0",
+    functions = list(a = list(), hy = list()),
+    cases = list(
+      list(id = "a1", `function` = "a", supported_by = list("r"), r_only = "a.md §Signature"),
+      list(id = "h1", `function` = "hy", supported_by = list("r"), r_only = "hy.md §Signature")))
+
+  expect_identical(parity_rows(m, python_all = "as_hy")$supported_by, c("r", "r, python"))
+  expect_identical(parity_rows(m, python_all = character())$supported_by, c("r", "r"))
+})
+
+test_that("parity_python_all reads the quoted names of __all__", {
+  path <- tempfile(fileext = ".py")
+  on.exit(unlink(path))
+  writeLines(c("from x import a", "", "__all__ = [", "    \"add_toids\",",
+    "    'as_hy',", "]", "other = [\"no\"]"), path)
+
+  expect_identical(parity_python_all(path), c("add_toids", "as_hy"))
+  expect_identical(parity_python_all(file.path(tempdir(), "absent.py")), character())
+})

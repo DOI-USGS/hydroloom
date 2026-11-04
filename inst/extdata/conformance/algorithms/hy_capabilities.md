@@ -82,7 +82,7 @@ phase-1 entry is its description's `requires` (D3-42); the other entries keep hy
 
 | function | pattern | columns | via |
 | --- | --- | --- | --- |
-| `add_toids` | hy_node | | hy_topo: `make_node_topology` |
+| `add_toids` | hy_node | | |
 | `make_node_topology` | hy_topo | | hy_node: `add_toids` |
 | `to_flownetwork` | hy_leveled | `divergence` | |
 | `sort_network` | hy_topo, hy_flownetwork | | hy_node: `add_toids` |
@@ -193,10 +193,11 @@ representation: O(1) in R (class test), O(n) in Python (`id` uniqueness).
   same output as the duplicated row.
 - Real NextGen table (`sort_network_dups_distinct.gpkg`, which is
   `sort_network_dups.gpkg` with its three repeated (`id`, `toid`) pairs removed): every
-  `id` is unique, so `hy()` stamps `hy_topo`. Twelve rows are available, and `add_toids`,
+  `id` is unique, so `hy()` stamps `hy_topo`. Twelve rows are available, and
   `add_divergence`, `add_return_divergence`, and `subset_network` have
-  `via = "make_node_topology"`; with `include_conversions = TRUE` (R only) sixteen are
-  available. Cases `hy_capabilities_sort_network_dups` and
+  `via = "make_node_topology"`; with `include_conversions = TRUE` (R only) fifteen are
+  available. `add_toids` has `via = ""`, since the table has `toid`. Cases
+  `hy_capabilities_sort_network_dups` and
   `hy_capabilities_sort_network_dups_conversions` (D3-57, D3-210).
 - Node table without a `divergence` column (`divergence_no_attribute.gpkg`):
   `add_divergence` is available and `add_return_divergence` is not, by its `columns`
@@ -237,11 +238,11 @@ With `include_conversions = FALSE`, fifteen rows are available: `make_node_topol
 `to_flownetwork`, `sort_network`, `add_topo_sort`, `add_levelpaths`, `add_pathlength`,
 `add_streamorder`, `accumulate_downstream`, `check_hy_graph`, `navigate_hydro_network`,
 `add_pfafstetter`, `add_streamlevel`, `navigate_network_dfs`, `make_index_ids`,
-`get_confluences`. The other nine are not. Of those nine, `add_toids`, `add_divergence`,
-`add_return_divergence`, and `subset_network` have `via = "make_node_topology"`; the
-geometry and aggregate-flowpath rows have `via = ""`. Python reports the same fifteen,
-with `via = "make_node_topology"` on the four node rows. With `include_conversions = TRUE`
-(R only) those four become available too, nineteen in all.
+`get_confluences`. The other nine are not. Of those nine, `add_divergence`,
+`add_return_divergence`, and `subset_network` have `via = "make_node_topology"`; `add_toids`
+and the geometry and aggregate-flowpath rows have `via = ""`. Python reports the same
+fifteen, with `via = "make_node_topology"` on the three node rows. With
+`include_conversions = TRUE` (R only) those three become available too, eighteen in all.
 
 ## Changes
 
@@ -292,3 +293,9 @@ with `via = "make_node_topology"` on the four node rows. With `include_conversio
   read `sort_network_dups_distinct.gpkg`, which has unique `id` and is `hy_topo`; the
   Divergence edge case keeps `loop2.gpkg` only, and a new edge case states the
   `hy_topo` answer on the distinct NextGen table.
+- 2026-11-03, suite 0.1.0, M5 run 4 unit 2 (REVIEW_11032026-run3 item 2, RULES P-1): the
+  `add_toids` code-table entry drops its `hy_topo: make_node_topology` via, since
+  `add_toids` stops a table that has `toid` (`toid_already_present`). Definition, the
+  NextGen edge case and the worked example now give three node rows with
+  `via = "make_node_topology"` on a topo input; the regenerated layers are named in the
+  M5 Log entry for the unit. No binding section changes.

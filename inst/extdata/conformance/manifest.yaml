@@ -848,7 +848,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
-    r_only: hydroloom_names.md §Preconditions
+    r_only: hydroloom_names.md §Signature
     raises: error
     raises_key: unnamed_name_mapping
 
@@ -1457,7 +1457,8 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: A-4; hy_topo via make_node_topology for the four node rows
+  # changes_with: A-4; hy_topo via make_node_topology for the three node rows
+  # other than add_toids
   - id: hy_capabilities_new_hope_3dhp_conversions
     function: hy_capabilities
     fixture: new_hope_3dhp.gpkg
@@ -1492,7 +1493,7 @@ cases:
     generator: [r]
 
   # changes_with: A-4; worked example; hy_leveled satisfies the hy_topo via
-  # key; nineteen rows TRUE
+  # key; eighteen rows TRUE
   - id: hy_capabilities_leveled_conversions
     function: hy_capabilities
     fixture: capabilities_leveled.gpkg
@@ -1633,7 +1634,7 @@ cases:
   # (D3-210, D3-215): every repeated id in the source table is one of its 3
   # repeated pairs, which Python raises on at ingest (D3-57), so the distinct
   # rows have unique id; hy_topo, dendritic; via make_node_topology for
-  # add_toids, add_divergence, add_return_divergence, subset_network
+  # add_divergence, add_return_divergence, subset_network
   - id: hy_capabilities_sort_network_dups
     function: hy_capabilities
     fixture: sort_network_dups_distinct.gpkg
@@ -1643,7 +1644,7 @@ cases:
     supported_by: [r]
     generator: [r]
 
-  # changes_with: A-4; distinct (id, toid) rows (D3-210, D3-215); the four
+  # changes_with: A-4; distinct (id, toid) rows (D3-210, D3-215); the three
   # via functions become available after make_node_topology
   - id: hy_capabilities_sort_network_dups_conversions
     function: hy_capabilities

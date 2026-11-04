@@ -52,6 +52,8 @@ Changes to behavior:
   alias is a different hydroloom name; nothing is registered.
 - `align_names()` uses a registered alias over another name's built-in
   alias: after `hydroloom_names(c(comid = "toid"))`, `COMID` becomes `toid`.
+- `hy_capabilities()` no longer offers `make_node_topology()` as the
+  route to `add_toids()` for a table that has `toid`.
 
 hydroloom 1.3.0
 ==========

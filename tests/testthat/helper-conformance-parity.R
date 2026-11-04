@@ -3,7 +3,9 @@
 # `supported_by` is the set of languages that support every one of its cases
 # that carries no `r_only`; a case with `r_only` is R-only by design and is
 # counted apart (SPEC S-4, RULES P-5). A function whose every case carries
-# `r_only` reads `r`.
+# `r_only` reads `r, python` when its Python name is in the `__all__` list of
+# src/hydroloom/__init__.py, and `r` when it is not or when that file is
+# absent, as in the CRAN tarball (SPEC S-4, RULES P-3).
 
 parity_file <- function() file.path(conformance_dir(), "parity.md")
 
@@ -18,25 +20,44 @@ parity_python_names <- c(
   hy_capabilities = "capabilities"
 )
 
+# Returns the quoted names between `__all__ = [` and `]` in the Python
+# package's __init__.py, or character() when the file is absent.
+parity_python_all <- function(
+  path = testthat::test_path("..", "..", "src", "hydroloom", "__init__.py")) {
+
+  if (!file.exists(path)) return(character())
+
+  text <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  block <- regmatches(text, regexpr("__all__\\s*=\\s*\\[[^]]*\\]", text))
+  if (length(block) == 0) return(character())
+
+  quoted <- regmatches(block, gregexpr("[\"'][^\"']+[\"']", block))[[1]]
+
+  gsub("[\"']", "", quoted)
+}
+
 # Returns a data.frame with columns function, python, supported_by, cases,
 # r_only.
-parity_rows <- function(manifest) {
+parity_rows <- function(manifest, python_all = parity_python_all()) {
 
   fns <- names(manifest$functions)
   case_fn <- vapply(manifest$cases, function(x) x[["function"]], "")
   r_only <- vapply(manifest$cases, function(x) !is.null(x$r_only), TRUE)
 
+  python <- ifelse(fns %in% names(parity_python_names),
+    parity_python_names[fns], fns)
+  names(python) <- fns
+
   supported <- vapply(fns, function(fn) {
     cases <- manifest$cases[case_fn == fn & !r_only]
-    if (length(cases) == 0 && any(case_fn == fn)) return("r")
+    if (length(cases) == 0 && any(case_fn == fn)) {
+      return(if (python[[fn]] %in% python_all) "r, python" else "r")
+    }
     by <- lapply(cases, function(x) unlist(x$supported_by))
     if (length(by) == 0) return("none")
     langs <- intersect(c("r", "python"), Reduce(intersect, by))
     if (length(langs) == 0) "none" else paste(langs, collapse = ", ")
   }, "")
-
-  python <- ifelse(fns %in% names(parity_python_names),
-    parity_python_names[fns], fns)
 
   data.frame(`function` = fns, python = unname(python),
     supported_by = unname(supported),
@@ -61,7 +82,8 @@ parity_lines <- function(manifest) {
       "lists the languages that support every one of its cases that carries no ",
       "`r_only`. A case with `r_only` is R-only by design and counts apart, in the ",
       "`r_only` column (SPEC S-4, RULES P-5); a function whose every case carries ",
-      "it reads `r`."),
+      "it reads `r, python` when its Python name is in `hydroloom.__all__`, and `r` ",
+      "otherwise (SPEC S-4, RULES P-3)."),
     "",
     "| function | Python | supported_by | cases | r_only |",
     "| --- | --- | --- | --- | --- |",
