@@ -150,7 +150,8 @@ applies. No CSR index is built.
 ## Postconditions
 
 - The output has one row per code-table entry; `function` is unique and in code-table
-  order (A-4).
+  order (A-4): in R the order of `hy_requires`, in Python function-name order over the
+  `@requires` registry (B-4).
 - `available` and `via` are never missing.
 - With `include_conversions = FALSE` in R, and always in Python, `via != ""` implies
   `available` is `FALSE`.
@@ -299,3 +300,8 @@ fifteen, with `via = "make_node_topology"` on the three node rows. With
   NextGen edge case and the worked example now give three node rows with
   `via = "make_node_topology"` on a topo input; the regenerated layers are named in the
   M5 Log entry for the unit. No binding section changes.
+- 2026-11-04, suite 0.1.0, M5 run 5 unit 1 (REVIEW_11042026 item 2, RULES B-4, P-1):
+  the Postcondition on row order states each language's order, R's `hy_requires` order
+  and Python's function-name order. The 14 shared cases carry
+  `r_only: hy_capabilities.md §Algorithm`, and each has a `generator: [python]` case on
+  the same fixture and `args`, id ending `_python`.

@@ -5,7 +5,7 @@
 
 # Parity table
 
-Suite version 0.1.0. A function's `supported_by` lists the languages that support every one of its cases that carries no `r_only` and is not Python-only. A case with `r_only` is R-only by design and counts apart, in the `r_only` column (SPEC S-4, RULES P-5); a case with `supported_by: [python]` is Python-only by design and counts apart, in the `python_only` column (SPEC S-4, RULES B-5). A function whose every case counts apart reads `r, python` when its Python name is in `hydroloom.__all__`, and `r` otherwise (SPEC S-4, RULES P-3).
+Suite version 0.1.0. A function's `supported_by` lists the languages that support every one of its cases that carries no `r_only` and is not Python-only. A case with `r_only` is R-only by design and counts apart, in the `r_only` column (SPEC S-4, RULES P-5); a case with `supported_by: [python]` is Python-only by design and counts apart, in the `python_only` column (SPEC S-4, RULES B-5). A function whose every case counts apart, all `r_only` or with cases on both sides, reads `r, python` when its Python name is in `hydroloom.__all__`, and `r` otherwise (SPEC S-4, RULES P-3, B-4).
 
 | function | Python | supported_by | cases | r_only | python_only |
 | --- | --- | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | `hydroloom_name_definitions` | `name_definitions` | r, python | 1 | 0 | 0 |
 | `hydroloom_names` | `register_names` | r, python | 2 | 2 | 0 |
 | `hy_network_type` | `representation` | r, python | 21 | 7 | 0 |
-| `hy_capabilities` | `capabilities` | r | 26 | 12 | 0 |
+| `hy_capabilities` | `capabilities` | r | 40 | 26 | 14 |
 | `is_dendritic` | `is_dendritic` | r, python | 26 | 3 | 0 |
 | `add_toids` | `add_toids` | r, python | 35 | 19 | 0 |
 | `make_index_ids` | `make_index_ids` | r | 33 | 3 | 0 |

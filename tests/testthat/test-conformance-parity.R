@@ -87,6 +87,23 @@ test_that("an all r_only function reads r, python when Python exports it", {
   expect_identical(parity_rows(m, python_all = character())$supported_by, c("r", "r"))
 })
 
+test_that("a function counted apart on both sides reads r, python when exported", {
+  m <- list(suite_version = "0.0.0",
+    functions = list(hy_capabilities = list()),
+    cases = list(
+      list(id = "c1", `function` = "hy_capabilities", supported_by = list("r"),
+        r_only = "hy_capabilities.md §Algorithm"),
+      list(id = "c1_python", `function` = "hy_capabilities",
+        supported_by = list("python"))))
+
+  rows <- parity_rows(m, python_all = character())
+
+  expect_identical(rows$supported_by, "r")
+  expect_identical(rows$r_only, 1L)
+  expect_identical(rows$python_only, 1L)
+  expect_identical(parity_rows(m, python_all = "capabilities")$supported_by, "r, python")
+})
+
 test_that("parity_python_all reads the quoted names of __all__", {
   path <- tempfile(fileext = ".py")
   on.exit(unlink(path))

@@ -1454,9 +1454,11 @@ cases:
   # order (A-4). Cases without prepare stay R only: R reads a class, Python
   # reads columns. Cases passing include_conversions stay R only: Python
   # capabilities(network) takes no such argument (D3-31). No case raises.
-  # The other cases stay [r] until the Python @requires registry holds the
-  # 24 code-table functions in code-table order (A-4): every layer has 24
-  # rows, and Python iterates the registry (M5 run 4 unit 7).
+  # The other 14 cases carry r_only: hy_capabilities.md §Algorithm, since R's
+  # code table lists R's 24 functions and Python's lists its @requires
+  # registry in function-name order (B-4; REVIEW_11042026 item 2). Each has a
+  # case of its own, id ending _python, on the same fixture and args,
+  # supported_by: [python] and generator: [python]; these are not B-5 raises.
 
   # changes_with: A-4; hy_node, sf, aggregate_id (mainstemid) and length_km;
   # node, geometry, and aggregate-flowpath rows TRUE
@@ -1468,6 +1470,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_new_hope_node; rows in function-name order
+  - id: hy_capabilities_new_hope_node_python
+    function: hy_capabilities
+    fixture: new_hope.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; D-7 pair of hy_capabilities_new_hope_node: rows
   # permuted; the same code-table frame
@@ -1479,6 +1493,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_new_hope_node_shuffled; rows in function-name order
+  - id: hy_capabilities_new_hope_node_shuffled_python
+    function: hy_capabilities
+    fixture: new_hope_shuffled.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; hy_node via add_toids; make_node_topology TRUE after
   # conversion (captured as is)
@@ -1514,6 +1540,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_new_hope_3dhp; rows in function-name order
+  - id: hy_capabilities_new_hope_3dhp_python
+    function: hy_capabilities
+    fixture: new_hope_3dhp.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; hy_topo via make_node_topology for the three node rows
   # other than add_toids
@@ -1538,6 +1576,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_return_divergence; rows in function-name order
+  - id: hy_capabilities_return_divergence_python
+    function: hy_capabilities
+    fixture: return_divergence.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; worked example; hy_leveled with a divergence column (all
   # 0, no branching); to_flownetwork, add_pfafstetter, add_streamlevel TRUE
@@ -1549,6 +1599,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_leveled; rows in function-name order
+  - id: hy_capabilities_leveled_python
+    function: hy_capabilities
+    fixture: capabilities_leveled.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; worked example; hy_leveled satisfies the hy_topo via
   # key; eighteen rows TRUE
@@ -1594,6 +1656,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_single_flowline; rows in function-name order
+  - id: hy_capabilities_single_flowline_python
+    function: hy_capabilities
+    fixture: single_flowline.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; single row; add_return_divergence reported via
   # make_node_topology
@@ -1617,6 +1691,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_all_terminals; rows in function-name order
+  - id: hy_capabilities_all_terminals_python
+    function: hy_capabilities
+    fixture: all_terminals.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; I-11 zero rows; hy_topo without node columns; output has
   # the code table's 24 rows
@@ -1641,6 +1727,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_empty_network_no_conversions; rows in function-name order
+  - id: hy_capabilities_empty_network_no_conversions_python
+    function: hy_capabilities
+    fixture: empty_network.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; duplicated edge; hy_flownetwork; navigate_network_dfs and
   # make_index_ids TRUE (A-4 adds sort_network, add_topo_sort, check_hy_graph,
@@ -1677,6 +1775,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_missing_weight; rows in function-name order
+  - id: hy_capabilities_missing_weight_python
+    function: hy_capabilities
+    fixture: missing_weight.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; zero-length geometry; not read beyond the sf class
   - id: hy_capabilities_zero_length
@@ -1687,6 +1797,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_zero_length; rows in function-name order
+  - id: hy_capabilities_zero_length_python
+    function: hy_capabilities
+    fixture: zero_length.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; the nextgen table on its distinct (id, toid) rows
   # (D3-210, D3-215): every repeated id in the source table is one of its 3
@@ -1701,6 +1823,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_sort_network_dups; rows in function-name order
+  - id: hy_capabilities_sort_network_dups_python
+    function: hy_capabilities
+    fixture: sort_network_dups_distinct.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; distinct (id, toid) rows (D3-210, D3-215); the three
   # via functions become available after make_node_topology
@@ -1726,6 +1860,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_divergence_no_attribute; rows in function-name order
+  - id: hy_capabilities_divergence_no_attribute_python
+    function: hy_capabilities
+    fixture: divergence_no_attribute.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; hy_node via add_toids for the topo rows;
   # add_return_divergence and to_flownetwork stay FALSE
@@ -1751,6 +1897,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_node_aggregate; rows in function-name order
+  - id: hy_capabilities_node_aggregate_python
+    function: hy_capabilities
+    fixture: capabilities_node_aggregate.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # changes_with: A-4; the same hy_node without aggregate_id; get_subpath
   # FALSE (test_hy_classes.R)
@@ -1762,6 +1920,18 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy_capabilities.md §Algorithm
+
+  # B-4, REVIEW_11042026 item 2: Python's answer on the same fixture
+  # and args as hy_capabilities_node_bare; rows in function-name order
+  - id: hy_capabilities_node_bare_python
+    function: hy_capabilities
+    fixture: capabilities_node_bare.gpkg
+    prepare: {function: hy, args: {}}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
 
   # is_dendritic --------------------------------------------------------------
   # Annotations from the proposed cases (D3-14): every case is shared except

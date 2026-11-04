@@ -5,9 +5,11 @@
 # R-only by design and is counted apart (SPEC S-4, RULES P-5), and a case
 # with `supported_by: [python]` is Python-only by design and is counted apart
 # in the `python_only` column (SPEC S-4, RULES B-5). A function whose every
-# case is counted apart reads `r, python` when its Python name is in the
-# `__all__` list of src/hydroloom/__init__.py, and `r` when it is not or when
-# that file is absent, as in the CRAN tarball (SPEC S-4, RULES P-3).
+# case is counted apart, whether all `r_only` or with cases on both sides
+# (`r_only` and `[python]`, RULES B-4), reads `r, python` when its Python
+# name is in the `__all__` list of src/hydroloom/__init__.py, and `r` when it
+# is not or when that file is absent, as in the CRAN tarball (SPEC S-4,
+# RULES P-3).
 
 parity_file <- function() file.path(conformance_dir(), "parity.md")
 
@@ -90,8 +92,9 @@ parity_lines <- function(manifest) {
       "counts apart, in the `r_only` column (SPEC S-4, RULES P-5); a case with ",
       "`supported_by: [python]` is Python-only by design and counts apart, in the ",
       "`python_only` column (SPEC S-4, RULES B-5). A function whose every case counts ",
-      "apart reads `r, python` when its Python name is in `hydroloom.__all__`, and `r` ",
-      "otherwise (SPEC S-4, RULES P-3)."),
+      "apart, all `r_only` or with cases on both sides, reads `r, python` when its ",
+      "Python name is in `hydroloom.__all__`, and `r` otherwise (SPEC S-4, RULES P-3, ",
+      "B-4)."),
     "",
     "| function | Python | supported_by | cases | r_only | python_only |",
     "| --- | --- | --- | --- | --- | --- |",
