@@ -705,10 +705,10 @@ is_dendritic <- function(x, validate_data = TRUE) {
 #' What operations are available for this network?
 #'
 #' @description Returns a data.frame indicating which hydroloom
-#' functions can operate on the input object given its current class and
-#' columns.
+#' functions can operate on the input object given its current representation
+#' and columns.
 #'
-#' Functions marked TRUE are directly callable. Use
+#' Functions marked TRUE are directly callable. In R, use
 #' \code{include_conversions = TRUE} to see what becomes available after
 #' a single representation conversion.
 #'
