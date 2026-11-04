@@ -8,15 +8,24 @@ stages:
   - check
   - build
   - verify
+  - publish
 
+# R releases run on rc/<version> branches; Python releases on rc/py-<version>
+# branches (stage 1, TestPyPI) and py-v<version> tags (stage 2, PyPI).
+# VERIFICATION 7.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^rc\//
+    - if: $CI_COMMIT_TAG =~ /^py-v/
 
 .r-base:
   tags:
     - chs-shared
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/rocker/geospatial:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^rc\/py-/
+      when: never
+    - if: $CI_COMMIT_BRANCH =~ /^rc\//
   before_script:
     - wget --no-check-certificate -O /usr/local/share/ca-certificates/DOIRootCA2.crt https://raw.githubusercontent.com/dblodgett-usgs/hydrogeoenv/master/linux/DOIRootCA2.cer
     - chmod 644 /usr/local/share/ca-certificates/DOIRootCA2.crt && update-ca-certificates
@@ -59,3 +68,68 @@ verify:
     paths:
       - "*.Rcheck"
     when: always
+
+# Python. The wheel is built here and nowhere else (VERIFICATION 7). GIT_DEPTH
+# 0 so hatch-vcs counts commits from the py-v* tag. DOI_ROOT_CA is a file-type
+# CI variable holding the DOI root certificate; PYPI_TOKEN and TEST_PYPI_TOKEN
+# are masked, protected variables, exposed only on protected rc/* branches and
+# py-v* tags.
+.py-base:
+  tags:
+    - chs-shared
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/condaforge/miniforge3:latest
+  variables:
+    GIT_DEPTH: 0
+    SSL_CERT_FILE: $DOI_ROOT_CA
+    REQUESTS_CA_BUNDLE: $DOI_ROOT_CA
+    PIP_CERT: $DOI_ROOT_CA
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^rc\/py-/
+    - if: $CI_COMMIT_TAG =~ /^py-v/
+
+py-build:
+  extends: .py-base
+  stage: build
+  script:
+    - python -m pip install --quiet build twine check-wheel-contents
+    - python -m build --outdir dist .
+    - ls -l dist
+    - twine check dist/*
+    - check-wheel-contents dist/*.whl
+  artifacts:
+    paths:
+      - dist/
+
+# Conformance against the installed wheel, not the checkout: a venv with the
+# wheel and the test dependencies, pytest run from the checkout so
+# tests/python/conformance.py finds the manifest and fixtures by path. src/ is
+# not on sys.path, so `import hydroloom` is the wheel.
+py-verify:
+  extends: .py-base
+  stage: verify
+  needs: ["py-build"]
+  script:
+    - python -m venv /tmp/clean
+    - /tmp/clean/bin/python -m pip install --quiet dist/*.whl pytest hypothesis pyyaml numpydoc
+    - /tmp/clean/bin/python -c "import hydroloom, pathlib; print(hydroloom.__version__, pathlib.Path(hydroloom.__file__).parent)"
+    - /tmp/clean/bin/python -m pytest tests/python
+
+py-publish:
+  extends: .py-base
+  stage: publish
+  needs: ["py-build", "py-verify"]
+  variables:
+    GIT_DEPTH: 0
+    TWINE_USERNAME: __token__
+    TWINE_NON_INTERACTIVE: "1"
+  script:
+    - python -m pip install --quiet twine
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        export TWINE_PASSWORD="$PYPI_TOKEN"
+        twine upload dist/*
+      else
+        export TWINE_PASSWORD="$TEST_PYPI_TOKEN"
+        twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+      fi

@@ -35,6 +35,9 @@ source = "vcs"
 [tool.hatch.version.raw-options]
 tag_regex = "^py-v(?P<version>.+)$"
 git_describe_command = 'git describe --dirty --tags --long --match "py-v*"'
+# PyPI and TestPyPI refuse a version with a +local part; untagged builds
+# are 0.1.devN for the rc/py-* rehearsal (VERIFICATION §7).
+local_scheme = "no-local-version"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hydroloom"]
