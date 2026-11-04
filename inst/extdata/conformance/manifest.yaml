@@ -4705,7 +4705,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: break at headwater 1 (D3-156); [[4,10,1],[9]]
@@ -4715,7 +4715,7 @@ cases:
     args: {starts: ["4"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: D-7 against tie_down; [[1,10,4],[9]]
@@ -4725,7 +4725,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: D-7 against tie_up; [[4,10,1],[9]]
@@ -4735,7 +4735,7 @@ cases:
     args: {starts: ["4"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # reset, repeated and visited starts, start order (roxygen tests "total div")
@@ -4746,7 +4746,7 @@ cases:
     args: {starts: ["2"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: reset FALSE, start 5 already returned; second element empty, no rows
@@ -4756,7 +4756,7 @@ cases:
     args: {starts: ["2", "5"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: [[2,3,4,6,8,10],[5,7,9]], then [[5,7,9]]
@@ -4766,7 +4766,7 @@ cases:
     args: {starts: ["2", "5"], reset: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: [[5,7,9]], then [[2,3,4,6,8,10]] (visited 5 not entered)
@@ -4776,7 +4776,7 @@ cases:
     args: {starts: ["5", "2"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: repeated start kept once; two elements
@@ -4786,7 +4786,7 @@ cases:
     args: {starts: ["2", "2", "5"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: tie-free; [[9,7,5,3,2]], [[10,8,6,4]]
@@ -4796,7 +4796,7 @@ cases:
     args: {starts: ["9", "10"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: empty list; zero-row layer
@@ -4806,7 +4806,7 @@ cases:
     args: {starts: []}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 boundary fixtures
@@ -4817,7 +4817,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: navigate_network_dfs_single_flowline_up
@@ -4826,7 +4826,7 @@ cases:
     args: {starts: ["1"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: five one-identifier elements in start order
@@ -4836,7 +4836,7 @@ cases:
     args: {starts: ["30", "4", "100", "2", "7"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: navigate_network_dfs_all_terminals_up
@@ -4845,7 +4845,7 @@ cases:
     args: {starts: ["30", "4", "100", "2", "7"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: S-6 says raises; R collapses the repeated edge and returns [[1,2]]
@@ -4868,7 +4868,7 @@ cases:
     args: {starts: []}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D-8 and cycles
@@ -4879,7 +4879,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4891,7 +4891,7 @@ cases:
     args: {starts: ["6"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4902,7 +4902,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4913,7 +4913,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4925,7 +4925,7 @@ cases:
     args: {starts: ["12"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: three confluences, break at each headwater; four paths
@@ -4935,7 +4935,7 @@ cases:
     args: {starts: ["11"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # New Hope: node route, main directions, dendritic, flownetwork, index ids
@@ -4946,7 +4946,7 @@ cases:
     args: {starts: ["8893402"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: break at each headwater; 228 paths, 746 ids (roxygen example)
@@ -4956,7 +4956,7 @@ cases:
     args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: hy_node via to_flownetwork; one path, 75 ids
@@ -4986,7 +4986,7 @@ cases:
     args: {starts: ["8893402", "8891152"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: 7 and 46 paths, 223 ids
@@ -4996,7 +4996,7 @@ cases:
     args: {starts: ["8893402", "8891152"], reset: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: hy_topo route; one path, 21 ids
@@ -5007,7 +5007,7 @@ cases:
     args: {starts: ["8893402"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: hy_flownetwork with upmain/downmain; equals new_hope_upmain
@@ -5017,7 +5017,7 @@ cases:
     args: {starts: ["8897784"], direction: upmain}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: equals new_hope_downmain
@@ -5027,7 +5027,7 @@ cases:
     args: {starts: ["8891126"], direction: downmain}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: list / IndexIds input with main; equals new_hope_downmain
@@ -5038,7 +5038,7 @@ cases:
     args: {starts: ["8891126"], direction: downmain}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: equals new_hope_upmain
@@ -5049,7 +5049,7 @@ cases:
     args: {starts: ["8897784"], direction: upmain}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: character identifiers, hy_topo; one path, 74 ids
@@ -5059,7 +5059,7 @@ cases:
     args: {starts: ["14PA2"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: equals new_hope_3dhp_down
@@ -5070,7 +5070,7 @@ cases:
     args: {starts: ["14PA2"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: whole basin from the outlet; 885 paths, 2708 ids
@@ -5081,7 +5081,7 @@ cases:
     args: {starts: ["6S7LY"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # Other test-suite networks
@@ -5102,7 +5102,7 @@ cases:
     args: {starts: ["11690088"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: every connection kept; [[1,3,4,7,13],[8,10,11,12],[9],[5,6]]
@@ -5112,7 +5112,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: minor paths end where they rejoin; [[1,2,3,4,5,10],[6,7],[8,9]]
@@ -5122,7 +5122,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: split at headwaters and revisits; [[10,5,4,3,2,1],[7,6],[9,8]]
@@ -5132,7 +5132,7 @@ cases:
     args: {starts: ["10"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: braided flownetwork, no cycle; the outside toid of 31325083 adds no
@@ -5143,7 +5143,7 @@ cases:
     args: {starts: ["164411831"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: make_index_ids stops on the two three-flowline cycles (D3-41)
@@ -5153,7 +5153,7 @@ cases:
     args: {starts: ["{00266880-5565-4B15-ADC4-4B86EB6A6E46}"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -5166,7 +5166,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: rows of 2 swapped; [[1,2,3]], equal to divergence_leaves_down (D-7)
@@ -5176,7 +5176,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: 1 before 4 (D-6), break at headwater 1; [[3,2,1],[4]]
@@ -5186,7 +5186,7 @@ cases:
     args: {starts: ["3"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # Walks ending at coastal and foreign-valued outlets (H-02, I-4, I-5)
@@ -5198,7 +5198,7 @@ cases:
     args: {starts: ["2545561"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: ends at id 1, whose toid is the foreign outlet value -1; [[34,2,1]]
@@ -5208,7 +5208,7 @@ cases:
     args: {starts: ["34"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: distinct (id, toid) rows (D3-210); one path, 18 ids
@@ -5218,7 +5218,7 @@ cases:
     args: {starts: ["wb-269951"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: break at each headwater; distinct (id, toid) rows (D3-210); 31
@@ -5229,7 +5229,7 @@ cases:
     args: {starts: ["nex-269810"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: i2; note: identifiers beyond 32 bits (character, I-2); one
@@ -5251,7 +5251,7 @@ cases:
     args: {starts: ["2"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: break at headwater 2; [[9,8,6,4,3,2],[7,5]]
@@ -5261,7 +5261,7 @@ cases:
     args: {starts: ["9"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: 46 paths, 185 ids
@@ -5271,7 +5271,7 @@ cases:
     args: {starts: ["8891152"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: hy_topo route; break at each headwater; 228 paths, 746 ids
@@ -5282,7 +5282,7 @@ cases:
     args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: id, toid frame route; equals new_hope_down
@@ -5292,7 +5292,7 @@ cases:
     args: {starts: ["8893402"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: index-id route; equals new_hope_not_dendritic_down
@@ -5303,7 +5303,7 @@ cases:
     args: {starts: ["8893402"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: id, toid frame route; equals new_hope_up
@@ -5313,7 +5313,7 @@ cases:
     args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: index-id route; equals new_hope_not_dendritic_up
@@ -5324,7 +5324,7 @@ cases:
     args: {starts: ["8897784"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # Raised conditions
@@ -5334,7 +5334,7 @@ cases:
     args: {starts: ["99"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: start_not_in_network
@@ -5345,7 +5345,7 @@ cases:
     args: {starts: [null]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: start_not_in_network
@@ -5357,7 +5357,7 @@ cases:
     args: {starts: ["1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_topo
@@ -5368,7 +5368,7 @@ cases:
     args: {starts: ["9"], direction: upmain}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: main_path_required
@@ -5392,7 +5392,7 @@ cases:
     args: {starts: ["6S7LY"], direction: up}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: index_ids_direction_mismatch
@@ -5404,7 +5404,7 @@ cases:
     args: {starts: ["14PA2"], direction: downmain}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: index_ids_missing_main
