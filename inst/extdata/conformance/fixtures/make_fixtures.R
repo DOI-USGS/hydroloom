@@ -1141,6 +1141,18 @@ fixture(data.frame(
   "outlets naming a diverging flowline (9) and the outlet below only one of its branches (1): the block of 9 lands below 2",
   c("I-4", "I-6", "D-4"))
 
+# 9 drains to the outlet 1; above 9, three braids: 100 diverges to 101 and
+# 102, which both flow to 9, and so on up to 300 (SP-04, M5 run 4 unit 4).
+fixture(data.frame(
+  id = c(1L, 9L, 101L, 102L, 100L, 100L, 201L, 202L, 200L, 200L,
+    301L, 302L, 300L, 300L),
+  toid = c(0L, 1L, 9L, 9L, 101L, 102L, 100L, 100L, 201L, 202L,
+    200L, 200L, 301L, 302L)),
+  "sort_braids_nested_outlet",
+  "synthetic (M5 run 4 unit 4 SP-04 probe)",
+  "outlets naming 1 and 9, which drains to 1, below three braids: 9's walk comes first, and 1's walk visits each braid flowline once",
+  c("I-4", "I-6", "D-4"))
+
 fixture(data.frame(
   id = 1:4,
   toid = c(2L, 3L, 4L, 0L)),

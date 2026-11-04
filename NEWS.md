@@ -54,6 +54,9 @@ Changes to behavior:
   alias: after `hydroloom_names(c(comid = "toid"))`, `COMID` becomes `toid`.
 - `hy_capabilities()` no longer offers `make_node_topology()` as the
   route to `add_toids()` for a table that has `toid`.
+- `sort_network()` and `add_topo_sort()` no longer stop with "runaway
+  while loop" when `outlets` names a flowline upstream of another and
+  divergences that rejoin lie above it.
 
 hydroloom 1.3.0
 ==========

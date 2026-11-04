@@ -23,7 +23,7 @@
 #' independent networks identified by the id of their outlet. The
 #' outlet id of each independent network is added as a "terminal_id"
 #' attribute.
-#' @param outlets same as id in x. if specified, only the network
+#' @param outlets the same type as `id`. if specified, only the network
 #' emanating from these outlets will be considered and returned.
 #' NOTE: If outlets does not include all outlets from a given
 #' network containing diversions, a partial network may be returned.
@@ -127,7 +127,48 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
   o <- 1
   set_id <- 1
 
+  # A later walk visits again what an earlier walk visited, and a node
+  # whose countdown an earlier walk spent is ready from each of its
+  # downstream nodes. So each walk first finds the nodes it visits, each
+  # once (seen), then visits them with a countdown of their downstream
+  # nodes in that set (cnt): each node once, after all of them.
+  seen <- cnt <- integer(length(ready))
+  stk <- integer(length(ready))
+  w <- 0
+
   for (s in starts) {
+
+    w <- w + 1
+
+    stk[1] <- s
+    k <- 1
+    m <- 0
+    seen[s] <- w
+
+    while (k > 0) {
+      node <- stk[k]
+      k <- k - 1
+      m <- m + 1
+      to_visit[m] <- node
+
+      for (next_node in index_ids$from$froms[seq_len(index_ids$from$lengths[node]), node]) {
+        if (is.na(next_node) || seen[next_node] == w) next
+
+        if (ready[next_node] == 1) {
+          k <- k + 1
+          stk[k] <- next_node
+          seen[next_node] <- w
+        } else {
+          ready[next_node] <- ready[next_node] - 1
+        }
+      }
+    }
+
+    nodes <- to_visit[seq_len(m)]
+    tos <- index_ids$to$to[, nodes, drop = FALSE]
+    in_walk <- !is.na(tos) & tos != 0
+    in_walk[in_walk] <- seen[tos[in_walk]] == w
+    cnt[nodes] <- colSums(in_walk)
 
     # Set up the starting node
     node <- s
@@ -160,18 +201,18 @@ sort_network_impl <- function(x, split = FALSE, outlets = NULL) {
         next_node <- index_ids$from$froms[from, node]
 
         # check if we have a node to visit
-        if (!is.na(next_node)) {
+        if (!is.na(next_node) && seen[next_node] == w) {
 
-          if (ready[next_node] == 1) {
+          if (cnt[next_node] == 1) {
             # Add the next node to visit to the tracking vector
             to_visit[v] <- next_node
 
             v <- v + 1
           } else {
             # we don't want to visit an upstream neighbor until all its
-            # downstream neighbors have been visited. Ready is initialized
-            # to the length of downstream neighbors and provides a check.
-            ready[next_node] <- ready[next_node] - 1
+            # downstream neighbors in this walk have been visited. cnt is
+            # set to their number and provides a check.
+            cnt[next_node] <- cnt[next_node] - 1
           }
 
         }
@@ -316,9 +357,10 @@ sort_network.hy_topo <- function(x, split = FALSE, outlets = NULL) {
 
 #' Add topo_sort
 #' @description calls \link{sort_network} without support for splitting the network
-#' and adds a `nrow:1` topo_sort attribute.
+#' and adds a topo_sort attribute numbered from the number of distinct `id`
+#' values down to 1.
 #' @inheritParams hy
-#' @param outlets same as id in x. if specified, only the network
+#' @param outlets the same type as `id`. if specified, only the network
 #' emanating from these outlets will be considered and returned.
 #' @details
 #'

@@ -3698,6 +3698,18 @@ cases:
     raises: error
     raises_key: split_outlets_overlap
 
+  # SP-04 (M5 run 4 unit 4): 9 drains to 1 below three braids; 9's walk comes
+  # first, and 1's walk visits each flowline above 9 once; equals the sort with
+  # no outlets. R stopped with "runaway while loop" until this fix (B-3)
+  - id: sort_network_braids_nested_outlet
+    function: sort_network
+    fixture: sort_braids_nested_outlet.gpkg
+    args: {outlets: ["1", "9"]}
+    compare: exact
+    order: exact
+    supported_by: [r, python]
+    generator: [r]
+
   # outlet 99 is not an id: raises outlet_not_in_network (D3-154)
   - id: sort_network_two_networks_unknown_outlet
     function: sort_network

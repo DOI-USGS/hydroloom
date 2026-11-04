@@ -27,7 +27,7 @@ NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus \code{COMID}, \code{ToCOMID}), ar
 renamed to hydroloom names first. In R, \link{hydroloom_names} gives the
 source names hydroloom knows.}
 
-\item{outlets}{same as id in x. if specified, only the network
+\item{outlets}{the same type as \code{id}. if specified, only the network
 emanating from these outlets will be considered and returned.}
 }
 \value{
@@ -35,7 +35,8 @@ data.frame containing a topo_sort attribute.
 }
 \description{
 calls \link{sort_network} without support for splitting the network
-and adds a \code{nrow:1} topo_sort attribute.
+and adds a topo_sort attribute numbered from the number of distinct \code{id}
+values down to 1.
 }
 \details{
 Required attributes: \code{id}, \code{toid}

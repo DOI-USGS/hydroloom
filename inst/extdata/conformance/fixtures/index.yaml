@@ -2088,6 +2088,20 @@ fixtures:
   rules:
   - S-6
   bytes: 98304
+- file: sort_braids_nested_outlet.gpkg
+  source: synthetic (M5 run 4 unit 4 SP-04 probe)
+  rows: 14
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: 'outlets naming 1 and 9, which drains to 1, below three braids: 9''s
+    walk comes first, and 1''s walk visits each braid flowline once'
+  rules:
+  - I-4
+  - I-6
+  - D-4
+  bytes: 73728
 - file: sort_branching.gpkg
   source: synthetic (tests/testthat/test_sort_network.R "sort order is headwater first,
     outlet last")

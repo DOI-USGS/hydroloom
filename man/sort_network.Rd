@@ -32,7 +32,7 @@ independent networks identified by the id of their outlet. The
 outlet id of each independent network is added as a "terminal_id"
 attribute.}
 
-\item{outlets}{same as id in x. if specified, only the network
+\item{outlets}{the same type as \code{id}. if specified, only the network
 emanating from these outlets will be considered and returned.
 NOTE: If outlets does not include all outlets from a given
 network containing diversions, a partial network may be returned.}

@@ -703,9 +703,9 @@
   "add_topo_sort": {
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned."
     },
-    "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
+    "description": "calls sort_network without support for splitting the network and adds a topo_sort attribute numbered from the number of distinct `id` values down to 1.",
     "details": null,
     "sections": {},
     "title": "Add topo_sort",
@@ -714,9 +714,9 @@
   "add_topo_sort.data.frame": {
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned."
     },
-    "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
+    "description": "calls sort_network without support for splitting the network and adds a topo_sort attribute numbered from the number of distinct `id` values down to 1.",
     "details": null,
     "sections": {},
     "title": "Add topo_sort",
@@ -725,9 +725,9 @@
   "add_topo_sort.hy": {
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned."
     },
-    "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
+    "description": "calls sort_network without support for splitting the network and adds a topo_sort attribute numbered from the number of distinct `id` values down to 1.",
     "details": null,
     "sections": {},
     "title": "Add topo_sort",
@@ -736,9 +736,9 @@
   "add_topo_sort.hy_flownetwork": {
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned."
     },
-    "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
+    "description": "calls sort_network without support for splitting the network and adds a topo_sort attribute numbered from the number of distinct `id` values down to 1.",
     "details": null,
     "sections": {},
     "title": "Add topo_sort",
@@ -747,9 +747,9 @@
   "add_topo_sort.hy_node": {
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned."
     },
-    "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
+    "description": "calls sort_network without support for splitting the network and adds a topo_sort attribute numbered from the number of distinct `id` values down to 1.",
     "details": null,
     "sections": {},
     "title": "Add topo_sort",
@@ -758,9 +758,9 @@
   "add_topo_sort.hy_topo": {
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned."
     },
-    "description": "calls sort_network without support for splitting the network and adds a `nrow:1` topo_sort attribute.",
+    "description": "calls sort_network without support for splitting the network and adds a topo_sort attribute numbered from the number of distinct `id` values down to 1.",
     "details": null,
     "sections": {},
     "title": "Add topo_sort",
@@ -1708,7 +1708,7 @@
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
     "description": "given a network with an id and and toid, returns a sorted and potentially split set of output. Sort is from top to bottom so traversing the response from top to bottom will go from upstream to downstream.\n\nCan also be used as a very fast implementation of upstream with tributaries navigation. The full network from each outlet is returned in sorted order.\n\nIf a network includes diversions, all flowlines downstream of the diversion are visited prior to continuing upstream. See note on the `outlets` parameter for implications of this implementation detail.",
     "details": null,
@@ -1720,7 +1720,7 @@
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
     "description": "given a network with an id and and toid, returns a sorted and potentially split set of output. Sort is from top to bottom so traversing the response from top to bottom will go from upstream to downstream.\n\nCan also be used as a very fast implementation of upstream with tributaries navigation. The full network from each outlet is returned in sorted order.\n\nIf a network includes diversions, all flowlines downstream of the diversion are visited prior to continuing upstream. See note on the `outlets` parameter for implications of this implementation detail.",
     "details": null,
@@ -1732,7 +1732,7 @@
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
     "description": "given a network with an id and and toid, returns a sorted and potentially split set of output. Sort is from top to bottom so traversing the response from top to bottom will go from upstream to downstream.\n\nCan also be used as a very fast implementation of upstream with tributaries navigation. The full network from each outlet is returned in sorted order.\n\nIf a network includes diversions, all flowlines downstream of the diversion are visited prior to continuing upstream. See note on the `outlets` parameter for implications of this implementation detail.",
     "details": null,
@@ -1744,7 +1744,7 @@
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
     "description": "given a network with an id and and toid, returns a sorted and potentially split set of output. Sort is from top to bottom so traversing the response from top to bottom will go from upstream to downstream.\n\nCan also be used as a very fast implementation of upstream with tributaries navigation. The full network from each outlet is returned in sorted order.\n\nIf a network includes diversions, all flowlines downstream of the diversion are visited prior to continuing upstream. See note on the `outlets` parameter for implications of this implementation detail.",
     "details": null,
@@ -1756,7 +1756,7 @@
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
     "description": "given a network with an id and and toid, returns a sorted and potentially split set of output. Sort is from top to bottom so traversing the response from top to bottom will go from upstream to downstream.\n\nCan also be used as a very fast implementation of upstream with tributaries navigation. The full network from each outlet is returned in sorted order.\n\nIf a network includes diversions, all flowlines downstream of the diversion are visited prior to continuing upstream. See note on the `outlets` parameter for implications of this implementation detail.",
     "details": null,
@@ -1768,7 +1768,7 @@
     "arguments": {
       "x": "data.frame. A table of flowlines or catchments; columns hydroloom knows by another name, from NHDPlusV2, NHDPlusHR, 3DHP, or elsewhere (such as NHDPlus `COMID`, `ToCOMID`), are renamed to hydroloom names first. In R, hydroloom_names gives the source names hydroloom knows.",
       "split": "logical if TRUE, the result will be split into independent networks identified by the id of their outlet. The outlet id of each independent network is added as a \"terminal_id\" attribute.",
-      "outlets": "same as id in x. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
+      "outlets": "the same type as `id`. if specified, only the network emanating from these outlets will be considered and returned. NOTE: If outlets does not include all outlets from a given network containing diversions, a partial network may be returned."
     },
     "description": "given a network with an id and and toid, returns a sorted and potentially split set of output. Sort is from top to bottom so traversing the response from top to bottom will go from upstream to downstream.\n\nCan also be used as a very fast implementation of upstream with tributaries navigation. The full network from each outlet is returned in sorted order.\n\nIf a network includes diversions, all flowlines downstream of the diversion are visited prior to continuing upstream. See note on the `outlets` parameter for implications of this implementation detail.",
     "details": null,
