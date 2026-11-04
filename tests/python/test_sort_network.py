@@ -122,13 +122,15 @@ def test_input_names_return():
 
 def test_topo_sort_replaces_input_column_under_its_name():
     """A Hydroseq column is replaced by the computed one, as Hydroseq (B-4)."""
-    table = _worked_example().assign(Hydroseq=[1.5] * 6)
+    plain = _worked_example()
+    table = plain.assign(Hydroseq=[1.5] * len(plain))
 
     out = add_topo_sort(table)
 
     assert list(out.columns) == ["id", "toid", "Hydroseq"]
     assert out["Hydroseq"].dtype == np.int32
-    assert out["Hydroseq"].tolist() == [6, 5, 4, 3, 2, 1]
+    want = add_topo_sort(plain)
+    assert out["Hydroseq"].tolist() == want["topo_sort"].tolist()
 
 
 def test_outlets_as_scalar_or_integers():
@@ -332,31 +334,75 @@ def test_add_topo_sort_postconditions(table, rng):
     outlets = [i for i in sorted(ids) if rng.random() < 0.3]
     if not outlets:
         return
-    part = add_topo_sort(table, outlets=outlets)
+    _check_outlets_postcondition(table, outlets, add_topo_sort(table, outlets=outlets))
+
+
+def _check_outlets_postcondition(table, outlets, part) -> None:
+    """add_topo_sort.md Postconditions, with ``outlets`` given."""
+    ids = set(table["id"])
+    named = set(outlets)
     present = set(part["id"])
     down = defaultdict(set)
     up = defaultdict(set)
+    leaves = set()
     for i, t in zip(table["id"], table["toid"], strict=True):
         if t in ids:
             down[i].add(t)
             up[t].add(i)
+        else:
+            leaves.add(i)
+
+    def upstream(start):
+        reach, frontier = {start}, [start]
+        while frontier:
+            for u in up[frontier.pop()] - reach:
+                reach.add(u)
+                frontier.append(u)
+
+        return reach
+
     # Every output id drains to one of outlets along toid.
-    reach, frontier = set(outlets), list(outlets)
-    while frontier:
-        for u in up[frontier.pop()] - reach:
-            reach.add(u)
-            frontier.append(u)
-    assert set(outlets) <= present <= reach
-    # Present only when every downstream flowline is present; a named
-    # flowline is a start and is exempt (sort_network.md Edge cases, 9
-    # diverging to 2 and 3 with outlets 9 and 1).
-    for i in present - set(outlets):
-        assert down[i] <= present
+    above = {o: upstream(o) for o in named}
+    assert named <= present <= set().union(*above.values())
+    # A named flowline upstream of another named flowline that the outer walk
+    # visits again: every downstream connection of it is a present flowline
+    # (step 5, case sort_network_branch_leaves_outer_basin).
+    revisited = {
+        o
+        for o in named
+        if any(o in above[p] for p in named - {o})
+        and down[o]
+        and o not in leaves
+        and down[o] <= present
+    }
+    # Present only when every downstream flowline is present, except a
+    # flowline given in outlets (sort_network.md Edge cases, 9 diverging to 2
+    # and 3 with outlets 9 and 1) and a flowline above a revisited one whose
+    # other downstream flowline no walk visits.
+    for i in present - named:
+        if down[i] <= present:
+            continue
+        assert any(i in above[o] and down[i] & present & above[o] for o in revisited), i
     last = part.iloc[-1]
-    assert last["id"] in outlets or last["toid"] not in ids
+    assert last["id"] in named or last["toid"] not in ids
     assert last["topo_sort"] == 1
     m = len(present)
     assert sorted(set(part["topo_sort"])) == list(range(1, m + 1))
+
+
+def test_add_topo_sort_outlets_branch_leaves_outer_basin():
+    """_check_outlets_postcondition holds on this fixture with outlets 1 and 9.
+
+    The output itself is pinned by manifest case
+    sort_network_branch_leaves_outer_basin (S-7); this test checks only that
+    the property helper accepts it.
+    """
+    table = read_fixture("sort_branch_leaves_outer_basin.gpkg")[["id", "toid"]]
+    table = table.astype({"id": str, "toid": str}).astype(object)
+
+    part = add_topo_sort(table, outlets=["1", "9"])
+
+    _check_outlets_postcondition(table, ["1", "9"], part)
 
 
 def _upstream_csr(downstream: list[list[int]]):
