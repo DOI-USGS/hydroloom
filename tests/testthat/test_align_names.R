@@ -105,3 +105,75 @@ test_that("permanent_identifier beside id returns unchanged (align_names.md step
 
   expect_identical(suppressMessages(align_names(once)), once)
 })
+
+test_that("hydroloom_names returns a named character vector", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  out <- hydroloom_names()
+
+  expect_type(out, "character")
+  expect_false(is.null(names(out)))
+
+  out <- hydroloom_names(c(flowline_id = "id"))
+
+  expect_type(out, "character")
+  expect_false(is.null(names(out)))
+})
+
+test_that("the registry at load has unique lowercase aliases and vocabulary values", {
+  at_load <- hydroloom:::vocab_alias_map()
+
+  expect_false(anyDuplicated(names(at_load)) > 0)
+  expect_equal(names(at_load), tolower(names(at_load)))
+  expect_true(all(at_load %in% hydroloom:::vocab_good_names()))
+})
+
+test_that("hydroloom_names with x = NULL leaves the stored registry unchanged", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  hydroloom_names(c(flowline_id = "id"))
+
+  before <- hydroloom:::hydroloom_env$hydroloom_name_map
+
+  hydroloom_names()
+
+  expect_equal(hydroloom:::hydroloom_env$hydroloom_name_map, before)
+})
+
+test_that("hydroloom_names with x appends x, names lowercased, to the prior registry", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  prior <- hydroloom_names(c(flowline_id = "id"))
+
+  out <- hydroloom_names(c(Next_ID = "toid", Up_ID = "id"))
+
+  expect_equal(out, c(prior, c(next_id = "toid", up_id = "id")))
+})
+
+test_that("an unnamed x leaves the stored registry unchanged", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  hydroloom_names(c(flowline_id = "id"))
+
+  before <- hydroloom:::hydroloom_env$hydroloom_name_map
+
+  expect_error(hydroloom_names(c("foobar")), "input must be named")
+
+  expect_equal(hydroloom:::hydroloom_env$hydroloom_name_map, before)
+})
+
+test_that("every registry alias that is a hydroloom name maps to itself", {
+  on.exit(hydroloom_names(clear = TRUE))
+
+  good_names <- hydroloom:::vocab_good_names()
+
+  at_load <- hydroloom:::vocab_alias_map()
+  is_name <- names(at_load) %in% good_names
+
+  expect_equal(unname(at_load[is_name]), names(at_load)[is_name])
+
+  out <- hydroloom_names(c(flowline_id = "id", ID = "id"))
+  is_name <- names(out) %in% good_names
+
+  expect_equal(unname(out[is_name]), names(out)[is_name])
+})
