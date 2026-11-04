@@ -61,6 +61,7 @@ SUBSTITUTIONS: tuple[tuple[str, str], ...] = (
     (r"\Ainteger ", ""),
     (r"\Aunits distance ", "distance "),
     (r"\Acrs\. ", ""),
+    (r"\Adata\.frame or list\. ", ""),
     (r"\Adata\.frame\. ", ""),
     (
         r"\Avector of the same length as `nrow\(x\)` containing ",
