@@ -599,6 +599,83 @@ def representation(network: pd.DataFrame) -> str:
     return _classify(df).value
 
 
+def _capability_input(network: Any) -> tuple[Representation | None, set[str]]:
+    """Return the pattern of ``network`` and the hy column names it holds.
+
+    The pattern is None where `representation` raises, a table with no ``id``
+    included (D3-167), and for anything not a table. ``geom`` stands for an
+    active geometry column (G-14).
+    """
+    if not isinstance(network, pd.DataFrame):
+        return None, set()
+    try:
+        geometry = _geometry_name(network)
+    except AttributeError:
+        geometry = None
+    present = {"geom"} if geometry is not None else set()
+
+    try:
+        attrs, _, _ = _align_frame(network, {})
+    except (ValueError, KeyError, TypeError):
+        columns = [c for c in network.columns if c != geometry]
+        try:
+            names = _align(columns, {}, warn=False)
+        except KeyError:
+            names = {}
+        return None, present | {str(names.get(c, c)) for c in columns}
+
+    return _classify(attrs), present | {str(c) for c in attrs.columns}
+
+
+def _satisfies(current: Representation | None, pattern: Representation) -> bool:
+    # A-3: LEVELED satisfies TOPO.
+    if current is Representation.LEVELED and pattern is Representation.TOPO:
+        return True
+
+    return current is pattern
+
+
+@requires()
+@doc("hy_capabilities")
+def capabilities(network: Any) -> pd.DataFrame:
+    """Report which hydroloom functions a network can be passed to.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom._hy import capabilities
+    >>> node = pd.DataFrame({"id": [1, 2], "fromnode": [1, 2], "tonode": [2, 3]})
+    >>> caps = capabilities(node)
+    >>> caps.columns.tolist()
+    ['function', 'available', 'via']
+    >>> caps.loc[caps["via"] != "", "function"].tolist()
+    ['add_topo_sort', 'make_index_ids', 'navigate_network_dfs', 'sort_network']
+    """
+    current, present = _capability_input(network)
+
+    # One row per registry entry, by function name: the registry fills in
+    # module import order, which does not fix the row order (A-4).
+    functions = sorted(_REGISTRY)
+    available, via = [], []
+    for name in functions:
+        entry = _REGISTRY[name]
+        shape = not entry.needs or any(_satisfies(current, n) for n in entry.needs)
+        direct = shape and all(c in present for c in entry.columns)
+        route = next(
+            (call for key, call in entry.via.items() if _satisfies(current, key)), ""
+        )
+        available.append(direct)
+        via.append("" if direct else route)
+
+    return pd.DataFrame(
+        {
+            "function": pd.Series(functions, dtype=object),
+            "available": pd.Series(available, dtype=bool),
+            "via": pd.Series(via, dtype=object),
+        }
+    )
+
+
 # Naming block (A-5, A-16, I-14) ------------------------------------------------
 
 # The S-2 alias sources, the `source` enum of hy_vocab.schema.json; a source may
