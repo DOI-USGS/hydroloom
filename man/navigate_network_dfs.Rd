@@ -7,7 +7,7 @@
 navigate_network_dfs(x, starts, direction = "down", reset = FALSE)
 }
 \arguments{
-\item{x}{data.frame. A table of flowlines, or index ids as returned by
+\item{x}{data.frame or list. A table of flowlines, or index ids as returned by
 \link{make_index_ids} ("to" mode for downstream or "from" mode for upstream).
 In R, index ids are the list \link{make_index_ids} returns. The index ids
 avoid recreating the index ids for every call
@@ -52,7 +52,9 @@ If the function will be called repeatedly or index_ids are available for
 other reasons, the index ids as created by \link{make_index_ids} ("to"
 mode for downstream or "from" mode for upstream). For "upmain"
 and "downmain" support, the index ids must include the main-path flag of
-each connection. In R, that flag is the \code{main} element of the list.
+each connection, \code{main}, which \link{make_index_ids} adds when the table
+has \code{downmain} ("to" mode) or \code{upmain} ("from" mode).
+In R, \code{main} is an element of the list.
 }
 \examples{
 
