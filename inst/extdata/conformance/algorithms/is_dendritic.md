@@ -118,7 +118,8 @@ repeat test, O(1) otherwise.
   D3-57 the fixture is the defect: the shared cases `is_dendritic_sort_network_dups` and
   `is_dendritic_sort_network_dups_no_validate` read its distinct rows,
   `sort_network_dups_distinct.gpkg`, whose `id` is unique, and both are `TRUE` (D3-210).
-  The Python raise case on `sort_network_dups.gpkg` is added when Python generates (M5).
+  The Python raise case on `sort_network_dups.gpkg` is `hy_sort_network_dups_pair_repeated`
+  (M5 run 4 unit 4).
 - Divergence shown only by a shared `fromnode` in a node table with no `divergence`
   column (`divergence_no_attribute.gpkg`, case `is_dendritic_divergence_no_attribute`):
   `TRUE`, as the Definition says. Detecting it from the repeated `fromnode` lands with
@@ -209,3 +210,6 @@ expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FA
   `is_dendritic_sort_network_dups_no_validate` read `sort_network_dups_distinct.gpkg` and
   are shared; the first moves from `FALSE` to `TRUE`. The Python raise case on
   `sort_network_dups.gpkg` lands at M5 (duplicated-edge Edge case). No binding change.
+- 2026-11-03, suite 0.1.0, M5 run 4 unit 4 (RULES P-2): the duplicated-edge Edge case
+  names the Python raise case on `sort_network_dups.gpkg`,
+  `hy_sort_network_dups_pair_repeated`, which has landed under `hy`. No binding change.

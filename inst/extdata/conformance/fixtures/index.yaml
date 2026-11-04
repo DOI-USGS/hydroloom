@@ -357,7 +357,8 @@ fixtures:
   rules: []
   bytes: 73728
 - file: align_names_permanent_identifier_beside_id.gpkg
-  source: synthetic; a two-row table carrying NHDPlusHR-style names, in the form align_names gives an NHDPlusHR table (align_names_nhdplushr)
+  source: synthetic; a two-row table carrying NHDPlusHR-style names, in the form align_names
+    gives an NHDPlusHR table (align_names_nhdplushr)
   rows: 2
   geometry: none
   columns:
@@ -995,6 +996,33 @@ fixtures:
   rules:
   - I-2
   - I-5
+  bytes: 73728
+- file: hy_id_missing.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - COMID
+  - ToCOMID
+  exercises: 'INTEGER identifier with one missing value (COMID, row 2): Python raises
+    id_missing naming row 2; R keeps the row (M5 BACKLOG, D3-210)'
+  rules:
+  - I-2
+  - I-12
+  bytes: 73728
+- file: hy_id_missing_two.gpkg
+  source: synthetic
+  rows: 3
+  geometry: none
+  columns:
+  - COMID
+  - ToCOMID
+  exercises: 'INTEGER identifier with two missing values carrying toid (COMID, rows
+    2 and 3): Python raises id_missing naming rows 2, 3; R reads the repeated missing
+    id as a flownetwork (M5 BACKLOG, D3-210)'
+  rules:
+  - I-2
+  - I-12
   bytes: 73728
 - file: hy_identifier_not_finite.gpkg
   source: synthetic

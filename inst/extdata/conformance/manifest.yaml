@@ -505,6 +505,47 @@ cases:
     generator: [r]
     columns: [id, toid]
 
+  # D3-217, D3-210: Python-only by design (B-5); as_hy raises
+  # id_toid_pair_repeated on the 3 repeated (id, toid) pairs; R keeps them
+  # until M6 (D3-57)
+  - id: hy_sort_network_dups_pair_repeated
+    function: hy
+    fixture: sort_network_dups.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
+    raises: error
+    raises_key: id_toid_pair_repeated
+
+  # M5 run 2 unit 2 H-04: Python-only by design (B-5); COMID missing on row 2
+  # raises id_missing naming COMID and row 2; R keeps the row (BACKLOG M6)
+  - id: hy_id_missing
+    function: hy
+    fixture: hy_id_missing.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
+    raises: error
+    raises_key: id_missing
+
+  # M5 run 2 unit 2 H-04: Python-only by design (B-5); COMID missing on rows 2
+  # and 3, both carrying toid, raises id_missing naming rows 2, 3; R reads the
+  # table as a flownetwork (BACKLOG M6)
+  - id: hy_id_missing_two
+    function: hy
+    fixture: hy_id_missing_two.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
+    raises: error
+    raises_key: id_missing
+
   # hy_reverse ----------------------------------------------------------------
   # Every case but the last applies hy() first through prepare (D3-11); the
   # prepare args are hy()'s, and hy_reverse takes none. Column order and the
@@ -1711,7 +1752,8 @@ cases:
   # (D3-57, H-01) = the Python definition gives the same value (add python to
   # supported_by when is_dendritic is ported). Values are those probed against
   # current R. No case raises or carries changes_with; the Python raise case on
-  # sort_network_dups.gpkg is added when Python generates (M5, D3-210). prepare:
+  # sort_network_dups.gpkg is hy_sort_network_dups_pair_repeated, under hy (M5
+  # run 4 unit 4, D3-210, D3-217). prepare:
   # hy (D3-11) where the fixture is in source names; R reads hydroloom names
   # only, Python aligns names first.
 
@@ -3354,7 +3396,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; terminal_id equals id on every row
@@ -3364,7 +3406,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 n = 1
@@ -3374,7 +3416,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 n = 1; terminal_id 1
@@ -3384,7 +3426,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 says raises; R returns 3 rows, no warning; captured (D3-46, D3-57)
@@ -3406,7 +3448,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # I-11 with split = TRUE: zero rows with terminal_id present and typed
@@ -3417,7 +3459,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 fixture run through sort_network; weight not read; siblings 1, 2
@@ -3428,7 +3470,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # id and name only; representation guidance
@@ -3438,7 +3480,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_topo
@@ -3451,7 +3493,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; D-7 un-sorted variant; equals sort_network_siblings;
@@ -3462,7 +3504,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; D-1 byte order; B, _c, a, b, o; R 1.3.0 gave b, a, B,
@@ -3473,7 +3515,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; 1..11 then 12 (outlets 11 < 12); R 1.3.0 gave 12 then
@@ -3484,7 +3526,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; terminal_id 11 on ids 1..11, 12 on id 12
@@ -3494,7 +3536,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; node route via add_toids (message); 4, 1, 2, 3, 5, 6,
@@ -3508,6 +3550,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # node route with no divergence column; add_toids (return_dendritic = TRUE)
   # stops
@@ -3517,7 +3560,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: divergence_required
@@ -3531,7 +3574,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; terminal_id 3 on id 3, 2 on ids 1, 4, 2 (the diverging
@@ -3542,7 +3585,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # sort_network H-03; sort_divergence_leaves with 2 relabelled 5: "5" sorts
@@ -3554,7 +3597,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # terminal_id 3 on id 3, 5 on ids 1, 4, 5
@@ -3564,7 +3607,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D3-216: 9 diverges to 2 (to the outlet 1) and 3 (to the outlet 4);
@@ -3576,7 +3619,7 @@ cases:
     args: {outlets: ["9", "1"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # node route; 1, 2, 3, 6, 7, 4, 8, 9, 5, 10, as in R 1.3.0 (input order
@@ -3589,6 +3632,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: D-4; repeated id rows; (1,2), (1,3), (2,4), (3,4), (4,0);
   # R 1.3.0 gave (1,3), (1,2), (2,4), (3,4), (4,0)
@@ -3598,7 +3642,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; terminal_id 4 on every row
@@ -3608,7 +3652,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; 1, 2, 3, 4, 6, 7, 8, 9; terminal_id 4 and 9; R 1.3.0
@@ -3619,7 +3663,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; argument order not read; 1, 2, 3, 6, 7, 8; terminal_id
@@ -3630,7 +3674,7 @@ cases:
     args: {split: true, outlets: ["8", "3"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # 2 is inside 3's network and is visited twice; returns 1, 2, 3
@@ -3640,7 +3684,7 @@ cases:
     args: {outlets: ["3", "2"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   - id: sort_network_two_networks_nested_outlets_split
@@ -3649,7 +3693,7 @@ cases:
     args: {split: true, outlets: ["3", "2"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: split_outlets_overlap
@@ -3661,7 +3705,7 @@ cases:
     args: {outlets: ["99"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: outlet_not_in_network
@@ -3673,7 +3717,7 @@ cases:
     args: {split: true, outlets: ["11690186", "11689280"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [COMID, toid, terminal_id]
 
@@ -3683,7 +3727,7 @@ cases:
     args: {split: true, outlets: ["11690196", "11689718"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: split_outlets_overlap
@@ -3696,7 +3740,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -3708,7 +3752,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -3721,7 +3765,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -3733,7 +3777,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -3745,7 +3789,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -3758,7 +3802,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -3770,7 +3814,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # toNexID is not a toid alias, so hy() finds no toid
@@ -3780,7 +3824,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_topo
@@ -3793,7 +3837,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; R-only for the result (D3-57, D3-210): nextgen wb-/nex-
@@ -3817,7 +3861,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: I-2; D3-06 pairing makes id and toid character; returns 1,
@@ -3829,7 +3873,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; node route (add_toids), sf, 746 rows
@@ -3841,6 +3885,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid]
 
   # changes_with: D-4; one terminal
@@ -3852,6 +3897,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid, terminal_id]
 
   # changes_with: D-4, I-2; flownetwork route, 832 rows; prepare warning
@@ -3865,6 +3911,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid]
 
   # changes_with: D-4; nhdplus aliases, node route, 707 rows
@@ -3876,6 +3923,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid]
 
   # changes_with: D-4, I-2; 548 rows, 32 terminals; missing tocomid filled by
@@ -3888,6 +3936,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # sort_network H-06; coastal terminal 5 beside inland terminal 6 below one
   # divergence (2 -> 3, 4), and a separate network ending inland at 8; each
@@ -3902,6 +3951,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: D-4; string ids, outlet toid "", 2710 rows
   - id: sort_network_new_hope_3dhp
@@ -3910,7 +3960,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id3dhp, toid]
 
@@ -3921,7 +3971,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [NHDPlusID, toid]
 
@@ -3932,7 +3982,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; a headwater first, outlet 4 (toid 0) last
@@ -3942,7 +3992,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; all 8 rows returned
@@ -3952,7 +4002,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; outlets in the test's order (3, 8); 6 rows,
@@ -3963,7 +4013,7 @@ cases:
     args: {split: true, outlets: ["3", "8"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; add_toids (return_dendritic = TRUE) applied first, as
@@ -3975,7 +4025,7 @@ cases:
     args: {split: true, outlets: ["11690186", "11689280"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [COMID, toid, terminal_id]
 
@@ -3989,6 +4039,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # changes_with: I-2; one outlet, terminal_id 2544457 on every row
   - id: sort_network_coastal_hydroseq_outlet
@@ -3999,6 +4050,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # changes_with: D-4; flownetwork route; as many rows as add_toids returns
   - id: sort_network_network_flownetwork
@@ -4010,6 +4062,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid]
 
   # changes_with: D-4; flownetwork route; 8893420 comes before both
@@ -4023,6 +4076,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid]
 
   # changes_with: D-4; I-4 implicit-absence outlets; all 21 rows
@@ -4032,7 +4086,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; hy route; 59149125, 59149129, 59149189 (terminal
@@ -4044,7 +4098,7 @@ cases:
     args: {split: true}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; equals the distinct id, toid rows of
@@ -4055,7 +4109,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # Outlet conventions (I-4, test_outlet_conventions.R): one network,
@@ -4070,7 +4124,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # character reserved value ""
@@ -4081,7 +4135,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # missing toid, filled with 0 by hy() (I-5)
@@ -4094,6 +4148,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # implicit absence: toid 999 names no flowline
   - id: sort_network_outlet_implicit
@@ -4103,7 +4158,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # foreign reserved value -1, kept on the outlet row
@@ -4114,7 +4169,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # two outlets with distinct toid OUT_001, OUT_002, not collapsed
@@ -4125,7 +4180,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # add_topo_sort -------------------------------------------------------------
@@ -4147,7 +4202,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; D-7 un-sorted variant; equal to
@@ -4159,7 +4214,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; hy route; R class hy_topo, hy names kept
@@ -4170,7 +4225,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # outlet 7 dropped; (10,5), (9,4), (2,3), (5,2), (3,1) before and after D-4
@@ -4180,7 +4235,7 @@ cases:
     args: {outlets: ["3"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # a start upstream of another and a repeated outlet add nothing; equals
@@ -4191,7 +4246,7 @@ cases:
     args: {outlets: ["2", "3", "3"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # add_topo_sort H-02, D3-211: "5" drains to "3" and sorts after it, so its
@@ -4203,7 +4258,7 @@ cases:
     args: {outlets: ["3", "5"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # add_topo_sort H-01, D3-211: 2 diverges to 3 (the outlet) and 9 (outside
@@ -4214,7 +4269,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # add_topo_sort H-01, D3-211: sort_divergence_leaves with 2 relabelled 5;
@@ -4227,7 +4282,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D3-51: an outlet that is not an id raises outlet_not_in_network in both
@@ -4238,7 +4293,7 @@ cases:
     args: {outlets: ["99"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: outlet_not_in_network
@@ -4251,7 +4306,7 @@ cases:
     args: {outlets: ["3", "99"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: outlet_not_in_network
@@ -4264,7 +4319,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 n = 1; topo_sort 1 (integer); sf input, geometry kept
@@ -4274,7 +4329,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; S-6 all terminals; 100, 2, 30, 4, 7; R 1.3.0 gave 7,
@@ -4285,7 +4340,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 boundary fixture; one row, sorting does not read geometry
@@ -4295,7 +4350,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 boundary fixture; no weight is read, the missing da_sqkm passes through
@@ -4305,7 +4360,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # I-11; shared: zero rows with id, toid, and topo_sort typed as in a
@@ -4316,7 +4371,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4, i2; outlet 12 with no edges beside outlet 11; toid REAL
@@ -4327,7 +4382,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 lists raises; R returns 3 rows, both 1->2 rows topo_sort 2 (R-only
@@ -4349,7 +4404,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4361,7 +4416,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4373,7 +4428,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4386,7 +4441,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4400,6 +4455,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; flownetwork route; ids 1 and 6 two rows each sharing
   # topo_sort; output 1, 1, 2, 3, 6, 6, 7, 4, 8, 9, 5, 10, unchanged by D-4
@@ -4412,6 +4468,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # changes_with: i2; roxygen NOTE; returns ids 2, 3 only; id 1's main path
   # reaches 3 but its minor path (6) does not, so 1 is left out
@@ -4422,7 +4479,7 @@ cases:
     args: {outlets: ["3"]}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4, i2; node route; outlets 12 and 13; 12's network first;
@@ -4435,6 +4492,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # node conversion needs divergence
   - id: add_topo_sort_divergence_no_attribute
@@ -4443,7 +4501,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: divergence_required
@@ -4455,13 +4513,13 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: needs_topo
 
-  # computed topo_sort replaces Hydroseq, integer, no .x/.y (D3-51); shared
-  # after regeneration, supported_by stays [r] until Python generates
+  # computed topo_sort replaces Hydroseq, integer, no .x/.y (D3-51); R-only
+  # on the 0 outlet toid add_toids fills (add_toids.md §Algorithm step 6)
   # changes_with: D-4, i2; node route, 746 rows; R 1.3.0 gave Hydroseq as
   # topo_sort.x, computed topo_sort.y
   - id: add_topo_sort_new_hope
@@ -4472,10 +4530,11 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid, Hydroseq]
 
-  # computed topo_sort replaces Hydroseq, integer, no .x/.y (D3-51); shared
-  # after regeneration, supported_by stays [r] until Python generates
+  # computed topo_sort replaces Hydroseq, integer, no .x/.y (D3-51); R-only
+  # on the 0 outlet toid add_toids fills (add_toids.md §Algorithm step 6)
   # changes_with: D-4, i2; flownetwork route, 832 rows, 746 topo_sort values;
   # R 1.3.0 gave topo_sort.x/.y
   - id: add_topo_sort_new_hope_flownetwork
@@ -4487,6 +4546,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
     columns: [COMID, toid, Hydroseq]
 
   # changes_with: D-4; string identifiers, topo route; computed topo_sort
@@ -4498,12 +4558,12 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [id3dhp, toid, hydrosequence]
 
   # computed topo_sort replaces NHDPlusHR Hydroseq, integer, no .x/.y (D3-51);
-  # shared after regeneration, supported_by stays [r] until Python generates
+  # shared
   # changes_with: D-4, i2; identifiers beyond 32 bits (character after I-2, so
   # byte order differs from numeric); R 1.3.0 gave topo_sort.x/.y
   - id: add_topo_sort_nhdplushr
@@ -4512,12 +4572,12 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     columns: [NHDPlusID, toid, Hydroseq]
 
-  # computed topo_sort replaces hydroseq, integer, no .x/.y (D3-51); shared
-  # after regeneration, supported_by stays [r] until Python generates
+  # computed topo_sort replaces hydroseq, integer, no .x/.y (D3-51); R-only
+  # on the 0 toid hy() fills (hy.md §Algorithm, I-5)
   # changes_with: D-4; many terminals with I-5 filled toid; R 1.3.0 gave
   # hydroseq as topo_sort.x
   - id: add_topo_sort_coastal
@@ -4528,6 +4588,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: hy.md §Algorithm
 
   # changes_with: D-4; wb-/nex- strings, distinct (id, toid) rows (D3-210),
   # unique id, so the hy_topo route; 80 rows, 80 topo_sort values
@@ -4537,7 +4598,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # changes_with: D-4; flownetwork route, 1425 rows, 1327 values, no warning;
@@ -4549,7 +4610,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # note: flownetwork route stops on two three-flowline cycles (D3-41)
@@ -4561,7 +4622,7 @@ cases:
     args: {}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
     raises: error
     raises_key: network_cycle
@@ -4577,6 +4638,7 @@ cases:
     order: exact
     supported_by: [r]
     generator: [r]
+    r_only: add_toids.md §Algorithm step 6
 
   # navigate_network_dfs ------------------------------------------------------
   # Annotations from the proposed cases (D3-14) are kept as comments:

@@ -408,6 +408,22 @@ fixture(data.frame(
   c("I-1", "I-2"))
 
 fixture(data.frame(
+  COMID = c(10L, NA, 30L),
+  ToCOMID = c(30L, 30L, NA)),
+  "hy_id_missing",
+  "synthetic",
+  "INTEGER identifier with one missing value (COMID, row 2): Python raises id_missing naming row 2; R keeps the row (M5 BACKLOG, D3-210)",
+  c("I-2", "I-12"))
+
+fixture(data.frame(
+  COMID = c(10L, NA, NA),
+  ToCOMID = c(NA, 10L, 10L)),
+  "hy_id_missing_two",
+  "synthetic",
+  "INTEGER identifier with two missing values carrying toid (COMID, rows 2 and 3): Python raises id_missing naming rows 2, 3; R reads the repeated missing id as a flownetwork (M5 BACKLOG, D3-210)",
+  c("I-2", "I-12"))
+
+fixture(data.frame(
   COMID = c(10L, 20L, 30L),
   ToCOMID = c(20L, 30L, NA),
   TerminalFl = c(0L, 0L, 2L)),
