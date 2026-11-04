@@ -128,8 +128,8 @@ py-publish:
     - |
       if [ -n "$CI_COMMIT_TAG" ]; then
         export TWINE_PASSWORD="$PYPI_TOKEN"
-        twine upload dist/*
+        twine upload --verbose dist/*
       else
         export TWINE_PASSWORD="$TEST_PYPI_TOKEN"
-        twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+        twine upload --verbose --repository-url https://test.pypi.org/legacy/ dist/*
       fi
