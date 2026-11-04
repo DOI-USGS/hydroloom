@@ -1153,6 +1153,26 @@ fixture(data.frame(
   "outlets naming 1 and 9, which drains to 1, below three braids: 9's walk comes first, and 1's walk visits each braid flowline once",
   c("I-4", "I-6", "D-4"))
 
+# 9 drains through 2 to the outlet 1; above 9, 5 diverges to 9 and to 3,
+# which bypasses 9 and rejoins at 2; 6 drains to 5 (M5 run 4 unit 4 H-03).
+fixture(data.frame(
+  id = c(6L, 5L, 5L, 9L, 3L, 2L, 1L),
+  toid = c(5L, 9L, 3L, 2L, 2L, 1L, 0L)),
+  "sort_bypass_nested_outlet",
+  "synthetic (M5 run 4 unit 4 H-03)",
+  "outlets naming 1 and 9, with a divergence above 9 whose branch 3 bypasses 9 and rejoins at 2, between 9 and 1",
+  c("I-4", "I-6", "D-4"))
+
+# as sort_bypass_nested_outlet, but 3 drains to the outlet 7, leaving the
+# basin of 1 (M5 run 4 unit 4 H-03).
+fixture(data.frame(
+  id = c(6L, 5L, 5L, 9L, 2L, 1L, 3L, 7L),
+  toid = c(5L, 9L, 3L, 2L, 1L, 0L, 7L, 0L)),
+  "sort_branch_leaves_outer_basin",
+  "synthetic (M5 run 4 unit 4 H-03)",
+  "outlets naming 1 and 9, with a divergence above 9 whose branch 3 leaves the basin of 1 for the outlet 7",
+  c("I-4", "I-6", "D-4"))
+
 fixture(data.frame(
   id = 1:4,
   toid = c(2L, 3L, 4L, 0L)),

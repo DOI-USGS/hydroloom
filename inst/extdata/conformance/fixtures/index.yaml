@@ -2102,6 +2102,20 @@ fixtures:
   - I-6
   - D-4
   bytes: 73728
+- file: sort_branch_leaves_outer_basin.gpkg
+  source: synthetic (M5 run 4 unit 4 H-03)
+  rows: 8
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: outlets naming 1 and 9, with a divergence above 9 whose branch 3 leaves
+    the basin of 1 for the outlet 7
+  rules:
+  - I-4
+  - I-6
+  - D-4
+  bytes: 73728
 - file: sort_branching.gpkg
   source: synthetic (tests/testthat/test_sort_network.R "sort order is headwater first,
     outlet last")
@@ -2112,6 +2126,20 @@ fixtures:
   - toid
   exercises: two headwaters (1 and 5) joining above the outlet 4
   rules:
+  - D-4
+  bytes: 73728
+- file: sort_bypass_nested_outlet.gpkg
+  source: synthetic (M5 run 4 unit 4 H-03)
+  rows: 7
+  geometry: none
+  columns:
+  - id
+  - toid
+  exercises: outlets naming 1 and 9, with a divergence above 9 whose branch 3 bypasses
+    9 and rejoins at 2, between 9 and 1
+  rules:
+  - I-4
+  - I-6
   - D-4
   bytes: 73728
 - file: sort_chain.gpkg

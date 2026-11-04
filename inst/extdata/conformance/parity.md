@@ -9,7 +9,7 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 
 | function | Python | supported_by | cases | r_only | python_only |
 | --- | --- | --- | --- | --- | --- |
-| `hy` | `as_hy` | r, python | 41 | 13 | 3 |
+| `hy` | `as_hy` | r, python | 42 | 13 | 4 |
 | `hy_reverse` | `hy_reverse` | r, python | 11 | 9 | 0 |
 | `is.hy` | `is_hy` | r, python | 15 | 2 | 0 |
 | `align_names` | `align_names` | r, python | 26 | 2 | 0 |
@@ -21,6 +21,6 @@ Suite version 0.1.0. A function's `supported_by` lists the languages that suppor
 | `add_toids` | `add_toids` | r, python | 35 | 19 | 0 |
 | `make_index_ids` | `make_index_ids` | r | 33 | 3 | 0 |
 | `check_hy_graph` | `check_hy_graph` | r | 47 | 0 | 0 |
-| `sort_network` | `sort_network` | r, python | 70 | 15 | 0 |
+| `sort_network` | `sort_network` | r, python | 72 | 15 | 0 |
 | `add_topo_sort` | `add_topo_sort` | r, python | 37 | 8 | 0 |
 | `navigate_network_dfs` | `navigate_network_dfs` | r | 67 | 1 | 0 |

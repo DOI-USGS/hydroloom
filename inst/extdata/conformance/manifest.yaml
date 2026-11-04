@@ -519,6 +519,20 @@ cases:
     raises: error
     raises_key: id_toid_pair_repeated
 
+  # H-05 (M5 run 4 unit 4): Python-only by design (B-5); as_hy raises
+  # id_toid_pair_repeated on the repeated (1, 2) pair; R keeps both rows
+  # until M6 (D3-57; case hy_duplicated_edge)
+  - id: hy_duplicated_edge_pair_repeated
+    function: hy
+    fixture: duplicated_edge.gpkg
+    args: {}
+    compare: exact
+    order: exact
+    supported_by: [python]
+    generator: [python]
+    raises: error
+    raises_key: id_toid_pair_repeated
+
   # M5 run 2 unit 2 H-04: Python-only by design (B-5); COMID missing on row 2
   # raises id_missing naming COMID and row 2; R keeps the row (BACKLOG M6)
   - id: hy_id_missing
@@ -3704,6 +3718,29 @@ cases:
   - id: sort_network_braids_nested_outlet
     function: sort_network
     fixture: sort_braids_nested_outlet.gpkg
+    args: {outlets: ["1", "9"]}
+    compare: exact
+    order: exact
+    supported_by: [r, python]
+    generator: [r]
+
+  # H-03 (M5 run 4 unit 4): 5 diverges to 9 and to 3, which bypasses 9 and
+  # rejoins at 2 between 9 and 1; same order as with outlets 1 alone or none
+  - id: sort_network_bypass_nested_outlet
+    function: sort_network
+    fixture: sort_bypass_nested_outlet.gpkg
+    args: {outlets: ["1", "9"]}
+    compare: exact
+    order: exact
+    supported_by: [r, python]
+    generator: [r]
+
+  # H-03 (M5 run 4 unit 4): 5 diverges to 9 and to 3, which leaves 1's basin
+  # for the outlet 7; 9's walk and 1's walk both count toward 5, so 5 and 6
+  # return without 3 (step 5); outlets 1 alone returns 9, 2, 1
+  - id: sort_network_branch_leaves_outer_basin
+    function: sort_network
+    fixture: sort_branch_leaves_outer_basin.gpkg
     args: {outlets: ["1", "9"]}
     compare: exact
     order: exact
