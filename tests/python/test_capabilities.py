@@ -1,9 +1,10 @@
 """capabilities: Postconditions of hy_capabilities.md as properties and interface tests.
 
-Every shared hy_capabilities case stays ``[r]``: each R expectation layer has one
-row per entry of R's 24-entry code table, and Python's code table is the
-``@requires`` registry (hy_capabilities.md Algorithm, A-4). These tests check the
-Postconditions against the registry; no computed value is written inline (S-7).
+R's layers have one row per entry of R's 24-entry code table; Python's code table
+is the ``@requires`` registry in function-name order, and its answers are the
+``_python`` manifest cases (hy_capabilities.md Postconditions, B-4). These tests
+check the Postconditions against the registry; no computed value is written
+inline (S-7).
 """
 
 from __future__ import annotations

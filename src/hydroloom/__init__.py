@@ -5,6 +5,7 @@ from importlib.metadata import version as _version
 from hydroloom._hy import (
     align_names,
     as_hy,
+    capabilities,
     hy_reverse,
     is_dendritic,
     is_hy,
@@ -27,6 +28,7 @@ __all__ = [
     "add_topo_sort",
     "align_names",
     "as_hy",
+    "capabilities",
     "hy_reverse",
     "is_dendritic",
     "is_hy",

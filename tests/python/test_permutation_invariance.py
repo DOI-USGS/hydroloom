@@ -62,8 +62,11 @@ CASES = [
 CASES_BY_ID = {c["id"]: c for c in CASES}
 
 # Non-sorting frame functions that never reach the D-14 row-order check, with the
-# reason their frames are not row-mapped. Empty: every one reaches it.
-NOT_ROW_MAPPED: dict[str, str] = {}
+# reason their frames are not row-mapped.
+NOT_ROW_MAPPED: dict[str, str] = {
+    "hy_capabilities": "one row per @requires registry entry, not per input row "
+    "(hy_capabilities.md Postconditions)",
+}
 
 
 @st.composite

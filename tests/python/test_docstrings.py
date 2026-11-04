@@ -350,10 +350,15 @@ def test_explicit_r_name_wins_over_same_name():
 
 PUBLIC = [getattr(hydroloom, name) for name in sorted(hydroloom.__all__)]
 
-# The hy_network_type and is_dendritic titles are questions; rewording them is
-# roxygen work, the maintainer's (A-13), outside this docstring pass. numpydoc
-# also reads "Is" in the is_dendritic title as a third-person verb (SS05).
-PUBLIC_ALLOWED = {"representation": {"SS03"}, "is_dendritic": {"SS03", "SS05"}}
+# The hy_network_type, is_dendritic, and hy_capabilities titles are questions;
+# rewording them is roxygen work, the maintainer's (A-13), outside this
+# docstring pass. numpydoc also reads "Is" in the is_dendritic title as a
+# third-person verb (SS05).
+PUBLIC_ALLOWED = {
+    "representation": {"SS03"},
+    "is_dendritic": {"SS03", "SS05"},
+    "capabilities": {"SS03"},
+}
 
 
 @pytest.mark.parametrize("func", PUBLIC, ids=lambda f: f.__name__)

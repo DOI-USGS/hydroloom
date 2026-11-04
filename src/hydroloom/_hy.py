@@ -685,7 +685,7 @@ def capabilities(network: Any) -> pd.DataFrame:
     Examples
     --------
     >>> import pandas as pd
-    >>> from hydroloom._hy import capabilities
+    >>> from hydroloom import capabilities
     >>> node = pd.DataFrame({"id": [1, 2], "fromnode": [1, 2], "tonode": [2, 3]})
     >>> caps = capabilities(node)
     >>> caps.columns.tolist()
