@@ -1766,11 +1766,12 @@ cases:
   # is_dendritic --------------------------------------------------------------
   # Annotations from the proposed cases (D3-14): every case is shared except
   # is_dendritic_new_hope_source_names (D3-197) and the duplicated-edge cases
-  # (D3-57, H-01) = the Python definition gives the same value (add python to
-  # supported_by when is_dendritic is ported). Values are those probed against
-  # current R. No case raises or carries changes_with; the Python raise case on
-  # sort_network_dups.gpkg is hy_sort_network_dups_pair_repeated, under hy (M5
-  # run 4 unit 4, D3-210, D3-217). prepare:
+  # (D3-57, H-01), which carry r_only; the shared cases are [r, python], since
+  # the Python definition gives the same value (M5 run 4 unit 8). Values are
+  # those probed against R. No case raises or carries changes_with; the Python
+  # raises on sort_network_dups.gpkg and duplicated_edge.gpkg are
+  # hy_sort_network_dups_pair_repeated and hy_duplicated_edge_pair_repeated,
+  # under hy (M5 run 4 unit 4, D3-210, D3-217). prepare:
   # hy (D3-11) where the fixture is in source names; R reads hydroloom names
   # only, Python aligns names first.
 
@@ -1782,7 +1783,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # D-7 pair of is_dendritic_new_hope: rows permuted; expect FALSE
@@ -1792,7 +1793,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # divergence test runs regardless of validate_data; expect FALSE
@@ -1803,7 +1804,7 @@ cases:
     args: {validate_data: false}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # python_omitted: R-only (D3-197); R does no alias lookup, so
@@ -1824,7 +1825,7 @@ cases:
     fixture: new_hope_3dhp.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # node topology with divergence column holding 2; worked example; expect FALSE
@@ -1833,7 +1834,7 @@ cases:
     fixture: divergence_attribute.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # minor path leaves a divergence and rejoins the main stem; expect FALSE
@@ -1842,7 +1843,7 @@ cases:
     fixture: return_divergence.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # identifiers outside 32-bit range after hy(); I-2 alters id type, not the
@@ -1853,7 +1854,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # node topology with divergences but no divergence column; expect TRUE
@@ -1863,7 +1864,7 @@ cases:
     fixture: divergence_no_attribute.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # Definition rule 2: repeated id with toid, gated by validate_data.
@@ -1875,7 +1876,7 @@ cases:
     fixture: sort_network_dups_distinct.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # shared; repeat test skipped, no divergence column; distinct (id, toid)
@@ -1886,7 +1887,7 @@ cases:
     args: {validate_data: false}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # I-6 flownetwork with cycles; expect FALSE
@@ -1895,7 +1896,7 @@ cases:
     fixture: loop.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # braced GUID string ids, repeated id; expect FALSE
@@ -1904,7 +1905,7 @@ cases:
     fixture: loop2.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # Dendritic tables.
@@ -1915,7 +1916,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # a cycle is not a divergence; unique id; expect TRUE
@@ -1924,7 +1925,7 @@ cases:
     fixture: reciprocal_pair.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # S-6 boundary fixtures and I-11; requires is [any], so every one runs.
@@ -1934,7 +1935,7 @@ cases:
     fixture: single_flowline.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # five flowlines, no edges; expect TRUE
@@ -1943,7 +1944,7 @@ cases:
     fixture: all_terminals.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # python_omitted: R-only for the result (D3-57, D3-197); duplicated edge,
@@ -1975,7 +1976,7 @@ cases:
     fixture: missing_weight.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # zero-length geometry; not read; expect TRUE
@@ -1984,7 +1985,7 @@ cases:
     fixture: zero_length.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # empty name; no toid; expect TRUE
@@ -1993,7 +1994,7 @@ cases:
     fixture: empty_name.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # I-11 zero rows; expect TRUE
@@ -2002,7 +2003,7 @@ cases:
     fixture: empty_network.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # test_hy_classes.R inputs.
@@ -2013,7 +2014,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # the chain with divergence 2 on id 2, after hy(); expect FALSE
@@ -2023,7 +2024,7 @@ cases:
     prepare: {function: hy}
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # repeated id with toid, as read; expect FALSE
@@ -2032,7 +2033,7 @@ cases:
     fixture: is_dendritic_repeated_id.gpkg
     compare: exact
     order: exact
-    supported_by: [r]
+    supported_by: [r, python]
     generator: [r]
 
   # add_toids -----------------------------------------------------------------
