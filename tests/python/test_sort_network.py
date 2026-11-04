@@ -35,6 +35,7 @@ from conformance import (
     result_to_layer,
 )
 from hydroloom import add_topo_sort, align_names, sort_network
+from hydroloom._kernels import walk
 from hydroloom.errors import HydroloomError, RepresentationError, msg
 
 PROPERTY = settings(derandomize=True, max_examples=100, deadline=None)
@@ -137,6 +138,8 @@ def test_outlets_as_scalar_or_integers():
 
     pd.testing.assert_frame_equal(sort_network(table, outlets="3"), want)
     pd.testing.assert_frame_equal(sort_network(table, outlets=[3]), want)
+    pd.testing.assert_frame_equal(sort_network(table, outlets=3.0), want)
+    pd.testing.assert_frame_equal(sort_network(table, outlets=np.float64(3)), want)
 
 
 def test_absent_outlets_named_once():
@@ -305,8 +308,8 @@ def test_sort_network_flownetwork(table, rng):
 
 
 @PROPERTY
-@given(networks(divergent=True))
-def test_add_topo_sort_postconditions(table):
+@given(networks(divergent=True), st.randoms(use_true_random=False))
+def test_add_topo_sort_postconditions(table, rng):
     """Values k down to 1 in output order, one per id, above each downstream."""
     out = add_topo_sort(table)
     k = table["id"].nunique()
@@ -323,3 +326,100 @@ def test_add_topo_sort_postconditions(table):
     if k:
         assert out["topo_sort"].iloc[-1] == 1
     pd.testing.assert_frame_equal(add_topo_sort(out), out)
+
+    # With outlets given (add_topo_sort.md Postconditions).
+    ids = set(table["id"])
+    outlets = [i for i in sorted(ids) if rng.random() < 0.3]
+    if not outlets:
+        return
+    part = add_topo_sort(table, outlets=outlets)
+    present = set(part["id"])
+    down = defaultdict(set)
+    up = defaultdict(set)
+    for i, t in zip(table["id"], table["toid"], strict=True):
+        if t in ids:
+            down[i].add(t)
+            up[t].add(i)
+    # Every output id drains to one of outlets along toid.
+    reach, frontier = set(outlets), list(outlets)
+    while frontier:
+        for u in up[frontier.pop()] - reach:
+            reach.add(u)
+            frontier.append(u)
+    assert set(outlets) <= present <= reach
+    # Present only when every downstream flowline is present; a named
+    # flowline is a start and is exempt (sort_network.md Edge cases, 9
+    # diverging to 2 and 3 with outlets 9 and 1).
+    for i in present - set(outlets):
+        assert down[i] <= present
+    last = part.iloc[-1]
+    assert last["id"] in outlets or last["toid"] not in ids
+    assert last["topo_sort"] == 1
+    m = len(present)
+    assert sorted(set(part["topo_sort"])) == list(range(1, m + 1))
+
+
+def _upstream_csr(downstream: list[list[int]]):
+    """Upstream CSR of a dense graph; neighbors ascending (D-5)."""
+    n = len(downstream)
+    up: list[list[int]] = [[] for _ in range(n)]
+    for u, targets in enumerate(downstream):
+        for d in targets:
+            up[d].append(u)
+    indptr = np.zeros(n + 1, dtype=np.int64)
+    indptr[1:] = np.cumsum([len(x) for x in up])
+    indices = np.asarray([u for x in up for u in sorted(x)], dtype=np.int64)
+
+    return indptr, indices
+
+
+def _check_walk(downstream, extra, starts) -> None:
+    """Each walk visits a node once, after its downstream nodes in that walk."""
+    indptr, indices = _upstream_csr(downstream)
+    countdown = np.asarray(
+        [len(d) + e for d, e in zip(downstream, extra, strict=True)], dtype=np.int64
+    )
+    visits, walks = walk.topo_walk(
+        indptr, indices, countdown, np.asarray(starts, dtype=np.int64)
+    )
+
+    for w in range(len(starts)):
+        seen = visits[walks == w].tolist()
+        assert seen[0] == starts[w]
+        assert len(seen) == len(set(seen))
+        position = {v: p for p, v in enumerate(seen)}
+        for v in seen[1:]:
+            assert any(d in position for d in downstream[v])
+            for d in downstream[v]:
+                if d in position:
+                    assert position[d] < position[v]
+
+
+def test_topo_walk_braid_above_nested_start():
+    """A braid above an inner start is visited once in the later walk (step 5).
+
+    Node 2 diverges to 5 and 1, 5 and 4 drain to 3, 3 to 1, and 1 to 0.
+    The walk from 0 spends 2's countdown; the walk from 1 reaches 2 from both
+    1 and 5 and must visit it once, after both. Before the step 5 rule the
+    walk visited 2 twice, the second time after 4.
+    """
+    downstream = [[], [0], [5, 1], [1], [3], [3]]
+    _check_walk(downstream, [0] * 6, [0, 1])
+
+
+@PROPERTY
+@given(st.data())
+def test_topo_walk_visit_rule(data):
+    """sort_network.md step 5 visit rule on random acyclic graphs."""
+    n = data.draw(st.integers(1, 12))
+    downstream = [
+        sorted(
+            data.draw(st.sets(st.integers(i + 1, n - 1), max_size=2))
+            if i < n - 1
+            else set()
+        )
+        for i in range(n)
+    ]
+    extra = [data.draw(st.integers(0, 1)) for _ in range(n)]
+    starts = data.draw(st.lists(st.integers(0, n - 1), min_size=1, unique=True))
+    _check_walk(downstream, extra, starts)

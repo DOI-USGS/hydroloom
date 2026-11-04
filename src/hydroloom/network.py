@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, cast
 
 import geopandas as gpd  # type: ignore[import-untyped]
 import numpy as np
@@ -209,13 +209,8 @@ def _add_toids_impl(net: pd.DataFrame, *, return_dendritic: bool) -> pd.DataFram
     toid[hit] = net["id"].to_numpy(dtype=object)[d[hit].astype(np.int64)]
 
     out = net.iloc[u].reset_index(drop=True)
-    # Computed columns append after the inputs, geometry last (D-14).
-    at = len(out.columns)
-    if isinstance(out, gpd.GeoDataFrame):
-        at = out.columns.get_loc(out.geometry.name)
-    out.insert(at, "toid", pd.Series(toid, index=out.index, dtype=object))
 
-    return out
+    return _insert_computed(out, "toid", pd.Series(toid, index=out.index, dtype=object))
 
 
 @requires(Representation.NODE)
@@ -279,7 +274,7 @@ def _insert_computed(out: pd.DataFrame, name: str, values: Any) -> pd.DataFrame:
 
 def _outlet_values(outlets: Any) -> list[str | None]:
     # One identifier, or a sequence of them, typed as id is on ingest (I-2).
-    if isinstance(outlets, str | int | np.integer):
+    if isinstance(outlets, str | int | float | np.integer | np.floating):
         outlets = [outlets]
 
     return _identifier_values(pd.Series(list(outlets), dtype=object), "outlets")
@@ -291,8 +286,7 @@ def _sort_network_impl(net: pd.DataFrame, *, split: bool, outlets: Any) -> pd.Da
     The index build runs the D-8 cycle check (steps 2 and 3). Dense positions
     follow first appearance of each id; byte ranks give the D-4 tie rules.
     """
-    up = _make_index_ids_impl(net, mode="from")
-    assert isinstance(up, IndexIds)
+    up = cast(IndexIds, _make_index_ids_impl(net, mode="from"))
     uniques = up.uniques
     rank = _byte_rank(uniques)
     codes = uniques.get_indexer(net["id"])
@@ -352,7 +346,7 @@ def sort_network(
     network: pd.DataFrame,
     *,
     split: bool = False,
-    outlets: Sequence[str] | None = None,
+    outlets: str | int | Sequence[str | int] | None = None,
 ) -> pd.DataFrame:
     """Sort a network upstream to downstream.
 
@@ -378,9 +372,7 @@ def sort_network(
 
 def _add_topo_sort_impl(net: pd.DataFrame, *, outlets: Any) -> pd.DataFrame:
     """Give each sorted id its value, k down to 1 (add_topo_sort.md step 7)."""
-    out = _sort_network_impl(
-        net.drop(columns="topo_sort", errors="ignore"), split=False, outlets=outlets
-    )
+    out = _sort_network_impl(net, split=False, outlets=outlets)
     # Distinct ids in output order; repeated-id rows share one value.
     codes, uniques = pd.factorize(out["id"])
     topo = (len(uniques) - codes).astype(np.int32)
@@ -398,7 +390,7 @@ def _add_topo_sort_impl(net: pd.DataFrame, *, outlets: Any) -> pd.DataFrame:
 )
 @doc("add_topo_sort")
 def add_topo_sort(
-    network: pd.DataFrame, *, outlets: Sequence[str] | None = None
+    network: pd.DataFrame, *, outlets: str | int | Sequence[str | int] | None = None
 ) -> pd.DataFrame:
     """Add a topological sort column.
 

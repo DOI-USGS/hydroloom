@@ -79,10 +79,13 @@ def topo_walk(
 ) -> tuple[NDArray[np.int64], NDArray[np.int64]]:
     """Walk upstream from each start, depth first (sort_network.md step 5).
 
-    Each start is visited when its turn comes. Visiting a node takes each
-    upstream neighbor in CSR order: a neighbor whose countdown is 1 is pushed,
-    any other is decremented. A node is thus pushed from the visit of its last
-    downstream connection. The graph must be acyclic.
+    Each start is walked in two passes. The first finds the nodes the walk
+    visits, each once, with the countdowns carried from earlier walks: a
+    neighbor whose countdown is 1 is pushed, any other is decremented. The
+    second visits those nodes depth first with each countdown set to the
+    node's downstream connections among them, so a node an earlier walk
+    visited comes once, after its downstream nodes in this walk. The graph
+    must be acyclic.
 
     Parameters
     ----------
@@ -98,7 +101,7 @@ def topo_walk(
     -------
     visits : NDArray[np.int64]
         Dense positions in visit order; a node visited from two walks appears
-        twice.
+        twice, and never twice within one walk.
     walks : NDArray[np.int64]
         Aligned with ``visits``, the position in ``starts`` of the walk that
         made each visit.
@@ -106,20 +109,48 @@ def topo_walk(
     ptr = np.asarray(indptr, dtype=np.int64).tolist()
     up = np.asarray(indices, dtype=np.int64).tolist()
     left = np.asarray(countdown, dtype=np.int64).tolist()
+    member = [False] * len(left)
+    local = [0] * len(left)
 
     visits: list[int] = []
     walks: list[int] = []
     for walk, start in enumerate(np.asarray(starts, dtype=np.int64).tolist()):
-        # LIFO stack (K-8: sequential and deterministic).
+        # Pass 1: the nodes this walk visits, carrying the countdowns.
+        # LIFO stacks throughout (K-8: sequential and deterministic).
+        found: list[int] = []
+        stack = [start]
+        while stack:
+            node = stack.pop()
+            if member[node]:
+                continue
+            member[node] = True
+            found.append(node)
+            for neighbor in up[ptr[node] : ptr[node + 1]]:
+                if left[neighbor] == 1:
+                    stack.append(neighbor)
+                else:
+                    left[neighbor] -= 1
+
+        # Pass 2: each found node's downstream connections among the found.
+        for node in found:
+            for neighbor in up[ptr[node] : ptr[node + 1]]:
+                if member[neighbor]:
+                    local[neighbor] += 1
         stack = [start]
         while stack:
             node = stack.pop()
             visits.append(node)
             walks.append(walk)
             for neighbor in up[ptr[node] : ptr[node + 1]]:
-                if left[neighbor] == 1:
+                if not member[neighbor]:
+                    continue
+                if local[neighbor] == 1:
                     stack.append(neighbor)
                 else:
-                    left[neighbor] -= 1
+                    local[neighbor] -= 1
+
+        for node in found:
+            member[node] = False
+            local[node] = 0
 
     return np.asarray(visits, dtype=np.int64), np.asarray(walks, dtype=np.int64)
