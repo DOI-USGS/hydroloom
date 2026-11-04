@@ -441,7 +441,9 @@ def _coerce(
             continue
         if kind in TEXT_TYPES:
             expected[col] = _text(expected[col], col, "convert")
-            how = "convert" if stored_form else "strict"
+            # I-1 binds identifiers; a text column passes through as it arrives
+            # (B-2) and is coerced to text like any other vocabulary type (S-7).
+            how = "convert" if stored_form or kind == "text" else "strict"
             actual[col] = _text(actual[col], col, how)
         elif kind in INTEGER_TYPES:
             values = expected[col].astype(np.float64)

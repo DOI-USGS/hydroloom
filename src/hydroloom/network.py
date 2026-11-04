@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Sequence
+from typing import Any
 
 import geopandas as gpd  # type: ignore[import-untyped]
 import numpy as np
@@ -14,6 +16,7 @@ from hydroloom._hy import (
     _as_hy,
     _classify,
     _hy_reverse,
+    _identifier_values,
     _join,
     _route,
     _true,
@@ -27,7 +30,7 @@ from hydroloom.errors import (
     _stack_level,
     msg,
 )
-from hydroloom.index_ids import IndexIds, _from_edges
+from hydroloom.index_ids import IndexIds, _byte_rank, _from_edges
 
 _MODES = ("to", "from", "both")
 
@@ -250,5 +253,173 @@ def add_toids(network: pd.DataFrame, *, return_dendritic: bool = True) -> pd.Dat
 
     native = {Representation.NODE: _add_toids_impl}
     out: pd.DataFrame = _route(df, add_toids, native, return_dendritic=return_dendritic)
+
+    return _hy_reverse(out, names)
+
+
+def _node_to_topo(net: pd.DataFrame) -> pd.DataFrame:
+    # The node route of sort_network and add_topo_sort: add_toids with its
+    # default return_dendritic = True, silently (A-3, A-12).
+    return _add_toids_impl(net, return_dendritic=True)
+
+
+def _insert_computed(out: pd.DataFrame, name: str, values: Any) -> pd.DataFrame:
+    """Add a computed column after the inputs, geometry last (D-14).
+
+    An input column of the same hy name is replaced (B-4).
+    """
+    out = out.drop(columns=name, errors="ignore")
+    at = len(out.columns)
+    if isinstance(out, gpd.GeoDataFrame):
+        at = out.columns.get_loc(out.geometry.name)
+    out.insert(at, name, values)
+
+    return out
+
+
+def _outlet_values(outlets: Any) -> list[str | None]:
+    # One identifier, or a sequence of them, typed as id is on ingest (I-2).
+    if isinstance(outlets, str | int | np.integer):
+        outlets = [outlets]
+
+    return _identifier_values(pd.Series(list(outlets), dtype=object), "outlets")
+
+
+def _sort_network_impl(net: pd.DataFrame, *, split: bool, outlets: Any) -> pd.DataFrame:
+    """Sort a topo or flownetwork frame upstream to downstream (sort_network.md).
+
+    The index build runs the D-8 cycle check (steps 2 and 3). Dense positions
+    follow first appearance of each id; byte ranks give the D-4 tie rules.
+    """
+    up = _make_index_ids_impl(net, mode="from")
+    assert isinstance(up, IndexIds)
+    uniques = up.uniques
+    rank = _byte_rank(uniques)
+    codes = uniques.get_indexer(net["id"])
+
+    # Starts (step 4): an id with a row whose toid is no id (I-4), or the
+    # named outlets, each once; order of `outlets` is not read (D3-50).
+    if outlets is None:
+        terminal = uniques.get_indexer(net["toid"]) < 0
+        candidates = np.unique(codes[terminal])
+    else:
+        values = _outlet_values(outlets)
+        found = uniques.get_indexer(pd.Index(values, dtype=object))
+        absent = [v for v, f in zip(values, found, strict=True) if f < 0]
+        if absent:
+            names = _join(list(dict.fromkeys(absent)))
+            raise HydroloomError(msg("outlet_not_in_network", outlets=names))
+        candidates = np.unique(found)
+    # Step 6: starts in descending byte order.
+    starts = candidates[np.argsort(-rank[candidates], kind="stable")]
+
+    # Step 5: one countdown per distinct (id, toid) pair, an outside toid
+    # included (D3-155); as_hy has raised on a repeated pair, so a row is one.
+    countdown = np.bincount(codes, minlength=len(uniques)).astype(np.int64)
+    visits, walks = walk.topo_walk(up.indptr, up.indices, countdown, starts)
+
+    # Step 7: each id at its last visit, latest first; rows of one id by toid
+    # byte order, then input order (D-3).
+    last = np.full(len(uniques), -1, dtype=np.int64)
+    np.maximum.at(last, visits, np.arange(len(visits), dtype=np.int64))
+    rows = np.flatnonzero(last[codes] >= 0)
+    toid_rank = _byte_rank(net["toid"].to_numpy(dtype=object))
+    order = rows[np.lexsort((toid_rank[rows], -last[codes[rows]]))]
+    out = net.iloc[order].reset_index(drop=True)
+    if not split:
+        return out
+
+    # Step 9: the start of the walk that visited each flowline.
+    if len(np.unique(visits)) < len(visits):
+        raise HydroloomError(msg("split_outlets_overlap"))
+    start_of = np.full(len(uniques), -1, dtype=np.int64)
+    start_of[visits] = starts[walks]
+    ids = uniques.to_numpy(dtype=object)[start_of[codes[order]]]
+
+    return _insert_computed(
+        out, "terminal_id", pd.Series(ids, index=out.index, dtype=object)
+    )
+
+
+@requires(
+    Representation.TOPO,
+    Representation.FLOWNETWORK,
+    convert={Representation.NODE: _node_to_topo},
+    via={Representation.NODE: "add_toids"},
+)
+@doc("sort_network")
+def sort_network(
+    network: pd.DataFrame,
+    *,
+    split: bool = False,
+    outlets: Sequence[str] | None = None,
+) -> pd.DataFrame:
+    """Sort a network upstream to downstream.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import sort_network
+    >>> net = pd.DataFrame({"id": [30, 2, 10, 4, 5], "toid": [4, 4, 4, 5, 0]})
+    >>> sort_network(net)["id"].tolist()
+    ['10', '2', '30', '4', '5']
+    >>> sort_network(net, split=True)["terminal_id"].tolist()
+    ['5', '5', '5', '5', '5']
+    """
+    df, names = _as_hy(network)
+    native = {
+        Representation.TOPO: _sort_network_impl,
+        Representation.FLOWNETWORK: _sort_network_impl,
+    }
+    out: pd.DataFrame = _route(df, sort_network, native, split=split, outlets=outlets)
+
+    return _hy_reverse(out, names)
+
+
+def _add_topo_sort_impl(net: pd.DataFrame, *, outlets: Any) -> pd.DataFrame:
+    """Give each sorted id its value, k down to 1 (add_topo_sort.md step 7)."""
+    out = _sort_network_impl(
+        net.drop(columns="topo_sort", errors="ignore"), split=False, outlets=outlets
+    )
+    # Distinct ids in output order; repeated-id rows share one value.
+    codes, uniques = pd.factorize(out["id"])
+    topo = (len(uniques) - codes).astype(np.int32)
+
+    return _insert_computed(
+        out, "topo_sort", pd.Series(topo, index=out.index, dtype=np.int32)
+    )
+
+
+@requires(
+    Representation.TOPO,
+    Representation.FLOWNETWORK,
+    convert={Representation.NODE: _node_to_topo},
+    via={Representation.NODE: "add_toids"},
+)
+@doc("add_topo_sort")
+def add_topo_sort(
+    network: pd.DataFrame, *, outlets: Sequence[str] | None = None
+) -> pd.DataFrame:
+    """Add a topological sort column.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import add_topo_sort
+    >>> net = pd.DataFrame(
+    ...     {"id": [10, 9, 2, 3, 5, 7], "toid": [2, 2, 3, 0, 3, 0]}
+    ... )
+    >>> out = add_topo_sort(net)
+    >>> out["id"].tolist()
+    ['10', '9', '2', '5', '3', '7']
+    >>> out["topo_sort"].tolist()
+    [6, 5, 4, 3, 2, 1]
+    """
+    df, names = _as_hy(network)
+    native = {
+        Representation.TOPO: _add_topo_sort_impl,
+        Representation.FLOWNETWORK: _add_topo_sort_impl,
+    }
+    out: pd.DataFrame = _route(df, add_topo_sort, native, outlets=outlets)
 
     return _hy_reverse(out, names)

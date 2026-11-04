@@ -41,7 +41,11 @@ PROPERTY = settings(derandomize=True, max_examples=80, deadline=None)
 
 MANIFEST = load_manifest()
 OUTLET_FILL = "add_toids.md §Algorithm step 6"
-FILL_CASES = [c for c in MANIFEST["cases"] if c.get("r_only") == OUTLET_FILL]
+FILL_CASES = [
+    c
+    for c in MANIFEST["cases"]
+    if c["function"] == "add_toids" and c.get("r_only") == OUTLET_FILL
+]
 
 # The id-typed columns add_toids reads, by hy name.
 NODE_IDS = {"id", "fromnode", "tonode"}
