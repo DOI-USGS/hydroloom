@@ -183,7 +183,7 @@ another term (`comid` registered as `toid`) is a candidate for the registered na
 is coerced to character by `c()`.
 `clear = TRUE` with no `x` drops every registered mapping and keeps the vocabulary
 aliases, so `hy()` still renames the seeded columns. Python's
-`register_names(replace=True)` does the same (D3-20). The registry, cleared or extended, returns to the vocabulary seed
+`register_names({}, replace=True)` does the same (D3-20). The registry, cleared or extended, returns to the vocabulary seed
 the next time the package is loaded, which includes every R restart.
 
 ## Remedies
@@ -293,3 +293,6 @@ load, so its expectation is the vocabulary's alias table as two columns, `name` 
   registered to", and its `condition` drops the anchors D3-65, B-4, and B-3, which a
   user cannot follow; that provenance (the D3-65 silent no-op, B-4, B-3) is recorded
   here, since the `remedies.json` schema has no field users do not read.
+- 2026-11-03, suite 0.1.0, M5 run 4 unit 3 fix round, SP-04: Edge cases write the
+  Python reset as `register_names({}, replace=True)`, since Signature makes `mapping`
+  required.
