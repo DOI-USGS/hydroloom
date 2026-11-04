@@ -1454,6 +1454,9 @@ cases:
   # order (A-4). Cases without prepare stay R only: R reads a class, Python
   # reads columns. Cases passing include_conversions stay R only: Python
   # capabilities(network) takes no such argument (D3-31). No case raises.
+  # The other cases stay [r] until the Python @requires registry holds the
+  # 24 code-table functions in code-table order (A-4): every layer has 24
+  # rows, and Python iterates the registry (M5 run 4 unit 7).
 
   # changes_with: A-4; hy_node, sf, aggregate_id (mainstemid) and length_km;
   # node, geometry, and aggregate-flowpath rows TRUE
