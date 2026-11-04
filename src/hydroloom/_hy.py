@@ -611,7 +611,7 @@ def _is_dendritic_impl(net: pd.DataFrame, *, validate_data: bool) -> bool:
             return False
 
     # Rule 2: a repeated id beside toid, the flownetwork pattern (I-6).
-    if validate_data and "toid" in net.columns and not net["id"].is_unique:
+    if validate_data and _classify(net) is Representation.FLOWNETWORK:
         return False
 
     return True

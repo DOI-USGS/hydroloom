@@ -102,7 +102,7 @@ def test_postconditions(table, rng):
 @PROPERTY
 @given(networks(), st.sampled_from(["v", "name", "levelpath"]))
 def test_other_columns_not_read(table, column):
-    """Adding, removing, or changing another column leaves the result."""
+    """Adding, removing, or changing another column leaves the result unchanged."""
     strict = is_dendritic(table)
     loose = is_dendritic(table, validate_data=False)
     changed = table.assign(**{column: np.arange(len(table)) * 7})

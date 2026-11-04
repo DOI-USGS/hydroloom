@@ -21,7 +21,7 @@ from hydroloom._docstrings import (
 # these; the table and these counts are reviewed together (VERIFICATION 6).
 EXPECTED_FIRES = {
     r"(?s)(?:\A|\n\n)In R,.*?(?=\n\n(?!- |\d+\. )|\Z)": 15,
-    r" In R,[^\n]*?[.?!](?=\s|\Z)": 136,
+    r" In R,[^\n]*?[.?!](?=\s|\Z)": 137,
     r"logical if TRUE": 29,
     r"logical if `TRUE`": 5,
     r"\Alogical\. ": 7,
@@ -73,7 +73,7 @@ EXPECTED_FIRES = {
     r"`(\w+) = TRUE`": 7,
     r"`(\w+) = FALSE`": 5,
     r"`TRUE`": 10,
-    r"`FALSE`": 32,
+    r"`FALSE`": 31,
     r"(?<!= )\bTRUE\b": 36,
     r"(?<!= )\bFALSE\b": 15,
     r"an `NA`": 5,
