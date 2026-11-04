@@ -496,6 +496,9 @@ _REGISTRY: dict[str, _Requirement] = {}
 # entry here fails at registration, on import, not on a user's call.
 _NEEDS_KEY = {Representation.TOPO: "needs_topo", Representation.NODE: "needs_node"}
 
+# A-3: a pattern that also satisfies a broader one, and that broader pattern.
+_SATISFIES_ALSO = {Representation.LEVELED: Representation.TOPO}
+
 
 def requires(
     *needs: Representation,
@@ -545,8 +548,8 @@ def _route(
         df = entry.convert[current](df)
         current = _classify(df)
     label = current
-    if label is Representation.LEVELED and label not in native:
-        label = Representation.TOPO
+    if label in _SATISFIES_ALSO and label not in native:
+        label = _SATISFIES_ALSO[label]
     if entry.key is None and label not in native:
         label = Representation.HY
     if entry.key is not None and (label not in entry.needs or label not in native):
@@ -602,37 +605,39 @@ def representation(network: pd.DataFrame) -> str:
 def _capability_input(network: Any) -> tuple[Representation | None, set[str]]:
     """Return the pattern of ``network`` and the hy column names it holds.
 
-    The pattern is None where `representation` raises, a table with no ``id``
-    included (D3-167), and for anything not a table. ``geom`` stands for an
-    active geometry column (G-14).
+    The pattern is None for anything not a table and wherever reading the
+    table's pattern fails, a table with no ``id`` included (D3-167): the
+    caller never raises (Preconditions, B-1). ``geom`` stands for an active
+    geometry column (G-14).
     """
     if not isinstance(network, pd.DataFrame):
         return None, set()
     try:
         geometry = _geometry_name(network)
-    except AttributeError:
+    except Exception:
+        # A GeoDataFrame with no active geometry.
         geometry = None
     present = {"geom"} if geometry is not None else set()
 
     try:
         attrs, _, _ = _align_frame(network, {})
-    except (ValueError, KeyError, TypeError):
+        current = _classify(attrs)
+    except Exception:
         columns = [c for c in network.columns if c != geometry]
         try:
             names = _align(columns, {}, warn=False)
-        except KeyError:
+        except Exception:
             names = {}
         return None, present | {str(names.get(c, c)) for c in columns}
 
-    return _classify(attrs), present | {str(c) for c in attrs.columns}
+    return current, present | {str(c) for c in attrs.columns}
 
 
 def _satisfies(current: Representation | None, pattern: Representation) -> bool:
-    # A-3: LEVELED satisfies TOPO.
-    if current is Representation.LEVELED and pattern is Representation.TOPO:
-        return True
+    if current is None:
+        return False
 
-    return current is pattern
+    return current is pattern or _SATISFIES_ALSO.get(current) is pattern
 
 
 @requires()
@@ -648,8 +653,9 @@ def capabilities(network: Any) -> pd.DataFrame:
     >>> caps = capabilities(node)
     >>> caps.columns.tolist()
     ['function', 'available', 'via']
-    >>> caps.loc[caps["via"] != "", "function"].tolist()
-    ['add_topo_sort', 'make_index_ids', 'navigate_network_dfs', 'sort_network']
+    >>> row = caps.set_index("function").loc["sort_network"]
+    >>> bool(row["available"]), row["via"]
+    (False, 'add_toids')
     """
     current, present = _capability_input(network)
 

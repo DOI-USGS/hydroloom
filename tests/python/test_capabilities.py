@@ -8,19 +8,17 @@ Postconditions against the registry; no computed value is written inline (S-7).
 
 from __future__ import annotations
 
-import doctest
-
 import geopandas as gpd
 import pandas as pd
 import pytest
-import yaml
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from numpydoc.docscrape import get_doc_object
 from numpydoc.validate import validate
 from shapely.geometry import Point
 
-from conformance import CONFORMANCE_DIR
+import hydroloom._hy
+from conformance import load_requires, run_doctest
 from hydroloom import representation
 from hydroloom._hy import _REGISTRY, capabilities, requires
 
@@ -70,12 +68,46 @@ def tables(draw, *, columns=COLUMNS, geometry=None):
     return table
 
 
+@st.composite
+def odd_tables(draw):
+    """Draw a table with duplicated names, MultiIndex columns, or no active geometry."""
+    table = draw(tables(geometry=False))
+    shape = draw(st.sampled_from(["duplicated", "multiindex", "inactive"]))
+    if shape == "duplicated":
+        return pd.concat([table, table], axis=1)
+    if shape == "multiindex":
+        table.columns = pd.MultiIndex.from_arrays([table.columns, table.columns])
+        return table
+
+    return gpd.GeoDataFrame(table)
+
+
 def _any(name):
     return not _REGISTRY[name].needs
 
 
 def _needs(name):
     return {need.value for need in _REGISTRY[name].needs}
+
+
+def _assert_no_representation(out):
+    """Only ``any`` rows are available and no via is named (D3-167)."""
+    assert all(_any(f) for f in out.loc[out["available"], "function"])
+    assert (out["via"] == "").all()
+
+
+def _assert_answer(value):
+    """``capabilities`` answers; where `representation` fails, with none (B-1)."""
+    out = capabilities(value)
+
+    assert out.columns.tolist() == ["function", "available", "via"]
+    assert out["function"].tolist() == sorted(_REGISTRY)
+    assert out["available"].dtype == bool
+    assert not (out["available"] & (out["via"] != "")).any()
+    try:
+        representation(value)
+    except Exception:
+        _assert_no_representation(out)
 
 
 # Rows and columns ----------------------------------------------------------
@@ -127,8 +159,7 @@ def test_no_representation_answers(table):
     """With no ``id``, only ``any`` rows can be available; no via (D3-167)."""
     out = capabilities(table)
 
-    assert all(_any(f) for f in out.loc[out["available"], "function"])
-    assert (out["via"] == "").all()
+    _assert_no_representation(out)
 
 
 @st.composite
@@ -205,13 +236,37 @@ def test_leveled_satisfies_topo():
     pd.testing.assert_frame_equal(a, b)
 
 
-@pytest.mark.parametrize("value", [None, [1, 2], "id", pd.Series([1, 2])])
-def test_answers_on_anything(value):
-    """Any object gets an answer with no representation (Preconditions, B-1)."""
-    out = capabilities(value)
+OBJECTS = (None, [1, 2], "id", pd.Series([1, 2]))
 
-    assert all(_any(f) for f in out.loc[out["available"], "function"])
-    assert (out["via"] == "").all()
+
+@PROPERTY
+@given(st.one_of(st.sampled_from(OBJECTS), odd_tables()))
+def test_answers_on_anything(value):
+    """Any object gets an answer, with no pattern where none is read (B-1)."""
+    _assert_answer(value)
+
+
+@pytest.mark.parametrize(
+    "columns", [["id", "id", "toid"], ["id", "toid", "toid"], ["notes", "notes"]]
+)
+def test_duplicated_names_answer(columns):
+    """Duplicated column names get an answer (Preconditions, B-1)."""
+    _assert_answer(pd.DataFrame([range(len(columns))], columns=columns))
+
+
+def test_multiindex_columns_answer():
+    """MultiIndex column names get an answer (Preconditions, B-1)."""
+    table = pd.DataFrame([[1, 0]])
+    table.columns = pd.MultiIndex.from_arrays([["id", "toid"], ["a", "b"]])
+
+    _assert_answer(table)
+
+
+def test_no_active_geometry_answers():
+    """A GeoDataFrame with no active geometry gets no pattern (B-1)."""
+    table = gpd.GeoDataFrame({"id": [1, 2], "toid": [2, 0]})
+
+    _assert_no_representation(capabilities(table))
 
 
 def test_no_include_conversions():
@@ -222,7 +277,8 @@ def test_no_include_conversions():
 
 def test_geometry_column_gate(monkeypatch):
     """A ``geom`` column need is met by an active geometry, with no id (G-14)."""
-    monkeypatch.setitem(_REGISTRY, "geom_fn", None)
+    # Register geom_fn in a copy of the registry, restored after the test.
+    monkeypatch.setattr(hydroloom._hy, "_REGISTRY", dict(_REGISTRY))
 
     @requires(columns=["geom"])
     def geom_fn(network):
@@ -230,23 +286,16 @@ def test_geometry_column_gate(monkeypatch):
 
     plain = pd.DataFrame({"notes": [1, 2]})
     spatial = gpd.GeoDataFrame(plain, geometry=[Point(0, 0), Point(1, 0)])
-    rows = {
-        name: frame.set_index("function").loc["geom_fn"]
-        for name, frame in (
-            ("plain", capabilities(plain)),
-            ("spatial", capabilities(spatial)),
-        )
-    }
+    plain_out = capabilities(plain).set_index("function")
+    spatial_out = capabilities(spatial).set_index("function")
 
-    assert not rows["plain"]["available"]
-    assert rows["spatial"]["available"]
+    assert not plain_out.loc["geom_fn", "available"]
+    assert spatial_out.loc["geom_fn", "available"]
 
 
 def test_registry_entry_matches_requires():
     """The capabilities entry equals its description's front matter (A-4)."""
-    path = CONFORMANCE_DIR / "algorithms" / "hy_capabilities.md"
-    front = path.read_text(encoding="utf-8").split("---\n", maxsplit=2)[1]
-    requires_ = yaml.safe_load(front)["requires"]
+    requires_ = load_requires("hy_capabilities")
     entry = _REGISTRY["capabilities"]
 
     assert requires_["pattern"] == ["any"]
@@ -257,13 +306,7 @@ def test_registry_entry_matches_requires():
 
 def test_doctest():
     """The hand-written example runs (A-13)."""
-    tests = doctest.DocTestFinder().find(capabilities, "capabilities", globs={})
-    runner = doctest.DocTestRunner()
-    for test in tests:
-        runner.run(test)
-
-    assert tests and tests[0].examples
-    assert runner.summarize(verbose=False).failed == 0
+    assert run_doctest(capabilities, "capabilities").failed == 0
 
 
 def test_docstring_validates():

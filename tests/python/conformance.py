@@ -9,6 +9,7 @@ tolerances and the D-14 order rule (VERIFICATION §2).
 
 from __future__ import annotations
 
+import doctest
 import functools
 import importlib.resources
 import json
@@ -94,6 +95,26 @@ def load_vocab() -> dict[str, dict[str, Any]]:
 def load_remedies() -> dict[str, dict[str, Any]]:
     """Read the remedies catalog from the package copy (SPEC A-10)."""
     return _read_data_json("remedies.json")["remedies"]
+
+
+def load_requires(function: str) -> dict[str, Any]:
+    """Read the ``requires`` front matter of a description (SPEC A-4)."""
+    path = CONFORMANCE_DIR / "algorithms" / f"{function}.md"
+    front = path.read_text(encoding="utf-8").split("---\n", maxsplit=2)[1]
+
+    return yaml.safe_load(front)["requires"]
+
+
+def run_doctest(func: Callable[..., Any], name: str) -> doctest.TestResults:
+    """Run the examples in ``func``'s docstring; assert there is at least one."""
+    tests = doctest.DocTestFinder().find(func, name, globs={})
+    runner = doctest.DocTestRunner()
+    for test in tests:
+        runner.run(test)
+
+    assert tests and tests[0].examples
+
+    return runner.summarize(verbose=False)
 
 
 def python_name(function: str) -> str:
