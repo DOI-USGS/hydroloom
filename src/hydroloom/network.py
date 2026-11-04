@@ -18,11 +18,12 @@ from hydroloom._hy import (
     _hy_reverse,
     _identifier_values,
     _join,
+    _missing,
     _route,
     _true,
     requires,
 )
-from hydroloom._kernels import walk
+from hydroloom._kernels import sequential, walk
 from hydroloom.errors import (
     HydroloomError,
     HydroloomWarning,
@@ -415,3 +416,123 @@ def add_topo_sort(
     out: pd.DataFrame = _route(df, add_topo_sort, native, outlets=outlets)
 
     return _hy_reverse(out, names)
+
+
+_DIRECTIONS = ("down", "up", "downmain", "upmain")
+
+
+def _start_values(starts: Any) -> list[str | None]:
+    """Return each start as text, ``None`` where it cannot be an id.
+
+    A start compares with ``id`` as text (navigate_network_dfs.md Algorithm
+    step 3, I-1), so a whole number matches its decimal string; a missing,
+    fractional, or non-finite value matches nothing.
+    """
+    if isinstance(starts, str | int | float | np.integer | np.floating):
+        starts = [starts]
+    out: list[str | None] = []
+    for value in starts:
+        if _missing(value) or isinstance(value, bool | np.bool_):
+            out.append(None)
+        elif isinstance(value, str):
+            out.append(value)
+        elif isinstance(value, int | np.integer):
+            out.append(str(int(value)))
+        elif isinstance(value, float | np.floating) and float(value).is_integer():
+            out.append(str(int(value)))
+        else:
+            out.append(None)
+
+    return out
+
+
+def _navigate_dfs_index(
+    index: IndexIds, starts: Any, *, direction: str, reset: bool
+) -> list[list[pd.Index]]:
+    """Walk an index whose direction and main flags are checked (steps 3 to 7)."""
+    uniques = pd.Index(index.uniques.astype(str), dtype=object)
+    values = _start_values(starts)
+    found = uniques.get_indexer(pd.Index(values, dtype=object))
+    if (found < 0).any():
+        raise HydroloomError(msg("start_not_in_network"))
+    # Unique starts in first-appearance order (step 3).
+    unique = np.asarray(list(dict.fromkeys(found.tolist())), dtype=np.int64)
+
+    main = index.main if direction.endswith("main") else None
+    visit, path, start_ptr = sequential.dfs_paths(
+        index.indptr, index.indices, unique, main, reset
+    )
+
+    # Step 7: identifiers by dense position, split by path.
+    ids = uniques.to_numpy(dtype=object)[visit]
+    result: list[list[pd.Index]] = []
+    for lo, hi in zip(start_ptr[:-1].tolist(), start_ptr[1:].tolist(), strict=True):
+        cuts = np.flatnonzero(np.diff(path[lo:hi])) + 1
+        result.append(
+            [pd.Index(part, dtype=object) for part in np.split(ids[lo:hi], cuts)]
+            if hi > lo
+            else []
+        )
+
+    return result
+
+
+@requires(
+    Representation.TOPO,
+    Representation.FLOWNETWORK,
+    via={Representation.NODE: "add_toids"},
+)
+@doc("navigate_network_dfs")
+def navigate_network_dfs(
+    network: pd.DataFrame | IndexIds,
+    starts: Sequence[str],
+    *,
+    direction: str = "down",
+    reset: bool = False,
+) -> list[list[pd.Index]]:
+    """Navigate all paths depth first.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from hydroloom import navigate_network_dfs
+    >>> net = pd.DataFrame({"id": [1, 1, 10, 9, 4], "toid": [10, 9, 4, 4, 0]})
+    >>> [path.tolist() for path in navigate_network_dfs(net, ["1"])[0]]
+    [['1', '10', '4'], ['9']]
+    >>> up = navigate_network_dfs(net, ["4"], direction="up")
+    >>> [path.tolist() for path in up[0]]
+    [['4', '10', '1'], ['9']]
+    """
+    if direction not in _DIRECTIONS:
+        raise ValueError(msg("direction_invalid", direction=direction))
+    mode = "from" if direction.startswith("up") else "to"
+    is_main = direction.endswith("main")
+
+    if isinstance(network, IndexIds):
+        # Checked against direction and used as is (Algorithm step 1).
+        if network.mode != mode:
+            needed = "down" if network.mode == "to" else "up"
+            raise HydroloomError(
+                msg("index_ids_direction_mismatch", needed=needed, mode=network.mode)
+            )
+        if is_main and network.main is None:
+            raise HydroloomError(msg("index_ids_missing_main", direction=direction))
+        return _navigate_dfs_index(network, starts, direction=direction, reset=reset)
+    if not isinstance(network, pd.DataFrame):
+        raise HydroloomError(msg("network_not_frame_or_index_ids"))
+
+    df, _ = _as_hy(network)
+    # A node table walked down or up converts silently with every connection
+    # kept (Preconditions). The main directions route through to_flownetwork,
+    # which Python does not have, so _route gives the representation guidance.
+    if not is_main and _classify(df) is Representation.NODE:
+        df = _add_toids_impl(df, return_dendritic=False)
+    native = {
+        Representation.TOPO: _make_index_ids_impl,
+        Representation.FLOWNETWORK: _make_index_ids_impl,
+    }
+    index: IndexIds = _route(df, navigate_network_dfs, native, mode=mode)
+    if is_main and index.main is None:
+        raise HydroloomError(msg("main_path_required", direction=direction))
+
+    return _navigate_dfs_index(index, starts, direction=direction, reset=reset)

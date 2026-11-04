@@ -9,7 +9,13 @@ from hydroloom._hy import (
     register_names,
     representation,
 )
-from hydroloom.network import add_toids, add_topo_sort, make_index_ids, sort_network
+from hydroloom.network import (
+    add_toids,
+    add_topo_sort,
+    make_index_ids,
+    navigate_network_dfs,
+    sort_network,
+)
 
 __all__ = [
     "add_toids",
@@ -20,6 +26,7 @@ __all__ = [
     "is_hy",
     "make_index_ids",
     "name_definitions",
+    "navigate_network_dfs",
     "register_names",
     "representation",
     "sort_network",
