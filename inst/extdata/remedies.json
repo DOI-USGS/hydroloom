@@ -424,6 +424,22 @@
       ],
       "python_class": "HydroloomWarning"
     },
+    "node_main_needs_flownetwork": {
+      "kind": "error",
+      "message": "{function}() direction '{direction}' follows the main path at each divergence and confluence (downmain, upmain), and the network is a node table (fromnode/tonode), from which only to_flownetwork() builds those columns; to_flownetwork() is not yet available in Python. All rows are affected. Build the flownetwork in R with to_flownetwork(), or supply toid with downmain or upmain columns, and call again.",
+      "placeholders": {
+        "function": "the function called",
+        "direction": "the direction given"
+      },
+      "condition": "A main direction (downmain, upmain) needs a flownetwork with the main-path columns, which to_flownetwork() builds from a node table's divergence and levelpath. Python has no to_flownetwork() yet, so it cannot convert the node table as R does.",
+      "rows": "all",
+      "fix": "Build the flownetwork in R with to_flownetwork(), or supply toid with downmain or upmain columns, then call again.",
+      "raised_by": ["navigate_network_dfs"],
+      "languages": ["python"],
+      "r_text": [],
+      "r_class": "hydroloom_representation_error",
+      "python_class": "RepresentationError"
+    },
     "divergence_check_missing_columns": {
       "kind": "error",
       "message": "check_hy_graph: divergence_check requires attributes: {columns}",
