@@ -248,7 +248,7 @@ O(n).
   repeated-pair table from its first release, and R does so in M6 (D3-166, D3-209). Until M6, R returns `TRUE` when
   the edge is on no cycle and both copies, as cycle rows, when it is; the case
   `check_hy_graph_duplicated_edge` holds R's `TRUE` until the Python-only case is added
-  when Python generates (M5).
+  when Python generates (M6).
 - Node-topology input: stops with `needs_topo` in both languages (D3-45), cases
   `check_hy_graph_new_hope_node` and `check_hy_graph_network_node`; with
   `divergence_check`, only after the divergence check passes.

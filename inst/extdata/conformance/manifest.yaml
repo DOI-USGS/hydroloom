@@ -2957,7 +2957,8 @@ cases:
     generator: [r]
 
   # R-only until M6 (D3-166): R returns TRUE; Python lists both rows as the
-  # repeated-pair table (M5 case, D3-209).
+  # repeated-pair table (M6 case, added with the check_hy_graph port;
+  # BACKLOG M6 row, D3-209).
   - id: check_hy_graph_duplicated_edge
     function: check_hy_graph
     fixture: duplicated_edge.gpkg
