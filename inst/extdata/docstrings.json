@@ -1405,7 +1405,7 @@
   "is_dendritic": {
     "arguments": {
       "x": "data.frame or hy object to test.",
-      "validate_data": "logical. If `FALSE`, only checks the `divergence` column (fast). If `TRUE` (default), also checks for duplicated ids."
+      "validate_data": "logical. If `TRUE` (default), also checks for duplicated ids. In R, if `FALSE`, only checks the `divergence` column (fast)."
     },
     "description": "Checks whether the network contains any divergences. Returns `FALSE` if a `divergence` column exists with any value of 2, or if the table has a `toid` column and duplicated `id` values (indicating row duplication from divergences). Otherwise returns `TRUE`.",
     "details": null,

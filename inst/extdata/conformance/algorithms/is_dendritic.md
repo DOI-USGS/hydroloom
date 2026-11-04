@@ -132,9 +132,10 @@ repeat test, O(1) otherwise.
   (`return_divergence.gpkg`): `FALSE` for both values of `validate_data`, by the
   `divergence` 2 test.
 - Repeated `id` without `toid` (node topology): `TRUE`; the repeat test needs `toid`.
-- Missing `divergence` value: ignored. Missing `id` values: two or more count as a
-  repeat (R `duplicated()`; pandas `duplicated()` matches). Both are captured, not
-  contract, with no case (REVIEW_10282026 rule 4 as amended: tolerated, not advertised).
+- Missing `divergence` value: ignored. Missing `id` values: in R, two or more count as a
+  repeat (R `duplicated()`). Python raises `id_missing` at ingest (I-12, B-1), so the
+  repeat reading is R's. Both are captured, not contract, with no case
+  (REVIEW_10282026 rule 4 as amended: tolerated, not advertised).
 - `divergence` stored as text, or coded outside 0, 1, 2: R compares with `==` against 2,
   so text `"2"` reads as minor and 3 is ignored. This is captured R behavior, not
   contract; no case.
@@ -213,3 +214,6 @@ expectation layer `is_dendritic_divergence_attribute` holds one row, `value = FA
 - 2026-11-03, suite 0.1.0, M5 run 4 unit 4 (RULES P-2): the duplicated-edge Edge case
   names the Python raise case on `sort_network_dups.gpkg`,
   `hy_sort_network_dups_pair_repeated`, which has landed under `hy`. No binding change.
+- 2026-11-03, suite 0.1.0, M5 run 4 unit 8 fix round (SP-06): the missing-`id` Edge
+  case says Python raises `id_missing` at ingest (I-12, B-1), so two or more missing ids
+  counting as a repeat is R's reading. No binding change.

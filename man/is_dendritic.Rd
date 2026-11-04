@@ -9,9 +9,9 @@ is_dendritic(x, validate_data = TRUE)
 \arguments{
 \item{x}{data.frame or hy object to test.}
 
-\item{validate_data}{logical. If \code{FALSE}, only checks the
-\code{divergence} column (fast). If \code{TRUE} (default), also
-checks for duplicated ids.}
+\item{validate_data}{logical. If \code{TRUE} (default), also checks
+for duplicated ids. In R, if \code{FALSE}, only checks the
+\code{divergence} column (fast).}
 }
 \value{
 logical. TRUE if the network is dendritic.

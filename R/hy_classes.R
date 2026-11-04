@@ -680,9 +680,9 @@ hy_network_type <- function(x) {
 #' \code{id} values (indicating row duplication from divergences).
 #' Otherwise returns \code{TRUE}.
 #' @param x data.frame or hy object to test.
-#' @param validate_data logical. If \code{FALSE}, only checks the
-#' \code{divergence} column (fast). If \code{TRUE} (default), also
-#' checks for duplicated ids.
+#' @param validate_data logical. If \code{TRUE} (default), also checks
+#' for duplicated ids. In R, if \code{FALSE}, only checks the
+#' \code{divergence} column (fast).
 #' @returns logical. TRUE if the network is dendritic.
 #' @export
 #' @examples
