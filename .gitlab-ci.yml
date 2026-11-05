@@ -80,10 +80,14 @@ verify:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/condaforge/miniforge3:latest
   variables:
     GIT_DEPTH: 0
-    SSL_CERT_FILE: $DOI_ROOT_CA
-    REQUESTS_CA_BUNDLE: $DOI_ROOT_CA
-    PIP_CERT: $DOI_ROOT_CA
     PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  # One bundle of the public roots plus the DOI root. Hosts the DOI proxy
+  # inspects (pypi.org, test.pypi.org) present a chain signed by the DOI
+  # root; upload.pypi.org is passed through and presents its public chain,
+  # which the DOI certificate alone cannot verify.
+  before_script:
+    - cat "$(python -m certifi)" "$DOI_ROOT_CA" > /tmp/ca-bundle.pem
+    - export SSL_CERT_FILE=/tmp/ca-bundle.pem REQUESTS_CA_BUNDLE=/tmp/ca-bundle.pem PIP_CERT=/tmp/ca-bundle.pem
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^rc\/py-/
     - if: $CI_COMMIT_TAG =~ /^py-v/
@@ -121,6 +125,7 @@ py-publish:
   needs: ["py-build", "py-verify"]
   variables:
     GIT_DEPTH: 0
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
     TWINE_USERNAME: __token__
     TWINE_NON_INTERACTIVE: "1"
   script:
