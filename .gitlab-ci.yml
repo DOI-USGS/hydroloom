@@ -27,6 +27,11 @@ workflow:
       when: never
     - if: $CI_COMMIT_BRANCH =~ /^rc\//
   before_script:
+    # src/ holds the Python package. R CMD build stamps NeedsCompilation: yes
+    # whenever the source directory has src/, before .Rbuildignore drops it
+    # (tools:::add_build_stamp_to_description_file), so the R tarball is
+    # built from a checkout without it.
+    - rm -rf src
     - wget --no-check-certificate -O /usr/local/share/ca-certificates/DOIRootCA2.crt https://raw.githubusercontent.com/dblodgett-usgs/hydrogeoenv/master/linux/DOIRootCA2.cer
     - chmod 644 /usr/local/share/ca-certificates/DOIRootCA2.crt && update-ca-certificates
     - apt-get update
