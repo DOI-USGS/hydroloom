@@ -125,11 +125,16 @@ py-publish:
     TWINE_NON_INTERACTIVE: "1"
   script:
     - python -m pip install --quiet twine
+    # A protected variable reaches a job only on a protected ref: rc/* must be
+    # a protected branch pattern and py-v* a protected tag pattern, or the
+    # token arrives empty and TestPyPI answers 403.
     - |
       if [ -n "$CI_COMMIT_TAG" ]; then
         export TWINE_PASSWORD="$PYPI_TOKEN"
+        [ -n "$TWINE_PASSWORD" ] || { echo "PYPI_TOKEN is empty: is py-v* a protected tag pattern?"; exit 1; }
         twine upload --verbose dist/*
       else
         export TWINE_PASSWORD="$TEST_PYPI_TOKEN"
+        [ -n "$TWINE_PASSWORD" ] || { echo "TEST_PYPI_TOKEN is empty: is rc/* a protected branch pattern?"; exit 1; }
         twine upload --verbose --repository-url https://test.pypi.org/legacy/ dist/*
       fi
