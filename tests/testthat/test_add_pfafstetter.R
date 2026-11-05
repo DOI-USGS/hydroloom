@@ -1,6 +1,7 @@
 test_that("get_pfaf", {
 
   if (!requireNamespace("hydrogeofetch", quietly = TRUE)) skip("Missing hydrogeofetch")
+  skip_on_cran()
 
   work_dir <- hydrogeofetch::hydrogeofetch_data_dir()
 

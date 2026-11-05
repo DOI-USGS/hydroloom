@@ -20,15 +20,19 @@ given a flowline index, returns the hydrologic location (point)
 along the specific linear element referenced by the index.
 }
 \examples{
+\donttest{
 if (require(hydrogeofetch)) {
-  source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch"))
+  try(source(system.file("extdata", "sample_flines.R", package = "hydrogeofetch")))
 
-  indexes <- index_points_to_lines(sample_flines,
-    sf::st_sfc(sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
-      sf::st_point(c(-76.91711, 39.40884)),
-      sf::st_point(c(-76.88081, 39.36354))),
-    crs = 4326)))
+  if (exists("sample_flines")) {
+    indexes <- index_points_to_lines(sample_flines,
+      sf::st_sfc(sf::st_sfc(list(sf::st_point(c(-76.86934, 39.49328)),
+        sf::st_point(c(-76.91711, 39.40884)),
+        sf::st_point(c(-76.88081, 39.36354))),
+      crs = 4326)))
 
-  get_hydro_location(indexes, sample_flines)
+    get_hydro_location(indexes, sample_flines)
+  }
+}
 }
 }
