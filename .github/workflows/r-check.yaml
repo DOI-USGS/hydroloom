@@ -70,3 +70,13 @@ jobs:
       - name: r-check
         if: github.event_name != 'pull_request' || steps.filter.outputs.r == 'true'
         run: pixi run r-check
+
+      # BACKLOG M5: R CMD build from the checkout, the way the code.usgs.gov
+      # rc/* check job builds, with src/ present; prints the NeedsCompilation
+      # stamp so the value is on record from Linux. r-check above builds from
+      # a pkgbuild copy and does not answer this.
+      - name: R CMD build from the checkout
+        if: github.event_name != 'pull_request' || steps.filter.outputs.r == 'true'
+        run: |
+          pixi run -e r R CMD build --no-build-vignettes --no-manual .
+          tar -xzOf hydroloom_*.tar.gz hydroloom/DESCRIPTION | grep -i '^NeedsCompilation' || echo 'NeedsCompilation: absent from the built DESCRIPTION'
