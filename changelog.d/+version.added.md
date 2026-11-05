@@ -1,1 +1,0 @@
-The package version comes from the `py-v*` release tag, and `hydroloom.__version__` reports it.
